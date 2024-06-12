@@ -14,5 +14,8 @@ generic-service:
     ENVIRONMENT_NAME: DEV
     AUDIT_ENABLED: "false"
 
+  # Switches off the allow list in the DEV env only.
+  allowlist: null
+
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts-non-prod
