@@ -34,10 +34,10 @@ export default function routes({ auditService, prisonerService }: Services): Rou
   get('/api/person/:nomsId/image', apiRoutes.personImage)
 
   get(
-    '/person/:nomsId/recall-entry/enter-dates',
-    logPageViewMiddleware(auditService, Page.ENTER_RECALL_DATES),
+    '/person/:nomsId/recall-entry/enter-recall-date',
+    logPageViewMiddleware(auditService, Page.ENTER_RECALL_DATE),
     async (req, res, next) => {
-      recallEntryRoutes.getEnterDates(req, res, next)
+      recallEntryRoutes.getEnterRecallDate(req, res, next)
     },
   )
 

@@ -27,11 +27,11 @@ describe('GET /person/:nomsId/recall-entry/enter-dates', () => {
     auditService.logPageView.mockResolvedValue(null)
 
     return request(app)
-      .get('/person/123/recall-entry/enter-dates')
+      .get('/person/123/recall-entry/enter-recall-date')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('Enter the recall dates') // Adjust the expected text as per your template
-        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATES, {
+        expect(res.text).toContain('What was the recall date for this person?')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
           who: user.username,
           correlationId: expect.any(String),
         })
