@@ -30,7 +30,7 @@ describe('GET /person/:nomsId/recall-entry/enter-dates', () => {
       .get('/person/123/recall-entry/enter-recall-date')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('What was the recall date for this person?')
+        expect(res.text).toContain('What is the recall date for this person?')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
           who: user.username,
           correlationId: expect.any(String),
