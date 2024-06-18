@@ -4,6 +4,7 @@ import asyncMiddleware from '../middleware/asyncMiddleware'
 import type { Services } from '../services'
 import { Page } from '../services/auditService'
 import RecallEntryRoutes from './recallEntryRoutes'
+import ApiRoutes from './apiRoutes'
 
 // Middleware to log page views
 const logPageViewMiddleware = (auditService: Services['auditService'], page: Page): RequestHandler => {
@@ -17,17 +18,20 @@ const logPageViewMiddleware = (auditService: Services['auditService'], page: Pag
   }
 }
 
-export default function routes({ auditService }: Services): Router {
+export default function routes({ auditService, prisonerService }: Services): Router {
   const router = Router()
   const get = (path: string | string[], ...handlers: RequestHandler[]) =>
     router.get(path, ...handlers.map(handler => asyncMiddleware(handler)))
 
+  const apiRoutes = new ApiRoutes(prisonerService)
   const recallEntryRoutes = new RecallEntryRoutes()
 
   // Apply middleware to log page views before handling the route
   get('/', logPageViewMiddleware(auditService, Page.EXAMPLE_PAGE), async (req, res, next) => {
     res.render('pages/index')
   })
+
+  get('/api/person/:nomsId/image', apiRoutes.personImage)
 
   get(
     '/person/:nomsId/recall-entry/enter-dates',
