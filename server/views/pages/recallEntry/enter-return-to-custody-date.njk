@@ -5,11 +5,11 @@
 
 {% block content %}
   {{ govukDateInput({
-    id: "recallDate",
-    namePrefix: "recallDate",
+    id: "returnToCustodyDate",
+    namePrefix: "returnToCustodyDate",
     fieldset: {
       legend: {
-        text: "What is the recall date for this person?",
+        text: "What date was this person returned to custody?",
         isPageHeading: true,
         classes: "govuk-fieldset__legend--l"
       }
@@ -24,8 +24,7 @@
       text: "Continue",
       type: submit,
       preventDoubleClick: true,
-      href: '/person/' + nomsId + '/recall-entry/enter-return-to-custody-date',
-      attributes: { 'data-qa': 'submit-enter-recall-date' }
+      attributes: { 'data-qa': 'submit-return-to-custody-date' }
     }) }}
   </div>
 {% endblock %}

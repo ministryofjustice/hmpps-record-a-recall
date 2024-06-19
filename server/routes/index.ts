@@ -41,5 +41,13 @@ export default function routes({ auditService, prisonerService }: Services): Rou
     },
   )
 
+  get(
+    '/person/:nomsId/recall-entry/enter-return-to-custody-date',
+    logPageViewMiddleware(auditService, Page.ENTER_RETURN_TO_CUSTODY_DATE),
+    async (req, res, next) => {
+      recallEntryRoutes.getEnterReturnToCustodyDate(req, res, next)
+    },
+  )
+
   return router
 }
