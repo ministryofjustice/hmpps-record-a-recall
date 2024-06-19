@@ -11,8 +11,8 @@ export default class PrisonerService {
     return new PrisonerSearchApiClient(await this.getSystemClientToken(username)).getPrisonerDetails(nomsId)
   }
 
-  async getPrisonerImage(nomsId: string, token: string): Promise<Readable> {
-    return new PrisonApiClient(token).getPrisonerImage(nomsId)
+  async getPrisonerImage(nomsId: string, username: string): Promise<Readable> {
+    return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(nomsId)
   }
 
   private async getSystemClientToken(username: string): Promise<string> {
