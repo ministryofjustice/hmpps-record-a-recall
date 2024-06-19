@@ -2,6 +2,7 @@ import HmppsAuditClient, { AuditEvent } from '../data/hmppsAuditClient'
 
 export enum Page {
   EXAMPLE_PAGE = 'EXAMPLE_PAGE',
+  ENTER_RECALL_DATE = 'ENTER_RECALL_DATE',
 }
 
 export interface PageViewEventDetails {

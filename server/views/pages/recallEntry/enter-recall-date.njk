@@ -1,0 +1,30 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  {{ govukDateInput({
+    id: "recallDate",
+    namePrefix: "recallDate",
+    fieldset: {
+      legend: {
+        text: "What is the recall date for this person?",
+        isPageHeading: true,
+        classes: "govuk-fieldset__legend--l"
+      }
+    },
+    hint: {
+      text: "For example, 27 3 2022"
+    }
+  }) }}
+
+  <div class="govuk-button-group">
+    {{ govukButton({
+      text: "Continue",
+      type: submit,
+      preventDoubleClick: true,
+      attributes: { 'data-qa': 'submit-enter-recall-date' }
+    }) }}
+  </div>
+{% endblock %}

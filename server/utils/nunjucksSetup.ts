@@ -2,6 +2,12 @@
 import path from 'path'
 import nunjucks from 'nunjucks'
 import express from 'express'
+import {
+  personProfileName,
+  personDateOfBirth,
+  personStatus,
+  firstNameSpaceLastName,
+} from 'hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { initialiseName } from './utils'
 import { ApplicationInfo } from '../applicationInfo'
 import config from '../config'
@@ -33,6 +39,8 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
       path.join(__dirname, '../../server/views'),
       'node_modules/govuk-frontend/dist/',
       'node_modules/@ministryofjustice/frontend/',
+      'node_modules/hmpps-court-cases-release-dates-design/',
+      'node_modules/hmpps-court-cases-release-dates-design/hmpps/components/',
     ],
     {
       autoescape: true,
@@ -41,4 +49,8 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   )
 
   njkEnv.addFilter('initialiseName', initialiseName)
+  njkEnv.addFilter('personProfileName', personProfileName)
+  njkEnv.addFilter('personDateOfBirth', personDateOfBirth)
+  njkEnv.addFilter('personStatus', personStatus)
+  njkEnv.addFilter('firstNameSpaceLastName', firstNameSpaceLastName)
 }
