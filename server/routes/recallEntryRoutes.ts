@@ -4,7 +4,8 @@ export default class RecallEntryRoutes {
   constructor() {}
 
   public getEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
-    return res.render('pages/recallEntry/enter-recall-date')
+    const { nomsId } = req.params
+    return res.render('pages/recallEntry/enter-recall-date', { nomsId })
   }
 
   public getEnterReturnToCustodyDate: RequestHandler = async (req, res): Promise<void> => {
