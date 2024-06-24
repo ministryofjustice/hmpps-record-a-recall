@@ -24,7 +24,7 @@ export default function routes({ auditService, prisonerService }: Services): Rou
     router.get(path, ...handlers.map(handler => asyncMiddleware(handler)))
 
   const apiRoutes = new ApiRoutes(prisonerService)
-  const recallEntryRoutes = new RecallEntryRoutes()
+  const recallEntryRoutes = new RecallEntryRoutes(prisonerService)
 
   // Apply middleware to log page views before handling the route
   get('/', logPageViewMiddleware(auditService, Page.EXAMPLE_PAGE), async (req, res, next) => {
@@ -46,6 +46,14 @@ export default function routes({ auditService, prisonerService }: Services): Rou
     logPageViewMiddleware(auditService, Page.ENTER_RETURN_TO_CUSTODY_DATE),
     async (req, res, next) => {
       recallEntryRoutes.getEnterReturnToCustodyDate(req, res, next)
+    },
+  )
+
+  get(
+    '/person/:nomsId/recall-entry/check-sentences',
+    logPageViewMiddleware(auditService, Page.CHECK_SENTENCES),
+    async (req, res, next) => {
+      recallEntryRoutes.getCheckSentences(req, res, next)
     },
   )
 

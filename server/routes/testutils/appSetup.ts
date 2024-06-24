@@ -45,6 +45,7 @@ function appSetup(services: Services, production: boolean, userSupplier: () => H
     req.flash = flashProvider
     res.locals = {
       user: { ...req.user } as HmppsUser,
+      prisoner: { bookingId: 91119 },
     }
     next()
   })
