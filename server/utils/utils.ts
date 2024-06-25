@@ -21,13 +21,3 @@ export const initialiseName = (fullName?: string): string | null => {
   const array = fullName.split(' ')
   return `${array[0][0]}. ${array.reverse()[0]}`
 }
-
-export const groupBy = <T, K>(items: T[], groupingFunction: (item: T) => K): Map<K, T[]> => {
-  return items.reduce((result, item) => {
-    const key = groupingFunction(item)
-    const currentValues = result.get(key) || []
-    currentValues.push(item)
-    result.set(key, currentValues)
-    return result
-  }, new Map<K, T[]>())
-}
