@@ -88,3 +88,20 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
       })
   })
 })
+
+describe('GET /person/:nomsId/recall-entry/enter-recall-type', () => {
+  it('should render enter-recall-type page and log page view', () => {
+    auditService.logPageView.mockResolvedValue(null)
+
+    return request(app)
+      .get('/person/123/recall-entry/enter-recall-type')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('14_DAY_FTR')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_TYPE, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+})
