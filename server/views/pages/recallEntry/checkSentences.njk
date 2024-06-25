@@ -1,0 +1,40 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageTitle = applicationName + " - check information" %}
+{% set pageId = "check-information" %}
+
+{% block content %}
+  <h1 class="govuk-heading-xl" id="check-nomis-heading">Check sentence information</h1>
+  {% for sentence in sentences %}
+    <h2 class="govuk-heading-m">Case reference: {{ sentence.caseReference }}</h2>
+
+    {{ govukSummaryList({
+      classes: "govuk-!-margin-bottom-9",
+      rows: [
+        {
+          key: { text: "Sentence Type" },
+          value: { text: sentence.sentenceTypeDescription }
+        },
+        {
+          key: { text: "Sentence Date" },
+          value: { text: sentence.sentenceDate }
+        },
+        {
+          key: { text: "Offence" },
+          value: { text: sentence.offence.offenceCode + ' ' + sentence.offence.offenceDescription }
+        }
+      ]
+    }) }}
+  {% endfor %}
+
+  <div class="govuk-button-group">
+    {{ govukButton({
+      text: "Continue",
+      preventDoubleClick: true,
+      href: '/person/' + nomsId + '/recall-entry/enter-recall-type'
+    }) }}
+  </div>
+{% endblock %}
