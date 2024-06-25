@@ -77,7 +77,7 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
       .get('/person/123/recall-entry/check-sentences')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('TS001</h2>')
+        expect(res.text).toContain('Case reference: TS001</h2>')
         expect(res.text).toMatch(/Sentence Type\s*<\/dt>\s*<dd class="govuk-summary-list__value">\s*EDS Sentence/)
         expect(res.text).toMatch(/Sentence Date\s*<\/dt>\s*<dd class="govuk-summary-list__value">\s*2023-01-01/)
         expect(res.text).toMatch(/Offence\s*<\/dt>\s*<dd class="govuk-summary-list__value">\s*OF1 Offence X/)

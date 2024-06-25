@@ -9,7 +9,7 @@
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-nomis-heading">Check sentence information</h1>
   {% for sentence in sentences %}
-    <h2 class="govuk-heading-m">{{ sentence.caseReference }}</h2>
+    <h2 class="govuk-heading-m">Case reference: {{ sentence.caseReference }}</h2>
 
     {{ govukSummaryList({
       classes: "govuk-!-margin-bottom-9",
