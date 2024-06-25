@@ -107,10 +107,10 @@ export default {
       agent: new AgentConfig(),
     },
     calculateReleaseDatesApi: {
-      url: get('CALCULATE_RELEASE_DATES_URL', 'http://127.0.0.1:8089', requiredInProduction),
+      url: get('CALCULATE_RELEASE_DATES_API_URL', 'http://127.0.0.1:8089', requiredInProduction),
       timeout: {
-        response: get('CALCULATE_RELEASE_DATES_TIMEOUT_RESPONSE', 10000),
-        deadline: get('CALCULATE_RELEASE_DATES_TIMEOUT_DEADLINE', 10000),
+        response: get('CALCULATE_RELEASE_DATES_API_TIMEOUT_RESPONSE', 10000),
+        deadline: get('CALCULATE_RELEASE_DATES_API_TIMEOUT_DEADLINE', 10000),
       },
       agent: new AgentConfig(),
     },
