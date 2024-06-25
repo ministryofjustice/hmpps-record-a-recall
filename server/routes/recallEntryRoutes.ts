@@ -22,6 +22,12 @@ export default class RecallEntryRoutes {
       prisoner.bookingId as unknown as number,
       res.locals.user.username,
     )
-    return res.render('pages/recallEntry/checkSentences', { nomsId, sentences })
+    return res.render('pages/recallEntry/check-sentences', { nomsId, sentences })
+  }
+
+  public getEnterRecallType: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+
+    return res.render('pages/recallEntry/enter-recall-type', { nomsId })
   }
 }

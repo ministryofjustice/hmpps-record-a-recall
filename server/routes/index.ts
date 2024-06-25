@@ -57,5 +57,13 @@ export default function routes({ auditService, prisonerService }: Services): Rou
     },
   )
 
+  get(
+    '/person/:nomsId/recall-entry/enter-recall-type',
+    logPageViewMiddleware(auditService, Page.ENTER_RECALL_TYPE),
+    async (req, res, next) => {
+      recallEntryRoutes.getEnterRecallType(req, res, next)
+    },
+  )
+
   return router
 }
