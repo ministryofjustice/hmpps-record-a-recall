@@ -1,8 +1,7 @@
 import { RequestHandler } from 'express'
-import type { RecallDateForm } from 'forms'
+import type { DateForm } from 'forms'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonerService from '../services/prisonerService'
-import trimForm from '../utils/trim'
 import RecallService from '../services/recallService'
 
 export default class RecallEntryRoutes {
@@ -20,13 +19,13 @@ export default class RecallEntryRoutes {
   public submitEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
-    const recallDateForm = trimForm<RecallDateForm>(req.body)
+    const recallDateForm = req.body.recallDate as DateForm
     this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
     if (submitToCheckAnswers) {
       return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
     }
-    return res.redirect(`/person/${nomsId}/recall-entry/enter-recall-date`)
+    return res.redirect(`/person/${nomsId}/recall-entry/enter-return-to-custody-date`)
   }
 
   public getEnterReturnToCustodyDate: RequestHandler = async (req, res): Promise<void> => {

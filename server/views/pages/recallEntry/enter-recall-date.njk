@@ -4,12 +4,10 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
-  <form method="post"
-        action="/person/{{ nomsId }}/recall-entry/enter-recall-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
+  <form method="post" action="/person/{{ nomsId }}/recall-entry/enter-recall-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {{ govukDateInput({
       id: "recallDate",
-      namePrefix: "recallDate",
       fieldset: {
         legend: {
           text: "What is the recall date for this person?",
@@ -20,17 +18,20 @@
       items: [
         {
           id: 'recallDateDay',
-          name: "dateOfBirth[day]",
+          label: 'Day',
+          name: "recallDate[day]",
           value: recallDateDay
         },
         {
           id: 'recallDateMonth',
-          name: "dateOfBirth[month]",
+          label: 'Month'
+          name: "recallDate[month]",
           value: recallDateMonth
         },
         {
           id: 'recallDateYear',
-          name: "dateOfBirth[year]",
+          label: 'Year'
+          name: "recallDate[year]",
           value: recallDateYear
         }
       ],
@@ -44,7 +45,6 @@
         text: "Continue",
         type: submit,
         preventDoubleClick: true,
-        href: '/person/' + nomsId + '/recall-entry/enter-return-to-custody-date',
         attributes: { 'data-qa': 'submit-enter-recall-date' }
       }) }}
     </div>

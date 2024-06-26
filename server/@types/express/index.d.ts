@@ -6,7 +6,7 @@ export declare module 'express-session' {
   interface SessionData {
     returnTo: string
     nowInMinutes: number
-    recall: Map<string, Recall>
+    recalls: Map<string, Recall>
   }
 }
 

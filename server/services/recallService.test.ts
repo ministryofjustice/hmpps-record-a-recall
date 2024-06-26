@@ -1,4 +1,4 @@
-import type { RecallDateForm } from 'forms'
+import type { DateForm } from 'forms'
 import RecallService from './recallService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 
@@ -25,10 +25,10 @@ describe('Recall service', () => {
       }
 
       const nomsId = 'A1234BC'
-      const recallDateForm: RecallDateForm = {
-        'recallDate-day': '01',
-        'recallDate-month': '02',
-        'recallDate-year': '2023',
+      const recallDateForm: DateForm = {
+        day: '01',
+        month: '02',
+        year: '2023',
       }
 
       recallService.setRecallDate(session, nomsId, recallDateForm)
