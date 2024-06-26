@@ -4,28 +4,49 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
-  {{ govukDateInput({
-    id: "recallDate",
-    namePrefix: "recallDate",
-    fieldset: {
-      legend: {
-        text: "What is the recall date for this person?",
-        isPageHeading: true,
-        classes: "govuk-fieldset__legend--l"
+  <form method="post"
+        action="/person/{{ nomsId }}/recall-entry/enter-recall-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {{ govukDateInput({
+      id: "recallDate",
+      namePrefix: "recallDate",
+      fieldset: {
+        legend: {
+          text: "What is the recall date for this person?",
+          isPageHeading: true,
+          classes: "govuk-fieldset__legend--l"
+        }
+      },
+      items: [
+        {
+          id: 'recallDateDay',
+          name: "dateOfBirth[day]",
+          value: recallDateDay
+        },
+        {
+          id: 'recallDateMonth',
+          name: "dateOfBirth[month]",
+          value: recallDateMonth
+        },
+        {
+          id: 'recallDateYear',
+          name: "dateOfBirth[year]",
+          value: recallDateYear
+        }
+      ],
+      hint: {
+        text: "For example, 27 3 2022"
       }
-    },
-    hint: {
-      text: "For example, 27 3 2022"
-    }
-  }) }}
-
-  <div class="govuk-button-group">
-    {{ govukButton({
-      text: "Continue",
-      type: submit,
-      preventDoubleClick: true,
-      href: '/person/' + nomsId + '/recall-entry/enter-return-to-custody-date',
-      attributes: { 'data-qa': 'submit-enter-recall-date' }
     }) }}
-  </div>
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        type: submit,
+        preventDoubleClick: true,
+        href: '/person/' + nomsId + '/recall-entry/enter-return-to-custody-date',
+        attributes: { 'data-qa': 'submit-enter-recall-date' }
+      }) }}
+    </div>
+  </form>
 {% endblock %}

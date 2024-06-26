@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import session, { MemoryStore, Store } from 'express-session'
 import RedisStore from 'connect-redis'
 import express, { Router } from 'express'
+import { Recall } from 'models'
 import { createRedisClient } from '../data/redisClient'
 import config from '../config'
 import logger from '../../logger'
@@ -33,6 +34,9 @@ export default function setUpWebSession(): Router {
   // Only changes every minute so that it's not sent with every request.
   router.use((req, res, next) => {
     req.session.nowInMinutes = Math.floor(Date.now() / 60e3)
+    if (!req.session.recall) {
+      req.session.recall = new Map<string, Recall>()
+    }
     next()
   })
 

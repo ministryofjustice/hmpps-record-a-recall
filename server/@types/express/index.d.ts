@@ -1,3 +1,4 @@
+import { Recall } from '../models'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 
 export declare module 'express-session' {
@@ -5,6 +6,7 @@ export declare module 'express-session' {
   interface SessionData {
     returnTo: string
     nowInMinutes: number
+    recall: Map<string, Recall>
   }
 }
 

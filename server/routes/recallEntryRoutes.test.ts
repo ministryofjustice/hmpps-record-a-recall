@@ -4,12 +4,15 @@ import { appWithAllRoutes, user } from './testutils/appSetup'
 import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
 import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import RecallService from '../services/recallService'
 
 jest.mock('../services/auditService')
 jest.mock('../services/prisonerService')
+jest.mock('../services/recallService')
 
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
+const recallService = new RecallService(null) as jest.Mocked<RecallService>
 
 let app: Express
 
@@ -18,6 +21,7 @@ beforeEach(() => {
     services: {
       auditService,
       prisonerService,
+      recallService,
     },
     userSupplier: () => user,
   })
@@ -28,7 +32,7 @@ afterEach(() => {
 })
 
 describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
-  it('should render enter-dates page and log page view', () => {
+  it('should render enter-recall-date page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
     return request(app)
@@ -39,6 +43,23 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
           who: user.username,
           correlationId: expect.any(String),
+        })
+      })
+  })
+
+  it('should perform submission from enter-recall-date page correctly', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    // recallService.setRecallDate()
+
+    return request(app)
+      .post('/person/123/recall-entry/enter-recall-date')
+      .send({ 'recallDate-day': '01', 'recallDate-month': '02', 'recallDate-year': '2023' })
+      .expect(302)
+      .expect(() => {
+        expect(recallService.setRecallDate).toBeCalledWith({}, '123', {
+          'recallDate-day': '01',
+          'recallDate-month': '02',
+          'recallDate-year': '2023',
         })
       })
   })

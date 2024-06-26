@@ -18,13 +18,14 @@ const logPageViewMiddleware = (auditService: Services['auditService'], page: Pag
   }
 }
 
-export default function routes({ auditService, prisonerService }: Services): Router {
+export default function routes({ auditService, prisonerService, recallService }: Services): Router {
   const router = Router()
   const get = (path: string | string[], ...handlers: RequestHandler[]) =>
     router.get(path, ...handlers.map(handler => asyncMiddleware(handler)))
+  const post = (path: string | string[], handler: RequestHandler) => router.post(path, asyncMiddleware(handler))
 
   const apiRoutes = new ApiRoutes(prisonerService)
-  const recallEntryRoutes = new RecallEntryRoutes(prisonerService)
+  const recallEntryRoutes = new RecallEntryRoutes(prisonerService, recallService)
 
   // Apply middleware to log page views before handling the route
   get('/', logPageViewMiddleware(auditService, Page.EXAMPLE_PAGE), async (req, res, next) => {
@@ -40,6 +41,10 @@ export default function routes({ auditService, prisonerService }: Services): Rou
       recallEntryRoutes.getEnterRecallDate(req, res, next)
     },
   )
+
+  post('/person/:nomsId/recall-entry/enter-recall-date', async (req, res, next) => {
+    recallEntryRoutes.submitEnterRecallDate(req, res, next)
+  })
 
   get(
     '/person/:nomsId/recall-entry/enter-return-to-custody-date',
