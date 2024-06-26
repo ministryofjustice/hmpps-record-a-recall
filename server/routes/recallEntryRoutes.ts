@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import { RecallDateForm } from 'forms'
+import type { RecallDateForm } from 'forms'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonerService from '../services/prisonerService'
 import trimForm from '../utils/trim'

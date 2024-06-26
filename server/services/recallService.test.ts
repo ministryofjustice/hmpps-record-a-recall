@@ -1,4 +1,4 @@
-import { RecallDateForm } from 'forms'
+import type { RecallDateForm } from 'forms'
 import RecallService from './recallService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 

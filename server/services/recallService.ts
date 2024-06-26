@@ -1,5 +1,5 @@
-import { Recall } from 'models'
-import { RecallDateForm } from 'forms'
+import type { Recall } from 'models'
+import type { RecallDateForm } from 'forms'
 import { HmppsAuthClient } from '../data'
 
 export default class RecallService {
