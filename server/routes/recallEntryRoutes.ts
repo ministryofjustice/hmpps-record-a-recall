@@ -14,12 +14,7 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
     const recall = this.recallService.getRecall(req.session, nomsId)
-    const recallDateForm = recall.recallDate && {
-      day: recall.recallDate.getDate(),
-      month: recall.recallDate.getMonth() + 1,
-      year: recall.recallDate.getFullYear(),
-    }
-    return res.render('pages/recallEntry/enter-recall-date', { nomsId, submitToCheckAnswers, recall, recallDateForm })
+    return res.render('pages/recallEntry/enter-recall-date', { nomsId, submitToCheckAnswers, recall })
   }
 
   public submitEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {

@@ -21,6 +21,10 @@ export default class RecallService {
   }
 
   getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Recall {
-    return session.recalls[nomsId] ?? ({} as Recall)
+    const recall = session.recalls[nomsId] ?? ({} as Recall)
+    if (recall.recallDate && typeof recall.recallDate === 'string') {
+      recall.recallDate = new Date(recall.recallDate)
+    }
+    return recall
   }
 }
