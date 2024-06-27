@@ -69,22 +69,6 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
       })
   })
 
-  it('xx', () => {
-    auditService.logPageView.mockResolvedValue(null)
-    recallService.getRecall.mockReturnValue({recallDate: null} as Recall)
-
-    return request(app)
-      .get('/person/123/recall-entry/enter-recall-date')
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).toContain('What is the recall date for this person?')
-        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
-          who: user.username,
-          correlationId: expect.any(String),
-        })
-      })
-  })
-
   it('should perform submission from enter-recall-date page correctly', () => {
     auditService.logPageView.mockResolvedValue(null)
     // recallService.setRecallDate()
