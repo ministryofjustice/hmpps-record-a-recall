@@ -20,7 +20,7 @@
           id: 'recallDateDay',
           label: 'Day',
           name: "recallDate[day]",
-          value: recall.recallDate.getDate() if recall and recall.recallDate,
+          value: recall.recallDate.getDate() if (recall and recall.recallDate),
           classes: "govuk-input--width-2",
           attributes: { 'maxlength': 2 }
         },
@@ -28,7 +28,7 @@
           id: 'recallDateMonth',
           label: 'Month',
           name: "recallDate[month]",
-          value: recall.recallDate.getMonth() + 1 if recall and recall.recallDate,
+          value: recall.recallDate.getMonth() + 1 if (recall and recall.recallDate),
           classes: "govuk-input--width-2",
           attributes: { 'maxlength': 2 }
         },
@@ -36,7 +36,7 @@
           id: 'recallDateYear',
           label: 'Year',
           name: "recallDate[year]",
-          value: recall.recallDate.getFullYear() if recall and recall.recallDate,
+          value: recall.recallDate.getFullYear() if (recall and recall.recallDate),
           classes: "govuk-input--width-4",
           attributes: { 'maxlength': 4 }
         }
