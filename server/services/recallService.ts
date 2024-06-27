@@ -1,6 +1,7 @@
 import type { Recall } from 'models'
 import type { DateForm } from 'forms'
 import { HmppsAuthClient } from '../data'
+import { RecallTypeCode } from '../@types/refData'
 
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -44,5 +45,12 @@ export default class RecallService {
       recall.returnToCustodyDate = new Date(recall.returnToCustodyDate)
     }
     return recall
+  }
+
+  setRecallType(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallType: RecallTypeCode) {
+    const recall = this.getRecall(session, nomsId)
+    recall.recallType = recallType
+    // eslint-disable-next-line no-param-reassign
+    session.recalls[nomsId] = recall
   }
 }

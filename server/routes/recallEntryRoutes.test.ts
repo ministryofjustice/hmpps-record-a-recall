@@ -183,6 +183,32 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-type', () => {
         })
       })
   })
+
+  it('should render enter-recall-type page when enterRecallType is populated', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    recallService.getRecall.mockReturnValue({
+      recallType: 'STANDARD_RECALL',
+    } as Recall)
+
+    return request(app)
+      .get('/person/123/recall-entry/enter-recall-type')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('value="STANDARD_RECALL" checked')
+      })
+  })
+
+  it('should perform submission from enter-recall-type page correctly', () => {
+    auditService.logPageView.mockResolvedValue(null)
+
+    return request(app)
+      .post('/person/123/recall-entry/enter-recall-type')
+      .send({ recallType: 'STANDARD_RECALL' })
+      .expect(302)
+      .expect(() => {
+        expect(recallService.setRecallType).toBeCalledWith({}, '123', 'STANDARD_RECALL')
+      })
+  })
 })
 
 describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {

@@ -74,6 +74,10 @@ export default function routes({ auditService, prisonerService, recallService }:
     },
   )
 
+  post('/person/:nomsId/recall-entry/enter-recall-type', async (req, res, next) => {
+    recallEntryRoutes.submitRecallType(req, res, next)
+  })
+
   get(
     '/person/:nomsId/recall-entry/check-your-answers',
     logPageViewMiddleware(auditService, Page.CHECK_YOUR_ANSWERS),

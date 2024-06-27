@@ -5,42 +5,36 @@
 
 {% block content %}
 
-  {{ govukRadios({
-    name: "recallType",
-    fieldset: {
-      legend: {
-        text: "What is the recall type?",
-        isPageHeading: true,
-        classes: "govuk-fieldset__legend--l"
-      }
-    },
-    items: [
-      {
-        value: "14_DAY_FTR",
-        text: "14 day fixed-term recall"
-      },
-      {
-        value: "28_DAY_FTR",
-        text: "28 day fixed-term recall"
-      },
-      {
-        value: "STANDARD_RECALL",
-        text: "Standard recall"
-      },
-      {
-        value: "HDC_RECALL",
-        text: "HDC recall"
-      }
-    ]
-  }) }}
+  {% set recallTypeItems = [] %}
+  {% for recallType in recallTypes %}
+    {% set recallTypeItems = (recallTypeItems.push({
+      value: recallType.code,
+      text: recallType.description,
+      checked: recall.recallType == recallType.code
+    }), recallTypeItems) %}
+  {% endfor %}
 
-  <div class="govuk-button-group">
-    {{ govukButton({
-      text: "Continue",
-      type: submit,
-      preventDoubleClick: true,
-      href: '/person/' + nomsId + '/recall-entry/check-your-answers',
-      attributes: { 'data-qa': 'submit-enter-recall-type' }
+  <form method="post" action="/person/{{ nomsId }}/recall-entry/enter-recall-type">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {{ govukRadios({
+      name: "recallType",
+      fieldset: {
+        legend: {
+          text: "What is the recall type?",
+          isPageHeading: true,
+          classes: "govuk-fieldset__legend--l"
+        }
+      },
+      items: recallTypeItems
     }) }}
-  </div>
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        type: submit,
+        preventDoubleClick: true,
+        attributes: { 'data-qa': 'submit-enter-recall-type' }
+      }) }}
+    </div>
+  </form>
 {% endblock %}

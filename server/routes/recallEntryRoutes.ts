@@ -3,6 +3,7 @@ import type { DateForm } from 'forms'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
+import { RecallType } from '../@types/refData'
 
 export default class RecallEntryRoutes {
   constructor(
@@ -60,8 +61,18 @@ export default class RecallEntryRoutes {
 
   public getEnterRecallType: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
+    const recallTypes = Object.values(RecallType)
+    const recall = this.recallService.getRecall(req.session, nomsId)
 
-    return res.render('pages/recallEntry/enter-recall-type', { nomsId })
+    return res.render('pages/recallEntry/enter-recall-type', { nomsId, recallTypes, recall })
+  }
+
+  public submitRecallType: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const { recallType } = req.body
+    this.recallService.setRecallType(req.session, nomsId, recallType)
+
+    return res.redirect(`/person/${nomsId}/recall-entry/check-sentences`)
   }
 
   public getCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {
