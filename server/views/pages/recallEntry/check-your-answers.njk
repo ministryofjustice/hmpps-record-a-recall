@@ -10,18 +10,27 @@
       {{ govukSummaryList({
         rows: [
           {
-            key: {
-            text: "Recall Date"
-          },
-            value: {
-            text: recall.recallDate
-          },
+            key: { text: "Recall Date" },
+            value: { text: recall.recallDate },
             actions: {
             items: [
               {
                 href: '/person/' + nomsId + '/recall-entry/enter-recall-date?submitToCheckAnswers=true',
                 text: "Edit",
                 visuallyHiddenText: "Recall date"
+              }
+            ]
+          }
+          },
+          {
+            key: { text: "Return to Custody Date" },
+            value: { text: recall.returnToCustodyDate },
+            actions: {
+            items: [
+              {
+                href: '/person/' + nomsId + '/recall-entry/enter-return-to-custody-date?submitToCheckAnswers=true',
+                text: "Edit",
+                visuallyHiddenText: "Return to Custody date"
               }
             ]
           }
