@@ -72,7 +72,7 @@ export default class RecallEntryRoutes {
     const { recallType } = req.body
     this.recallService.setRecallType(req.session, nomsId, recallType)
 
-    return res.redirect(`/person/${nomsId}/recall-entry/check-sentences`)
+    return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
   }
 
   public getCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {
