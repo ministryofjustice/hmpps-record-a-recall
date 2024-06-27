@@ -13,7 +13,8 @@ export default class RecallEntryRoutes {
   public getEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
-    return res.render('pages/recallEntry/enter-recall-date', { nomsId, submitToCheckAnswers })
+    const recall = this.recallService.getRecall(req.session, nomsId)
+    return res.render('pages/recallEntry/enter-recall-date', { nomsId, submitToCheckAnswers, recall })
   }
 
   public submitEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
