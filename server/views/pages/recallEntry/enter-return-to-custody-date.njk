@@ -5,7 +5,7 @@
 
 {% block content %}
   <form method="post"
-        action="/person/{{ nomsId }}/recall-entry/check-sentences{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
+        action="/person/{{ nomsId }}/recall-entry/enter-return-to-custody-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {{ govukDateInput({
       id: "returnToCustodyDate",
