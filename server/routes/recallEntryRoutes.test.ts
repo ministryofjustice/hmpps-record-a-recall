@@ -71,7 +71,6 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
 
   it('should perform submission from enter-recall-date page correctly', () => {
     auditService.logPageView.mockResolvedValue(null)
-    // recallService.setRecallDate()
 
     return request(app)
       .post('/person/123/recall-entry/enter-recall-date')
