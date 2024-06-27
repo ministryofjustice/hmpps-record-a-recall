@@ -8,6 +8,7 @@ import {
   personStatus,
   firstNameSpaceLastName,
 } from 'hmpps-court-cases-release-dates-design/hmpps/utils/utils'
+import dayjs from 'dayjs'
 import { initialiseName } from './utils'
 import { ApplicationInfo } from '../applicationInfo'
 import config from '../config'
@@ -53,4 +54,5 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('personDateOfBirth', personDateOfBirth)
   njkEnv.addFilter('personStatus', personStatus)
   njkEnv.addFilter('firstNameSpaceLastName', firstNameSpaceLastName)
+  njkEnv.addFilter('date', (date, format) => dayjs(date).format(format))
 }

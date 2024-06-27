@@ -224,8 +224,8 @@ describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
       .get('/person/123/recall-entry/check-your-answers')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('Jan 01 2024')
-        expect(res.text).toContain('Apr 02 2024')
+        expect(res.text).toContain('01 Jan 2024')
+        expect(res.text).toContain('02 Apr 2024')
         expect(res.text).toContain('Standard recall')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_YOUR_ANSWERS, {
           who: user.username,
