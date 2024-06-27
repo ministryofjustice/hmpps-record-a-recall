@@ -32,7 +32,7 @@ export default class RecallEntryRoutes {
   public getEnterReturnToCustodyDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
-    const recall = await this.recallService.getRecall(req.session, nomsId)
+    const recall = this.recallService.getRecall(req.session, nomsId)
     return res.render('pages/recallEntry/enter-return-to-custody-date', { nomsId, submitToCheckAnswers, recall })
   }
 
@@ -40,7 +40,7 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
     const returnToCustodyDateForm = req.body.returnToCustodyDate as DateForm
-    await this.recallService.setReturnToCustodyDate(req.session, nomsId, returnToCustodyDateForm)
+    this.recallService.setReturnToCustodyDate(req.session, nomsId, returnToCustodyDateForm)
 
     if (submitToCheckAnswers) {
       return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
