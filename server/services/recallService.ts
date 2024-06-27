@@ -5,8 +5,8 @@ import { HmppsAuthClient } from '../data'
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
 
-  setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
-    const recall = this.getRecall(session, nomsId)
+  async setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
+    const recall = await this.getRecall(session, nomsId)
     recall.recallDate = new Date(
       recallDateForm.year as unknown as number,
       (recallDateForm.month as unknown as number) - 1,
@@ -16,12 +16,12 @@ export default class RecallService {
     session.recalls[nomsId] = recall
   }
 
-  setReturnToCustodyDate(
+  async setReturnToCustodyDate(
     session: CookieSessionInterfaces.CookieSessionObject,
     nomsId: string,
     returnToCustodyDateForm: DateForm,
   ) {
-    const recall = this.getRecall(session, nomsId)
+    const recall = await this.getRecall(session, nomsId)
     recall.returnToCustodyDate = new Date(
       returnToCustodyDateForm.year as unknown as number,
       (returnToCustodyDateForm.month as unknown as number) - 1,
@@ -35,7 +35,7 @@ export default class RecallService {
     return this.hmppsAuthClient.getSystemClientToken(username)
   }
 
-  getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Recall {
+  async getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Promise<Recall> {
     const recall = session.recalls[nomsId] ?? ({} as Recall)
     if (recall.recallDate && typeof recall.recallDate === 'string') {
       recall.recallDate = new Date(recall.recallDate)
