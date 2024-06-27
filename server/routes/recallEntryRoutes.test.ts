@@ -101,6 +101,43 @@ describe('GET /person/:nomsId/recall-entry/enter-return-to-custody-date', () => 
         })
       })
   })
+
+  it('should render enter-return-to-custody-date page when returnToCustodyDate is populated', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    recallService.getRecall.mockReturnValue({
+      returnToCustodyDate: new Date(2024, 0, 1),
+    } as Recall)
+
+    return request(app)
+      .get('/person/123/recall-entry/enter-return-to-custody-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('What date was this person returned to custody?')
+        expect(res.text).toContain('name="returnToCustodyDate[day]" type="text" value="1"')
+        expect(res.text).toContain('name="returnToCustodyDate[month]" type="text" value="1"')
+        expect(res.text).toContain('name="returnToCustodyDate[year]" type="text" value="2024"')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RETURN_TO_CUSTODY_DATE, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+
+  it('should perform submission from enter-return-to-custody-date page correctly', () => {
+    auditService.logPageView.mockResolvedValue(null)
+
+    return request(app)
+      .post('/person/123/recall-entry/enter-return-to-custody-date')
+      .send({ returnToCustodyDate: { day: '01', month: '02', year: '2023' } })
+      .expect(302)
+      .expect(() => {
+        expect(recallService.setReturnToCustodyDate).toBeCalledWith({}, '123', {
+          day: '01',
+          month: '02',
+          year: '2023',
+        })
+      })
+  })
 })
 
 describe('GET /person/:nomsId/recall-entry/check-sentences', () => {

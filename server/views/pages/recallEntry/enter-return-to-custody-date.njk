@@ -4,28 +4,56 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
-  {{ govukDateInput({
-    id: "returnToCustodyDate",
-    namePrefix: "returnToCustodyDate",
-    fieldset: {
-      legend: {
-        text: "What date was this person returned to custody?",
-        isPageHeading: true,
-        classes: "govuk-fieldset__legend--l"
+  <form method="post"
+        action="/person/{{ nomsId }}/recall-entry/enter-return-to-custody-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {{ govukDateInput({
+      id: "returnToCustodyDate",
+      fieldset: {
+        legend: {
+          text: "What date was this person returned to custody?",
+          isPageHeading: true,
+          classes: "govuk-fieldset__legend--l"
+        }
+      },
+      items: [
+        {
+          id: 'returnToCustodyDateDay',
+          label: 'Day',
+          name: "returnToCustodyDate[day]",
+          value: recall.returnToCustodyDate.getDate() if (recall and recall.returnToCustodyDate),
+          classes: "govuk-input--width-2",
+          attributes: { 'maxlength': 2 }
+        },
+        {
+          id: 'returnToCustodyDateMonth',
+          label: 'Month',
+          name: "returnToCustodyDate[month]",
+          value: recall.returnToCustodyDate.getMonth() + 1 if (recall and recall.returnToCustodyDate),
+          classes: "govuk-input--width-2",
+          attributes: { 'maxlength': 2 }
+        },
+        {
+          id: 'returnToCustodyDateYear',
+          label: 'Year',
+          name: "returnToCustodyDate[year]",
+          value: recall.returnToCustodyDate.getFullYear() if (recall and recall.returnToCustodyDate),
+          classes: "govuk-input--width-4",
+          attributes: { 'maxlength': 4 }
+        }
+      ],
+      hint: {
+        text: "For example, 27 3 2022"
       }
-    },
-    hint: {
-      text: "For example, 27 3 2022"
-    }
-  }) }}
-
-  <div class="govuk-button-group">
-    {{ govukButton({
-      text: "Continue",
-      type: submit,
-      preventDoubleClick: true,
-      href: '/person/' + nomsId + '/recall-entry/check-sentences',
-      attributes: { 'data-qa': 'submit-return-to-custody-date' }
     }) }}
-  </div>
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        type: submit,
+        preventDoubleClick: true,
+        attributes: { 'data-qa': 'submit-return-to-custody-date' }
+      }) }}
+    </div>
+  </form>
 {% endblock %}

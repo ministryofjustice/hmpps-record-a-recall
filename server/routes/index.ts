@@ -54,6 +54,10 @@ export default function routes({ auditService, prisonerService, recallService }:
     },
   )
 
+  post('/person/:nomsId/recall-entry/enter-return-to-custody-date', async (req, res, next) => {
+    recallEntryRoutes.submitReturnToCustodyDate(req, res, next)
+  })
+
   get(
     '/person/:nomsId/recall-entry/check-sentences',
     logPageViewMiddleware(auditService, Page.CHECK_SENTENCES),
