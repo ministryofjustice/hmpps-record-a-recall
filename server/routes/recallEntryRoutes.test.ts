@@ -216,6 +216,8 @@ describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
     auditService.logPageView.mockResolvedValue(null)
     recallService.getRecall.mockReturnValue({
       recallDate: new Date(2024, 0, 1),
+      returnToCustodyDate: new Date(2024, 3, 2),
+      recallType: 'STANDARD_RECALL',
     } as Recall)
 
     return request(app)
@@ -223,6 +225,8 @@ describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContain('Jan 01 2024')
+        expect(res.text).toContain('Apr 02 2024')
+        expect(res.text).toContain('Standard recall')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_YOUR_ANSWERS, {
           who: user.username,
           correlationId: expect.any(String),
