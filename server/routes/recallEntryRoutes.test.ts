@@ -1,15 +1,19 @@
 import type { Express } from 'express'
 import request from 'supertest'
+import type { Recall } from 'models'
 import { appWithAllRoutes, user } from './testutils/appSetup'
 import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
 import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import RecallService from '../services/recallService'
 
 jest.mock('../services/auditService')
 jest.mock('../services/prisonerService')
+jest.mock('../services/recallService')
 
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
+const recallService = new RecallService(null) as jest.Mocked<RecallService>
 
 let app: Express
 
@@ -18,6 +22,7 @@ beforeEach(() => {
     services: {
       auditService,
       prisonerService,
+      recallService,
     },
     userSupplier: () => user,
   })
@@ -28,7 +33,7 @@ afterEach(() => {
 })
 
 describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
-  it('should render enter-dates page and log page view', () => {
+  it('should render enter-recall-date page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
     return request(app)
@@ -39,6 +44,43 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
           who: user.username,
           correlationId: expect.any(String),
+        })
+      })
+  })
+
+  it('should render enter-recall-date page when recallDate is populated', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    recallService.getRecall.mockReturnValue({
+      recallDate: new Date(2024, 0, 1),
+    } as Recall)
+
+    return request(app)
+      .get('/person/123/recall-entry/enter-recall-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('What is the recall date for this person?')
+        expect(res.text).toContain('name="recallDate[day]" type="text" value="1"')
+        expect(res.text).toContain('name="recallDate[month]" type="text" value="1"')
+        expect(res.text).toContain('name="recallDate[year]" type="text" value="2024"')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+
+  it('should perform submission from enter-recall-date page correctly', () => {
+    auditService.logPageView.mockResolvedValue(null)
+
+    return request(app)
+      .post('/person/123/recall-entry/enter-recall-date')
+      .send({ recallDate: { day: '01', month: '02', year: '2023' } })
+      .expect(302)
+      .expect(() => {
+        expect(recallService.setRecallDate).toBeCalledWith({}, '123', {
+          day: '01',
+          month: '02',
+          year: '2023',
         })
       })
   })
@@ -99,6 +141,26 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-type', () => {
       .expect(res => {
         expect(res.text).toContain('14_DAY_FTR')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_TYPE, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+})
+
+describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
+  it('should render check-your-answers page and log page view', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    recallService.getRecall.mockReturnValue({
+      recallDate: new Date(2024, 0, 1),
+    } as Recall)
+
+    return request(app)
+      .get('/person/123/recall-entry/check-your-answers')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('Jan 01 2024')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_YOUR_ANSWERS, {
           who: user.username,
           correlationId: expect.any(String),
         })
