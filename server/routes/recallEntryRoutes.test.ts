@@ -1,5 +1,6 @@
 import type { Express } from 'express'
 import request from 'supertest'
+import type { Recall } from 'models'
 import { appWithAllRoutes, user } from './testutils/appSetup'
 import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
@@ -53,13 +54,13 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
 
     return request(app)
       .post('/person/123/recall-entry/enter-recall-date')
-      .send({ 'recallDate-day': '01', 'recallDate-month': '02', 'recallDate-year': '2023' })
+      .send({ recallDate: { day: '01', month: '02', year: '2023' } })
       .expect(302)
       .expect(() => {
         expect(recallService.setRecallDate).toBeCalledWith({}, '123', {
-          'recallDate-day': '01',
-          'recallDate-month': '02',
-          'recallDate-year': '2023',
+          day: '01',
+          month: '02',
+          year: '2023',
         })
       })
   })
@@ -120,6 +121,26 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-type', () => {
       .expect(res => {
         expect(res.text).toContain('14_DAY_FTR')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_TYPE, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+})
+
+describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
+  it('should render check-your-answers page and log page view', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    recallService.getRecall.mockReturnValue({
+      recallDate: new Date(2024, 0, 1),
+    } as Recall)
+
+    return request(app)
+      .get('/person/123/recall-entry/check-your-answers')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('Jan 01 2024')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_YOUR_ANSWERS, {
           who: user.username,
           correlationId: expect.any(String),
         })

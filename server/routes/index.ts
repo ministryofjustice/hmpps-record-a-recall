@@ -70,5 +70,13 @@ export default function routes({ auditService, prisonerService, recallService }:
     },
   )
 
+  get(
+    '/person/:nomsId/recall-entry/check-your-answers',
+    logPageViewMiddleware(auditService, Page.CHECK_YOUR_ANSWERS),
+    async (req, res, next) => {
+      recallEntryRoutes.getCheckYourAnswers(req, res, next)
+    },
+  )
+
   return router
 }

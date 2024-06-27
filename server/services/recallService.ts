@@ -20,7 +20,7 @@ export default class RecallService {
     return this.hmppsAuthClient.getSystemClientToken(username)
   }
 
-  private getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Recall {
+  getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Recall {
     return session.recalls[nomsId] ?? ({} as Recall)
   }
 }

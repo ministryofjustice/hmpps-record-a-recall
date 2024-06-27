@@ -48,4 +48,11 @@ export default class RecallEntryRoutes {
 
     return res.render('pages/recallEntry/enter-recall-type', { nomsId })
   }
+
+  public getCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const recall = this.recallService.getRecall(req.session, nomsId)
+
+    return res.render('pages/recallEntry/check-your-answers', { nomsId, recall })
+  }
 }
