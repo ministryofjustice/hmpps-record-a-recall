@@ -11,7 +11,7 @@
         rows: [
           {
             key: { text: "Recall Date" },
-            value: { text: recall.recallDate },
+            value: { text: recall.recallDate | date("DD MMM YYYY") },
             actions: {
             items: [
               {
@@ -24,13 +24,26 @@
           },
           {
             key: { text: "Return to Custody Date" },
-            value: { text: recall.returnToCustodyDate },
+            value: { text: recall.returnToCustodyDate | date("DD MMM YYYY") },
             actions: {
             items: [
               {
                 href: '/person/' + nomsId + '/recall-entry/enter-return-to-custody-date?submitToCheckAnswers=true',
                 text: "Edit",
                 visuallyHiddenText: "Return to Custody date"
+              }
+            ]
+          }
+          },
+          {
+            key: { text: "Recall Type" },
+            value: { text: recallTypeDescription },
+            actions: {
+            items: [
+              {
+                href: '/person/' + nomsId + '/recall-entry/enter-recall-type',
+                text: "Edit",
+                visuallyHiddenText: "Recall type"
               }
             ]
           }

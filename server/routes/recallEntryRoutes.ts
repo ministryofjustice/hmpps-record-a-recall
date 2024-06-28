@@ -3,6 +3,7 @@ import type { DateForm } from 'forms'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
+import { RecallTypes } from '../@types/refData'
 
 export default class RecallEntryRoutes {
   constructor(
@@ -60,14 +61,26 @@ export default class RecallEntryRoutes {
 
   public getEnterRecallType: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
+    const recallTypes = Object.values(RecallTypes)
+    const recall = this.recallService.getRecall(req.session, nomsId)
 
-    return res.render('pages/recallEntry/enter-recall-type', { nomsId })
+    return res.render('pages/recallEntry/enter-recall-type', { nomsId, recallTypes, recall })
+  }
+
+  public submitRecallType: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const { recallType } = req.body
+    this.recallService.setRecallType(req.session, nomsId, recallType)
+
+    return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
   }
 
   public getCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const recall = this.recallService.getRecall(req.session, nomsId)
+    const recallTypeDescription =
+      recall.recallType && Object.values(RecallTypes).find(it => it.code === recall.recallType).description
 
-    return res.render('pages/recallEntry/check-your-answers', { nomsId, recall })
+    return res.render('pages/recallEntry/check-your-answers', { nomsId, recall, recallTypeDescription })
   }
 }
