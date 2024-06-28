@@ -3,7 +3,7 @@ import type { DateForm } from 'forms'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
-import { RecallTypeCode, RecallTypes } from '../@types/refData'
+import { RecallTypes } from '../@types/refData'
 
 export default class RecallEntryRoutes {
   constructor(
