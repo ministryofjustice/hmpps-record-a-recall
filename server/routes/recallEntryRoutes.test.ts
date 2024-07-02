@@ -6,6 +6,7 @@ import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
 import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import RecallService from '../services/recallService'
+import { CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 jest.mock('../services/auditService')
 jest.mock('../services/prisonerService')
@@ -86,7 +87,7 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
   })
 })
 
-describe('GET /person/:nomsId/recall-entry/enter-return-to-custody-date', () => {
+describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date', () => {
   it('should render enter-dates page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
@@ -168,7 +169,7 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
   })
 })
 
-describe('GET /person/:nomsId/recall-entry/enter-recall-type', () => {
+describe('routes for /person/:nomsId/recall-entry/enter-recall-type', () => {
   it('should render enter-recall-type page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
@@ -176,7 +177,7 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-type', () => {
       .get('/person/123/recall-entry/enter-recall-type')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('14_DAY_FTR')
+        expect(res.text).toContain('FOURTEEN_DAY_FIXED_TERM_RECALL')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_TYPE, {
           who: user.username,
           correlationId: expect.any(String),
@@ -228,6 +229,36 @@ describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
         expect(res.text).toContain('02 Apr 2024')
         expect(res.text).toContain('Standard recall')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_YOUR_ANSWERS, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+
+  it('should perform submission from check-your-answers page correctly', () => {
+    auditService.logPageView.mockResolvedValue(null)
+    recallService.createRecall.mockResolvedValue({ recallUuid: '11-22-33-44' } as CreateRecallResponse)
+
+    return request(app)
+      .post('/person/123/recall-entry/check-your-answers')
+      .expect(302)
+      .expect(() => {
+        expect(recallService.createRecall).toBeCalledWith({}, '123', user.username)
+      })
+  })
+})
+
+describe('routes for /person/:nomsId/recall-entry/success-confirmation', () => {
+  it('should render success-confirmation page', () => {
+    auditService.logPageView.mockResolvedValue(null)
+
+    return request(app)
+      .get('/person/123/recall-entry/success-confirmation?uuid=11-22-33-44')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('Recall complete')
+        expect(res.text).toContain('11-22-33-44')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.RECALL_ENTRY_SUCCESS, {
           who: user.username,
           correlationId: expect.any(String),
         })

@@ -1,6 +1,6 @@
 import config, { ApiConfig } from '../config'
 import RestClient from './restClient'
-import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { CreateRecall, CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
   restClient: RestClient
@@ -13,9 +13,10 @@ export default class RemandAndSentencingApiClient {
     )
   }
 
-  async postRecall(bookingId: number): Promise<AnalysedSentenceAndOffence[]> {
-    return this.restClient.get({
-      path: `/sentence-and-offence-information/${bookingId}`,
-    }) as Promise<AnalysedSentenceAndOffence[]>
+  async postRecall(createRecall: CreateRecall): Promise<CreateRecallResponse> {
+    return this.restClient.post({
+      data: createRecall,
+      path: `/recall`,
+    }) as Promise<CreateRecallResponse>
   }
 }

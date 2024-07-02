@@ -86,5 +86,17 @@ export default function routes({ auditService, prisonerService, recallService }:
     },
   )
 
+  post('/person/:nomsId/recall-entry/check-your-answers', async (req, res, next) => {
+    recallEntryRoutes.submitCheckYourAnswers(req, res, next)
+  })
+
+  get(
+    '/person/:nomsId/recall-entry/success-confirmation',
+    logPageViewMiddleware(auditService, Page.RECALL_ENTRY_SUCCESS),
+    async (req, res, next) => {
+      recallEntryRoutes.getSuccessConfirmation(req, res, next)
+    },
+  )
+
   return router
 }
