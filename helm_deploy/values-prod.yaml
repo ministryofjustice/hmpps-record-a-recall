@@ -12,6 +12,7 @@ generic-service:
     PRISON_API_URL: "https://prison-api.prison.service.justice.gov.uk"
     PRISONER_SEARCH_API_URL: "https://prisoner-search.prison.service.justice.gov.uk"
     CALCULATE_RELEASE_DATES_API_URL: "https://calculate-release-dates-api.hmpps.service.justice.gov.uk"
+    REMAND_AND_SENTENCING_API_URL: "https://remand-and-sentencing-api.hmpps.service.justice.gov.uk"
     AUDIT_ENABLED: "false"
 
 generic-prometheus-alerts:
