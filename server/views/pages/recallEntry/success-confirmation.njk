@@ -1,0 +1,17 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
+{% set pageTitle = applicationName + " - check information" %}
+{% set pageId = "check-information" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukPanel({
+        titleText: "Recall complete",
+        html: "Your reference number<br><strong>" + uuid + "</strong>"
+      }) }}
+    </div>
+  </div>
+{% endblock %}
