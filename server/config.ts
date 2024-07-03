@@ -114,6 +114,14 @@ export default {
       },
       agent: new AgentConfig(),
     },
+    remandAndSentencingApi: {
+      url: get('REMAND_AND_SENTENCING_API_URL', 'http://127.0.0.1:8087', requiredInProduction),
+      timeout: {
+        response: get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 10000),
+        deadline: get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 10000),
+      },
+      agent: new AgentConfig(),
+    },
   },
   sqs: {
     audit: auditConfig(),

@@ -83,4 +83,19 @@ export default class RecallEntryRoutes {
 
     return res.render('pages/recallEntry/check-your-answers', { nomsId, recall, recallTypeDescription })
   }
+
+  public submitCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const createRecallResponse = await this.recallService.createRecall(req.session, nomsId, res.locals.user.username)
+    this.recallService.removeRecall(req.session, nomsId)
+
+    return res.redirect(`/person/${nomsId}/recall-entry/success-confirmation?uuid=${createRecallResponse.recallUuid}`)
+  }
+
+  public getSuccessConfirmation: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const { uuid } = req.query
+
+    return res.render('pages/recallEntry/success-confirmation', { nomsId, uuid })
+  }
 }
