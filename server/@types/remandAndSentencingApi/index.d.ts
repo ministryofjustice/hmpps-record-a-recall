@@ -132,6 +132,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/recall/person/{prisonerId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve all recalls for a person
+     * @description This endpoint will retrieve  all recalls for a person
+     */
+    get: operations['getRecall_1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/person/{prisonerId}': {
     parameters: {
       query?: never
@@ -252,7 +272,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:47:18.511423645 */
+      /** @example 10:48:37.799416974 */
       appearanceTime?: string
       courtCode: string
       appearanceType: string
@@ -296,7 +316,6 @@ export interface components {
         | 'FOURTEEN_DAY_FIXED_TERM_RECALL'
         | 'TWENTY_EIGHT_DAY_FIXED_TERM_RECALL'
         | 'STANDARD_RECALL'
-        | 'FIXED_TERM_RECALL'
         | 'HDC_RECALL'
       createdByUsername: string
     }
@@ -317,7 +336,6 @@ export interface components {
         | 'FOURTEEN_DAY_FIXED_TERM_RECALL'
         | 'TWENTY_EIGHT_DAY_FIXED_TERM_RECALL'
         | 'STANDARD_RECALL'
-        | 'FIXED_TERM_RECALL'
         | 'HDC_RECALL'
       /** Format: date-time */
       createdAt: string
@@ -371,7 +389,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:47:18.511423645 */
+      /** @example 10:48:37.799416974 */
       appearanceTime?: string
       courtCode: string
       appearanceType: string
@@ -824,6 +842,46 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Recall']
+        }
+      }
+    }
+  }
+  getRecall_1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        prisonerId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns all recalls for person */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Recall'][]
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Recall'][]
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Recall'][]
         }
       }
     }

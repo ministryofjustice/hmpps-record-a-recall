@@ -11,6 +11,12 @@ export default class RecallEntryRoutes {
     private readonly recallService: RecallService,
   ) {}
 
+  public getPersonHomePage: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const recalls = await this.recallService.getAllRecalls(nomsId, res.locals.user.username)
+    return res.render('pages/person/home.njk', { nomsId, recalls })
+  }
+
   public getEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
@@ -78,10 +84,8 @@ export default class RecallEntryRoutes {
   public getCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const recall = this.recallService.getRecall(req.session, nomsId)
-    const recallTypeDescription =
-      recall.recallType && Object.values(RecallTypes).find(it => it.code === recall.recallType).description
 
-    return res.render('pages/recallEntry/check-your-answers', { nomsId, recall, recallTypeDescription })
+    return res.render('pages/recallEntry/check-your-answers', { nomsId, recall })
   }
 
   public submitCheckYourAnswers: RequestHandler = async (req, res): Promise<void> => {

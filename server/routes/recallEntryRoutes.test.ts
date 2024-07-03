@@ -7,6 +7,7 @@ import PrisonerService from '../services/prisonerService'
 import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import RecallService from '../services/recallService'
 import { CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallTypes } from '../@types/refData'
 
 jest.mock('../services/auditService')
 jest.mock('../services/prisonerService')
@@ -31,6 +32,31 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.resetAllMocks()
+})
+
+describe('Routes for /person/:nomsId', () => {
+  it('Populate person home page correctly', () => {
+    recallService.getAllRecalls.mockResolvedValue([
+      {
+        recallDate: new Date(2024, 0, 1),
+        returnToCustodyDate: new Date(2024, 3, 2),
+        recallType: Object.values(RecallTypes).find(it => it.code === 'STANDARD_RECALL'),
+      } as Recall,
+    ])
+
+    return request(app)
+      .get('/person/123')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('01 Jan 2024')
+        expect(res.text).toContain('02 Apr 2024')
+        expect(res.text).toContain('Standard recall')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.PERSON_HOME_PAGE, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
 })
 
 describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
@@ -218,7 +244,7 @@ describe('GET /person/:nomsId/recall-entry/check-your-answers', () => {
     recallService.getRecall.mockReturnValue({
       recallDate: new Date(2024, 0, 1),
       returnToCustodyDate: new Date(2024, 3, 2),
-      recallType: 'STANDARD_RECALL',
+      recallType: Object.values(RecallTypes).find(it => it.code === 'STANDARD_RECALL'),
     } as Recall)
 
     return request(app)

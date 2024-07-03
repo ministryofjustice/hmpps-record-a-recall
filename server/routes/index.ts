@@ -32,6 +32,10 @@ export default function routes({ auditService, prisonerService, recallService }:
     res.render('pages/index')
   })
 
+  get('/person/:nomsId', logPageViewMiddleware(auditService, Page.PERSON_HOME_PAGE), async (req, res, next) => {
+    recallEntryRoutes.getPersonHomePage(req, res, next)
+  })
+
   get('/api/person/:nomsId/image', apiRoutes.personImage)
 
   get(

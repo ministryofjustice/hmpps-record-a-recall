@@ -7,9 +7,12 @@
 
 {% block content %}
   <div class="govuk-grid-row">
-      {{ govukPanel({
-        titleText: "Recall complete",
-        html: "Your reference number<br><strong>" + uuid + "</strong>"
-      }) }}
+    {{ govukPanel({
+      titleText: "Recall complete",
+      html: "Your reference number<br><strong>" + uuid + "</strong>"
+    }) }}
+    <p class="govuk-body">
+      <a href="/person/{{ nomsId }}" class="govuk-link">View Recalls</a>
+    </p>
   </div>
 {% endblock %}
