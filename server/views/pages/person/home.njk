@@ -1,11 +1,21 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
 
 {% block content %}
+  <h1 class="govuk-heading-m">Recalls</h1>
+  {{ govukButton({
+    classes: "govuk-button--tertiary",
+    text: "Create new recall",
+    preventDoubleClick: true,
+    href: '/person/' + nomsId + '/recall-entry/enter-recall-date',
+    attributes: {  'data-qa': 'create-new-recall-btn' }
+  }) }}
+
   <div class='govuk-grid-row'>
     <div class='govuk-grid-column-two-thirds'>
       <table class="govuk-table">
