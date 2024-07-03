@@ -8,6 +8,6 @@ const RecallTypes = {
   HDC_RECALL: { code: 'HDC_RECALL', description: 'HDC recall' },
 } as const
 
-type RecallTypeCode = (typeof RecallTypes)[keyof typeof RecallTypes]['code']
+type RecallType = { code: string; description: string }
 
-export { RecallTypes, RecallTypeCode }
+export { RecallTypes, RecallType }

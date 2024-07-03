@@ -11,7 +11,7 @@
         rows: [
           {
             key: { text: "Recall Date" },
-            value: { text: recall.recallDate | date("DD MMM YYYY") },
+            value: { text: recall.recallDate | date },
             actions: {
             items: [
               {
@@ -24,7 +24,7 @@
           },
           {
             key: { text: "Return to Custody Date" },
-            value: { text: recall.returnToCustodyDate | date("DD MMM YYYY") },
+            value: { text: recall.returnToCustodyDate | date },
             actions: {
             items: [
               {
@@ -37,7 +37,7 @@
           },
           {
             key: { text: "Recall Type" },
-            value: { text: recallTypeDescription },
+            value: { text: recall.recallType.description },
             actions: {
             items: [
               {

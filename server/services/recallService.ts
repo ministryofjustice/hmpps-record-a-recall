@@ -1,9 +1,13 @@
 import type { Recall } from 'models'
 import type { DateForm } from 'forms'
 import { HmppsAuthClient } from '../data'
-import { RecallTypeCode } from '../@types/refData'
+import { RecallTypes } from '../@types/refData'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
-import { CreateRecall, CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  ApiRecall,
+  CreateRecall,
+  CreateRecallResponse,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { formatDate } from '../utils/utils'
 
 export default class RecallService {
@@ -57,9 +61,9 @@ export default class RecallService {
     }
   }
 
-  setRecallType(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallType: RecallTypeCode) {
+  setRecallType(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallTypeCode: string) {
     const recall = this.getRecall(session, nomsId)
-    recall.recallType = recallType
+    recall.recallType = Object.values(RecallTypes).find(it => it.code === recallTypeCode)
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
   }
@@ -74,9 +78,23 @@ export default class RecallService {
       prisonerId: nomsId,
       recallDate: formatDate(recall.recallDate),
       returnToCustodyDate: formatDate(recall.returnToCustodyDate),
-      recallType: recall.recallType,
+      recallType: recall.recallType.code,
       createdByUsername: username,
     }
     return new RemandAndSentencingApiClient(await this.getSystemClientToken(username)).postRecall(createRecall)
+  }
+
+  async getAllRecalls(nomsId: string, username: string): Promise<Recall[]> {
+    const client = new RemandAndSentencingApiClient(await this.getSystemClientToken(username))
+    const allApiRecalls = await client.getAllRecalls(nomsId)
+
+    return allApiRecalls.map((apiRecall: ApiRecall): Recall => {
+      const { recallDate, returnToCustodyDate, recallType } = apiRecall
+      return {
+        recallDate: new Date(recallDate),
+        returnToCustodyDate: new Date(returnToCustodyDate),
+        recallType: RecallTypes[recallType],
+      }
+    })
   }
 }

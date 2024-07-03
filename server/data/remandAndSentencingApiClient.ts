@@ -1,6 +1,10 @@
 import config, { ApiConfig } from '../config'
 import RestClient from './restClient'
-import { CreateRecall, CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  ApiRecall,
+  CreateRecall,
+  CreateRecallResponse,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
   restClient: RestClient
@@ -18,5 +22,11 @@ export default class RemandAndSentencingApiClient {
       data: createRecall,
       path: `/recall`,
     }) as Promise<CreateRecallResponse>
+  }
+
+  async getAllRecalls(prisonerId: string): Promise<[ApiRecall]> {
+    return this.restClient.get({
+      path: `/recall/person/${prisonerId}`,
+    }) as Promise<[ApiRecall]>
   }
 }
