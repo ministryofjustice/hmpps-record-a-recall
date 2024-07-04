@@ -1,6 +1,6 @@
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import config, { ApiConfig } from '../config'
-import RestClient from './restClient'
+import RestClient from '../data/restClient'
 
 export default class PrisonerSearchApiClient {
   restClient: RestClient
