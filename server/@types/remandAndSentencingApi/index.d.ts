@@ -143,7 +143,7 @@ export interface paths {
      * Retrieve all recalls for a person
      * @description This endpoint will retrieve  all recalls for a person
      */
-    get: operations['getRecall_1']
+    get: operations['getRecallsByPrisonerId']
     put?: never
     post?: never
     delete?: never
@@ -272,7 +272,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:48:37.799416974 */
+      /** @example 15:31:31.092225418 */
       appearanceTime?: string
       courtCode: string
       appearanceType: string
@@ -389,7 +389,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:48:37.799416974 */
+      /** @example 15:31:31.092225418 */
       appearanceTime?: string
       courtCode: string
       appearanceType: string
@@ -446,9 +446,9 @@ export interface components {
       sort?: components['schemas']['SortObject'][]
       /** Format: int32 */
       pageSize?: number
-      paged?: boolean
       /** Format: int32 */
       pageNumber?: number
+      paged?: boolean
       unpaged?: boolean
     }
     SortObject: {
@@ -846,7 +846,7 @@ export interface operations {
       }
     }
   }
-  getRecall_1: {
+  getRecallsByPrisonerId: {
     parameters: {
       query?: never
       header?: never
