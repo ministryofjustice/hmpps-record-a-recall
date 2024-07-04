@@ -2,7 +2,7 @@ import type { Recall } from 'models'
 import type { DateForm } from 'forms'
 import { HmppsAuthClient } from '../data'
 import { RecallTypes } from '../@types/refData'
-import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
+import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
   ApiRecall,
   CreateRecall,

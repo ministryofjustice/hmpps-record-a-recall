@@ -1,9 +1,9 @@
 import { Readable } from 'stream'
-import PrisonerSearchApiClient from '../data/prisonerSearchApiClient'
+import PrisonerSearchApiClient from '../api/prisonerSearchApiClient'
 import { HmppsAuthClient } from '../data'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
-import PrisonApiClient from '../data/prisonApiClient'
-import CalculateReleaseDatesApiClient from '../data/calculateReleaseDatesApiClient'
+import PrisonApiClient from '../api/prisonApiClient'
+import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
 import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class PrisonerService {
