@@ -39,7 +39,7 @@ describe('Recall service', () => {
 
       recallService.setRecallDate(session, nomsId, recallDateForm)
 
-      expect(session.recalls[nomsId].recallDate).toEqual(new Date(2023, 1, 1)) // Month is 0-indexed, so February is 1
+      expect(session.recalls[nomsId].recallDate).toEqual(new Date(2023, 1, 1))
     })
   })
 
