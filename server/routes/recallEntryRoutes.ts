@@ -4,11 +4,13 @@ import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerS
 import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
 import { RecallTypes } from '../@types/refData'
+import ValidationService from '../services/validationService'
 
 export default class RecallEntryRoutes {
   constructor(
     private readonly prisonerService: PrisonerService,
     private readonly recallService: RecallService,
+    private readonly validationService: ValidationService,
   ) {}
 
   public getPersonHomePage: RequestHandler = async (req, res): Promise<void> => {
@@ -21,13 +23,26 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
     const recall = this.recallService.getRecall(req.session, nomsId)
-    return res.render('pages/recallEntry/enter-recall-date', { nomsId, submitToCheckAnswers, recall })
+    return res.render('pages/recallEntry/enter-recall-date', {
+      nomsId,
+      submitToCheckAnswers,
+      recall,
+      errors: req.flash('errors') || [],
+    })
   }
 
   public submitEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
     const recallDateForm = req.body.recallDate as DateForm
+
+    const errors = this.validationService.validateRecallDateForm(recallDateForm)
+
+    if (errors.length > 0) {
+      req.flash('errors', errors)
+      return res.redirect(`/person/${nomsId}/recall-entry/enter-recall-date`)
+    }
+
     this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
     if (submitToCheckAnswers) {

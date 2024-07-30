@@ -8,14 +8,17 @@ import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/c
 import RecallService from '../services/recallService'
 import { CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { RecallTypes } from '../@types/refData'
+import ValidationService from '../services/validationService'
 
 jest.mock('../services/auditService')
 jest.mock('../services/prisonerService')
 jest.mock('../services/recallService')
+jest.mock('../services/validationService')
 
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 const prisonerService = new PrisonerService(null) as jest.Mocked<PrisonerService>
 const recallService = new RecallService(null) as jest.Mocked<RecallService>
+const validationService = new ValidationService() as jest.Mocked<ValidationService>
 
 let app: Express
 
@@ -25,6 +28,7 @@ beforeEach(() => {
       auditService,
       prisonerService,
       recallService,
+      validationService,
     },
     userSupplier: () => user,
   })
@@ -33,6 +37,26 @@ beforeEach(() => {
 afterEach(() => {
   jest.resetAllMocks()
 })
+
+function getAppForErrorMessages(errorMessages: { text: string; href: string }[]) {
+  const flashProvider = jest.fn().mockImplementation((type: string) => {
+    if (type === 'errors') {
+      return errorMessages
+    }
+    return []
+  })
+
+  return appWithAllRoutes({
+    services: {
+      auditService,
+      prisonerService,
+      recallService,
+      validationService,
+    },
+    userSupplier: () => user,
+    flashProvider,
+  })
+}
 
 describe('Routes for /person/:nomsId', () => {
   it('Populate person home page correctly', () => {
@@ -60,6 +84,26 @@ describe('Routes for /person/:nomsId', () => {
 })
 
 describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
+  it('should render enter-recall-date page with error messages', () => {
+    const errorMessages = [
+      { text: 'Day must be a valid number', href: '#recallDateDay' },
+      { text: 'Month must be a valid number', href: '#recallDateMonth' },
+      { text: 'Year must be a valid number', href: '#recallDateYear' },
+    ]
+
+    const appWithFlash = getAppForErrorMessages(errorMessages)
+
+    return request(appWithFlash)
+      .get('/person/123/recall-entry/enter-recall-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('There is a problem')
+        expect(res.text).toContain('Day must be a valid number')
+        expect(res.text).toContain('Month must be a valid number')
+        expect(res.text).toContain('Year must be a valid number')
+      })
+  })
+
   it('should render enter-recall-date page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
@@ -79,6 +123,7 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
     auditService.logPageView.mockResolvedValue(null)
     recallService.getRecall.mockReturnValue({
       recallDate: new Date(2024, 0, 1),
+      recallDateForm: { day: '01', month: '01', year: '2024' },
     } as Recall)
 
     return request(app)
@@ -86,8 +131,8 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContain('What is the recall date for this person?')
-        expect(res.text).toContain('name="recallDate[day]" type="text" value="1"')
-        expect(res.text).toContain('name="recallDate[month]" type="text" value="1"')
+        expect(res.text).toContain('name="recallDate[day]" type="text" value="01"')
+        expect(res.text).toContain('name="recallDate[month]" type="text" value="01"')
         expect(res.text).toContain('name="recallDate[year]" type="text" value="2024"')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RECALL_DATE, {
           who: user.username,
@@ -98,6 +143,7 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
 
   it('should perform submission from enter-recall-date page correctly', () => {
     auditService.logPageView.mockResolvedValue(null)
+    validationService.validateRecallDateForm.mockReturnValue([])
 
     return request(app)
       .post('/person/123/recall-entry/enter-recall-date')
@@ -110,6 +156,52 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
           year: '2023',
         })
       })
+  })
+})
+
+describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
+  it('should handle validation errors and redirect back', async () => {
+    validationService.validateRecallDateForm.mockReturnValue([{ text: 'Date is invalid', href: '#recallDate' }])
+
+    await request(app)
+      .post('/person/123/recall-entry/enter-recall-date')
+      .send({ recallDate: { day: 'invalid', month: '02', year: '2023' } })
+      .expect(302)
+      .expect('Location', '/person/123/recall-entry/enter-recall-date')
+
+    expect(recallService.setRecallDate).not.toHaveBeenCalled()
+  })
+
+  it('should set recall date and redirect to check your answers page', async () => {
+    validationService.validateRecallDateForm.mockReturnValue([])
+
+    await request(app)
+      .post('/person/123/recall-entry/enter-recall-date?submitToCheckAnswers=true')
+      .send({ recallDate: { day: '01', month: '02', year: '2023' } })
+      .expect(302)
+      .expect('Location', '/person/123/recall-entry/check-your-answers')
+
+    expect(recallService.setRecallDate).toHaveBeenCalledWith({}, '123', {
+      day: '01',
+      month: '02',
+      year: '2023',
+    })
+  })
+
+  it('should set recall date and redirect to enter return to custody date page', async () => {
+    validationService.validateRecallDateForm.mockReturnValue([])
+
+    await request(app)
+      .post('/person/123/recall-entry/enter-recall-date')
+      .send({ recallDate: { day: '01', month: '02', year: '2023' } })
+      .expect(302)
+      .expect('Location', '/person/123/recall-entry/enter-return-to-custody-date')
+
+    expect(recallService.setRecallDate).toHaveBeenCalledWith({}, '123', {
+      day: '01',
+      month: '02',
+      year: '2023',
+    })
   })
 })
 

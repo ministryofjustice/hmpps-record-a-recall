@@ -2,8 +2,14 @@
 
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block content %}
+  {{ govukErrorSummary({
+    titleText: "There is a problem",
+    errorList: errors
+  }) }}
+
   <form method="post" action="/person/{{ nomsId }}/recall-entry/enter-recall-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {{ govukDateInput({
@@ -20,7 +26,7 @@
           id: 'recallDateDay',
           label: 'Day',
           name: "recallDate[day]",
-          value: recall.recallDate.getDate() if (recall and recall.recallDate),
+          value: recall.recallDateForm.day if (recall and recall.recallDateForm),
           classes: "govuk-input--width-2",
           attributes: { 'maxlength': 2 }
         },
@@ -28,7 +34,7 @@
           id: 'recallDateMonth',
           label: 'Month',
           name: "recallDate[month]",
-          value: recall.recallDate.getMonth() + 1 if (recall and recall.recallDate),
+          value: recall.recallDateForm.month if (recall and recall.recallDateForm),
           classes: "govuk-input--width-2",
           attributes: { 'maxlength': 2 }
         },
@@ -36,7 +42,7 @@
           id: 'recallDateYear',
           label: 'Year',
           name: "recallDate[year]",
-          value: recall.recallDate.getFullYear() if (recall and recall.recallDate),
+          value: recall.recallDateForm.year if (recall and recall.recallDateForm),
           classes: "govuk-input--width-4",
           attributes: { 'maxlength': 4 }
         }

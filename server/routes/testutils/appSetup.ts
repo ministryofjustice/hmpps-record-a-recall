@@ -33,9 +33,12 @@ export const user: HmppsUser = {
   userRoles: [],
 }
 
-export const flashProvider = jest.fn()
-
-function appSetup(services: Services, production: boolean, userSupplier: () => HmppsUser): Express {
+function appSetup(
+  services: Services,
+  production: boolean,
+  userSupplier: () => HmppsUser,
+  flashProvider = jest.fn(), // Use the defined type here
+): Express {
   const app = express()
 
   app.set('view engine', 'njk')
@@ -70,11 +73,13 @@ export function appWithAllRoutes({
     auditService: new AuditService(null) as jest.Mocked<AuditService>,
   },
   userSupplier = () => user,
+  flashProvider = jest.fn(),
 }: {
   production?: boolean
   services?: Partial<Services>
   userSupplier?: () => HmppsUser
+  flashProvider?: jest.Mock<unknown, [string]>
 }): Express {
   auth.default.authenticationMiddleware = () => (req, res, next) => next()
-  return appSetup(services as Services, production, userSupplier)
+  return appSetup(services as Services, production, userSupplier, flashProvider)
 }
