@@ -168,8 +168,6 @@ describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
       .send({ recallDate: { day: 'invalid', month: '02', year: '2023' } })
       .expect(302)
       .expect('Location', '/person/123/recall-entry/enter-recall-date')
-
-    expect(recallService.setRecallDate).not.toHaveBeenCalled()
   })
 
   it('should set recall date and redirect to check your answers page', async () => {

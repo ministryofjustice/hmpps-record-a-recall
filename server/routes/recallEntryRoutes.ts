@@ -35,15 +35,13 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
     const recallDateForm = req.body.recallDate as DateForm
+    this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
     const errors = this.validationService.validateRecallDateForm(recallDateForm)
-
     if (errors.length > 0) {
       req.flash('errors', errors)
       return res.redirect(`/person/${nomsId}/recall-entry/enter-recall-date`)
     }
-
-    this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
     if (submitToCheckAnswers) {
       return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
