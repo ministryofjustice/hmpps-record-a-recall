@@ -21,6 +21,18 @@ describe('Validation service tests', () => {
       expect(errors).toEqual([])
     })
 
+    it('should return an error when the all date fields are missing', () => {
+      const recallDateForm: DateForm = {
+        day: '',
+        month: '',
+        year: '',
+      }
+
+      const errors = validationService.validateRecallDateForm(recallDateForm)
+
+      expect(errors).toEqual([{ text: 'The recall date must be entered', href: '#recallDate' }])
+    })
+
     it('should return an error when the day is missing', () => {
       const recallDateForm: DateForm = {
         day: '',
@@ -30,7 +42,7 @@ describe('Validation service tests', () => {
 
       const errors = validationService.validateRecallDateForm(recallDateForm)
 
-      expect(errors).toEqual([{ text: 'Day is required', href: '#recallDate' }])
+      expect(errors).toEqual([{ text: 'The recall date must be entered', href: '#recallDate' }])
     })
 
     it('should return an error when the month is missing', () => {
@@ -42,7 +54,7 @@ describe('Validation service tests', () => {
 
       const errors = validationService.validateRecallDateForm(recallDateForm)
 
-      expect(errors).toEqual([{ text: 'Month is required', href: '#recallDate' }])
+      expect(errors).toEqual([{ text: 'The recall date must be entered', href: '#recallDate' }])
     })
 
     it('should return an error when the year is missing', () => {
@@ -54,7 +66,7 @@ describe('Validation service tests', () => {
 
       const errors = validationService.validateRecallDateForm(recallDateForm)
 
-      expect(errors).toEqual([{ text: 'Year is required', href: '#recallDate' }])
+      expect(errors).toEqual([{ text: 'The recall date must be entered', href: '#recallDate' }])
     })
 
     it('should return an error when the day is invalid', () => {

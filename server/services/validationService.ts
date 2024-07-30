@@ -6,41 +6,41 @@ export default class ValidationService {
     return Joi.object<DateForm>({
       day: Joi.string()
         .regex(/^\d{1,2}$/)
-        .required()
         .messages({
           'string.pattern.base': 'Day must be a valid number',
-          'any.required': 'Day is required',
-          'string.empty': 'Day is required',
+          'any.required': `The ${dateType} date must be entered`,
+          'string.empty': `The ${dateType} date must be entered`,
         }),
       month: Joi.string()
         .regex(/^\d{1,2}$/)
-        .required()
         .messages({
           'string.pattern.base': 'Month must be a valid number',
-          'any.required': 'Month is required',
-          'string.empty': 'Month is required',
+          'any.required': `The ${dateType} date must be entered`,
+          'string.empty': `The ${dateType} date must be entered`,
         }),
       year: Joi.string()
         .regex(/^\d{4}$/)
         .length(4)
-        .required()
         .messages({
           'string.length': 'Year must be 4 characters long',
           'string.pattern.base': 'Year must be a valid number',
-          'any.required': 'Year is required',
-          'string.empty': 'Year is required',
+          'any.required': `The ${dateType} date must be entered`,
+          'string.empty': `The ${dateType} date must be entered`,
         }),
     })
       .custom((value: DateForm, helpers: CustomHelpers) => {
         const { day, month, year } = value
         const date = new Date(`${year}-${month}-${day}`)
+
         if (Number.isNaN(date.getTime())) {
           return helpers.error('date.custom')
         }
+
         const today = new Date()
         if (date > today) {
           return helpers.error('date.future', { dateType })
         }
+
         return value
       }, 'Date validation')
       .messages({
