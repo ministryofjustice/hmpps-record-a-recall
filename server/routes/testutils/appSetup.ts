@@ -37,7 +37,7 @@ function appSetup(
   services: Services,
   production: boolean,
   userSupplier: () => HmppsUser,
-  flashProvider = jest.fn(), // Use the defined type here
+  flashProvider = jest.fn(),
 ): Express {
   const app = express()
 
