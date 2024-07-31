@@ -4,6 +4,13 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
+  {% if errors.length %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errors
+    }) }}
+  {% endif %}
+
   <form method="post"
         action="/person/{{ nomsId }}/recall-entry/enter-return-to-custody-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -21,7 +28,7 @@
           id: 'returnToCustodyDateDay',
           label: 'Day',
           name: "returnToCustodyDate[day]",
-          value: recall.returnToCustodyDate.getDate() if (recall and recall.returnToCustodyDate),
+          value: recall.returnToCustodyDateForm.day if (recall and recall.returnToCustodyDateForm),
           classes: "govuk-input--width-2",
           attributes: { 'maxlength': 2 }
         },
@@ -29,7 +36,7 @@
           id: 'returnToCustodyDateMonth',
           label: 'Month',
           name: "returnToCustodyDate[month]",
-          value: recall.returnToCustodyDate.getMonth() + 1 if (recall and recall.returnToCustodyDate),
+          value: recall.returnToCustodyDateForm.month if (recall and recall.returnToCustodyDateForm),
           classes: "govuk-input--width-2",
           attributes: { 'maxlength': 2 }
         },
@@ -37,7 +44,7 @@
           id: 'returnToCustodyDateYear',
           label: 'Year',
           name: "returnToCustodyDate[year]",
-          value: recall.returnToCustodyDate.getFullYear() if (recall and recall.returnToCustodyDate),
+          value: recall.returnToCustodyDateForm.year if (recall and recall.returnToCustodyDateForm),
           classes: "govuk-input--width-4",
           attributes: { 'maxlength': 4 }
         }

@@ -4,6 +4,7 @@ declare module 'models' {
 
   export interface Recall {
     recallDateForm?: DateForm
+    returnToCustodyDateForm?: DateForm
     recallDate: Date
     returnToCustodyDate: Date
     recallType: RecallType

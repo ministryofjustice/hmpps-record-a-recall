@@ -204,6 +204,26 @@ describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
 })
 
 describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date', () => {
+  it('should render enter-return-to-custody-date page with error messages', () => {
+    const errorMessages = [
+      { text: 'Day must be a valid number', href: '#returnToCustodyDateDay' },
+      { text: 'Month must be a valid number', href: '#returnToCustodyDateMonth' },
+      { text: 'Year must be a valid number', href: '#returnToCustodyDateYear' },
+    ]
+
+    const appWithFlash = getAppForErrorMessages(errorMessages)
+
+    return request(appWithFlash)
+      .get('/person/123/recall-entry/enter-return-to-custody-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('There is a problem')
+        expect(res.text).toContain('Day must be a valid number')
+        expect(res.text).toContain('Month must be a valid number')
+        expect(res.text).toContain('Year must be a valid number')
+      })
+  })
+
   it('should render enter-dates page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
@@ -223,6 +243,7 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
     auditService.logPageView.mockResolvedValue(null)
     recallService.getRecall.mockReturnValue({
       returnToCustodyDate: new Date(2024, 0, 1),
+      returnToCustodyDateForm: { day: '01', month: '01', year: '2024' },
     } as Recall)
 
     return request(app)
@@ -230,8 +251,8 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContain('What date was this person returned to custody?')
-        expect(res.text).toContain('name="returnToCustodyDate[day]" type="text" value="1"')
-        expect(res.text).toContain('name="returnToCustodyDate[month]" type="text" value="1"')
+        expect(res.text).toContain('name="returnToCustodyDate[day]" type="text" value="01"')
+        expect(res.text).toContain('name="returnToCustodyDate[month]" type="text" value="01"')
         expect(res.text).toContain('name="returnToCustodyDate[year]" type="text" value="2024"')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RETURN_TO_CUSTODY_DATE, {
           who: user.username,
@@ -242,6 +263,7 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
 
   it('should perform submission from enter-return-to-custody-date page correctly', () => {
     auditService.logPageView.mockResolvedValue(null)
+    validationService.validateReturnToCustodyDateForm.mockReturnValue([])
 
     return request(app)
       .post('/person/123/recall-entry/enter-return-to-custody-date')
