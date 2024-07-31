@@ -4,6 +4,13 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
+  {% if errors.length %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errors
+    }) }}
+  {% endif %}
+
   <form method="post"
         action="/person/{{ nomsId }}/recall-entry/enter-return-to-custody-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">

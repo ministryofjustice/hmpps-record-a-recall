@@ -36,11 +36,17 @@ export default class RecallService {
     returnToCustodyDateForm: DateForm,
   ) {
     const recall = this.getRecall(session, nomsId)
-    recall.returnToCustodyDate = new Date(
-      returnToCustodyDateForm.year as unknown as number,
-      (returnToCustodyDateForm.month as unknown as number) - 1,
-      returnToCustodyDateForm.day as unknown as number,
-    )
+    recall.returnToCustodyDateForm = returnToCustodyDateForm
+    const year = parseInt(returnToCustodyDateForm.year, 10)
+    const month = parseInt(returnToCustodyDateForm.month, 10) - 1
+    const day = parseInt(returnToCustodyDateForm.day, 10)
+    const returnToCustodyDate = new Date(year, month, day)
+
+    if (Number.isNaN(returnToCustodyDate.getTime())) {
+      recall.returnToCustodyDate = null
+    } else {
+      recall.returnToCustodyDate = returnToCustodyDate
+    }
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
   }

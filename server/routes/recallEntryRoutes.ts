@@ -38,7 +38,7 @@ export default class RecallEntryRoutes {
     this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
     const errors = this.validationService.validateRecallDateForm(recallDateForm)
-    if (errors.length > 0) {
+    if (errors.length) {
       req.flash('errors', errors)
       return res.redirect(`/person/${nomsId}/recall-entry/enter-recall-date`)
     }
@@ -53,7 +53,12 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
     const recall = this.recallService.getRecall(req.session, nomsId)
-    return res.render('pages/recallEntry/enter-return-to-custody-date', { nomsId, submitToCheckAnswers, recall })
+    return res.render('pages/recallEntry/enter-return-to-custody-date', {
+      nomsId,
+      submitToCheckAnswers,
+      recall,
+      errors: req.flash('errors') || [],
+    })
   }
 
   public submitReturnToCustodyDate: RequestHandler = async (req, res): Promise<void> => {
@@ -61,6 +66,12 @@ export default class RecallEntryRoutes {
     const { submitToCheckAnswers } = req.query
     const returnToCustodyDateForm = req.body.returnToCustodyDate as DateForm
     this.recallService.setReturnToCustodyDate(req.session, nomsId, returnToCustodyDateForm)
+
+    const errors = this.validationService.validateReturnToCustodyDateForm(returnToCustodyDateForm)
+    if (errors.length) {
+      req.flash('errors', errors)
+      return res.redirect(`/person/${nomsId}/recall-entry/enter-return-to-custody-date`)
+    }
 
     if (submitToCheckAnswers) {
       return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)

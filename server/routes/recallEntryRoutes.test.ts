@@ -204,6 +204,26 @@ describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
 })
 
 describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date', () => {
+  it('should render enter-return-to-custody-date page with error messages', () => {
+    const errorMessages = [
+      { text: 'Day must be a valid number', href: '#returnToCustodyDateDay' },
+      { text: 'Month must be a valid number', href: '#returnToCustodyDateMonth' },
+      { text: 'Year must be a valid number', href: '#returnToCustodyDateYear' },
+    ]
+
+    const appWithFlash = getAppForErrorMessages(errorMessages)
+
+    return request(appWithFlash)
+      .get('/person/123/recall-entry/enter-return-to-custody-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('There is a problem')
+        expect(res.text).toContain('Day must be a valid number')
+        expect(res.text).toContain('Month must be a valid number')
+        expect(res.text).toContain('Year must be a valid number')
+      })
+  })
+
   it('should render enter-dates page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
 
@@ -242,6 +262,7 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
 
   it('should perform submission from enter-return-to-custody-date page correctly', () => {
     auditService.logPageView.mockResolvedValue(null)
+    validationService.validateReturnToCustodyDateForm.mockReturnValue([])
 
     return request(app)
       .post('/person/123/recall-entry/enter-return-to-custody-date')
