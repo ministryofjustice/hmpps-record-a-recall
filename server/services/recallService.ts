@@ -15,11 +15,17 @@ export default class RecallService {
 
   setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
     const recall = this.getRecall(session, nomsId)
-    recall.recallDate = new Date(
-      recallDateForm.year as unknown as number,
-      (recallDateForm.month as unknown as number) - 1,
-      recallDateForm.day as unknown as number,
-    )
+    recall.recallDateForm = recallDateForm
+    const year = parseInt(recallDateForm.year, 10)
+    const month = parseInt(recallDateForm.month, 10) - 1
+    const day = parseInt(recallDateForm.day, 10)
+    const recallDate = new Date(year, month, day)
+
+    if (Number.isNaN(recallDate.getTime())) {
+      recall.recallDate = null
+    } else {
+      recall.recallDate = recallDate
+    }
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
   }
