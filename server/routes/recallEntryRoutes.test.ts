@@ -243,6 +243,7 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
     auditService.logPageView.mockResolvedValue(null)
     recallService.getRecall.mockReturnValue({
       returnToCustodyDate: new Date(2024, 0, 1),
+      returnToCustodyDateForm: { day: '01', month: '01', year: '2024' },
     } as Recall)
 
     return request(app)
@@ -250,8 +251,8 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
       .expect('Content-Type', /html/)
       .expect(res => {
         expect(res.text).toContain('What date was this person returned to custody?')
-        expect(res.text).toContain('name="returnToCustodyDate[day]" type="text" value="1"')
-        expect(res.text).toContain('name="returnToCustodyDate[month]" type="text" value="1"')
+        expect(res.text).toContain('name="returnToCustodyDate[day]" type="text" value="01"')
+        expect(res.text).toContain('name="returnToCustodyDate[month]" type="text" value="01"')
         expect(res.text).toContain('name="returnToCustodyDate[year]" type="text" value="2024"')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RETURN_TO_CUSTODY_DATE, {
           who: user.username,
