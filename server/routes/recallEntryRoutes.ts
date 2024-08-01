@@ -37,7 +37,10 @@ export default class RecallEntryRoutes {
     const recallDateForm = req.body.recallDate as DateForm
     this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
-    const errors = this.validationService.validateRecallDateForm(recallDateForm)
+    const errors = this.validationService.validateRecallDateForm(
+      recallDateForm,
+      this.recallService.getRecall(req.session, nomsId),
+    )
     if (errors.length) {
       req.flash('errors', errors)
       return res.redirect(`/person/${nomsId}/recall-entry/enter-recall-date`)
@@ -67,7 +70,10 @@ export default class RecallEntryRoutes {
     const returnToCustodyDateForm = req.body.returnToCustodyDate as DateForm
     this.recallService.setReturnToCustodyDate(req.session, nomsId, returnToCustodyDateForm)
 
-    const errors = this.validationService.validateReturnToCustodyDateForm(returnToCustodyDateForm)
+    const errors = this.validationService.validateReturnToCustodyDateForm(
+      returnToCustodyDateForm,
+      this.recallService.getRecall(req.session, nomsId),
+    )
     if (errors.length) {
       req.flash('errors', errors)
       return res.redirect(`/person/${nomsId}/recall-entry/enter-return-to-custody-date`)

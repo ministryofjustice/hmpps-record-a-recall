@@ -1,4 +1,5 @@
 import type { DateForm } from 'forms'
+import type { Recall } from 'models'
 import ValidationService from './validationService'
 
 describe('Validation service tests', () => {
@@ -16,7 +17,7 @@ describe('Validation service tests', () => {
         year: '2023',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([])
     })
@@ -28,7 +29,7 @@ describe('Validation service tests', () => {
         year: '',
       }
 
-      const errors = validationService.validateReturnToCustodyDateForm(recallDateForm)
+      const errors = validationService.validateReturnToCustodyDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The Return to Custody Date must be entered', href: '#returnToCustodyDate' }])
     })
@@ -40,7 +41,7 @@ describe('Validation service tests', () => {
         year: '2023',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The Recall Date must be entered', href: '#recallDate' }])
     })
@@ -52,7 +53,7 @@ describe('Validation service tests', () => {
         year: '2023',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The Recall Date must be entered', href: '#recallDate' }])
     })
@@ -64,7 +65,7 @@ describe('Validation service tests', () => {
         year: '',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The Recall Date must be entered', href: '#recallDate' }])
     })
@@ -76,7 +77,7 @@ describe('Validation service tests', () => {
         year: '2023',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The entered date is not a valid date', href: '#recallDate' }])
     })
@@ -88,7 +89,7 @@ describe('Validation service tests', () => {
         year: '2023',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The entered date is not a valid date', href: '#recallDate' }])
     })
@@ -100,7 +101,7 @@ describe('Validation service tests', () => {
         year: 'abcd',
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'Year must be a valid number', href: '#recallDate' }])
     })
@@ -115,9 +116,85 @@ describe('Validation service tests', () => {
         year: futureDate.getFullYear().toString(),
       }
 
-      const errors = validationService.validateRecallDateForm(recallDateForm)
+      const errors = validationService.validateRecallDateForm(recallDateForm, {} as Recall)
 
       expect(errors).toEqual([{ text: 'The Recall Date cannot be in the future', href: '#recallDate' }])
+    })
+  })
+
+  describe('Recall Date form specific tests', () => {
+    it('Recall Date is valid if same as Return to Custody Date', () => {
+      const futureDate = new Date()
+      futureDate.setFullYear(futureDate.getFullYear() + 1)
+
+      const recallDateForm: DateForm = {
+        day: '1',
+        month: '1',
+        year: '2024',
+      }
+
+      const errors = validationService.validateRecallDateForm(recallDateForm, {
+        returnToCustodyDate: new Date(2024, 0, 1),
+      } as Recall)
+
+      expect(errors).toEqual([])
+    })
+
+    it('Recall Date cannot be after Return to Custody Date', () => {
+      const futureDate = new Date()
+      futureDate.setFullYear(futureDate.getFullYear() + 1)
+
+      const recallDateForm: DateForm = {
+        day: '2',
+        month: '1',
+        year: '2024',
+      }
+
+      const errors = validationService.validateRecallDateForm(recallDateForm, {
+        returnToCustodyDate: new Date(2024, 0, 1),
+      } as Recall)
+
+      expect(errors).toEqual([
+        { text: 'The Recall Date cannot be after the Return to Custody Date', href: '#recallDate' },
+      ])
+    })
+  })
+
+  describe('Return to Custody Date form specific tests', () => {
+    it('Return to Custody Date is valid if same as Recall Date', () => {
+      const futureDate = new Date()
+      futureDate.setFullYear(futureDate.getFullYear() + 1)
+
+      const returnToCustodyDateForm: DateForm = {
+        day: '1',
+        month: '1',
+        year: '2024',
+      }
+
+      const errors = validationService.validateReturnToCustodyDateForm(returnToCustodyDateForm, {
+        recallDate: new Date(2024, 0, 1),
+      } as Recall)
+
+      expect(errors).toEqual([])
+    })
+
+    it('Return to Custody Date cannot be before Recall Date', () => {
+      const futureDate = new Date()
+      futureDate.setFullYear(futureDate.getFullYear() + 1)
+
+      const returnToCustodyDateForm: DateForm = {
+        day: '2',
+        month: '1',
+        year: '2024',
+      }
+
+      const errors = validationService.validateReturnToCustodyDateForm(returnToCustodyDateForm, {
+        recallDate: new Date(2024, 0, 3),
+      } as Recall)
+
+      expect(errors).toEqual([
+        { text: 'The Recall Date cannot be after the Return to Custody Date', href: '#returnToCustodyDate' },
+      ])
     })
   })
 })

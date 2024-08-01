@@ -8,7 +8,7 @@ import {
   CreateRecall,
   CreateRecallResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { formatDate } from '../utils/utils'
+import { formatDate, getDateFromForm } from '../utils/utils'
 
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -16,10 +16,7 @@ export default class RecallService {
   setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
     const recall = this.getRecall(session, nomsId)
     recall.recallDateForm = recallDateForm
-    const year = parseInt(recallDateForm.year, 10)
-    const month = parseInt(recallDateForm.month, 10) - 1
-    const day = parseInt(recallDateForm.day, 10)
-    const recallDate = new Date(year, month, day)
+    const recallDate = getDateFromForm(recallDateForm)
 
     if (Number.isNaN(recallDate.getTime())) {
       recall.recallDate = null
@@ -37,10 +34,7 @@ export default class RecallService {
   ) {
     const recall = this.getRecall(session, nomsId)
     recall.returnToCustodyDateForm = returnToCustodyDateForm
-    const year = parseInt(returnToCustodyDateForm.year, 10)
-    const month = parseInt(returnToCustodyDateForm.month, 10) - 1
-    const day = parseInt(returnToCustodyDateForm.day, 10)
-    const returnToCustodyDate = new Date(year, month, day)
+    const returnToCustodyDate = getDateFromForm(returnToCustodyDateForm)
 
     if (Number.isNaN(returnToCustodyDate.getTime())) {
       recall.returnToCustodyDate = null
