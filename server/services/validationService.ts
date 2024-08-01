@@ -1,5 +1,7 @@
 import Joi, { CustomHelpers } from 'joi'
 import type { DateForm } from 'forms'
+import type { Recall } from 'models'
+import { getDateFromForm } from '../utils/utils'
 
 export default class ValidationService {
   getDateFormSchema(dateType: string) {
@@ -55,13 +57,31 @@ export default class ValidationService {
     return error
   }
 
-  validateRecallDateForm(recallDateForm: DateForm) {
+  validateRecallDateForm(recallDateForm: DateForm, recall: Recall) {
     const error = this.commonDateFormValidation(recallDateForm, 'Recall')
-    return error ? [{ text: error.details[0].message, href: '#recallDate' }] : []
+    if (error) {
+      return [{ text: error.details[0].message, href: '#recallDate' }]
+    }
+
+    const recallDate = getDateFromForm(recallDateForm)
+    if (recall.returnToCustodyDate && recall.returnToCustodyDate < recallDate) {
+      return [{ text: 'The Recall Date cannot be after the Return to Custody Date', href: '#recallDate' }]
+    }
+
+    return []
   }
 
-  validateReturnToCustodyDateForm(returnToCustodyDateForm: DateForm) {
+  validateReturnToCustodyDateForm(returnToCustodyDateForm: DateForm, recall: Recall) {
     const error = this.commonDateFormValidation(returnToCustodyDateForm, 'Return to Custody')
-    return error ? [{ text: error.details[0].message, href: '#returnToCustodyDate' }] : []
+    if (error) {
+      return [{ text: error.details[0].message, href: '#returnToCustodyDate' }]
+    }
+
+    const returnToCustodyDate = getDateFromForm(returnToCustodyDateForm)
+    if (recall.recallDate && returnToCustodyDate < recall.recallDate) {
+      return [{ text: 'The Recall Date cannot be after the Return to Custody Date', href: '#returnToCustodyDate' }]
+    }
+
+    return []
   }
 }

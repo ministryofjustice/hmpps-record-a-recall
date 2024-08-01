@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import type { DateForm } from 'forms'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -25,3 +26,10 @@ export const initialiseName = (fullName?: string): string | null => {
 }
 
 export const formatDate = (date: Date): string => format(date, 'yyyy-MM-dd')
+
+export function getDateFromForm(dateForm: DateForm) {
+  const year = parseInt(dateForm.year, 10)
+  const month = parseInt(dateForm.month, 10) - 1
+  const day = parseInt(dateForm.day, 10)
+  return new Date(year, month, day)
+}
