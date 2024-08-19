@@ -87,12 +87,8 @@ export default class RecallEntryRoutes {
 
   public getCheckSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const prisoner = res.locals.prisoner as PrisonerSearchApiPrisoner
-    const sentences = await this.prisonerService.getActiveAnalyzedSentencesAndOffences(
-      prisoner.bookingId as unknown as number,
-      res.locals.user.username,
-    )
-    return res.render('pages/recallEntry/check-sentences', { nomsId, sentences })
+    const calculationBreakdown = await this.prisonerService.getCalculationBreakdown(nomsId, res.locals.user.username)
+    return res.render('pages/recallEntry/check-sentences', { nomsId, calculationBreakdown })
   }
 
   public getEnterRecallType: RequestHandler = async (req, res): Promise<void> => {

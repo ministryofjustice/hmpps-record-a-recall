@@ -4,7 +4,7 @@ import { HmppsAuthClient } from '../data'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonApiClient from '../api/prisonApiClient'
 import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
-import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -17,14 +17,10 @@ export default class PrisonerService {
     return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(nomsId)
   }
 
-  async getActiveAnalyzedSentencesAndOffences(
-    bookingId: number,
-    username: string,
-  ): Promise<AnalysedSentenceAndOffence[]> {
+  async getCalculationBreakdown(nomsId: string, username: string): Promise<CalculationBreakdown> {
     const crdApi = await this.getCRDApiClient(username)
-    const sentences = await crdApi.getActiveAnalyzedSentencesAndOffences(bookingId)
-
-    return sentences.filter((s: AnalysedSentenceAndOffence) => s.sentenceStatus === 'A')
+    const latestCalculation = await crdApi.getLatestCalculation(nomsId)
+    return crdApi.getCalculationBreakdown(latestCalculation.calculationRequestId)
   }
 
   private async getCRDApiClient(username: string) {

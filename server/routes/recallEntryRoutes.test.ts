@@ -4,7 +4,7 @@ import type { Recall } from 'models'
 import { appWithAllRoutes, user } from './testutils/appSetup'
 import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
-import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import RecallService from '../services/recallService'
 import { CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { RecallTypes } from '../@types/refData'
@@ -282,23 +282,102 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
 describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
   it('should render check-sentences page and log page view', () => {
     auditService.logPageView.mockResolvedValue(null)
-    prisonerService.getActiveAnalyzedSentencesAndOffences.mockResolvedValue([
-      {
-        caseReference: 'TS001',
-        sentenceTypeDescription: 'EDS Sentence',
-        sentenceDate: '2023-01-01',
-        offence: { offenceCode: 'OF1', offenceDescription: 'Offence X' },
-      } as AnalysedSentenceAndOffence,
-    ])
+
+    prisonerService.getCalculationBreakdown.mockResolvedValue({
+      concurrentSentences: [
+        {
+          sentencedAt: '2022-06-10',
+          sentenceLength: '7 years',
+          sentenceLengthDays: 2557,
+          dates: {
+            SLED: {
+              unadjusted: '2029-06-09',
+              adjusted: '2029-06-09',
+              daysFromSentenceStart: 2557,
+              adjustedByDays: 0,
+            },
+            CRD: {
+              unadjusted: '2027-02-08',
+              adjusted: '2027-02-18',
+              daysFromSentenceStart: 1705,
+              adjustedByDays: -10,
+            },
+          },
+          lineSequence: 1,
+          caseSequence: 1,
+          caseReference: null,
+        },
+        {
+          sentencedAt: '2022-06-10',
+          sentenceLength: '84 months',
+          sentenceLengthDays: 2557,
+          dates: {
+            SLED: {
+              unadjusted: '2029-06-09',
+              adjusted: '2029-06-09',
+              daysFromSentenceStart: 2557,
+              adjustedByDays: 0,
+            },
+            CRD: {
+              unadjusted: '2025-12-09',
+              adjusted: '2025-12-19',
+              daysFromSentenceStart: 1279,
+              adjustedByDays: -10,
+            },
+          },
+          lineSequence: 2,
+          caseSequence: 1,
+          caseReference: null,
+        },
+      ],
+      consecutiveSentence: {
+        sentencedAt: '2022-06-10',
+        sentenceLength: '6 years 13 months',
+        sentenceLengthDays: 2587,
+        dates: {
+          SLED: {
+            unadjusted: '2029-07-09',
+            adjusted: '2029-07-09',
+            daysFromSentenceStart: 2587,
+            adjustedByDays: 0,
+          },
+          CRD: {
+            unadjusted: '2025-12-24',
+            adjusted: '2026-01-03',
+            daysFromSentenceStart: 1294,
+            adjustedByDays: -10,
+          },
+        },
+        caseSequence: 1,
+        caseReference: null,
+      },
+    } as CalculationBreakdown)
 
     return request(app)
       .get('/person/123/recall-entry/check-sentences')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('Case reference: TS001</h2>')
-        expect(res.text).toMatch(/Sentence Type\s*<\/dt>\s*<dd class="govuk-summary-list__value">\s*EDS Sentence/)
-        expect(res.text).toMatch(/Sentence Date\s*<\/dt>\s*<dd class="govuk-summary-list__value">\s*2023-01-01/)
-        expect(res.text).toMatch(/Offence\s*<\/dt>\s*<dd class="govuk-summary-list__value">\s*OF1 Offence X/)
+        // Verify concurrent sentences
+        expect(res.text).toContain('An Offence Name') // Offence name placeholder
+        expect(res.text).toContain('27 06 2024') // Example date
+        expect(res.text).toContain('27 08 2024') // Example date
+        expect(res.text).toContain('Imprisonment')
+        expect(res.text).toContain('1 years 2 months 3 weeks 4 days')
+        expect(res.text).toContain('5 years 6 months 7 weeks 8 days')
+        expect(res.text).toContain('SDS (Standard Determinate Sentence)')
+        expect(res.text).toContain('Edit')
+        expect(res.text).toContain('Delete')
+
+        // Verify consecutive sentence
+        expect(res.text).toContain('An Offence Name') // Offence name placeholder
+        expect(res.text).toContain('27 06 2024') // Example date
+        expect(res.text).toContain('27 08 2024') // Example date
+        expect(res.text).toContain('Imprisonment')
+        expect(res.text).toContain('1 years 2 months 3 weeks 4 days')
+        expect(res.text).toContain('5 years 6 months 7 weeks 8 days')
+        expect(res.text).toContain('SDS (Standard Determinate Sentence)')
+        expect(res.text).toContain('Edit')
+        expect(res.text).toContain('Delete')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_SENTENCES, {
           who: user.username,
           correlationId: expect.any(String),

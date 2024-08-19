@@ -8,27 +8,93 @@
 
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
-  {% for sentence in sentences %}
-    <h2 class="govuk-heading-m">Case reference: {{ sentence.caseReference }}</h2>
+  {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-    {{ govukSummaryList({
-      classes: "govuk-!-margin-bottom-9",
-      rows: [
-        {
-          key: { text: "Sentence Type" },
-          value: { text: sentence.sentenceTypeDescription }
-        },
-        {
-          key: { text: "Sentence Date" },
-          value: { text: sentence.sentenceDate }
-        },
-        {
-          key: { text: "Offence" },
-          value: { text: sentence.offence.offenceCode + ' ' + sentence.offence.offenceDescription }
-        }
-      ]
+  {# Concurrent Sentences #}
+  {% for sentence in calculationBreakdown.concurrentSentences %}
+    {{ offenceCard({
+      offenceCode: 'OFFENCECODE',
+      offenceName: 'An Offence Name',
+      offenceStartDate: '27 06 2024',
+      offenceEndDate: '27 08 2024',
+      outcome: 'Imprisonment',
+      countNumber: sentence.lineSequence,
+      terrorRelated: false,
+      isSentenced: true,
+      custodialSentenceLength: {
+        years: '1',
+        months: '2',
+        weeks: '3',
+        days: '4',
+        periodOrder: ['years', 'months', 'weeks', 'days']
+      },
+      licencePeriodLength: {
+        years: '5',
+        months: '6',
+        weeks: '7',
+        days: '8',
+        periodOrder: ['years', 'months', 'weeks', 'days']
+      },
+      sentenceServeType: 'CONCURRENT',
+      consecutiveTo: 'N/A',
+      sentenceType: 'SDS (Standard Determinate Sentence)',
+      actions: {
+        items: [
+          {
+            text: 'Edit',
+            href: '/edit'
+          },
+          {
+            text: 'Delete',
+            href: '/delete'
+          }
+        ]
+      }
     }) }}
   {% endfor %}
+
+  {# Consecutive Sentences #}
+  {% if calculationBreakdown.consecutiveSentence %}
+    {{ offenceCard({
+      offenceCode: 'OFFENCECODE',
+      offenceName: 'An Offence Name',
+      offenceStartDate: '27 06 2024',
+      offenceEndDate: '27 08 2024',
+      outcome: 'Imprisonment',
+      countNumber: 1,
+      terrorRelated: false,
+      isSentenced: true,
+      custodialSentenceLength: {
+        years: '1',
+        months: '2',
+        weeks: '3',
+        days: '4',
+        periodOrder: ['years', 'months', 'weeks', 'days']
+      },
+      licencePeriodLength: {
+        years: '5',
+        months: '6',
+        weeks: '7',
+        days: '8',
+        periodOrder: ['years', 'months', 'weeks', 'days']
+      },
+      sentenceServeType: 'CONSECUTIVE',
+      consecutiveTo: 'N/A',
+      sentenceType: 'SDS (Standard Determinate Sentence)',
+      actions: {
+        items: [
+          {
+            text: 'Edit',
+            href: '/edit'
+          },
+          {
+            text: 'Delete',
+            href: '/delete'
+          }
+        ]
+      }
+    }) }}
+  {% endif %}
 
   <div class="govuk-button-group">
     {{ govukButton({
