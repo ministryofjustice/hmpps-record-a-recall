@@ -275,12 +275,111 @@
       </table>
     {% endif %}
 
-    <!-- ERSED Not Applicable Due to DTO Later Than CRD -->
-    <p class="govuk-body">
-      ERSED Not Applicable Due to DTO Later Than CRD: {{ calculationBreakdown.ersedNotApplicableDueToDtoLaterThanCrd }}
-    </p>
+  {% endif %}
+
+  {% if sentencesAndReleaseDates.length %}
+
+    {% for sentence in sentencesAndReleaseDates %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">Sentence and Offence Details</caption>
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Booking ID</th>
+          <th scope="col" class="govuk-table__header">Sentence Sequence</th>
+          <th scope="col" class="govuk-table__header">Line Sequence</th>
+          <th scope="col" class="govuk-table__header">Case Sequence</th>
+          <th scope="col" class="govuk-table__header">Consecutive To Sequence</th>
+          <th scope="col" class="govuk-table__header">Sentence Status</th>
+          <th scope="col" class="govuk-table__header">Sentence Category</th>
+          <th scope="col" class="govuk-table__header">Sentence Calculation Type</th>
+          <th scope="col" class="govuk-table__header">Sentence Type Description</th>
+          <th scope="col" class="govuk-table__header">Sentence Date</th>
+          <th scope="col" class="govuk-table__header">Case Reference</th>
+          <th scope="col" class="govuk-table__header">Court Description</th>
+          <th scope="col" class="govuk-table__header">Fine Amount</th>
+          <th scope="col" class="govuk-table__header">Is SDS Plus</th>
+          <th scope="col" class="govuk-table__header">Has SDS Early Release Exclusion</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.bookingId }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.sentenceSequence }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.lineSequence }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.caseSequence }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.consecutiveToSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceStatus }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceCategory }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceCalculationType }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceTypeDescription }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceDate }}</td>
+          <td class="govuk-table__cell">{{ sentence.caseReference }}</td>
+          <td class="govuk-table__cell">{{ sentence.courtDescription }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.fineAmount }}</td>
+          <td class="govuk-table__cell">{{ sentence.isSDSPlus }}</td>
+          <td class="govuk-table__cell">{{ sentence.hasAnSDSEarlyReleaseExclusion }}</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <!-- Sentence Terms -->
+      {% if sentence.terms.length %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Sentence Terms</caption>
+          <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Years</th>
+            <th scope="col" class="govuk-table__header">Months</th>
+            <th scope="col" class="govuk-table__header">Weeks</th>
+            <th scope="col" class="govuk-table__header">Days</th>
+            <th scope="col" class="govuk-table__header">Term Code</th>
+          </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+          {% for term in sentence.terms %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.years }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.months }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.weeks }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.days }}</td>
+              <td class="govuk-table__cell">{{ term.code }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <!-- Offence Details -->
+      {% if sentence.offence %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Offence Details</caption>
+          <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Offender Charge ID</th>
+            <th scope="col" class="govuk-table__header">Offence Start Date</th>
+            <th scope="col" class="govuk-table__header">Offence End Date</th>
+            <th scope="col" class="govuk-table__header">Offence Code</th>
+            <th scope="col" class="govuk-table__header">Offence Description</th>
+            <th scope="col" class="govuk-table__header">Indicators</th>
+          </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.offence.offenderChargeId }}</td>
+            <td class="govuk-table__cell">{{ sentence.offence.offenceStartDate }}</td>
+            <td class="govuk-table__cell">{{ sentence.offence.offenceEndDate }}</td>
+            <td class="govuk-table__cell">{{ sentence.offence.offenceCode }}</td>
+            <td class="govuk-table__cell">{{ sentence.offence.offenceDescription }}</td>
+            <td class="govuk-table__cell">{{ sentence.offence.indicators | join(', ') }}</td>
+          </tr>
+          </tbody>
+        </table>
+      {% endif %}
+
+    {% endfor %}
 
   {% endif %}
+
 
 
   <div class="govuk-button-group">
