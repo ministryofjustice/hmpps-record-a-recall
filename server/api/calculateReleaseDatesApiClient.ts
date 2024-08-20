@@ -4,6 +4,7 @@ import {
   AnalysedSentenceAndOffence,
   CalculationBreakdown,
   LatestCalculation,
+  SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CalculateReleaseDatesApiClient {
@@ -31,5 +32,13 @@ export default class CalculateReleaseDatesApiClient {
     return this.restClient.get({
       path: `/calculation/breakdown/${calculationRequestId}`,
     }) as Promise<CalculationBreakdown>
+  }
+
+  async getSentencesAndReleaseDates(
+    calculationRequestId: number,
+  ): Promise<SentenceAndOffenceWithReleaseArrangements[]> {
+    return this.restClient.get({
+      path: `/calculation/sentence-and-offences/${calculationRequestId}`,
+    }) as Promise<SentenceAndOffenceWithReleaseArrangements[]>
   }
 }

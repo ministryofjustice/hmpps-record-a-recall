@@ -8,93 +8,103 @@
 
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
-  {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+  {% for sentence in sentences %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Sentence Details</caption>
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Booking ID</th>
+        <th scope="col" class="govuk-table__header">Sentence Sequence</th>
+        <th scope="col" class="govuk-table__header">Line Sequence</th>
+        <th scope="col" class="govuk-table__header">Case Sequence</th>
+        {% if sentence.consecutiveToSequence %}
+          <th scope="col" class="govuk-table__header">Consecutive To Sequence</th>
+        {% endif %}
+        <th scope="col" class="govuk-table__header">Sentence Status</th>
+        <th scope="col" class="govuk-table__header">Sentence Category</th>
+        <th scope="col" class="govuk-table__header">Sentence Calculation Type</th>
+        <th scope="col" class="govuk-table__header">Sentence Type Description</th>
+        <th scope="col" class="govuk-table__header">Sentence Date</th>
+        <th scope="col" class="govuk-table__header">Case Reference</th>
+        <th scope="col" class="govuk-table__header">Court Description</th>
+        <th scope="col" class="govuk-table__header">Fine Amount</th>
+        <th scope="col" class="govuk-table__header">Sentence and Offence Analysis</th>
+        <th scope="col" class="govuk-table__header">Is SDS Plus?</th>
+        <th scope="col" class="govuk-table__header">SDS Early Release Exclusion</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.bookingId }}</td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.sentenceSequence }}</td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.lineSequence }}</td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.caseSequence }}</td>
+        {% if sentence.consecutiveToSequence %}
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.consecutiveToSequence }}</td>
+        {% endif %}
+        <td class="govuk-table__cell">{{ sentence.sentenceStatus }}</td>
+        <td class="govuk-table__cell">{{ sentence.sentenceCategory }}</td>
+        <td class="govuk-table__cell">{{ sentence.sentenceCalculationType }}</td>
+        <td class="govuk-table__cell">{{ sentence.sentenceTypeDescription }}</td>
+        <td class="govuk-table__cell">{{ sentence.sentenceDate }}</td>
+        <td class="govuk-table__cell">{{ sentence.caseReference }}</td>
+        <td class="govuk-table__cell">{{ sentence.courtDescription }}</td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.fineAmount }}</td>
+        <td class="govuk-table__cell">{{ sentence.sentenceAndOffenceAnalysis }}</td>
+        <td class="govuk-table__cell">{{ sentence.isSDSPlus ? 'Yes' : 'No' }}</td>
+        <td class="govuk-table__cell">{{ sentence.hasAnSDSEarlyReleaseExclusion }}</td>
+      </tr>
+      </tbody>
+    </table>
 
-  {# Concurrent Sentences #}
-  {% for sentence in calculationBreakdown.concurrentSentences %}
-    {{ offenceCard({
-      offenceCode: 'OFFENCECODE',
-      offenceName: 'An Offence Name',
-      offenceStartDate: '27 06 2024',
-      offenceEndDate: '27 08 2024',
-      outcome: 'Imprisonment',
-      countNumber: sentence.lineSequence,
-      terrorRelated: false,
-      isSentenced: true,
-      custodialSentenceLength: {
-        years: '1',
-        months: '2',
-        weeks: '3',
-        days: '4',
-        periodOrder: ['years', 'months', 'weeks', 'days']
-      },
-      licencePeriodLength: {
-        years: '5',
-        months: '6',
-        weeks: '7',
-        days: '8',
-        periodOrder: ['years', 'months', 'weeks', 'days']
-      },
-      sentenceServeType: 'CONCURRENT',
-      consecutiveTo: 'N/A',
-      sentenceType: 'SDS (Standard Determinate Sentence)',
-      actions: {
-        items: [
-          {
-            text: 'Edit',
-            href: '/edit'
-          },
-          {
-            text: 'Delete',
-            href: '/delete'
-          }
-        ]
-      }
-    }) }}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Offence Details</caption>
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Offender Charge ID</th>
+        <th scope="col" class="govuk-table__header">Offence Start Date</th>
+        <th scope="col" class="govuk-table__header">Offence End Date</th>
+        <th scope="col" class="govuk-table__header">Offence Code</th>
+        <th scope="col" class="govuk-table__header">Offence Description</th>
+        <th scope="col" class="govuk-table__header">Indicators</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.offence.offenderChargeId }}</td>
+        <td class="govuk-table__cell">{{ sentence.offence.offenceStartDate }}</td>
+        <td class="govuk-table__cell">{{ sentence.offence.offenceEndDate }}</td>
+        <td class="govuk-table__cell">{{ sentence.offence.offenceCode }}</td>
+        <td class="govuk-table__cell">{{ sentence.offence.offenceDescription }}</td>
+        <td class="govuk-table__cell">{{ sentence.offence.indicators | join(', ') }}</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Sentence Terms</caption>
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Years</th>
+        <th scope="col" class="govuk-table__header">Months</th>
+        <th scope="col" class="govuk-table__header">Weeks</th>
+        <th scope="col" class="govuk-table__header">Days</th>
+        <th scope="col" class="govuk-table__header">Code</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      {% for term in sentence.terms %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.years }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.months }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.weeks }}</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.days }}</td>
+          <td class="govuk-table__cell">{{ term.code }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
   {% endfor %}
-
-  {# Consecutive Sentences #}
-  {% if calculationBreakdown.consecutiveSentence %}
-    {{ offenceCard({
-      offenceCode: 'OFFENCECODE',
-      offenceName: 'An Offence Name',
-      offenceStartDate: '27 06 2024',
-      offenceEndDate: '27 08 2024',
-      outcome: 'Imprisonment',
-      countNumber: 1,
-      terrorRelated: false,
-      isSentenced: true,
-      custodialSentenceLength: {
-        years: '1',
-        months: '2',
-        weeks: '3',
-        days: '4',
-        periodOrder: ['years', 'months', 'weeks', 'days']
-      },
-      licencePeriodLength: {
-        years: '5',
-        months: '6',
-        weeks: '7',
-        days: '8',
-        periodOrder: ['years', 'months', 'weeks', 'days']
-      },
-      sentenceServeType: 'CONSECUTIVE',
-      consecutiveTo: 'N/A',
-      sentenceType: 'SDS (Standard Determinate Sentence)',
-      actions: {
-        items: [
-          {
-            text: 'Edit',
-            href: '/edit'
-          },
-          {
-            text: 'Delete',
-            href: '/delete'
-          }
-        ]
-      }
-    }) }}
-  {% endif %}
 
   <div class="govuk-button-group">
     {{ govukButton({
