@@ -9,7 +9,7 @@
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
   <h2 class="govuk-heading-m" id="breakdown-info">Calculation breakdown Lookup from CRD</h2>
-  <p><a href="#sentence-info" class="govuk-link">Go to Active Analyzed Sentences and Offences</a></p>
+  <p><a href="#sentence-info" class="govuk-link">Go to Sentences and Offences</a></p>
 
   {% if calculationBreakdown %}
 
@@ -200,12 +200,11 @@
 
   <div class="govuk-section-break govuk-section-break--xl govuk-section-break--visible"></div>
   <h2 class="govuk-heading-m" id="sentemce-info">Sentence and Release Dates Lookup from CRD</h2>
-  <p><a href="#breakdown-info" class="govuk-link">Back to Calculation breakdown</a></p>
+  <p><a href="#breakdown-info" class="govuk-link">Go to Calculation breakdown</a></p>
   {% if sentencesAndReleaseDates.length %}
-
     {% for sentence in sentencesAndReleaseDates %}
       <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">Sentence and Offence Details</caption>
+        <caption class="govuk-table__caption govuk-table__caption--m">Sentence {{ sentence.sentenceSequence }} details</caption>
         <thead class="govuk-table__head">
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">Sequence</th>
@@ -236,7 +235,6 @@
       <!-- Sentence Terms -->
       {% if sentence.terms.length %}
         <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--m">Sentence Terms</caption>
           <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Years</th>
@@ -263,7 +261,6 @@
       <!-- Offence Details -->
       {% if sentence.offence %}
         <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--m">Offence Details</caption>
           <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Offender Charge ID</th>
