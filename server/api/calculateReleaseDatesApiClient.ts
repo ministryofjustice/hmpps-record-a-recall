@@ -1,7 +1,6 @@
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 import {
-  AnalysedSentenceAndOffence,
   CalculationBreakdown,
   LatestCalculation,
   SentenceAndOffenceWithReleaseArrangements,

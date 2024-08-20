@@ -7,7 +7,6 @@ import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClien
 import {
   CalculationBreakdown,
   SentenceAndOffenceWithReleaseArrangements,
-  AnalysedSentenceAndOffence,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../logger'
 
