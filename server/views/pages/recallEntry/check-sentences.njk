@@ -13,29 +13,21 @@
       <caption class="govuk-table__caption govuk-table__caption--m">Sentence Details</caption>
       <thead class="govuk-table__head">
       <tr class="govuk-table__row">
-        <th scope="col" class="govuk-table__header">Booking ID</th>
-        <th scope="col" class="govuk-table__header">Sentence Sequence</th>
+        <th scope="col" class="govuk-table__header">Sequence</th>
         <th scope="col" class="govuk-table__header">Line Sequence</th>
         <th scope="col" class="govuk-table__header">Case Sequence</th>
         {% if sentence.consecutiveToSequence %}
           <th scope="col" class="govuk-table__header">Consecutive To Sequence</th>
         {% endif %}
-        <th scope="col" class="govuk-table__header">Sentence Status</th>
-        <th scope="col" class="govuk-table__header">Sentence Category</th>
-        <th scope="col" class="govuk-table__header">Sentence Calculation Type</th>
-        <th scope="col" class="govuk-table__header">Sentence Type Description</th>
+        <th scope="col" class="govuk-table__header">Status</th>
+        <th scope="col" class="govuk-table__header">Calculation Type</th>
+        <th scope="col" class="govuk-table__header">Type Description</th>
         <th scope="col" class="govuk-table__header">Sentence Date</th>
         <th scope="col" class="govuk-table__header">Case Reference</th>
-        <th scope="col" class="govuk-table__header">Court Description</th>
-        <th scope="col" class="govuk-table__header">Fine Amount</th>
-        <th scope="col" class="govuk-table__header">Sentence and Offence Analysis</th>
-        <th scope="col" class="govuk-table__header">Is SDS Plus?</th>
-        <th scope="col" class="govuk-table__header">SDS Early Release Exclusion</th>
       </tr>
       </thead>
       <tbody class="govuk-table__body">
       <tr class="govuk-table__row">
-        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.bookingId }}</td>
         <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.sentenceSequence }}</td>
         <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.lineSequence }}</td>
         <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.caseSequence }}</td>
@@ -43,16 +35,10 @@
           <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.consecutiveToSequence }}</td>
         {% endif %}
         <td class="govuk-table__cell">{{ sentence.sentenceStatus }}</td>
-        <td class="govuk-table__cell">{{ sentence.sentenceCategory }}</td>
         <td class="govuk-table__cell">{{ sentence.sentenceCalculationType }}</td>
         <td class="govuk-table__cell">{{ sentence.sentenceTypeDescription }}</td>
         <td class="govuk-table__cell">{{ sentence.sentenceDate }}</td>
         <td class="govuk-table__cell">{{ sentence.caseReference }}</td>
-        <td class="govuk-table__cell">{{ sentence.courtDescription }}</td>
-        <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.fineAmount }}</td>
-        <td class="govuk-table__cell">{{ sentence.sentenceAndOffenceAnalysis }}</td>
-        <td class="govuk-table__cell">{{ sentence.isSDSPlus }}</td>
-        <td class="govuk-table__cell">{{ sentence.hasAnSDSEarlyReleaseExclusion }}</td>
       </tr>
       </tbody>
     </table>
