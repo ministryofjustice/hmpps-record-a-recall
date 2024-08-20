@@ -9,6 +9,7 @@ import {
   SentenceAndOffenceWithReleaseArrangements,
   AnalysedSentenceAndOffence,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import logger from '../../logger'
 
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -31,10 +32,15 @@ export default class PrisonerService {
     return sentences.filter((s: AnalysedSentenceAndOffence) => s.sentenceStatus === 'A')
   }
 
-  async getCalculationBreakdown(nomsId: string, username: string): Promise<CalculationBreakdown> {
-    const crdApi = await this.getCRDApiClient(username)
-    const latestCalculation = await crdApi.getLatestCalculation(nomsId)
-    return crdApi.getCalculationBreakdown(latestCalculation.calculationRequestId)
+  async getCalculationBreakdown(nomsId: string, username: string): Promise<CalculationBreakdown | undefined> {
+    try {
+      const crdApi = await this.getCRDApiClient(username)
+      const latestCalculation = await crdApi.getLatestCalculation(nomsId)
+      return await crdApi.getCalculationBreakdown(latestCalculation.calculationRequestId)
+    } catch (error) {
+      logger.error(`Error in getCalculationBreakdown: ${error.message}`, error)
+      return undefined
+    }
   }
 
   async getSentencesAndReleaseDates(
