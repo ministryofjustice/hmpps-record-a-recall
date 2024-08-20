@@ -18,12 +18,6 @@ export default class CalculateReleaseDatesApiClient {
     )
   }
 
-  async getActiveAnalyzedSentencesAndOffences(bookingId: number): Promise<AnalysedSentenceAndOffence[]> {
-    return this.restClient.get({
-      path: `/sentence-and-offence-information/${bookingId}`,
-    }) as Promise<AnalysedSentenceAndOffence[]>
-  }
-
   async getLatestCalculation(nomsId: string): Promise<LatestCalculation> {
     return this.restClient.get({ path: `/calculation/${nomsId}/latest` }) as Promise<LatestCalculation>
   }

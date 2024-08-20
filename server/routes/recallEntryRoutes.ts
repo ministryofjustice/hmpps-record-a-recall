@@ -87,11 +87,6 @@ export default class RecallEntryRoutes {
 
   public getCheckSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const prisoner = res.locals.prisoner as PrisonerSearchApiPrisoner
-    const sentences = await this.prisonerService.getActiveAnalyzedSentencesAndOffences(
-      prisoner.bookingId as unknown as number,
-      res.locals.user.username,
-    )
     const calculationBreakdown = await this.prisonerService.getCalculationBreakdown(nomsId, res.locals.user.username)
     const sentencesAndReleaseDates = await this.prisonerService.getSentencesAndReleaseDates(
       nomsId,
@@ -100,7 +95,6 @@ export default class RecallEntryRoutes {
     return res.render('pages/recallEntry/check-sentences', {
       nomsId,
       calculationBreakdown,
-      sentences,
       sentencesAndReleaseDates,
     })
   }

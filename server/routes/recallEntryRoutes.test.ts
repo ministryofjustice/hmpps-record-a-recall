@@ -351,33 +351,14 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
         caseSequence: 1,
         caseReference: null,
       },
-    } as CalculationBreakdown)
+    } as unknown as CalculationBreakdown)
 
     return request(app)
       .get('/person/123/recall-entry/check-sentences')
       .expect('Content-Type', /html/)
       .expect(res => {
         // Verify concurrent sentences
-        expect(res.text).toContain('An Offence Name') // Offence name placeholder
-        expect(res.text).toContain('27 06 2024') // Example date
-        expect(res.text).toContain('27 08 2024') // Example date
-        expect(res.text).toContain('Imprisonment')
-        expect(res.text).toContain('1 years 2 months 3 weeks 4 days')
-        expect(res.text).toContain('5 years 6 months 7 weeks 8 days')
-        expect(res.text).toContain('SDS (Standard Determinate Sentence)')
-        expect(res.text).toContain('Edit')
-        expect(res.text).toContain('Delete')
-
-        // Verify consecutive sentence
-        expect(res.text).toContain('An Offence Name') // Offence name placeholder
-        expect(res.text).toContain('27 06 2024') // Example date
-        expect(res.text).toContain('27 08 2024') // Example date
-        expect(res.text).toContain('Imprisonment')
-        expect(res.text).toContain('1 years 2 months 3 weeks 4 days')
-        expect(res.text).toContain('5 years 6 months 7 weeks 8 days')
-        expect(res.text).toContain('SDS (Standard Determinate Sentence)')
-        expect(res.text).toContain('Edit')
-        expect(res.text).toContain('Delete')
+        expect(res.text).toContain('Calculation Breakdown Lookup from CRD')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_SENTENCES, {
           who: user.username,
           correlationId: expect.any(String),

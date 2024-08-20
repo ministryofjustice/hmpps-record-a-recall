@@ -22,16 +22,6 @@ export default class PrisonerService {
     return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(nomsId)
   }
 
-  async getActiveAnalyzedSentencesAndOffences(
-    bookingId: number,
-    username: string,
-  ): Promise<AnalysedSentenceAndOffence[]> {
-    const crdApi = await this.getCRDApiClient(username)
-    const sentences = await crdApi.getActiveAnalyzedSentencesAndOffences(bookingId)
-
-    return sentences.filter((s: AnalysedSentenceAndOffence) => s.sentenceStatus === 'A')
-  }
-
   async getCalculationBreakdown(nomsId: string, username: string): Promise<CalculationBreakdown | undefined> {
     try {
       const crdApi = await this.getCRDApiClient(username)
