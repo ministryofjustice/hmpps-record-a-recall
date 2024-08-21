@@ -4,7 +4,11 @@ import { HmppsAuthClient } from '../data'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonApiClient from '../api/prisonApiClient'
 import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
-import { AnalysedSentenceAndOffence } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  CalculationBreakdown,
+  SentenceAndOffenceWithReleaseArrangements,
+} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import logger from '../../logger'
 
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -17,14 +21,24 @@ export default class PrisonerService {
     return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(nomsId)
   }
 
-  async getActiveAnalyzedSentencesAndOffences(
-    bookingId: number,
-    username: string,
-  ): Promise<AnalysedSentenceAndOffence[]> {
-    const crdApi = await this.getCRDApiClient(username)
-    const sentences = await crdApi.getActiveAnalyzedSentencesAndOffences(bookingId)
+  async getCalculationBreakdown(nomsId: string, username: string): Promise<CalculationBreakdown | undefined> {
+    try {
+      const crdApi = await this.getCRDApiClient(username)
+      const latestCalculation = await crdApi.getLatestCalculation(nomsId)
+      return await crdApi.getCalculationBreakdown(latestCalculation.calculationRequestId)
+    } catch (error) {
+      logger.error(`Error in getCalculationBreakdown: ${error.message}`, error)
+      return undefined
+    }
+  }
 
-    return sentences.filter((s: AnalysedSentenceAndOffence) => s.sentenceStatus === 'A')
+  async getSentencesAndReleaseDates(
+    nomsId: string,
+    username: string,
+  ): Promise<SentenceAndOffenceWithReleaseArrangements[]> {
+    const crdApi = await this.getCRDApiClient(username)
+    const latestCalculation = await crdApi.getLatestCalculation(nomsId)
+    return crdApi.getSentencesAndReleaseDates(latestCalculation.calculationRequestId)
   }
 
   private async getCRDApiClient(username: string) {

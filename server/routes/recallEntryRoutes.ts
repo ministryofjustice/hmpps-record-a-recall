@@ -1,6 +1,5 @@
 import { RequestHandler } from 'express'
 import type { DateForm } from 'forms'
-import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
 import { RecallTypes } from '../@types/refData'
@@ -87,12 +86,16 @@ export default class RecallEntryRoutes {
 
   public getCheckSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const prisoner = res.locals.prisoner as PrisonerSearchApiPrisoner
-    const sentences = await this.prisonerService.getActiveAnalyzedSentencesAndOffences(
-      prisoner.bookingId as unknown as number,
+    const calculationBreakdown = await this.prisonerService.getCalculationBreakdown(nomsId, res.locals.user.username)
+    const sentencesAndReleaseDates = await this.prisonerService.getSentencesAndReleaseDates(
+      nomsId,
       res.locals.user.username,
     )
-    return res.render('pages/recallEntry/check-sentences', { nomsId, sentences })
+    return res.render('pages/recallEntry/check-sentences', {
+      nomsId,
+      calculationBreakdown,
+      sentencesAndReleaseDates,
+    })
   }
 
   public getEnterRecallType: RequestHandler = async (req, res): Promise<void> => {
