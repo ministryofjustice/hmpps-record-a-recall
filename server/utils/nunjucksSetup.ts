@@ -23,6 +23,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   app.locals.applicationName = 'Record A Recall'
   app.locals.environmentName = config.environmentName
   app.locals.environmentNameColour = config.environmentName === 'PRE-PRODUCTION' ? 'govuk-tag--green' : ''
+  app.locals.digitalPrisonServicesUrl = config.digitalPrisonServicesUrl
 
   // Cachebusting version string
   if (production) {
