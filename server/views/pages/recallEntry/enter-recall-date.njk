@@ -7,7 +7,7 @@
 
 {% block beforeContent %}
   {{ super() }}
-  <nav class="govuk-!-margin-bottom-0">
+  <nav>
     {% if submitToCheckAnswers %}
       {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
     {% else %}

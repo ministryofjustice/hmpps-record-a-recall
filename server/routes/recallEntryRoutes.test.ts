@@ -157,6 +157,26 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
         })
       })
   })
+
+  it('should render backlink pointing to the check-your-answers page when submitToCheckAnswers is true', () => {
+    return request(app)
+      .get('/person/123/recall-entry/enter-recall-date?submitToCheckAnswers=true')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          '<a href="/person/123/recall-entry/check-your-answers" class="govuk-back-link">Back</a>',
+        )
+      })
+  })
+
+  it('should render backlink pointing to the main person page when submitToCheckAnswers is false', () => {
+    return request(app)
+      .get('/person/123/recall-entry/enter-recall-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('<a href="/person/123" class="govuk-back-link">Back</a>')
+      })
+  })
 })
 
 describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
@@ -231,7 +251,7 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
       .get('/person/123/recall-entry/enter-return-to-custody-date')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('What date was this person returned to custody?')
+        expect(res.text).toContain('Enter the date the person returned to custody')
         expect(auditService.logPageView).toHaveBeenCalledWith(Page.ENTER_RETURN_TO_CUSTODY_DATE, {
           who: user.username,
           correlationId: expect.any(String),
@@ -250,7 +270,7 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
       .get('/person/123/recall-entry/enter-return-to-custody-date')
       .expect('Content-Type', /html/)
       .expect(res => {
-        expect(res.text).toContain('What date was this person returned to custody?')
+        expect(res.text).toContain('Enter the date the person returned to custody')
         expect(res.text).toContain('name="returnToCustodyDate[day]" type="text" value="01"')
         expect(res.text).toContain('name="returnToCustodyDate[month]" type="text" value="01"')
         expect(res.text).toContain('name="returnToCustodyDate[year]" type="text" value="2024"')
@@ -258,6 +278,28 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
           who: user.username,
           correlationId: expect.any(String),
         })
+      })
+  })
+
+  it('should render backlink pointing to the check-your-answers page when submitToCheckAnswers is true', () => {
+    return request(app)
+      .get('/person/123/recall-entry/enter-return-to-custody-date?submitToCheckAnswers=true')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          '<a href="/person/123/recall-entry/check-your-answers" class="govuk-back-link">Back</a>',
+        )
+      })
+  })
+
+  it('should render backlink pointing to the main person page when submitToCheckAnswers is false', () => {
+    return request(app)
+      .get('/person/123/recall-entry/enter-return-to-custody-date')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          '<a href="/person/123/recall-entry/enter-recall-date" class="govuk-back-link">Back</a>',
+        )
       })
   })
 
