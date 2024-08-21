@@ -3,6 +3,22 @@
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <nav>
+    {% if submitToCheckAnswers %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
+    {% else %}
+      {% set backlinkHref = "/person/" + nomsId %}
+    {% endif %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backlinkHref
+    }) }}
+  </nav>
+{% endblock %}
 
 {% block content %}
   {% if errors.length %}
@@ -19,7 +35,7 @@
       id: "recallDate",
       fieldset: {
         legend: {
-          text: "What is the recall date for this person?",
+          html: '<h1 class="govuk-heading-l govuk-!-margin-bottom-0"><span class="govuk-caption-l">Record a recall</span>Enter the date the person’s licence was revoked</h1>',
           isPageHeading: true,
           classes: "govuk-fieldset__legend--l"
         }

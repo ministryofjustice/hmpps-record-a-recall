@@ -2,6 +2,22 @@
 
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <nav>
+    {% if submitToCheckAnswers %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
+    {% else %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/enter-recall-date" %}
+    {% endif %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backlinkHref
+    }) }}
+  </nav>
+{% endblock %}
 
 {% block content %}
   {% if errors.length %}
@@ -18,7 +34,7 @@
       id: "returnToCustodyDate",
       fieldset: {
         legend: {
-          text: "What date was this person returned to custody?",
+          html: '<h1 class="govuk-heading-l govuk-!-margin-bottom-0"><span class="govuk-caption-l">Record a recall</span>Enter the date the person returned to custody</h1>',
           isPageHeading: true,
           classes: "govuk-fieldset__legend--l"
         }
