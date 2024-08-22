@@ -86,9 +86,24 @@ export default class RecallEntryRoutes {
 
   public getCheckSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
+    const { recallDate } = this.recallService.getRecall(req.session, nomsId)
+    const groupedSentences = await this.prisonerService.groupSentencesByRecallDate(
+      nomsId,
+      res.locals.user.username,
+      recallDate,
+    )
+    return res.render('pages/recallEntry/check-sentences', {
+      nomsId,
+      groupedSentences,
+    })
+  }
+
+  // This is just a temporary screen that displays all sentence data - created to aid analysis
+  public getViewAllSentences: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
     const calculationBreakdown = await this.prisonerService.getCalculationBreakdown(nomsId, res.locals.user.username)
     if (!calculationBreakdown) {
-      return res.render('pages/recallEntry/check-sentences', {
+      return res.render('pages/recallEntry/view-all-sentences', {
         nomsId,
         calculationBreakdown: undefined,
         sentencesAndReleaseDates: undefined,
@@ -98,7 +113,7 @@ export default class RecallEntryRoutes {
       nomsId,
       res.locals.user.username,
     )
-    return res.render('pages/recallEntry/check-sentences', {
+    return res.render('pages/recallEntry/view-all-sentences', {
       nomsId,
       calculationBreakdown,
       sentencesAndReleaseDates,
