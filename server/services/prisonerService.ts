@@ -57,13 +57,13 @@ export default class PrisonerService {
     try {
       const breakdown = await this.getCalculationBreakdown(nomsId, username)
 
-      // 1. Filter and categorize concurrent sentences
+      // Filter and categorize concurrent sentences
       const { onLicenceConcurrent, activeConcurrent, expiredConcurrent } = this.filterAndCategorizeConcurrentSentences(
         breakdown.concurrentSentences,
         recallDate,
       )
 
-      // 2. Filter and categorize consecutive sentence parts
+      // Filter and categorize consecutive sentence parts
       const { onLicenceConsecutive, activeConsecutive, expiredConsecutive } = breakdown.consecutiveSentence
         ? this.filterAndCategorizeConsecutiveSentenceParts(breakdown.consecutiveSentence, recallDate)
         : { onLicenceConsecutive: [], activeConsecutive: [], expiredConsecutive: [] }
@@ -73,12 +73,10 @@ export default class PrisonerService {
       const activeSentences = [...activeConcurrent, ...activeConsecutive]
       const expiredSentences = [...expiredConcurrent, ...expiredConsecutive]
 
-      // 3. Log if there are no "On Licence" sentences
       if (onLicenceSentences.length === 0) {
         logger.error('There are no sentences eligible for recall.')
       }
 
-      // 4. Return grouped sentences
       return {
         onLicenceSentences,
         activeSentences,
