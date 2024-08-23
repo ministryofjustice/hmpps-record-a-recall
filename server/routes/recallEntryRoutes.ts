@@ -95,6 +95,7 @@ export default class RecallEntryRoutes {
     return res.render('pages/recallEntry/check-sentences', {
       nomsId,
       groupedSentences,
+      recallDate,
     })
   }
 

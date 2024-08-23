@@ -117,14 +117,17 @@ export default class PrisonerService {
     sentences.forEach(sentence => {
       const dateTypes = Object.keys(sentence.dates)
 
-      if (!(dateTypes.includes('SLED') && dateTypes.includes('CRD'))) {
+      // Ensure there is either SLED or SED and also CRD
+      if (!((dateTypes.includes('SLED') || dateTypes.includes('SED')) && dateTypes.includes('CRD'))) {
         expiredConcurrent.push(this.mapConcurrentToSentenceDetail(sentence))
         return
       }
 
+      // Determine whether to use SLED or SED
       const crd = new Date(sentence.dates.CRD?.adjusted)
-      const sled = new Date(sentence.dates.SLED?.adjusted)
+      const sled = sentence.dates.SLED ? new Date(sentence.dates.SLED.adjusted) : new Date(sentence.dates.SED?.adjusted)
 
+      // Categorize the sentence based on the recall date
       if (recallDate > sled) {
         expiredConcurrent.push(this.mapConcurrentToSentenceDetail(sentence))
       } else if (recallDate >= crd && recallDate < sled) {
@@ -153,15 +156,19 @@ export default class PrisonerService {
 
     const dateTypes = Object.keys(consecutiveSentence.dates)
 
-    if (!(dateTypes.includes('SLED') && dateTypes.includes('CRD'))) {
+    // Ensure there is either SLED or SED and also CRD
+    if (!((dateTypes.includes('SLED') || dateTypes.includes('SED')) && dateTypes.includes('CRD'))) {
       consecutiveSentence.sentenceParts.forEach(part => {
         expiredConsecutive.push(this.mapConsecutivePartToSentenceDetail(part, new Date(), new Date()))
       })
       return { onLicenceConsecutive, activeConsecutive, expiredConsecutive }
     }
 
+    // Determine whether to use SLED or SED
     const crd = new Date(consecutiveSentence.dates.CRD?.adjusted)
-    const sled = new Date(consecutiveSentence.dates.SLED?.adjusted)
+    const sled = consecutiveSentence.dates.SLED
+      ? new Date(consecutiveSentence.dates.SLED.adjusted)
+      : new Date(consecutiveSentence.dates.SED?.adjusted)
 
     consecutiveSentence.sentenceParts.forEach(part => {
       if (recallDate > sled) {

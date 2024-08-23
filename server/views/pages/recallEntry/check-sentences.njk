@@ -8,7 +8,7 @@
 
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
-  <h1>Grouped Sentences</h1>
+  <h1>Grouped Sentences for when the Recall Date is: {{ recallDate | date }}</h1>
 
   {% if groupedSentences.onLicenceSentences.length > 0 %}
     <h2>On Licence Sentences</h2>
