@@ -10,4 +10,13 @@ const RecallTypes = {
 
 type RecallType = { code: string; description: string }
 
-export { RecallTypes, RecallType }
+type SentenceDetail = {
+  lineSequence: number
+  sentencedAt: string
+  sentenceLength: string
+  consecutiveTo: number | null
+  crd: string
+  sled: string
+}
+
+export { RecallTypes, RecallType, SentenceDetail }

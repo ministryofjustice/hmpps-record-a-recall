@@ -12,15 +12,7 @@ import {
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../logger'
-
-type SentenceDetail = {
-  lineSequence: number // Line sequence number in the court case
-  sentencedAt: string // Date the sentence was given (format: date string)
-  sentenceLength: string // The length of the sentence (e.g., "5 years")
-  consecutiveTo: number | null // Line sequence number to which this sentence is consecutive, or null if concurrent
-  crd: string // Adjusted Conditional Release Date (format: date string)
-  sled: string // Adjusted Sentence and Licence Expiry Date (format: date string)
-}
+import { SentenceDetail } from '../@types/refData'
 
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -132,7 +124,7 @@ export default class PrisonerService {
         expiredConcurrent.push(this.mapConcurrentToSentenceDetail(sentence))
       } else if (recallDate >= crd && recallDate < sled) {
         onLicenceConcurrent.push(this.mapConcurrentToSentenceDetail(sentence))
-      } else if (recallDate >= crd) {
+      } else if (recallDate < crd) {
         activeConcurrent.push(this.mapConcurrentToSentenceDetail(sentence))
       } else {
         expiredConcurrent.push(this.mapConcurrentToSentenceDetail(sentence))
@@ -175,7 +167,7 @@ export default class PrisonerService {
         expiredConsecutive.push(this.mapConsecutivePartToSentenceDetail(part, crd, sled))
       } else if (recallDate >= crd && recallDate < sled) {
         onLicenceConsecutive.push(this.mapConsecutivePartToSentenceDetail(part, crd, sled))
-      } else if (recallDate >= crd) {
+      } else if (recallDate < crd) {
         activeConsecutive.push(this.mapConsecutivePartToSentenceDetail(part, crd, sled))
       } else {
         expiredConsecutive.push(this.mapConsecutivePartToSentenceDetail(part, crd, sled))
