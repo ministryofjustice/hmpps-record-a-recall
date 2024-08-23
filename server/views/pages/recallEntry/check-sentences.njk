@@ -6,9 +6,33 @@
 {% set pageTitle = applicationName + " - check information" %}
 {% set pageId = "check-information" %}
 
+{% block beforeContent %}
+  {{ super() }}
+  <nav>
+    {% if submitToCheckAnswers %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
+    {% else %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/enter-return-to-custody" %}
+    {% endif %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backlinkHref
+    }) }}
+  </nav>
+{% endblock %}
+
 {% block content %}
-  <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
-  <h1>Grouped Sentences for when the Recall Date is: {{ recallDate | date }}</h1>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl" id="check-sentence-heading">
+        Grouped Sentences for when the Recall Date is: {{ recallDate | date }}
+      </h1>
+    </div>
+    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
+      <a href="/person/{{ nomsId }}/recall-entry/view-all-sentence" class="govuk-link">View raw sentence data</a>
+    </div>
+  </div>
 
   {% if groupedSentences.onLicenceSentences.length > 0 %}
     <h2>On Licence Sentences</h2>
