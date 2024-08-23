@@ -71,6 +71,14 @@ export default function routes({ auditService, prisonerService, recallService, v
   )
 
   get(
+    '/person/:nomsId/recall-entry/view-all-sentences',
+    logPageViewMiddleware(auditService, Page.VIEW_ALL_SENTENCES),
+    async (req, res, next) => {
+      recallEntryRoutes.getViewAllSentences(req, res, next)
+    },
+  )
+
+  get(
     '/person/:nomsId/recall-entry/enter-recall-type',
     logPageViewMiddleware(auditService, Page.ENTER_RECALL_TYPE),
     async (req, res, next) => {

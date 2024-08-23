@@ -2,289 +2,129 @@
 
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% set pageTitle = applicationName + " - check information" %}
 {% set pageId = "check-information" %}
 
+{% block beforeContent %}
+  {{ super() }}
+  <nav>
+    {% if submitToCheckAnswers %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
+    {% else %}
+      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/enter-return-to-custody-date" %}
+    {% endif %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backlinkHref
+    }) }}
+  </nav>
+{% endblock %}
+
 {% block content %}
-  <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
-  <h2 class="govuk-heading-m" id="breakdown-info">Calculation Breakdown Lookup from CRD</h2>
-  <p><a href="#sentence-info" class="govuk-link">Go to Sentences and Offences</a></p>
 
-  {% if calculationBreakdown %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-three-quarters">
+      <h1 class="govuk-heading-l" id="check-sentence-heading">
+        Grouped Sentences for Recall Date: {{ recallDate | date }}
+      </h1>
+    </div>
+    <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
+      <a href="/person/{{ nomsId }}/recall-entry/view-all-sentence" class="govuk-link">View raw sentence data</a>
+    </div>
+  </div>
 
-    <!-- Concurrent Sentences -->
-    {% if calculationBreakdown.concurrentSentences.length %}
-      {% for concurrentSentence in calculationBreakdown.concurrentSentences %}
-        <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--m">Concurrent Sentence Details</caption>
-          <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Line Sequence</th>
-            <th scope="col" class="govuk-table__header">Case Sequence</th>
-            <th scope="col" class="govuk-table__header">Sentenced At</th>
-            <th scope="col" class="govuk-table__header">Sentence Length</th>
-            <th scope="col" class="govuk-table__header">Sentence Length (Days)</th>
-            <th scope="col" class="govuk-table__header">Case Reference</th>
-          </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.lineSequence }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.caseSequence }}</td>
-            <td class="govuk-table__cell">{{ concurrentSentence.sentencedAt }}</td>
-            <td class="govuk-table__cell">{{ concurrentSentence.sentenceLength }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.sentenceLengthDays }}</td>
-            <td class="govuk-table__cell">{{ concurrentSentence.caseReference }}</td>
-          </tr>
-          </tbody>
-        </table>
-
-        <!-- Dates Breakdown -->
-        {% if concurrentSentence.dates %}
-          <table class="govuk-table">
-            <caption class="govuk-table__caption govuk-table__caption--m">Concurrent Sentence Dates Breakdown</caption>
-            <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header">Date Type</th>
-              <th scope="col" class="govuk-table__header">Unadjusted</th>
-              <th scope="col" class="govuk-table__header">Adjusted</th>
-              <th scope="col" class="govuk-table__header">Days from Sentence Start</th>
-              <th scope="col" class="govuk-table__header">Adjusted by Days</th>
-            </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-            {% for dateType, dateBreakdown in concurrentSentence.dates %}
-              <tr class="govuk-table__row">
-                <td class="govuk-table__cell">{{ dateType }}</td>
-                <td class="govuk-table__cell">{{ dateBreakdown.unadjusted }}</td>
-                <td class="govuk-table__cell">{{ dateBreakdown.adjusted }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.daysFromSentenceStart }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.adjustedByDays }}</td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        {% endif %}
+  {% if groupedSentences.onLicenceSentences.length > 0 %}
+    <h2>On Licence Sentences</h2>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header">Line Sequence</th>
+        <th class="govuk-table__header">Sentenced At</th>
+        <th class="govuk-table__header">Sentence Length</th>
+        <th class="govuk-table__header">Consecutive To</th>
+        <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+        <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      {% for sentence in groupedSentences.onLicenceSentences %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+          <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+          <td class="govuk-table__cell">{{ sentence.crd }}</td>
+          <td class="govuk-table__cell">{{ sentence.sled }}</td>
+        </tr>
       {% endfor %}
-    {% endif %}
-
-    <!-- Consecutive Sentence -->
-    {% if calculationBreakdown.consecutiveSentence %}
-      <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">Consecutive Sentence Details</caption>
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Sentenced At</th>
-          <th scope="col" class="govuk-table__header">Sentence Length</th>
-          <th scope="col" class="govuk-table__header">Sentence Length (Days)</th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        <tr class="govuk-table__row">
-          <td class="govuk-table__cell">{{ calculationBreakdown.consecutiveSentence.sentencedAt }}</td>
-          <td class="govuk-table__cell">{{ calculationBreakdown.consecutiveSentence.sentenceLength }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ calculationBreakdown.consecutiveSentence.sentenceLengthDays }}</td>
-        </tr>
-        </tbody>
-      </table>
-
-      <!-- Consecutive Sentence Parts -->
-      {% if calculationBreakdown.consecutiveSentence.sentenceParts.length %}
-        <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--m">Consecutive Sentence Parts</caption>
-          <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Line Sequence</th>
-            <th scope="col" class="govuk-table__header">Case Sequence</th>
-            <th scope="col" class="govuk-table__header">Sentence Length</th>
-            <th scope="col" class="govuk-table__header">Consecutive To Line Sequence</th>
-            <th scope="col" class="govuk-table__header">Consecutive To Case Sequence</th>
-          </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-          {% for part in calculationBreakdown.consecutiveSentence.sentenceParts %}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.lineSequence }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.caseSequence }}</td>
-              <td class="govuk-table__cell">{{ part.sentenceLength }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.consecutiveToLineSequence }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.consecutiveToCaseSequence }}</td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      {% endif %}
-
-      <!-- Dates Breakdown -->
-      {% if calculationBreakdown.consecutiveSentence.dates %}
-        <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--m">Consecutive Sentence Dates Breakdown</caption>
-          <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Date Type</th>
-            <th scope="col" class="govuk-table__header">Unadjusted</th>
-            <th scope="col" class="govuk-table__header">Adjusted</th>
-            <th scope="col" class="govuk-table__header">Days from Sentence Start</th>
-            <th scope="col" class="govuk-table__header">Adjusted by Days</th>
-          </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-          {% for dateType, dateBreakdown in calculationBreakdown.consecutiveSentence.dates %}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell">{{ dateType }}</td>
-              <td class="govuk-table__cell">{{ dateBreakdown.unadjusted }}</td>
-              <td class="govuk-table__cell">{{ dateBreakdown.adjusted }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.daysFromSentenceStart }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.adjustedByDays }}</td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      {% endif %}
-    {% endif %}
-
-    <!-- Breakdown by Release Date Type -->
-    {% if calculationBreakdown.breakdownByReleaseDateType %}
-      <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">Breakdown by Release Date Type</caption>
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Release Date Type</th>
-          <th scope="col" class="govuk-table__header">Unadjusted Date</th>
-          <th scope="col" class="govuk-table__header">Adjusted Date</th>
-          <th scope="col" class="govuk-table__header">Days from Sentence Start</th>
-          <th scope="col" class="govuk-table__header">Adjusted by Days</th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        {% for releaseDateType, releaseDateBreakdown in calculationBreakdown.breakdownByReleaseDateType %}
-          {% if releaseDateBreakdown %}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell">{{ releaseDateType }}</td>
-              <td class="govuk-table__cell">{{ releaseDateBreakdown.unadjusted }}</td>
-              <td class="govuk-table__cell">{{ releaseDateBreakdown.adjusted }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ releaseDateBreakdown.daysFromSentenceStart }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ releaseDateBreakdown.adjustedByDays }}</td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-        </tbody>
-      </table>
-    {% endif %}
-
-    <!-- Other Dates -->
-    {% if calculationBreakdown.otherDates %}
-      <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">Other Dates</caption>
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Date Type</th>
-          <th scope="col" class="govuk-table__header">Date</th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        {% for dateType, date in calculationBreakdown.otherDates %}
-          {% if date %}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell">{{ dateType }}</td>
-              <td class="govuk-table__cell">{{ date }}</td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-        </tbody>
-      </table>
-    {% endif %}
-
+      </tbody>
+    </table>
+  {% else %}
+    <h2>No sentences on licence.</h2>
   {% endif %}
 
-  <div class="govuk-section-break govuk-section-break--xl govuk-section-break--visible"></div>
-  <h2 class="govuk-heading-m" id="sentence-info">Sentence and Release Dates Lookup from CRD</h2>
-  <p><a href="#breakdown-info" class="govuk-link">Go to Calculation breakdown</a></p>
-  {% if sentencesAndReleaseDates and sentencesAndReleaseDates.length %}
-    {% for sentence in sentencesAndReleaseDates %}
-      <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">Sentence {{ sentence.sentenceSequence }} details</caption>
-        <thead class="govuk-table__head">
+  {% if groupedSentences.activeSentences.length > 0 %}
+    <h2>Active Sentences</h2>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header">Line Sequence</th>
+        <th class="govuk-table__header">Sentenced At</th>
+        <th class="govuk-table__header">Sentence Length</th>
+        <th class="govuk-table__header">Consecutive To</th>
+        <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+        <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      {% for sentence in groupedSentences.activeSentences %}
         <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Sequence</th>
-          <th scope="col" class="govuk-table__header">Line Sequence</th>
-          <th scope="col" class="govuk-table__header">Case Sequence</th>
-          <th scope="col" class="govuk-table__header">Consecutive To Sequence</th>
-          <th scope="col" class="govuk-table__header">Status</th>
-          <th scope="col" class="govuk-table__header">Sentence Calculation Type</th>
-          <th scope="col" class="govuk-table__header">Sentence Type Description</th>
-          <th scope="col" class="govuk-table__header">Sentence Date</th>
-          <th scope="col" class="govuk-table__header">Case Reference</th>
+          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+          <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+          <td class="govuk-table__cell">{{ sentence.crd }}</td>
+          <td class="govuk-table__cell">{{ sentence.sled }}</td>
         </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        <tr class="govuk-table__row">
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.sentenceSequence }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.lineSequence }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.caseSequence }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.consecutiveToSequence }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceStatus }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceCalculationType }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceTypeDescription }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceDate }}</td>
-          <td class="govuk-table__cell">{{ sentence.caseReference }}</td>
-        </tbody>
-      </table>
-
-      <!-- Sentence Terms -->
-      {% if sentence.terms.length %}
-        <table class="govuk-table">
-          <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Years</th>
-            <th scope="col" class="govuk-table__header">Months</th>
-            <th scope="col" class="govuk-table__header">Weeks</th>
-            <th scope="col" class="govuk-table__header">Days</th>
-            <th scope="col" class="govuk-table__header">Term Code</th>
-          </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-          {% for term in sentence.terms %}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.years }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.months }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.weeks }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.days }}</td>
-              <td class="govuk-table__cell">{{ term.code }}</td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      {% endif %}
-
-      <!-- Offence Details -->
-      {% if sentence.offence %}
-        <table class="govuk-table">
-          <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Offender Charge ID</th>
-            <th scope="col" class="govuk-table__header">Offence Start Date</th>
-            <th scope="col" class="govuk-table__header">Offence End Date</th>
-            <th scope="col" class="govuk-table__header">Offence Code</th>
-            <th scope="col" class="govuk-table__header">Offence Description</th>
-          </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.offence.offenderChargeId }}</td>
-            <td class="govuk-table__cell">{{ sentence.offence.offenceStartDate }}</td>
-            <td class="govuk-table__cell">{{ sentence.offence.offenceEndDate }}</td>
-            <td class="govuk-table__cell">{{ sentence.offence.offenceCode }}</td>
-            <td class="govuk-table__cell">{{ sentence.offence.offenceDescription }}</td>
-          </tr>
-          </tbody>
-        </table>
-      {% endif %}
-
-    {% endfor %}
-
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <h2>No active sentences.</h2>
   {% endif %}
+
+  {% if groupedSentences.expiredSentences.length > 0 %}
+    <h2>Expired Sentences</h2>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header">Line Sequence</th>
+        <th class="govuk-table__header">Sentenced At</th>
+        <th class="govuk-table__header">Sentence Length</th>
+        <th class="govuk-table__header">Consecutive To</th>
+        <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+        <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      {% for sentence in groupedSentences.expiredSentences %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+          <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+          <td class="govuk-table__cell">{{ sentence.crd }}</td>
+          <td class="govuk-table__cell">{{ sentence.sled }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <h2>No expired sentences.</h2>
+  {% endif %}
+
 
   <div class="govuk-button-group">
     {{ govukButton({

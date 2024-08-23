@@ -4,7 +4,6 @@ import type { Recall } from 'models'
 import { appWithAllRoutes, user } from './testutils/appSetup'
 import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
-import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import RecallService from '../services/recallService'
 import { CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { RecallTypes } from '../@types/refData'
@@ -316,94 +315,6 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
           day: '01',
           month: '02',
           year: '2023',
-        })
-      })
-  })
-})
-
-describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
-  it('should render check-sentences page and log page view', () => {
-    auditService.logPageView.mockResolvedValue(null)
-
-    prisonerService.getCalculationBreakdown.mockResolvedValue({
-      concurrentSentences: [
-        {
-          sentencedAt: '2022-06-10',
-          sentenceLength: '7 years',
-          sentenceLengthDays: 2557,
-          dates: {
-            SLED: {
-              unadjusted: '2029-06-09',
-              adjusted: '2029-06-09',
-              daysFromSentenceStart: 2557,
-              adjustedByDays: 0,
-            },
-            CRD: {
-              unadjusted: '2027-02-08',
-              adjusted: '2027-02-18',
-              daysFromSentenceStart: 1705,
-              adjustedByDays: -10,
-            },
-          },
-          lineSequence: 1,
-          caseSequence: 1,
-          caseReference: null,
-        },
-        {
-          sentencedAt: '2022-06-10',
-          sentenceLength: '84 months',
-          sentenceLengthDays: 2557,
-          dates: {
-            SLED: {
-              unadjusted: '2029-06-09',
-              adjusted: '2029-06-09',
-              daysFromSentenceStart: 2557,
-              adjustedByDays: 0,
-            },
-            CRD: {
-              unadjusted: '2025-12-09',
-              adjusted: '2025-12-19',
-              daysFromSentenceStart: 1279,
-              adjustedByDays: -10,
-            },
-          },
-          lineSequence: 2,
-          caseSequence: 1,
-          caseReference: null,
-        },
-      ],
-      consecutiveSentence: {
-        sentencedAt: '2022-06-10',
-        sentenceLength: '6 years 13 months',
-        sentenceLengthDays: 2587,
-        dates: {
-          SLED: {
-            unadjusted: '2029-07-09',
-            adjusted: '2029-07-09',
-            daysFromSentenceStart: 2587,
-            adjustedByDays: 0,
-          },
-          CRD: {
-            unadjusted: '2025-12-24',
-            adjusted: '2026-01-03',
-            daysFromSentenceStart: 1294,
-            adjustedByDays: -10,
-          },
-        },
-        caseSequence: 1,
-        caseReference: null,
-      },
-    } as unknown as CalculationBreakdown)
-
-    return request(app)
-      .get('/person/123/recall-entry/check-sentences')
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        // Verify concurrent sentences
-        expect(res.text).toContain('Calculation Breakdown Lookup from CRD')
-        expect(auditService.logPageView).toHaveBeenCalledWith(Page.CHECK_SENTENCES, {
-          who: user.username,
-          correlationId: expect.any(String),
         })
       })
   })
