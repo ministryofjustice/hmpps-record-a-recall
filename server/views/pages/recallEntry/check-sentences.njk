@@ -35,96 +35,100 @@
     </div>
   </div>
 
-  {% if groupedSentences.onLicenceSentences.length > 0 %}
-    <h2>On Licence Sentences</h2>
-    <table class="govuk-table">
-      <thead class="govuk-table__head">
-      <tr class="govuk-table__row">
-        <th class="govuk-table__header">Line Sequence</th>
-        <th class="govuk-table__header">Sentenced At</th>
-        <th class="govuk-table__header">Sentence Length</th>
-        <th class="govuk-table__header">Consecutive To</th>
-        <th class="govuk-table__header">Conditional Release Date (CRD)</th>
-        <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
-      </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-      {% for sentence in groupedSentences.onLicenceSentences %}
-        <tr class="govuk-table__row">
-          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
-          <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
-          <td class="govuk-table__cell">{{ sentence.crd }}</td>
-          <td class="govuk-table__cell">{{ sentence.sled }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <h2>No sentences on licence.</h2>
-  {% endif %}
+  {% for caseGroup in groupedSentences %}
+    <h2>Case Sequence {{ caseGroup.caseSequence }}</h2>
 
-  {% if groupedSentences.activeSentences.length > 0 %}
-    <h2>Active Sentences</h2>
-    <table class="govuk-table">
-      <thead class="govuk-table__head">
-      <tr class="govuk-table__row">
-        <th class="govuk-table__header">Line Sequence</th>
-        <th class="govuk-table__header">Sentenced At</th>
-        <th class="govuk-table__header">Sentence Length</th>
-        <th class="govuk-table__header">Consecutive To</th>
-        <th class="govuk-table__header">Conditional Release Date (CRD)</th>
-        <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
-      </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-      {% for sentence in groupedSentences.activeSentences %}
+    {% if caseGroup.sentences.onLicenceSentences.length > 0 %}
+      <h3>On Licence Sentences</h3>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
         <tr class="govuk-table__row">
-          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
-          <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
-          <td class="govuk-table__cell">{{ sentence.crd }}</td>
-          <td class="govuk-table__cell">{{ sentence.sled }}</td>
+          <th class="govuk-table__header">Line Sequence</th>
+          <th class="govuk-table__header">Sentenced At</th>
+          <th class="govuk-table__header">Sentence Length</th>
+          <th class="govuk-table__header">Consecutive To</th>
+          <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+          <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <h2>No active sentences.</h2>
-  {% endif %}
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for sentence in caseGroup.sentences.onLicenceSentences %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+            <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+            <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+            <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+            <td class="govuk-table__cell">{{ sentence.crd }}</td>
+            <td class="govuk-table__cell">{{ sentence.sled }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <h3>No sentences on licence.</h3>
+    {% endif %}
 
-  {% if groupedSentences.expiredSentences.length > 0 %}
-    <h2>Expired Sentences</h2>
-    <table class="govuk-table">
-      <thead class="govuk-table__head">
-      <tr class="govuk-table__row">
-        <th class="govuk-table__header">Line Sequence</th>
-        <th class="govuk-table__header">Sentenced At</th>
-        <th class="govuk-table__header">Sentence Length</th>
-        <th class="govuk-table__header">Consecutive To</th>
-        <th class="govuk-table__header">Conditional Release Date (CRD)</th>
-        <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
-      </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-      {% for sentence in groupedSentences.expiredSentences %}
+    {% if caseGroup.sentences.activeSentences.length > 0 %}
+      <h3>Active Sentences</h3>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
         <tr class="govuk-table__row">
-          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
-          <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
-          <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
-          <td class="govuk-table__cell">{{ sentence.crd }}</td>
-          <td class="govuk-table__cell">{{ sentence.sled }}</td>
+          <th class="govuk-table__header">Line Sequence</th>
+          <th class="govuk-table__header">Sentenced At</th>
+          <th class="govuk-table__header">Sentence Length</th>
+          <th class="govuk-table__header">Consecutive To</th>
+          <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+          <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <h2>No expired sentences.</h2>
-  {% endif %}
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for sentence in caseGroup.sentences.activeSentences %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+            <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+            <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+            <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+            <td class="govuk-table__cell">{{ sentence.crd }}</td>
+            <td class="govuk-table__cell">{{ sentence.sled }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <h3>No active sentences.</h3>
+    {% endif %}
 
+    {% if caseGroup.sentences.expiredSentences.length > 0 %}
+      <h3>Expired Sentences</h3>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header">Line Sequence</th>
+          <th class="govuk-table__header">Sentenced At</th>
+          <th class="govuk-table__header">Sentence Length</th>
+          <th class="govuk-table__header">Consecutive To</th>
+          <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+          <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for sentence in caseGroup.sentences.expiredSentences %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+            <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+            <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+            <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+            <td class="govuk-table__cell">{{ sentence.crd }}</td>
+            <td class="govuk-table__cell">{{ sentence.sled }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <h3>No expired sentences.</h3>
+    {% endif %}
+
+  {% endfor %}
 
   <div class="govuk-button-group">
     {{ govukButton({
@@ -133,4 +137,5 @@
       href: '/person/' + nomsId + '/recall-entry/enter-recall-type'
     }) }}
   </div>
+
 {% endblock %}
