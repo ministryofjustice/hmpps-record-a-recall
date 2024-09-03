@@ -12,6 +12,7 @@ type RecallType = { code: string; description: string }
 
 type SentenceDetail = {
   lineSequence: number
+  caseSequence: number
   sentencedAt: string
   sentenceLength: string
   consecutiveTo: number | null

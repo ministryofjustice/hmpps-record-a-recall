@@ -49,11 +49,16 @@ export default class PrisonerService {
     nomsId: string,
     username: string,
     recallDate: Date,
-  ): Promise<{
-    onLicenceSentences: SentenceDetail[]
-    activeSentences: SentenceDetail[]
-    expiredSentences: SentenceDetail[]
-  }> {
+  ): Promise<
+    Array<{
+      caseSequence: number
+      sentences: {
+        onLicenceSentences: SentenceDetail[]
+        activeSentences: SentenceDetail[]
+        expiredSentences: SentenceDetail[]
+      }
+    }>
+  > {
     try {
       const breakdown = await this.getCalculationBreakdown(nomsId, username)
 
@@ -77,19 +82,53 @@ export default class PrisonerService {
         logger.error('There are no sentences eligible for recall.')
       }
 
-      return {
-        onLicenceSentences,
-        activeSentences,
-        expiredSentences,
-      }
+      return this.groupByCaseSequence(onLicenceSentences, activeSentences, expiredSentences)
     } catch (error) {
       logger.error(`Error in groupSentencesByRecallDate: ${error.message}`, error)
-      return {
-        onLicenceSentences: [],
-        activeSentences: [],
-        expiredSentences: [],
-      }
+      return []
     }
+  }
+
+  private groupByCaseSequence(
+    onLicence: SentenceDetail[],
+    active: SentenceDetail[],
+    expired: SentenceDetail[],
+  ): Array<{
+    caseSequence: number
+    sentences: {
+      onLicenceSentences: SentenceDetail[]
+      activeSentences: SentenceDetail[]
+      expiredSentences: SentenceDetail[]
+    }
+  }> {
+    const grouped: Record<
+      number,
+      {
+        onLicenceSentences: SentenceDetail[]
+        activeSentences: SentenceDetail[]
+        expiredSentences: SentenceDetail[]
+      }
+    > = {}
+
+    const addToGroup = (sentence: SentenceDetail, category: keyof (typeof grouped)[number]) => {
+      if (!grouped[sentence.caseSequence]) {
+        grouped[sentence.caseSequence] = {
+          onLicenceSentences: [],
+          activeSentences: [],
+          expiredSentences: [],
+        }
+      }
+      grouped[sentence.caseSequence][category].push(sentence)
+    }
+
+    onLicence.forEach(sentence => addToGroup(sentence, 'onLicenceSentences'))
+    active.forEach(sentence => addToGroup(sentence, 'activeSentences'))
+    expired.forEach(sentence => addToGroup(sentence, 'expiredSentences'))
+
+    return Object.entries(grouped).map(([caseSequence, sentences]) => ({
+      caseSequence: parseInt(caseSequence, 10),
+      sentences,
+    }))
   }
 
   private filterAndCategorizeConcurrentSentences(
@@ -178,6 +217,7 @@ export default class PrisonerService {
   private mapConcurrentToSentenceDetail(sentence: ConcurrentSentenceBreakdown): SentenceDetail {
     return {
       lineSequence: sentence.lineSequence,
+      caseSequence: sentence.caseSequence,
       sentencedAt: sentence.sentencedAt,
       sentenceLength: sentence.sentenceLength,
       consecutiveTo: null,
@@ -189,6 +229,7 @@ export default class PrisonerService {
   private mapConsecutivePartToSentenceDetail(part: ConsecutiveSentencePart, crd: Date, sled: Date): SentenceDetail {
     return {
       lineSequence: part.lineSequence,
+      caseSequence: part.caseSequence,
       sentencedAt: crd.toISOString().split('T')[0], // Assuming CRD is used as the sentencing date for parts
       sentenceLength: part.sentenceLength,
       consecutiveTo: part.consecutiveToLineSequence || null,
