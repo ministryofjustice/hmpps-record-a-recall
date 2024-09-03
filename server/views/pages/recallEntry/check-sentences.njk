@@ -34,6 +34,9 @@
       <a href="/person/{{ nomsId }}/recall-entry/view-all-sentences" class="govuk-link">View raw sentence data</a>
     </div>
   </div>
+  {% if groupedSentences.length == 0 %}
+    <h2>No sentences exist.</h2>
+  {% endif %}
 
   {% for caseGroup in groupedSentences %}
     <h2>Case Sequence {{ caseGroup.caseSequence }}</h2>
