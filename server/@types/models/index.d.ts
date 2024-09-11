@@ -1,8 +1,7 @@
-import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
-
 declare module 'models' {
   import type { DateForm } from 'forms'
   import { RecallType } from '../refData'
+  import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
   export interface Recall {
     recallDateForm?: DateForm
