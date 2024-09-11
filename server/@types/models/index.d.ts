@@ -1,3 +1,5 @@
+import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+
 declare module 'models' {
   import type { DateForm } from 'forms'
   import { RecallType } from '../refData'
@@ -8,5 +10,6 @@ declare module 'models' {
     recallDate: Date
     returnToCustodyDate: Date
     recallType: RecallType
+    calculation?: CalculatedReleaseDates
   }
 }

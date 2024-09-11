@@ -1,6 +1,7 @@
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 import {
+  CalculatedReleaseDates,
   CalculationBreakdown,
   LatestCalculation,
   SentenceAndOffenceWithReleaseArrangements,
@@ -33,5 +34,9 @@ export default class CalculateReleaseDatesApiClient {
     return this.restClient.get({
       path: `/calculation/sentence-and-offences/${calculationRequestId}`,
     }) as Promise<SentenceAndOffenceWithReleaseArrangements[]>
+  }
+
+  async calculateReleaseDates(nomsId: string): Promise<CalculatedReleaseDates> {
+    return this.restClient.post({ path: `/calculation/record-a-recall/${nomsId}` }) as Promise<CalculatedReleaseDates>
   }
 }

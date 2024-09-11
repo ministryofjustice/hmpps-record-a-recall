@@ -8,3 +8,4 @@ export type SentenceAndOffenceWithReleaseArrangements =
 export type ConcurrentSentenceBreakdown = components['schemas']['ConcurrentSentenceBreakdown']
 export type ConsecutiveSentenceBreakdown = components['schemas']['ConsecutiveSentenceBreakdown']
 export type ConsecutiveSentencePart = components['schemas']['ConsecutiveSentencePart']
+export type CalculatedReleaseDates = components['schemas']['CalculatedReleaseDates']
