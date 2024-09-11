@@ -1127,7 +1127,7 @@ export interface components {
     }
     ManualCalculationResponse: {
       enteredDates?: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       /** Format: int64 */
       calculationRequestId: number
@@ -1276,7 +1276,7 @@ export interface components {
     }
     Adjustments: {
       adjustments?: {
-        [key: string]: components['schemas']['Adjustment'][] | undefined
+        [key: string]: components['schemas']['Adjustment'][]
       }
     }
     Booking: {
@@ -1314,7 +1314,7 @@ export interface components {
     })
     CalculatedReleaseDates: {
       dates: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       /** Format: int64 */
       calculationRequestId: number
@@ -1362,7 +1362,7 @@ export interface components {
         | 'MANUAL_OVERRIDE'
         | 'CALCULATED_BY_SPECIALIST_SUPPORT'
       approvedDates?: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       /** Format: uuid */
       calculationReference: string
@@ -1400,7 +1400,7 @@ export interface components {
     })
     Duration: {
       durationElements: {
-        [key: string]: number | undefined
+        [key: string]: number
       }
     }
     ExtendedDeterminateSentence: {
@@ -1757,16 +1757,16 @@ export interface components {
       /** Format: date-time */
       calculatedAt: string
       crdsDates: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       nomisDates: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       overrideDates: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       breakdownByReleaseDateType: {
-        [key: string]: components['schemas']['ReleaseDateCalculationBreakdown'] | undefined
+        [key: string]: components['schemas']['ReleaseDateCalculationBreakdown']
       }
       sdsSentencesIdentified: components['schemas']['SentenceAndOffenceWithReleaseArrangements'][]
       fatalException?: string
@@ -1812,7 +1812,7 @@ export interface components {
       )[]
       /** @description Adjustments details associated that are specifically added as part of a rule */
       rulesWithExtraAdjustments: {
-        [key: string]: components['schemas']['AdjustmentDuration'] | undefined
+        [key: string]: components['schemas']['AdjustmentDuration']
       }
       /**
        * Format: int32
@@ -1978,10 +1978,10 @@ export interface components {
       consecutiveSentence?: components['schemas']['ConsecutiveSentenceBreakdown']
       /** @description Breakdown details in a map keyed by release date type */
       breakdownByReleaseDateType: {
-        [key: string]: components['schemas']['ReleaseDateCalculationBreakdown'] | undefined
+        [key: string]: components['schemas']['ReleaseDateCalculationBreakdown']
       }
       otherDates: {
-        [key: string]: string | undefined
+        [key: string]: string
       }
       ersedNotApplicableDueToDtoLaterThanCrd: boolean
     }
@@ -1996,7 +1996,7 @@ export interface components {
       /** Format: int32 */
       sentenceLengthDays: number
       dates: {
-        [key: string]: components['schemas']['DateBreakdown'] | undefined
+        [key: string]: components['schemas']['DateBreakdown']
       }
       /** Format: int32 */
       lineSequence: number
@@ -2011,7 +2011,7 @@ export interface components {
       /** Format: int32 */
       sentenceLengthDays: number
       dates: {
-        [key: string]: components['schemas']['DateBreakdown'] | undefined
+        [key: string]: components['schemas']['DateBreakdown']
       }
       sentenceParts: components['schemas']['ConsecutiveSentencePart'][]
     }
@@ -2042,10 +2042,10 @@ export interface components {
     DetailedCalculationResults: {
       context: components['schemas']['CalculationContext']
       dates: {
-        [key: string]: components['schemas']['DetailedDate'] | undefined
+        [key: string]: components['schemas']['DetailedDate']
       }
       approvedDates?: {
-        [key: string]: components['schemas']['DetailedDate'] | undefined
+        [key: string]: components['schemas']['DetailedDate']
       }
       calculationOriginalData: components['schemas']['CalculationOriginalData']
       calculationBreakdown?: components['schemas']['CalculationBreakdown']
