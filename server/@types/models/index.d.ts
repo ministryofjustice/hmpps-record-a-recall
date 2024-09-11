@@ -1,6 +1,7 @@
 declare module 'models' {
   import type { DateForm } from 'forms'
   import { RecallType } from '../refData'
+  import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
   export interface Recall {
     recallDateForm?: DateForm
@@ -8,5 +9,6 @@ declare module 'models' {
     recallDate: Date
     returnToCustodyDate: Date
     recallType: RecallType
+    calculation?: CalculatedReleaseDates
   }
 }

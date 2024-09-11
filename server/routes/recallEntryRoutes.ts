@@ -21,6 +21,9 @@ export default class RecallEntryRoutes {
   public getEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const { submitToCheckAnswers } = req.query
+    await this.recallService.calculateReleaseDatesAndSetInSession(req.session, res.locals.user.username, nomsId)
+    // TODO Some validation will be added later as a separate ticket on the CRD calc to ensure it matches the latest confirmed calc
+    // This is the reason the calc is being performed on first route
     const recall = this.recallService.getRecall(req.session, nomsId)
     return res.render('pages/recallEntry/enter-recall-date', {
       nomsId,
@@ -86,23 +89,20 @@ export default class RecallEntryRoutes {
 
   public getCheckSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const { recallDate } = this.recallService.getRecall(req.session, nomsId)
-    const groupedSentences = await this.prisonerService.groupSentencesByRecallDate(
-      nomsId,
-      res.locals.user.username,
-      recallDate,
-    )
+    const recall = this.recallService.getRecall(req.session, nomsId)
+    const groupedSentences = await this.recallService.groupSentencesByRecallDate(res.locals.user.username, recall)
     return res.render('pages/recallEntry/check-sentences', {
       nomsId,
       groupedSentences,
-      recallDate,
+      recallDate: recall.recallDate,
     })
   }
 
   // This is just a temporary screen that displays all sentence data - created to aid analysis
   public getViewAllSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const calculationBreakdown = await this.prisonerService.getCalculationBreakdown(nomsId, res.locals.user.username)
+    const recall = this.recallService.getRecall(req.session, nomsId)
+    const calculationBreakdown = await this.recallService.getCalculationBreakdown(res.locals.user.username, recall)
     if (!calculationBreakdown) {
       return res.render('pages/recallEntry/view-all-sentences', {
         nomsId,

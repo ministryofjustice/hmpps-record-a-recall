@@ -257,6 +257,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/calculation/record-a-recall/{prisonerId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Calculate release dates for a prisoner - used explicitly by the record-a-recall service, this does not publish to NOMIS
+     * @description This endpoint will calculate release dates based on a prisoners latest booking - this is a transitory calculation that will not be published to NOMIS
+     */
+    post: operations['calculateForRecall']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/calculation/confirm/{calculationRequestId}': {
     parameters: {
       query?: never
@@ -429,6 +449,26 @@ export interface paths {
      * @description Finds the non friday release day, adjusting for weekends and bank holidays
      */
     get: operations['nonFridayReleaseDay']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/manual-calculation/{bookingId}/has-recall-sentences': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Determine if a booking has any recall sentences
+     * @description This endpoint will return true if a booking has any recall sentences
+     */
+    get: operations['hasRecallSentences']
     put?: never
     post?: never
     delete?: never
@@ -974,10 +1014,20 @@ export interface components {
         | 'UNSUPPORTED_CALCULATION_DTO_WITH_RECALL'
         | 'PRE_PCSC_DTO_WITH_ADJUSTMENT'
         | 'BOTUS_CONSECUTIVE_OR_CONCURRENT_TO_OTHER_SENTENCE'
+        | 'SDS_EARLY_RELEASE_UNSUPPORTED'
+        | 'UNSUPPORTED_SDS40_RECALL_SENTENCE_TYPE'
+        | 'UNSUPPORTED_OFFENCE_ENCOURAGING_OR_ASSISTING'
+        | 'UNSUPPORTED_SUSPENDED_OFFENCE'
       arguments: string[]
       message: string
       /** @enum {string} */
-      type: 'UNSUPPORTED_SENTENCE' | 'UNSUPPORTED_CALCULATION' | 'VALIDATION'
+      type:
+        | 'UNSUPPORTED_SENTENCE'
+        | 'UNSUPPORTED_CALCULATION'
+        | 'VALIDATION'
+        | 'UNSUPPORTED_OFFENCE'
+        | 'SUSPENDED_OFFENCE'
+        | 'UNSUPPORTED_SDS40_SENTENCE'
     }
     AdjustmentServiceAdjustment: {
       /** Format: uuid */
@@ -1185,6 +1235,83 @@ export interface components {
       calculationReasonId: number
       otherReasonDescription?: string
     }
+    AFineSentence: {
+      type: 'AFineSentence'
+    } & (Omit<
+      WithRequired<
+        components['schemas']['AbstractSentence'],
+        'consecutiveSentenceUUIDs' | 'identifier' | 'isSDSPlus' | 'offence' | 'sentencedAt'
+      >,
+      'type'
+    > & {
+      duration: components['schemas']['Duration']
+      fineAmount?: number
+    })
+    AbstractSentence: {
+      offence: components['schemas']['Offence']
+      /** Format: date */
+      sentencedAt: string
+      /** Format: uuid */
+      identifier: string
+      consecutiveSentenceUUIDs: string[]
+      /** Format: int32 */
+      caseSequence?: number
+      /** Format: int32 */
+      lineSequence?: number
+      caseReference?: string
+      /** @enum {string} */
+      recallType?: 'STANDARD_RECALL' | 'FIXED_TERM_RECALL_14' | 'FIXED_TERM_RECALL_28'
+      isSDSPlus: boolean
+      type: string
+    }
+    Adjustment: {
+      /** Format: date */
+      appliesToSentencesFrom: string
+      /** Format: int32 */
+      numberOfDays: number
+      /** Format: date */
+      fromDate?: string
+      /** Format: date */
+      toDate?: string
+    }
+    Adjustments: {
+      adjustments?: {
+        [key: string]: components['schemas']['Adjustment'][] | undefined
+      }
+    }
+    Booking: {
+      offender: components['schemas']['Offender']
+      sentences: (
+        | components['schemas']['AFineSentence']
+        | components['schemas']['BotusSentence']
+        | components['schemas']['DetentionAndTrainingOrderSentence']
+        | components['schemas']['ExtendedDeterminateSentence']
+        | components['schemas']['SopcSentence']
+        | components['schemas']['StandardDeterminateSentence']
+      )[]
+      adjustments: components['schemas']['Adjustments']
+      /** Format: date */
+      returnToCustodyDate?: string
+      fixedTermRecallDetails?: components['schemas']['FixedTermRecallDetails']
+      /** Format: int64 */
+      bookingId: number
+      historicalTusedData?: components['schemas']['HistoricalTusedData']
+    }
+    BotusSentence: {
+      type: 'BotusSentence'
+    } & (Omit<
+      WithRequired<
+        components['schemas']['AbstractSentence'],
+        'consecutiveSentenceUUIDs' | 'identifier' | 'isSDSPlus' | 'offence' | 'sentencedAt'
+      >,
+      'type'
+    > & {
+      duration: components['schemas']['Duration']
+      /** Format: date */
+      latestTusedDate?: string
+      /** @enum {string} */
+      latestTusedSource?: 'CRDS' | 'CRDS_OVERRIDDEN' | 'NOMIS' | 'NOMIS_OVERRIDDEN'
+    })
     CalculatedReleaseDates: {
       dates: {
         [key: string]: string | undefined
@@ -1195,7 +1322,7 @@ export interface components {
       bookingId: number
       prisonerId: string
       /** @enum {string} */
-      calculationStatus: 'PRELIMINARY' | 'CONFIRMED' | 'ERROR' | 'TEST'
+      calculationStatus: 'PRELIMINARY' | 'CONFIRMED' | 'ERROR' | 'TEST' | 'RECORD_A_RECALL'
       calculationFragments?: components['schemas']['CalculationFragments']
       effectiveSentenceLength?: {
         /** Format: int32 */
@@ -1245,6 +1372,11 @@ export interface components {
       calculationDate?: string
       /** @enum {string} */
       historicalTusedSource?: 'CRDS' | 'CRDS_OVERRIDDEN' | 'NOMIS' | 'NOMIS_OVERRIDDEN'
+      /** @enum {string} */
+      sdsEarlyReleaseAllocatedTranche?: 'TRANCHE_0' | 'TRANCHE_1' | 'TRANCHE_2'
+      /** @enum {string} */
+      sdsEarlyReleaseTranche?: 'TRANCHE_0' | 'TRANCHE_1' | 'TRANCHE_2'
+      calculatedBooking?: components['schemas']['Booking']
     }
     CalculationFragments: {
       breakdownHtml: string
@@ -1255,6 +1387,86 @@ export interface components {
       isOther: boolean
       displayName: string
     }
+    DetentionAndTrainingOrderSentence: {
+      type: 'DetentionAndTrainingOrderSentence'
+    } & (Omit<
+      WithRequired<
+        components['schemas']['AbstractSentence'],
+        'consecutiveSentenceUUIDs' | 'identifier' | 'isSDSPlus' | 'offence' | 'sentencedAt'
+      >,
+      'type'
+    > & {
+      duration: components['schemas']['Duration']
+    })
+    Duration: {
+      durationElements: {
+        [key: string]: number | undefined
+      }
+    }
+    ExtendedDeterminateSentence: {
+      type: 'ExtendedDeterminateSentence'
+    } & (Omit<
+      WithRequired<
+        components['schemas']['AbstractSentence'],
+        'consecutiveSentenceUUIDs' | 'identifier' | 'isSDSPlus' | 'offence' | 'sentencedAt'
+      >,
+      'type'
+    > & {
+      custodialDuration: components['schemas']['Duration']
+      extensionDuration: components['schemas']['Duration']
+      automaticRelease: boolean
+    })
+    FixedTermRecallDetails: {
+      /** Format: int64 */
+      bookingId: number
+      /** Format: date */
+      returnToCustodyDate: string
+      /** Format: int32 */
+      recallLength: number
+    }
+    HistoricalTusedData: {
+      /** Format: date */
+      tused?: string
+      /** @enum {string} */
+      historicalTusedSource: 'CRDS' | 'CRDS_OVERRIDDEN' | 'NOMIS' | 'NOMIS_OVERRIDDEN'
+    }
+    Offence: {
+      /** Format: date */
+      committedAt: string
+      offenceCode?: string
+    }
+    Offender: {
+      reference: string
+      /** Format: date */
+      dateOfBirth: string
+      isActiveSexOffender: boolean
+    }
+    SopcSentence: {
+      type: 'SopcSentence'
+    } & (Omit<
+      WithRequired<
+        components['schemas']['AbstractSentence'],
+        'consecutiveSentenceUUIDs' | 'identifier' | 'isSDSPlus' | 'offence' | 'sentencedAt'
+      >,
+      'type'
+    > & {
+      custodialDuration: components['schemas']['Duration']
+      extensionDuration: components['schemas']['Duration']
+      sdopcu18: boolean
+    })
+    StandardDeterminateSentence: {
+      type: 'StandardDeterminateSentence'
+    } & (Omit<
+      WithRequired<
+        components['schemas']['AbstractSentence'],
+        'consecutiveSentenceUUIDs' | 'identifier' | 'isSDSPlus' | 'offence' | 'sentencedAt'
+      >,
+      'type'
+    > & {
+      duration: components['schemas']['Duration']
+      /** @enum {string} */
+      hasAnSDSEarlyReleaseExclusion: 'SEXUAL' | 'VIOLENT' | 'DOMESTIC_ABUSE' | 'NATIONAL_SECURITY' | 'TERRORISM' | 'NO'
+    })
     CalculationResults: {
       calculatedReleaseDates?: components['schemas']['CalculatedReleaseDates']
       validationMessages: components['schemas']['ValidationMessage'][]
@@ -1331,7 +1543,7 @@ export interface components {
       sentenceAndOffenceAnalysis: 'NEW' | 'UPDATED' | 'SAME'
       isSDSPlus: boolean
       /** @enum {string} */
-      hasAnSDSEarlyReleaseExclusion: 'SEXUAL' | 'VIOLENT' | 'NO'
+      hasAnSDSEarlyReleaseExclusion: 'SEXUAL' | 'VIOLENT' | 'DOMESTIC_ABUSE' | 'NATIONAL_SECURITY' | 'TERRORISM' | 'NO'
     }
     OffenderOffence: {
       /** Format: int64 */
@@ -1581,12 +1793,22 @@ export interface components {
         | 'PED_EQUAL_TO_LATEST_NON_PED_ACTUAL_RELEASE'
         | 'HDCED_ADJUSTED_TO_CONCURRENT_CONDITIONAL_RELEASE'
         | 'HDCED_ADJUSTED_TO_CONCURRENT_ACTUAL_RELEASE'
+        | 'HDCED_ADJUSTED_TO_CONCURRENT_PRRD'
         | 'ERSED_MAX_PERIOD'
         | 'ERSED_MIN_EFFECTIVE_DATE'
         | 'ERSED_ADJUSTED_TO_CONCURRENT_TERM'
         | 'ERSED_BEFORE_SENTENCE_DATE'
         | 'ERSED_ADJUSTED_TO_MTD'
-        | 'SDS_EARLY_RELEASE_ADJUSTED_TO_TRANCHE_COMMENCEMENT'
+        | 'SDS_EARLY_RELEASE_ADJUSTED_TO_TRANCHE_1_COMMENCEMENT'
+        | 'SDS_EARLY_RELEASE_ADJUSTED_TO_TRANCHE_2_COMMENCEMENT'
+        | 'SDS_STANDARD_RELEASE_APPLIES'
+        | 'SDS_EARLY_RELEASE_APPLIES'
+        | 'CRD_ADJUSTED_TO_TRANCE_COMMENCEMENT'
+        | 'HDCED_ADJUSTED_TO_TRANCE_COMMENCEMENT'
+        | 'PRRD_ADJUSTED_TO_TRANCE_COMMENCEMENT'
+        | 'ERSED_ADJUSTED_TO_TRANCHE_COMMENCEMENT'
+        | 'PED_ADJUSTED_TO_TRANCHE_COMMENCEMENT'
+        | 'HDCED4PLUS_ADJUSTED_TO_TRANCHE_COMMENCEMENT'
       )[]
       /** @description Adjustments details associated that are specifically added as part of a rule */
       rulesWithExtraAdjustments: {
@@ -1632,7 +1854,7 @@ export interface components {
       fineAmount?: number
       isSDSPlus: boolean
       /** @enum {string} */
-      hasAnSDSEarlyReleaseExclusion: 'SEXUAL' | 'VIOLENT' | 'NO'
+      hasAnSDSEarlyReleaseExclusion: 'SEXUAL' | 'VIOLENT' | 'DOMESTIC_ABUSE' | 'NATIONAL_SECURITY' | 'TERRORISM' | 'NO'
     }
     DetailedDate: {
       /** @enum {string} */
@@ -1697,7 +1919,7 @@ export interface components {
       bookingId: number
       prisonerId: string
       /** @enum {string} */
-      calculationStatus: 'PRELIMINARY' | 'CONFIRMED' | 'ERROR' | 'TEST'
+      calculationStatus: 'PRELIMINARY' | 'CONFIRMED' | 'ERROR' | 'TEST' | 'RECORD_A_RECALL'
       /** Format: uuid */
       calculationReference: string
       calculationReason?: components['schemas']['CalculationReason']
@@ -1832,6 +2054,8 @@ export interface components {
         | 'PRISON_API_DATA_MISSING'
         | 'BREAKDOWN_CHANGED_SINCE_LAST_CALCULATION'
         | 'UNSUPPORTED_CALCULATION_BREAKDOWN'
+      /** @enum {string} */
+      tranche?: 'TRANCHE_0' | 'TRANCHE_1' | 'TRANCHE_2'
     }
     BookingAdjustment: {
       active: boolean
@@ -2648,6 +2872,50 @@ export interface operations {
       }
     }
   }
+  calculateForRecall: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /**
+         * @description The prisoners ID (aka nomsId)
+         * @example A1234AB
+         */
+        prisonerId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns calculated dates */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CalculatedReleaseDates']
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CalculatedReleaseDates']
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CalculatedReleaseDates']
+        }
+      }
+    }
+  }
   confirmCalculation: {
     parameters: {
       query?: never
@@ -3044,6 +3312,50 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['NonFridayReleaseDay']
+        }
+      }
+    }
+  }
+  hasRecallSentences: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /**
+         * @description The booking ID to check against
+         * @example 100001
+         */
+        bookingId: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns a boolean value */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': boolean
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': boolean
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': boolean
         }
       }
     }
@@ -4202,4 +4514,7 @@ export interface operations {
       }
     }
   }
+}
+type WithRequired<T, K extends keyof T> = T & {
+  [P in K]-?: T[P]
 }
