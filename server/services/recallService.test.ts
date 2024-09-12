@@ -166,26 +166,21 @@ describe('Recall service', () => {
         recallDate: new Date(2024, 1, 1),
       } as Recall)
 
-      expect(result).toEqual([
-        {
-          caseSequence: 1,
-          sentences: {
-            onLicenceSentences: [],
-            activeSentences: [],
-            expiredSentences: [
-              {
-                lineSequence: 1,
-                caseSequence: 1,
-                sentencedAt: '2022-01-01',
-                sentenceLength: '2 years',
-                consecutiveTo: null,
-                crd: '2024-01-01',
-                sled: '2023-12-01',
-              },
-            ],
+      expect(result).toEqual({
+        onLicenceSentences: [],
+        activeSentences: [],
+        expiredSentences: [
+          {
+            caseSequence: 1,
+            lineSequence: 1,
+            sentencedAt: '2022-01-01',
+            sentenceLength: '2 years',
+            consecutiveTo: null,
+            crd: '2024-01-01',
+            sled: '2023-12-01',
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should group sentences based on recall date - on licence sentences', async () => {
@@ -226,26 +221,21 @@ describe('Recall service', () => {
         recallDate: new Date(2024, 3, 1),
       } as Recall)
 
-      expect(result).toEqual([
-        {
-          caseSequence: 1,
-          sentences: {
-            onLicenceSentences: [
-              {
-                lineSequence: 1,
-                caseSequence: 1,
-                sentencedAt: '2022-01-01',
-                sentenceLength: '2 years',
-                consecutiveTo: null,
-                crd: '2024-01-01',
-                sled: '2024-06-01',
-              },
-            ],
-            activeSentences: [],
-            expiredSentences: [],
+      expect(result).toEqual({
+        onLicenceSentences: [
+          {
+            caseSequence: 1,
+            lineSequence: 1,
+            sentencedAt: '2022-01-01',
+            sentenceLength: '2 years',
+            consecutiveTo: null,
+            crd: '2024-01-01',
+            sled: '2024-06-01',
           },
-        },
-      ])
+        ],
+        activeSentences: [],
+        expiredSentences: [],
+      })
     })
 
     it('should group sentences based on recall date - active sentences', async () => {
@@ -286,26 +276,21 @@ describe('Recall service', () => {
         recallDate: new Date(2023, 11, 15),
       } as Recall)
 
-      expect(result).toEqual([
-        {
-          caseSequence: 1,
-          sentences: {
-            onLicenceSentences: [],
-            activeSentences: [
-              {
-                lineSequence: 1,
-                caseSequence: 1,
-                sentencedAt: '2022-01-01',
-                sentenceLength: '2 years',
-                consecutiveTo: null,
-                crd: '2024-01-01',
-                sled: '2024-03-01',
-              },
-            ],
-            expiredSentences: [],
+      expect(result).toEqual({
+        onLicenceSentences: [],
+        activeSentences: [
+          {
+            lineSequence: 1,
+            caseSequence: 1,
+            sentencedAt: '2022-01-01',
+            sentenceLength: '2 years',
+            consecutiveTo: null,
+            crd: '2024-01-01',
+            sled: '2024-03-01',
           },
-        },
-      ])
+        ],
+        expiredSentences: [],
+      })
     })
 
     it('should group sentences based on recall date - mixed sentence types', async () => {
@@ -368,44 +353,31 @@ describe('Recall service', () => {
         recallDate: new Date(2024, 2, 15),
       } as Recall)
 
-      expect(result).toEqual([
-        {
-          caseSequence: 1,
-          sentences: {
-            activeSentences: [],
-            expiredSentences: [],
-            onLicenceSentences: [
-              {
-                caseSequence: 1,
-                consecutiveTo: null,
-                crd: '2024-01-01',
-                lineSequence: 1,
-                sentenceLength: '2 years',
-                sentencedAt: '2022-01-01',
-                sled: '2024-04-01',
-              },
-            ],
+      expect(result).toEqual({
+        activeSentences: [],
+        expiredSentences: [
+          {
+            caseSequence: 2,
+            consecutiveTo: null,
+            crd: '2023-01-01',
+            lineSequence: 2,
+            sentenceLength: '3 years',
+            sentencedAt: '2021-01-01',
+            sled: '2023-12-01',
           },
-        },
-        {
-          caseSequence: 2,
-          sentences: {
-            activeSentences: [],
-            expiredSentences: [
-              {
-                caseSequence: 2,
-                consecutiveTo: null,
-                crd: '2023-01-01',
-                lineSequence: 2,
-                sentenceLength: '3 years',
-                sentencedAt: '2021-01-01',
-                sled: '2023-12-01',
-              },
-            ],
-            onLicenceSentences: [],
+        ],
+        onLicenceSentences: [
+          {
+            caseSequence: 1,
+            consecutiveTo: null,
+            crd: '2024-01-01',
+            lineSequence: 1,
+            sentenceLength: '2 years',
+            sentencedAt: '2022-01-01',
+            sled: '2024-04-01',
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should handle cases where there are no eligible sentences', async () => {
@@ -423,7 +395,7 @@ describe('Recall service', () => {
         recallDate: new Date(2024, 2, 15),
       } as Recall)
 
-      expect(result).toEqual([])
+      expect(result).toEqual({ activeSentences: [], expiredSentences: [], onLicenceSentences: [] })
     })
   })
 })

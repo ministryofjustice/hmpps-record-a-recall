@@ -135,16 +135,11 @@ export default class RecallService {
   async groupSentencesByRecallDate(
     username: string,
     recall: Recall,
-  ): Promise<
-    Array<{
-      caseSequence: number
-      sentences: {
-        onLicenceSentences: SentenceDetail[]
-        activeSentences: SentenceDetail[]
-        expiredSentences: SentenceDetail[]
-      }
-    }>
-  > {
+  ): Promise<{
+    onLicenceSentences: SentenceDetail[]
+    activeSentences: SentenceDetail[]
+    expiredSentences: SentenceDetail[]
+  }> {
     try {
       const breakdown = await this.getCalculationBreakdown(username, recall)
 
@@ -168,10 +163,18 @@ export default class RecallService {
         logger.error('There are no sentences eligible for recall.')
       }
 
-      return this.groupByCaseSequence(onLicenceSentences, activeSentences, expiredSentences)
+      return {
+        onLicenceSentences,
+        activeSentences,
+        expiredSentences,
+      }
     } catch (error) {
       logger.error(`Error in groupSentencesByRecallDate: ${error.message}`, error)
-      return []
+      return {
+        onLicenceSentences: [],
+        activeSentences: [],
+        expiredSentences: [],
+      }
     }
   }
 
@@ -183,48 +186,6 @@ export default class RecallService {
       logger.error(`Error in getCalculationBreakdown: ${error.message}`, error)
       return undefined
     }
-  }
-
-  private groupByCaseSequence(
-    onLicence: SentenceDetail[],
-    active: SentenceDetail[],
-    expired: SentenceDetail[],
-  ): Array<{
-    caseSequence: number
-    sentences: {
-      onLicenceSentences: SentenceDetail[]
-      activeSentences: SentenceDetail[]
-      expiredSentences: SentenceDetail[]
-    }
-  }> {
-    const grouped: Record<
-      number,
-      {
-        onLicenceSentences: SentenceDetail[]
-        activeSentences: SentenceDetail[]
-        expiredSentences: SentenceDetail[]
-      }
-    > = {}
-
-    const addToGroup = (sentence: SentenceDetail, category: keyof (typeof grouped)[number]) => {
-      if (!grouped[sentence.caseSequence]) {
-        grouped[sentence.caseSequence] = {
-          onLicenceSentences: [],
-          activeSentences: [],
-          expiredSentences: [],
-        }
-      }
-      grouped[sentence.caseSequence][category].push(sentence)
-    }
-
-    onLicence.forEach(sentence => addToGroup(sentence, 'onLicenceSentences'))
-    active.forEach(sentence => addToGroup(sentence, 'activeSentences'))
-    expired.forEach(sentence => addToGroup(sentence, 'expiredSentences'))
-
-    return Object.entries(grouped).map(([caseSequence, sentences]) => ({
-      caseSequence: parseInt(caseSequence, 10),
-      sentences,
-    }))
   }
 
   private filterAndCategorizeConcurrentSentences(
