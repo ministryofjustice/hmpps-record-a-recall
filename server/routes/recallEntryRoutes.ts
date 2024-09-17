@@ -91,10 +91,17 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const recall = this.recallService.getRecall(req.session, nomsId)
     const groupedSentences = await this.recallService.groupSentencesByRecallDate(res.locals.user.username, recall)
+    const nextHref = await this.recallService.getNextHref(
+      nomsId,
+      recall,
+      groupedSentences.onLicenceSentences,
+      res.locals.user.username,
+    )
     return res.render('pages/recallEntry/check-sentences', {
       nomsId,
       groupedSentences,
       recallDate: recall.recallDate,
+      nextHref,
     })
   }
 
@@ -157,5 +164,12 @@ export default class RecallEntryRoutes {
     const { uuid } = req.query
 
     return res.render('pages/recallEntry/success-confirmation', { nomsId, uuid })
+  }
+
+  public getFixedTermRecallQuestion: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const { uuid } = req.query
+
+    return res.render('pages/recallEntry/ftr-question', { nomsId, uuid })
   }
 }
