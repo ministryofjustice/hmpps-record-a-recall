@@ -420,7 +420,7 @@ describe('Recall service', () => {
 
       fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
 
-      const result = await recallService.getNextHref(nomsId, recall, onLicenceSentences, username)
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
 
       expect(result).toBe(`/person/${nomsId}/recall-entry/check-your-answers`)
     })
@@ -437,7 +437,7 @@ describe('Recall service', () => {
 
       fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
 
-      const result = await recallService.getNextHref(nomsId, recall, onLicenceSentences, username)
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
 
       expect(result).toBe(`/person/${nomsId}/recall-entry/ftr-question`)
     })
@@ -454,7 +454,7 @@ describe('Recall service', () => {
 
       fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
 
-      const result = await recallService.getNextHref(nomsId, recall, onLicenceSentences, username)
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
 
       expect(result).toBe(`/person/${nomsId}/recall-entry/enter-recall-type`)
     })
@@ -471,7 +471,7 @@ describe('Recall service', () => {
 
       fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
 
-      const result = await recallService.getNextHref(nomsId, recall, onLicenceSentences, username)
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
 
       expect(result).toBe(`/person/${nomsId}/recall-entry/enter-recall-type`)
     })

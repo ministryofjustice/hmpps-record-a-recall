@@ -295,7 +295,7 @@ export default class RecallService {
     }
   }
 
-  async getNextHref(
+  async getNextHrefForSentencePage(
     nomsId: string,
     recall: Recall,
     onLicenceSentences: SentenceDetail[],

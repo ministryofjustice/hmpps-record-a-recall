@@ -441,7 +441,7 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
 
     recallService.getRecall.mockReturnValue(mockRecall)
     recallService.groupSentencesByRecallDate.mockResolvedValue(groupedSentences)
-    recallService.getNextHref.mockResolvedValue(expectedNextHref)
+    recallService.getNextHrefForSentencePage.mockResolvedValue(expectedNextHref)
 
     await request(app)
       .get('/person/123/recall-entry/check-sentences')
@@ -450,7 +450,7 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
         expect(res.text).toContain(`href="${expectedNextHref}"`)
         expect(recallService.getRecall).toHaveBeenCalledWith(expect.any(Object), '123')
         expect(recallService.groupSentencesByRecallDate).toHaveBeenCalledWith(user.username, mockRecall)
-        expect(recallService.getNextHref).toHaveBeenCalledWith(
+        expect(recallService.getNextHrefForSentencePage).toHaveBeenCalledWith(
           '123',
           mockRecall,
           groupedSentences.onLicenceSentences,

@@ -91,7 +91,7 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const recall = this.recallService.getRecall(req.session, nomsId)
     const groupedSentences = await this.recallService.groupSentencesByRecallDate(res.locals.user.username, recall)
-    const nextHref = await this.recallService.getNextHref(
+    const nextHref = await this.recallService.getNextHrefForSentencePage(
       nomsId,
       recall,
       groupedSentences.onLicenceSentences,
