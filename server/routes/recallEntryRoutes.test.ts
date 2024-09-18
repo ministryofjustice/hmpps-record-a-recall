@@ -6,7 +6,7 @@ import AuditService, { Page } from '../services/auditService'
 import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
 import { CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { RecallTypes } from '../@types/refData'
+import { RecallTypes, SentenceDetail } from '../@types/refData'
 import ValidationService from '../services/validationService'
 
 jest.mock('../services/auditService')
@@ -413,6 +413,49 @@ describe('routes for /person/:nomsId/recall-entry/success-confirmation', () => {
           who: user.username,
           correlationId: expect.any(String),
         })
+      })
+  })
+})
+
+describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
+  it('should render the check-sentences page with the correct nextHref in the Continue button', async () => {
+    const mockRecall = {
+      recallDate: new Date(2024, 0, 1),
+      // Other recall fields...
+    } as Recall
+
+    const groupedSentences = {
+      onLicenceSentences: [
+        {
+          caseSequence: '1',
+          lineSequence: 'A',
+          sentencedAt: '2022-01-01',
+          sentenceLength: '2 years',
+        } as unknown as SentenceDetail,
+      ],
+      activeSentences: [] as SentenceDetail[],
+      expiredSentences: [] as SentenceDetail[],
+    }
+
+    const expectedNextHref = '/person/123/recall-entry/some-next-step'
+
+    recallService.getRecall.mockReturnValue(mockRecall)
+    recallService.groupSentencesByRecallDate.mockResolvedValue(groupedSentences)
+    recallService.getNextHrefForSentencePage.mockResolvedValue(expectedNextHref)
+
+    await request(app)
+      .get('/person/123/recall-entry/check-sentences')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(`href="${expectedNextHref}"`)
+        expect(recallService.getRecall).toHaveBeenCalledWith(expect.any(Object), '123')
+        expect(recallService.groupSentencesByRecallDate).toHaveBeenCalledWith(user.username, mockRecall)
+        expect(recallService.getNextHrefForSentencePage).toHaveBeenCalledWith(
+          '123',
+          mockRecall,
+          groupedSentences.onLicenceSentences,
+          user.username,
+        )
       })
   })
 })

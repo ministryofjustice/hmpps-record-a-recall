@@ -4,7 +4,7 @@ import type { Recall } from 'models'
 import RecallService from './recallService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 import config from '../config'
-import { RecallTypes } from '../@types/refData'
+import { RecallTypes, SentenceDetail } from '../@types/refData'
 import { ApiRecall, CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   CalculatedReleaseDates,
@@ -396,6 +396,84 @@ describe('Recall service', () => {
       } as Recall)
 
       expect(result).toEqual({ activeSentences: [], expiredSentences: [], onLicenceSentences: [] })
+    })
+  })
+
+  describe('RecallService - getNextHref', () => {
+    const nomsId = 'A1234BC'
+    const recall = {
+      calculation: {
+        calculationRequestId: 'calculation-123',
+      },
+    } as Recall
+    const username = 'testUser'
+
+    it('should return "/check-your-answers" when all sentences match singleMatchCriteria', async () => {
+      const onLicenceSentences = [
+        { caseSequence: 1, lineSequence: 1 } as SentenceDetail,
+        { caseSequence: 2, lineSequence: 2 } as SentenceDetail,
+      ]
+      const allSentences = [
+        { caseSequence: 1, lineSequence: 1, sentenceCalculationType: 'LASPO_DR', sentenceCategory: '2003' },
+        { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'IPP', sentenceCategory: '2003' },
+      ]
+
+      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
+
+      expect(result).toBe(`/person/${nomsId}/recall-entry/check-your-answers`)
+    })
+
+    it('should return "/ftr-question" when all sentences match fixedAndStandardCriteria', async () => {
+      const onLicenceSentences = [
+        { caseSequence: 1, lineSequence: 1 } as SentenceDetail,
+        { caseSequence: 2, lineSequence: 2 } as SentenceDetail,
+      ]
+      const allSentences = [
+        { caseSequence: 1, lineSequence: 1, sentenceCalculationType: 'ADIMP', sentenceCategory: '2003' },
+        { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'SEC236A', sentenceCategory: '2003' },
+      ]
+
+      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
+
+      expect(result).toBe(`/person/${nomsId}/recall-entry/ftr-question`)
+    })
+
+    it('should return "/enter-recall-type" when no criteria are matched', async () => {
+      const onLicenceSentences = [
+        { caseSequence: 1, lineSequence: 1 } as SentenceDetail,
+        { caseSequence: 2, lineSequence: 2 } as SentenceDetail,
+      ]
+      const allSentences = [
+        { caseSequence: 1, lineSequence: 1, sentenceCalculationType: 'UNKNOWN', sentenceCategory: '2000' },
+        { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'UNKNOWN', sentenceCategory: '2000' },
+      ]
+
+      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
+
+      expect(result).toBe(`/person/${nomsId}/recall-entry/enter-recall-type`)
+    })
+
+    it('should handle partial matching and return default URL', async () => {
+      const onLicenceSentences = [
+        { caseSequence: 1, lineSequence: 1 } as SentenceDetail,
+        { caseSequence: 2, lineSequence: 2 } as SentenceDetail,
+      ]
+      const allSentences = [
+        { caseSequence: 1, lineSequence: 1, sentenceCalculationType: 'LASPO_DR', sentenceCategory: '2003' },
+        { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'UNKNOWN', sentenceCategory: '2000' },
+      ]
+
+      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+
+      const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
+
+      expect(result).toBe(`/person/${nomsId}/recall-entry/enter-recall-type`)
     })
   })
 })

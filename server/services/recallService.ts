@@ -294,4 +294,61 @@ export default class RecallService {
       sled: sled.toISOString().split('T')[0],
     }
   }
+
+  async getNextHrefForSentencePage(
+    nomsId: string,
+    recall: Recall,
+    onLicenceSentences: SentenceDetail[],
+    username: string,
+  ): Promise<string> {
+    const crdApi = await this.getCRDApiClient(username)
+    const allSentences = await crdApi.getSentencesAndReleaseDates(recall.calculation.calculationRequestId)
+    const singleMatchCriteria = [
+      ['LASPO_DR', '2003'],
+      ['IPP', '2003'],
+      ['EDS21', '2020'],
+    ]
+
+    const fixedAndStandardCriteria = [
+      ['ADIMP', '2003'],
+      ['ADIMP_ORA', '2003'],
+      ['SEC236A', '2003'],
+      ['SOPC21', '2020'],
+      ['ADIMP_ORA', '2020'],
+      ['ADIMP', '2020'],
+    ]
+
+    const decoratedOnLicenceSentences = onLicenceSentences.map(it => {
+      const matching = allSentences.find(s => s.caseSequence === it.caseSequence && s.lineSequence === it.lineSequence)
+      return {
+        ...it,
+        sentenceCalculationType: matching.sentenceCalculationType,
+        sentenceCategory: matching.sentenceCategory,
+      }
+    })
+
+    const singleMatchSentences = decoratedOnLicenceSentences.every(sentence =>
+      singleMatchCriteria.some(
+        ([calculationType, category]) =>
+          sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,
+      ),
+    )
+
+    if (singleMatchSentences) {
+      return `/person/${nomsId}/recall-entry/check-your-answers`
+    }
+
+    const fixedAndStandardEligibleSentences = decoratedOnLicenceSentences.every(sentence =>
+      fixedAndStandardCriteria.some(
+        ([calculationType, category]) =>
+          sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,
+      ),
+    )
+
+    if (fixedAndStandardEligibleSentences) {
+      return `/person/${nomsId}/recall-entry/ftr-question`
+    }
+
+    return `/person/${nomsId}/recall-entry/enter-recall-type`
+  }
 }
