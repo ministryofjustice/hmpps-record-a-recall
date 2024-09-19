@@ -33,3 +33,13 @@ export function getDateFromForm(dateForm: DateForm) {
   const day = parseInt(dateForm.day, 10)
   return new Date(year, month, day)
 }
+
+export function parseBooleanString(booleanString?: string): boolean | undefined {
+  if (booleanString === 'true') {
+    return true
+  }
+  if (booleanString === 'false') {
+    return false
+  }
+  return undefined
+}

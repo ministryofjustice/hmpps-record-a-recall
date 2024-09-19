@@ -20,4 +20,9 @@ type SentenceDetail = {
   sled: string
 }
 
-export { RecallTypes, RecallType, SentenceDetail }
+type SentenceDetailExtended = SentenceDetail & {
+  sentenceCalculationType: string
+  sentenceCategory: string
+}
+
+export { RecallTypes, RecallType, SentenceDetail, SentenceDetailExtended }

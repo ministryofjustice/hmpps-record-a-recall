@@ -1,7 +1,7 @@
 import type { Recall } from 'models'
 import type { DateForm } from 'forms'
 import { HmppsAuthClient } from '../data'
-import { RecallTypes, SentenceDetail } from '../@types/refData'
+import { RecallTypes, SentenceDetail, SentenceDetailExtended } from '../@types/refData'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
   ApiRecall,
@@ -18,6 +18,21 @@ import {
   ConsecutiveSentencePart,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
+const SINGLE_MATCH_CRITERIA = [
+  ['LASPO_DR', '2003'],
+  ['IPP', '2003'],
+  ['EDS21', '2020'],
+]
+
+const FIXED_AND_STANDARD_CRITERIA = [
+  ['ADIMP', '2003'],
+  ['ADIMP_ORA', '2003'],
+  ['SEC236A', '2003'],
+  ['SOPC21', '2020'],
+  ['ADIMP_ORA', '2020'],
+  ['ADIMP', '2020'],
+]
+
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
 
@@ -32,6 +47,7 @@ export default class RecallService {
   setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
     const recall = this.getRecall(session, nomsId)
     recall.recallDateForm = recallDateForm
+    this.resetDeriableFields(recall)
     const recallDate = getDateFromForm(recallDateForm)
 
     if (Number.isNaN(recallDate.getTime())) {
@@ -50,6 +66,7 @@ export default class RecallService {
   ) {
     const recall = this.getRecall(session, nomsId)
     recall.returnToCustodyDateForm = returnToCustodyDateForm
+    this.resetDeriableFields(recall)
     const returnToCustodyDate = getDateFromForm(returnToCustodyDateForm)
 
     if (Number.isNaN(returnToCustodyDate.getTime())) {
@@ -59,6 +76,12 @@ export default class RecallService {
     }
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
+  }
+
+  // reset fields that need deriving again based on new user input
+  private resetDeriableFields(recall: Recall) {
+    // eslint-disable-next-line no-param-reassign
+    recall.isFixedTermRecall = undefined
   }
 
   getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Recall {
@@ -82,6 +105,17 @@ export default class RecallService {
   setRecallType(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallTypeCode: string) {
     const recall = this.getRecall(session, nomsId)
     recall.recallType = Object.values(RecallTypes).find(it => it.code === recallTypeCode)
+    // eslint-disable-next-line no-param-reassign
+    session.recalls[nomsId] = recall
+  }
+
+  setIsFixedTermRecall(
+    session: CookieSessionInterfaces.CookieSessionObject,
+    nomsId: string,
+    isFixedTermRecall: boolean,
+  ) {
+    const recall = this.getRecall(session, nomsId)
+    recall.isFixedTermRecall = isFixedTermRecall
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
   }
@@ -295,60 +329,83 @@ export default class RecallService {
     }
   }
 
+  async getNextUrlForFTRQuestionPage(nomsId: string, recall: Recall, username: string): Promise<string> {
+    const { onLicenceSentences } = await this.groupSentencesByRecallDate(username, recall)
+    const decoratedOnLicenceSentences = await this.getDecoratedOnLicenceSentences(username, recall, onLicenceSentences)
+
+    const isSingleTypeOfSentence = this.hasSingleTypeOfSentence(decoratedOnLicenceSentences)
+
+    if (recall.isFixedTermRecall) {
+      if (isSingleTypeOfSentence) {
+        // AC6 & AC7
+        return `/person/${nomsId}/recall-entry/check-your-answers`
+      }
+      // AC4 RCLL-107 page to be done here - looks like further rules
+    }
+
+    // AC5 RCLL-106
+    return `/person/${nomsId}/recall-entry/enter-recall-type`
+  }
+
+  private hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtended[]): boolean {
+    return FIXED_AND_STANDARD_CRITERIA.some(([calculationType, category]) =>
+      decoratedSentences.every(
+        sentence => sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,
+      ),
+    )
+  }
+
   async getNextHrefForSentencePage(
     nomsId: string,
     recall: Recall,
     onLicenceSentences: SentenceDetail[],
     username: string,
   ): Promise<string> {
-    const crdApi = await this.getCRDApiClient(username)
-    const allSentences = await crdApi.getSentencesAndReleaseDates(recall.calculation.calculationRequestId)
-    const singleMatchCriteria = [
-      ['LASPO_DR', '2003'],
-      ['IPP', '2003'],
-      ['EDS21', '2020'],
-    ]
-
-    const fixedAndStandardCriteria = [
-      ['ADIMP', '2003'],
-      ['ADIMP_ORA', '2003'],
-      ['SEC236A', '2003'],
-      ['SOPC21', '2020'],
-      ['ADIMP_ORA', '2020'],
-      ['ADIMP', '2020'],
-    ]
-
-    const decoratedOnLicenceSentences = onLicenceSentences.map(it => {
-      const matching = allSentences.find(s => s.caseSequence === it.caseSequence && s.lineSequence === it.lineSequence)
-      return {
-        ...it,
-        sentenceCalculationType: matching.sentenceCalculationType,
-        sentenceCategory: matching.sentenceCategory,
-      }
-    })
-
-    const singleMatchSentences = decoratedOnLicenceSentences.every(sentence =>
-      singleMatchCriteria.some(
-        ([calculationType, category]) =>
-          sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,
-      ),
-    )
+    const decoratedOnLicenceSentences = await this.getDecoratedOnLicenceSentences(username, recall, onLicenceSentences)
+    const singleMatchSentences = this.getSingleMatchSentences(decoratedOnLicenceSentences)
 
     if (singleMatchSentences) {
       return `/person/${nomsId}/recall-entry/check-your-answers`
     }
 
-    const fixedAndStandardEligibleSentences = decoratedOnLicenceSentences.every(sentence =>
-      fixedAndStandardCriteria.some(
+    const fixedAndStandardEligibleSentences = this.getFixedAndStandardEligibleSentences(decoratedOnLicenceSentences)
+
+    if (fixedAndStandardEligibleSentences) {
+      return `/person/${nomsId}/recall-entry/ask-ftr-question`
+    }
+
+    return `/person/${nomsId}/recall-entry/enter-recall-type`
+  }
+
+  async getDecoratedOnLicenceSentences(username: string, recall: Recall, onLicenceSentences: SentenceDetail[]) {
+    const crdApi = await this.getCRDApiClient(username)
+    const allSentences = await crdApi.getSentencesAndReleaseDates(recall.calculation.calculationRequestId)
+
+    return onLicenceSentences.map(it => {
+      const matching = allSentences.find(s => s.caseSequence === it.caseSequence && s.lineSequence === it.lineSequence)
+      return {
+        ...it,
+        sentenceCalculationType: matching.sentenceCalculationType,
+        sentenceCategory: matching.sentenceCategory,
+      } as SentenceDetailExtended
+    })
+  }
+
+  private getFixedAndStandardEligibleSentences(decoratedOnLicenceSentences: SentenceDetailExtended[]) {
+    return decoratedOnLicenceSentences.every(sentence =>
+      FIXED_AND_STANDARD_CRITERIA.some(
         ([calculationType, category]) =>
           sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,
       ),
     )
+  }
 
-    if (fixedAndStandardEligibleSentences) {
-      return `/person/${nomsId}/recall-entry/ftr-question`
-    }
-
-    return `/person/${nomsId}/recall-entry/enter-recall-type`
+  private getSingleMatchSentences(decoratedOnLicenceSentences: SentenceDetailExtended[]) {
+    return decoratedOnLicenceSentences.every(sentence =>
+      SINGLE_MATCH_CRITERIA.some(
+        ([calculationType, category]) =>
+          sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,
+      ),
+    )
   }
 }

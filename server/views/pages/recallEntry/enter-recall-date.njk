@@ -8,14 +8,9 @@
 {% block beforeContent %}
   {{ super() }}
   <nav>
-    {% if submitToCheckAnswers %}
-      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
-    {% else %}
-      {% set backlinkHref = "/person/" + nomsId %}
-    {% endif %}
     {{ govukBackLink({
       text: "Back",
-      href: backlinkHref
+      href: "/person/" + nomsId
     }) }}
   </nav>
 {% endblock %}
@@ -29,7 +24,7 @@
   {% endif %}
 
   <form method="post"
-        action="/person/{{ nomsId }}/recall-entry/enter-recall-date{{ "?submitToCheckAnswers=true" if submitToCheckAnswers }}">
+        action="/person/{{ nomsId }}/recall-entry/enter-recall-date">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {{ govukDateInput({
       id: "recallDate",
@@ -77,6 +72,13 @@
         type: submit,
         preventDoubleClick: true,
         attributes: { 'data-qa': 'submit-enter-recall-date' }
+      }) }}
+      {{ govukButton({
+        text: "Cancel",
+        classes: "govuk-button--secondary",
+        preventDoubleClick: true,
+        attributes: { 'data-qa': 'cancel-enter-recall-date' },
+        href: "/person/" + nomsId
       }) }}
     </div>
   </form>

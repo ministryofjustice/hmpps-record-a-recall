@@ -84,4 +84,11 @@ export default class ValidationService {
 
     return []
   }
+
+  validateFtrQuestion(isFixedTermRecall?: boolean) {
+    if (isFixedTermRecall == null) {
+      return [{ text: 'You must select whether the recall is a fixed term.', href: '#isFixedTermRecall' }]
+    }
+    return []
+  }
 }
