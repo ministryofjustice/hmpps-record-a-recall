@@ -13,7 +13,7 @@
   <nav>
     {{ govukBackLink({
       text: "Back",
-      href: "/person/" + nomsId + "/check-sentences"
+      href: "/person/" + nomsId + "/recall-entry/check-sentences"
     }) }}
   </nav>
 {% endblock %}
@@ -61,6 +61,7 @@
 
       {{ govukButton({
         text: "Cancel",
+        classes: "govuk-button--secondary",
         preventDoubleClick: true,
         attributes: { 'data-qa': 'cancel-ask-ftr-question' },
         href: "/person/" + nomsId
