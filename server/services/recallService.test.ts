@@ -495,7 +495,6 @@ describe('Recall service', () => {
 
       recallService.groupSentencesByRecallDate = jest.fn().mockResolvedValue({})
       recallService.getDecoratedOnLicenceSentences = jest.fn().mockResolvedValue(allSentences)
-      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
 
       const result = await recallService.getNextUrlForFTRQuestionPage(nomsId, ftrRecall, username)
 
@@ -508,7 +507,8 @@ describe('Recall service', () => {
         { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'UNKNOWN', sentenceCategory: '2000' },
       ]
 
-      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+      recallService.groupSentencesByRecallDate = jest.fn().mockResolvedValue({})
+      recallService.getDecoratedOnLicenceSentences = jest.fn().mockResolvedValue(allSentences)
 
       const result = await recallService.getNextUrlForFTRQuestionPage(nomsId, recall, username)
 
