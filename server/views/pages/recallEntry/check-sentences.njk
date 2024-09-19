@@ -10,14 +10,9 @@
 {% block beforeContent %}
   {{ super() }}
   <nav>
-    {% if submitToCheckAnswers %}
-      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/check-your-answers" %}
-    {% else %}
-      {% set backlinkHref = "/person/" + nomsId + "/recall-entry/enter-return-to-custody-date" %}
-    {% endif %}
     {{ govukBackLink({
       text: "Back",
-      href: backlinkHref
+      href: "/person/" + nomsId + "/recall-entry/enter-return-to-custody-date"
     }) }}
   </nav>
 {% endblock %}
@@ -61,6 +56,13 @@
       text: "Continue",
       preventDoubleClick: true,
       href: nextHref
+    }) }}
+
+    {{ govukButton({
+      text: "Cancel",
+      preventDoubleClick: true,
+      attributes: { 'data-qa': 'cancel-enter-check-sentences' },
+      href: "/person/" + nomsId
     }) }}
   </div>
 

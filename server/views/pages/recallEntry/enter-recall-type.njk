@@ -35,6 +35,13 @@
         preventDoubleClick: true,
         attributes: { 'data-qa': 'submit-enter-recall-type' }
       }) }}
+
+      {{ govukButton({
+        text: "Cancel",
+        preventDoubleClick: true,
+        attributes: { 'data-qa': 'cancel-enter-recall-type' },
+        href: "/person/" + nomsId
+      }) }}
     </div>
   </form>
 {% endblock %}

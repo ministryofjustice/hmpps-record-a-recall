@@ -425,7 +425,7 @@ describe('Recall service', () => {
       expect(result).toBe(`/person/${nomsId}/recall-entry/check-your-answers`)
     })
 
-    it('should return "/ftr-question" when all sentences match fixedAndStandardCriteria', async () => {
+    it('should return "/ask-ftr-question" when all sentences match fixedAndStandardCriteria', async () => {
       const onLicenceSentences = [
         { caseSequence: 1, lineSequence: 1 } as SentenceDetail,
         { caseSequence: 2, lineSequence: 2 } as SentenceDetail,
@@ -439,7 +439,7 @@ describe('Recall service', () => {
 
       const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
 
-      expect(result).toBe(`/person/${nomsId}/recall-entry/ftr-question`)
+      expect(result).toBe(`/person/${nomsId}/recall-entry/ask-ftr-question`)
     })
 
     it('should return "/enter-recall-type" when no criteria are matched', async () => {
@@ -472,6 +472,45 @@ describe('Recall service', () => {
       fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
 
       const result = await recallService.getNextHrefForSentencePage(nomsId, recall, onLicenceSentences, username)
+
+      expect(result).toBe(`/person/${nomsId}/recall-entry/enter-recall-type`)
+    })
+  })
+
+  describe('RecallService - getNextUrlForFTRQuestionPage', () => {
+    const nomsId = 'A1234BC'
+    const recall = {
+      calculation: {
+        calculationRequestId: 'calculation-123',
+      },
+    } as Recall
+    const username = 'testUser'
+
+    it('should return "/ask-ftr-question" when all sentences match FTR criteria', async () => {
+      const ftrRecall = { ...recall, isFixedTermRecall: true }
+      const allSentences = [
+        { caseSequence: 1, lineSequence: 1, sentenceCalculationType: 'ADIMP', sentenceCategory: '2003' },
+        { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'ADIMP', sentenceCategory: '2003' },
+      ]
+
+      recallService.groupSentencesByRecallDate = jest.fn().mockResolvedValue({})
+      recallService.getDecoratedOnLicenceSentences = jest.fn().mockResolvedValue(allSentences)
+      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+
+      const result = await recallService.getNextUrlForFTRQuestionPage(nomsId, ftrRecall, username)
+
+      expect(result).toBe(`/person/${nomsId}/recall-entry/check-your-answers`)
+    })
+
+    it('should return "/enter-recall-type" when not a FTR ', async () => {
+      const allSentences = [
+        { caseSequence: 1, lineSequence: 1, sentenceCalculationType: 'ADIMP', sentenceCategory: '2003' },
+        { caseSequence: 2, lineSequence: 2, sentenceCalculationType: 'UNKNOWN', sentenceCategory: '2000' },
+      ]
+
+      fakeCalculateReleaseDatesApi.get('/calculation/sentence-and-offences/calculation-123').reply(200, allSentences)
+
+      const result = await recallService.getNextUrlForFTRQuestionPage(nomsId, recall, username)
 
       expect(result).toBe(`/person/${nomsId}/recall-entry/enter-recall-type`)
     })

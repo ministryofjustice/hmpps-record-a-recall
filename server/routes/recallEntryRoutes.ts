@@ -4,6 +4,7 @@ import PrisonerService from '../services/prisonerService'
 import RecallService from '../services/recallService'
 import { RecallTypes } from '../@types/refData'
 import ValidationService from '../services/validationService'
+import { parseBooleanString } from '../utils/utils'
 
 export default class RecallEntryRoutes {
   constructor(
@@ -20,14 +21,12 @@ export default class RecallEntryRoutes {
 
   public getEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const { submitToCheckAnswers } = req.query
     await this.recallService.calculateReleaseDatesAndSetInSession(req.session, res.locals.user.username, nomsId)
     // TODO Some validation will be added later as a separate ticket on the CRD calc to ensure it matches the latest confirmed calc
     // This is the reason the calc is being performed on first route
     const recall = this.recallService.getRecall(req.session, nomsId)
     return res.render('pages/recallEntry/enter-recall-date', {
       nomsId,
-      submitToCheckAnswers,
       recall,
       errors: req.flash('errors') || [],
     })
@@ -35,7 +34,6 @@ export default class RecallEntryRoutes {
 
   public submitEnterRecallDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const { submitToCheckAnswers } = req.query
     const recallDateForm = req.body.recallDate as DateForm
     this.recallService.setRecallDate(req.session, nomsId, recallDateForm)
 
@@ -48,19 +46,14 @@ export default class RecallEntryRoutes {
       return res.redirect(`/person/${nomsId}/recall-entry/enter-recall-date`)
     }
 
-    if (submitToCheckAnswers) {
-      return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
-    }
     return res.redirect(`/person/${nomsId}/recall-entry/enter-return-to-custody-date`)
   }
 
   public getEnterReturnToCustodyDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const { submitToCheckAnswers } = req.query
     const recall = this.recallService.getRecall(req.session, nomsId)
     return res.render('pages/recallEntry/enter-return-to-custody-date', {
       nomsId,
-      submitToCheckAnswers,
       recall,
       errors: req.flash('errors') || [],
     })
@@ -68,7 +61,6 @@ export default class RecallEntryRoutes {
 
   public submitReturnToCustodyDate: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const { submitToCheckAnswers } = req.query
     const returnToCustodyDateForm = req.body.returnToCustodyDate as DateForm
     this.recallService.setReturnToCustodyDate(req.session, nomsId, returnToCustodyDateForm)
 
@@ -81,9 +73,6 @@ export default class RecallEntryRoutes {
       return res.redirect(`/person/${nomsId}/recall-entry/enter-return-to-custody-date`)
     }
 
-    if (submitToCheckAnswers) {
-      return res.redirect(`/person/${nomsId}/recall-entry/check-your-answers`)
-    }
     return res.redirect(`/person/${nomsId}/recall-entry/check-sentences`)
   }
 
@@ -170,6 +159,22 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const { uuid } = req.query
 
-    return res.render('pages/recallEntry/ftr-question', { nomsId, uuid })
+    return res.render('pages/recallEntry/ask-ftr-question', { nomsId, uuid })
+  }
+
+  public submitFixedTermRecallQuestion: RequestHandler = async (req, res): Promise<void> => {
+    const { nomsId } = req.params
+    const isFixedTermRecall = parseBooleanString(req.body.isFixedTermRecall)
+    const errors = this.validationService.validateFtrQuestion(isFixedTermRecall)
+
+    if (errors.length) {
+      req.flash('errors', errors)
+      return res.redirect(`/person/${nomsId}/recall-entry/ask-ftr-question`)
+    }
+    this.recallService.setIsFixedTermRecall(req.session, nomsId, isFixedTermRecall)
+    const recall = this.recallService.getRecall(req.session, nomsId)
+
+    const nextUrl = await this.recallService.getNextUrlForFTRQuestionPage(nomsId, recall, res.locals.user.username)
+    return res.redirect(nextUrl)
   }
 }

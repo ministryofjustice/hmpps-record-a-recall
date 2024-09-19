@@ -10,5 +10,6 @@ declare module 'models' {
     returnToCustodyDate: Date
     recallType: RecallType
     calculation?: CalculatedReleaseDates
+    isFixedTermRecall?: boolean
   }
 }

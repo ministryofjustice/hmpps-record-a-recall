@@ -111,12 +111,16 @@ export default function routes({ auditService, prisonerService, recallService, v
   )
 
   get(
-    '/person/:nomsId/recall-entry/ftr-question',
-    logPageViewMiddleware(auditService, Page.FTR_QUESTION),
+    '/person/:nomsId/recall-entry/ask-ftr-question',
+    logPageViewMiddleware(auditService, Page.ASK_FTR_QUESTION),
     async (req, res, next) => {
       recallEntryRoutes.getFixedTermRecallQuestion(req, res, next)
     },
   )
+
+  post('/person/:nomsId/recall-entry/ask-ftr-question', async (req, res, next) => {
+    recallEntryRoutes.submitFixedTermRecallQuestion(req, res, next)
+  })
 
   return router
 }

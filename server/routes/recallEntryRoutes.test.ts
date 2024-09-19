@@ -156,26 +156,6 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
         })
       })
   })
-
-  it('should render backlink pointing to the check-your-answers page when submitToCheckAnswers is true', () => {
-    return request(app)
-      .get('/person/123/recall-entry/enter-recall-date?submitToCheckAnswers=true')
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).toContain(
-          '<a href="/person/123/recall-entry/check-your-answers" class="govuk-back-link">Back</a>',
-        )
-      })
-  })
-
-  it('should render backlink pointing to the main person page when submitToCheckAnswers is false', () => {
-    return request(app)
-      .get('/person/123/recall-entry/enter-recall-date')
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).toContain('<a href="/person/123" class="govuk-back-link">Back</a>')
-      })
-  })
 })
 
 describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
@@ -187,22 +167,6 @@ describe('POST /person/:nomsId/recall-entry/enter-recall-date', () => {
       .send({ recallDate: { day: 'invalid', month: '02', year: '2023' } })
       .expect(302)
       .expect('Location', '/person/123/recall-entry/enter-recall-date')
-  })
-
-  it('should set recall date and redirect to check your answers page', async () => {
-    validationService.validateRecallDateForm.mockReturnValue([])
-
-    await request(app)
-      .post('/person/123/recall-entry/enter-recall-date?submitToCheckAnswers=true')
-      .send({ recallDate: { day: '01', month: '02', year: '2023' } })
-      .expect(302)
-      .expect('Location', '/person/123/recall-entry/check-your-answers')
-
-    expect(recallService.setRecallDate).toHaveBeenCalledWith({}, '123', {
-      day: '01',
-      month: '02',
-      year: '2023',
-    })
   })
 
   it('should set recall date and redirect to enter return to custody date page', async () => {
@@ -277,28 +241,6 @@ describe('routes for /person/:nomsId/recall-entry/enter-return-to-custody-date',
           who: user.username,
           correlationId: expect.any(String),
         })
-      })
-  })
-
-  it('should render backlink pointing to the check-your-answers page when submitToCheckAnswers is true', () => {
-    return request(app)
-      .get('/person/123/recall-entry/enter-return-to-custody-date?submitToCheckAnswers=true')
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).toContain(
-          '<a href="/person/123/recall-entry/check-your-answers" class="govuk-back-link">Back</a>',
-        )
-      })
-  })
-
-  it('should render backlink pointing to the main person page when submitToCheckAnswers is false', () => {
-    return request(app)
-      .get('/person/123/recall-entry/enter-return-to-custody-date')
-      .expect('Content-Type', /html/)
-      .expect(res => {
-        expect(res.text).toContain(
-          '<a href="/person/123/recall-entry/enter-recall-date" class="govuk-back-link">Back</a>',
-        )
       })
   })
 
@@ -457,5 +399,52 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
           user.username,
         )
       })
+  })
+})
+
+describe('POST /person/:nomsId/recall-entry/ask-ftr-question', () => {
+  it('should render the ask-ftr-question page and log page view', () => {
+    auditService.logPageView.mockResolvedValue(null)
+
+    return request(app)
+      .get('/person/123/recall-entry/ask-ftr-question')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('Is this a fixed-term recall?')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.ASK_FTR_QUESTION, {
+          who: user.username,
+          correlationId: expect.any(String),
+        })
+      })
+  })
+
+  it('should show error messages for validation failures', async () => {
+    validationService.validateFtrQuestion.mockReturnValue([
+      { text: 'Please select an option', href: '#isFixedTermRecall' },
+    ])
+
+    const appWithFlash = getAppForErrorMessages([{ text: 'Please select an option', href: '#isFixedTermRecall' }])
+
+    await request(appWithFlash)
+      .post('/person/123/recall-entry/ask-ftr-question')
+      .send({ isFixedTermRecall: '' }) // Simulating no selection
+      .expect(302)
+      .expect('Location', '/person/123/recall-entry/ask-ftr-question')
+
+    expect(validationService.validateFtrQuestion).toHaveBeenCalled()
+  })
+
+  it('should redirect to the next page when valid input is provided', async () => {
+    validationService.validateFtrQuestion.mockReturnValue([])
+    const expectedNextUrl = '/person/123/recall-entry/enter-next-step'
+    recallService.getNextUrlForFTRQuestionPage.mockResolvedValue(expectedNextUrl)
+
+    await request(app)
+      .post('/person/123/recall-entry/ask-ftr-question')
+      .send({ isFixedTermRecall: 'true' }) // Valid selection
+      .expect(302)
+      .expect('Location', expectedNextUrl) // Assuming this is the next step
+
+    expect(recallService.setIsFixedTermRecall).toHaveBeenCalledWith({}, '123', true)
   })
 })
