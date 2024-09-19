@@ -15,6 +15,7 @@ export default class RecallEntryRoutes {
 
   public getPersonHomePage: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
+    this.recallService.removeAllRecallsFromSession(req.session)
     const recalls = await this.recallService.getAllRecalls(nomsId, res.locals.user.username)
     return res.render('pages/person/home.njk', { nomsId, recalls })
   }
@@ -157,9 +158,8 @@ export default class RecallEntryRoutes {
 
   public getFixedTermRecallQuestion: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const { uuid } = req.query
 
-    return res.render('pages/recallEntry/ask-ftr-question', { nomsId, uuid })
+    return res.render('pages/recallEntry/ask-ftr-question', { nomsId, errors: req.flash('errors') || [] })
   }
 
   public submitFixedTermRecallQuestion: RequestHandler = async (req, res): Promise<void> => {
