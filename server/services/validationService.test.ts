@@ -209,8 +209,8 @@ describe('Validation service tests', () => {
       expect(errors).toEqual([
         {
           text:
-            `There are no sentences eligible for recall using the recall date of 01 Jan 2024 entered\n` +
-            `If you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.`,
+            'There are no sentences eligible for recall using the recall date of 01 Jan 2024 entered. ' +
+            'If you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.',
         },
       ])
     })

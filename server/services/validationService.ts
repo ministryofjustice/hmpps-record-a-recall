@@ -98,8 +98,8 @@ export default class ValidationService {
       return [
         {
           text:
-            `There are no sentences eligible for recall using the recall date of ${formatDateForDisplay(recall.recallDate)} entered\n` +
-            `If you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.`,
+            `There are no sentences eligible for recall using the recall date of ${formatDateForDisplay(recall.recallDate)} entered. ` +
+            'If you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.',
         },
       ]
     }
