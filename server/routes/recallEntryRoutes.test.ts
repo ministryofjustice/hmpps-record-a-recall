@@ -363,7 +363,6 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
   it('should render the check-sentences page with the correct nextHref in the Continue button', async () => {
     const mockRecall = {
       recallDate: new Date(2024, 0, 1),
-      // Other recall fields...
     } as Recall
 
     const groupedSentences = {
@@ -384,6 +383,7 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
     recallService.getRecall.mockReturnValue(mockRecall)
     recallService.groupSentencesByRecallDate.mockResolvedValue(groupedSentences)
     recallService.getNextHrefForSentencePage.mockResolvedValue(expectedNextHref)
+    validationService.validateSentences.mockReturnValue([])
 
     await request(app)
       .get('/person/123/recall-entry/check-sentences')
@@ -396,7 +396,41 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
           '123',
           mockRecall,
           groupedSentences.onLicenceSentences,
+          false,
           user.username,
+        )
+      })
+  })
+
+  it('should show validation message when there are no onLicence sentenmvces', async () => {
+    validationService.validateSentences.mockReturnValue([
+      {
+        text: 'There are no sentences eligible for recall using the recall date of 01 Jan 2024 entered \nIf you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.',
+      },
+    ])
+
+    const mockRecall = {
+      recallDate: new Date(2024, 0, 1),
+    } as Recall
+
+    const groupedSentences = {
+      onLicenceSentences: [] as SentenceDetail[],
+      activeSentences: [] as SentenceDetail[],
+      expiredSentences: [] as SentenceDetail[],
+    }
+
+    const expectedNextHref = '/person/123/recall-entry/some-next-step'
+
+    recallService.getRecall.mockReturnValue(mockRecall)
+    recallService.groupSentencesByRecallDate.mockResolvedValue(groupedSentences)
+    recallService.getNextHrefForSentencePage.mockResolvedValue(expectedNextHref)
+
+    await request(app)
+      .get('/person/123/recall-entry/check-sentences')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain(
+          'There are no sentences eligible for recall using the recall date of 01 Jan 2024 entered \nIf you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.',
         )
       })
   })
@@ -427,7 +461,7 @@ describe('POST /person/:nomsId/recall-entry/ask-ftr-question', () => {
 
     await request(appWithFlash)
       .post('/person/123/recall-entry/ask-ftr-question')
-      .send({ isFixedTermRecall: '' }) // Simulating no selection
+      .send({ isFixedTermRecall: '' })
       .expect(302)
       .expect('Location', '/person/123/recall-entry/ask-ftr-question')
 
@@ -441,9 +475,9 @@ describe('POST /person/:nomsId/recall-entry/ask-ftr-question', () => {
 
     await request(app)
       .post('/person/123/recall-entry/ask-ftr-question')
-      .send({ isFixedTermRecall: 'true' }) // Valid selection
+      .send({ isFixedTermRecall: 'true' })
       .expect(302)
-      .expect('Location', expectedNextUrl) // Assuming this is the next step
+      .expect('Location', expectedNextUrl)
 
     expect(recallService.setIsFixedTermRecall).toHaveBeenCalledWith({}, '123', true)
   })

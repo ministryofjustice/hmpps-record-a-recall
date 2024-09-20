@@ -1,7 +1,8 @@
 import Joi, { CustomHelpers } from 'joi'
 import type { DateForm } from 'forms'
 import type { Recall } from 'models'
-import { getDateFromForm } from '../utils/utils'
+import { formatDateForDisplay, getDateFromForm } from '../utils/utils'
+import { SentenceDetail } from '../@types/refData'
 
 export default class ValidationService {
   getDateFormSchema(dateType: string) {
@@ -88,6 +89,19 @@ export default class ValidationService {
   validateFtrQuestion(isFixedTermRecall?: boolean) {
     if (isFixedTermRecall == null) {
       return [{ text: 'You must select whether the recall is a fixed term.', href: '#isFixedTermRecall' }]
+    }
+    return []
+  }
+
+  validateSentences(onLicenceSentences: SentenceDetail[], recall: Recall) {
+    if (!onLicenceSentences.length) {
+      return [
+        {
+          text:
+            `There are no sentences eligible for recall using the recall date of ${formatDateForDisplay(recall.recallDate)} entered. ` +
+            'If you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.',
+        },
+      ]
     }
     return []
   }

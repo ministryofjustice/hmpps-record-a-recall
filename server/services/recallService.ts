@@ -366,8 +366,12 @@ export default class RecallService {
     nomsId: string,
     recall: Recall,
     onLicenceSentences: SentenceDetail[],
+    hasErrors: boolean,
     username: string,
   ): Promise<string> {
+    if (hasErrors) {
+      return `/person/${nomsId}/recall-entry/check-sentences`
+    }
     const decoratedOnLicenceSentences = await this.getDecoratedOnLicenceSentences(username, recall, onLicenceSentences)
     const singleMatchSentences = this.getSingleMatchSentences(decoratedOnLicenceSentences)
 

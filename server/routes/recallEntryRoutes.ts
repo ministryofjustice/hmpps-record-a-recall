@@ -81,10 +81,12 @@ export default class RecallEntryRoutes {
     const { nomsId } = req.params
     const recall = this.recallService.getRecall(req.session, nomsId)
     const groupedSentences = await this.recallService.groupSentencesByRecallDate(res.locals.user.username, recall)
+    const errors = this.validationService.validateSentences(groupedSentences.onLicenceSentences, recall)
     const nextHref = await this.recallService.getNextHrefForSentencePage(
       nomsId,
       recall,
       groupedSentences.onLicenceSentences,
+      errors.length > 0,
       res.locals.user.username,
     )
     return res.render('pages/recallEntry/check-sentences', {
@@ -92,6 +94,7 @@ export default class RecallEntryRoutes {
       groupedSentences,
       recallDate: recall.recallDate,
       nextHref,
+      errors,
     })
   }
 
