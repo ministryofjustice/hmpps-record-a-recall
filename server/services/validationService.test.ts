@@ -1,7 +1,6 @@
 import type { DateForm } from 'forms'
 import type { Recall } from 'models'
 import ValidationService from './validationService'
-import { formatDateForDisplay } from '../utils/utils'
 import { SentenceDetail } from '../@types/refData'
 
 describe('Validation service tests', () => {
