@@ -1,6 +1,8 @@
 import type { DateForm } from 'forms'
 import type { Recall } from 'models'
 import ValidationService from './validationService'
+import { formatDateForDisplay } from '../utils/utils'
+import { SentenceDetail } from '../@types/refData'
 
 describe('Validation service tests', () => {
   let validationService: ValidationService
@@ -195,6 +197,30 @@ describe('Validation service tests', () => {
       expect(errors).toEqual([
         { text: 'The Recall Date cannot be after the Return to Custody Date', href: '#returnToCustodyDate' },
       ])
+    })
+  })
+
+  describe('Tests for check-sentences page validation', () => {
+    it('Validation Error is returned if no on licence sentences', () => {
+      const errors = validationService.validateSentences([], {
+        recallDate: new Date(2024, 0, 1),
+      } as Recall)
+
+      expect(errors).toEqual([
+        {
+          text:
+            `There are no sentences eligible for recall using the recall date of 01 Jan 2024 entered\n` +
+            `If you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.`,
+        },
+      ])
+    })
+
+    it('Validation passes if there are on licence sentences', () => {
+      const errors = validationService.validateSentences([{} as SentenceDetail], {
+        recallDate: new Date(2024, 0, 1),
+      } as Recall)
+
+      expect(errors).toEqual([])
     })
   })
 })

@@ -26,6 +26,7 @@ export const initialiseName = (fullName?: string): string | null => {
 }
 
 export const formatDate = (date: Date): string => format(date, 'yyyy-MM-dd')
+export const formatDateForDisplay = (date: Date): string => format(date, 'dd MMM yyyy')
 
 export function getDateFromForm(dateForm: DateForm) {
   const year = parseInt(dateForm.year, 10)
