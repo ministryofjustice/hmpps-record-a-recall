@@ -447,4 +447,17 @@ describe('POST /person/:nomsId/recall-entry/ask-ftr-question', () => {
 
     expect(recallService.setIsFixedTermRecall).toHaveBeenCalledWith({}, '123', true)
   })
+
+  it('should render ask-ftr-question page with error messages', () => {
+    const errorMessages = [{ text: 'You must select whether the recall is a fixed term.', href: '#isFixedTermRecall' }]
+
+    const appWithFlash = getAppForErrorMessages(errorMessages)
+
+    return request(appWithFlash)
+      .get('/person/123/recall-entry/ask-ftr-question')
+      .expect('Content-Type', /html/)
+      .expect(res => {
+        expect(res.text).toContain('You must select whether the recall is a fixed term.')
+      })
+  })
 })

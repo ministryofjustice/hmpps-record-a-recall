@@ -102,6 +102,13 @@ export default class RecallService {
     }
   }
 
+  removeAllRecallsFromSession(session: CookieSessionInterfaces.CookieSessionObject) {
+    if (session.recalls) {
+      // eslint-disable-next-line no-param-reassign
+      delete session.recalls
+    }
+  }
+
   setRecallType(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallTypeCode: string) {
     const recall = this.getRecall(session, nomsId)
     recall.recallType = Object.values(RecallTypes).find(it => it.code === recallTypeCode)
