@@ -9,6 +9,35 @@
 <!-- This is a temporary page to aid analysis, will be deleted -->
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
+    {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
+    <article class="moj-ticket-panel" aria-label="Sub navigation 1">
+
+        <section class="moj-ticket-panel__content moj-ticket-panel__content--grey govuk-!-margin-bottom-8" aria-label="Section 1">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Temporary calculation required</h2>
+          <p class="govuk-body">The latest calculation was performed in NOMIS so not all of the information below is available.</p>
+          <p class="govuk-body">To view all information, a temporary calculation is required. The results of this calculation will not be persisted to NOMIS.</p>
+          <p class="govuk-body"></p>
+          <a href="/person/{{ nomsId }}/recall-entry/view-all-sentences?recalculate=true" class="govuk-button govuk-!-margin-bottom-1" data-module="govuk-button">
+                  Perform temporary calculation
+          </a>
+        </section>
+
+    </article>
+    {% elif latestCalculation.calculationStatus == 'RECORD_A_RECALL' %}
+    <article class="moj-ticket-panel" aria-label="Sub navigation 1">
+
+            <section class="moj-ticket-panel__content moj-ticket-panel__content--grey govuk-!-margin-bottom-8" aria-label="Section 1">
+              <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Viewing temporary calculation</h2>
+              <p class="govuk-body">The information below is based on a temporary calculation which is not stored in NOMIS</p>
+              <p class="govuk-body">To view the information as reflected in NOMIS, ignore the temporary calculation</p>
+              <p class="govuk-body"></p>
+              <a href="/person/{{ nomsId }}/recall-entry/view-all-sentences" class="govuk-button govuk-!-margin-bottom-1" data-module="govuk-button">
+                      Remove temporary calculation
+              </a>
+            </section>
+
+        </article>
+    {% endif %}
 
     <h2 class="govuk-heading-m" id="breakdown-info">Latest calculation</h2>
         <table class="govuk-table">
@@ -27,10 +56,10 @@
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">{{ latestCalculation.bookingId }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.calculationRequestId }}</td>
-            <td class="govuk-table__cell">{{ latestCalculation.calculatedAt }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.calculatedAt | datetime }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.reason }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.establishment }}</td>
-            <td class="govuk-table__cell">{{ latestCalculation.source }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.source if latestCalculation.source else 'Temporary calculation' }}</td>
           </tr>
           </tbody>
         </table>
@@ -45,15 +74,30 @@
                   </tr>
                   </thead>
                   <tbody class="govuk-table__body">
+                  {% if latestCalculation.calculationStatus == 'RECORD_A_RECALL' %}
+                  {% for dateType, date in latestCalculation.dates %}
+                                    <tr class="govuk-table__row">
+                                      <td class="govuk-table__cell">{{ dateType }}</td>
+                                      <td class="govuk-table__cell"></td>
+                                      <td class="govuk-table__cell">{{ date }}</td>
+                                      <td class="govuk-table__cell"></td>
+                                      {% endfor %}
+                  {% else %}
                   {% for releaseDate in latestCalculation.dates %}
                   <tr class="govuk-table__row">
                     <td class="govuk-table__cell">{{ releaseDate.type }}</td>
                     <td class="govuk-table__cell">{{ releaseDate.description }}</td>
                     <td class="govuk-table__cell">{{ releaseDate.date }}</td>
-                    <td class="govuk-table__cell">{{ releaseDate.hints }}</td>
 
-                  </tr>
+                    <td class="govuk-table__cell">
+                     {% for hint in releaseDate.hints %}
+                       <p>{{ hint.text }}</p>
+                     {% endfor %}
+                    </td>
+
                   {% endfor %}
+                  {% endif %}
+                  </tr>
                   </tbody>
                 </table>
 
@@ -83,11 +127,11 @@
           </thead>
           <tbody class="govuk-table__body">
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.lineSequence }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.caseSequence }}</td>
+            <td class="govuk-table__cell">{{ concurrentSentence.lineSequence }}</td>
+            <td class="govuk-table__cell">{{ concurrentSentence.caseSequence }}</td>
             <td class="govuk-table__cell">{{ concurrentSentence.sentencedAt }}</td>
             <td class="govuk-table__cell">{{ concurrentSentence.sentenceLength }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.sentenceLengthDays }}</td>
+            <td class="govuk-table__cell">{{ concurrentSentence.sentenceLengthDays }}</td>
             <td class="govuk-table__cell">{% if concurrentSentence.caseReference %}{{ concurrentSentence.caseReference }}{% else %}[null]{% endif %}</td>
           </tr>
           </tbody>
@@ -112,8 +156,8 @@
                 <td class="govuk-table__cell">{{ dateType }}</td>
                 <td class="govuk-table__cell">{{ dateBreakdown.unadjusted }}</td>
                 <td class="govuk-table__cell">{{ dateBreakdown.adjusted }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.daysFromSentenceStart }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.adjustedByDays }}</td>
+                <td class="govuk-table__cell">{{ dateBreakdown.daysFromSentenceStart }}</td>
+                <td class="govuk-table__cell">{{ dateBreakdown.adjustedByDays }}</td>
               </tr>
             {% endfor %}
             </tbody>
@@ -137,7 +181,7 @@
         <tr class="govuk-table__row">
           <td class="govuk-table__cell">{{ calculationBreakdown.consecutiveSentence.sentencedAt }}</td>
           <td class="govuk-table__cell">{{ calculationBreakdown.consecutiveSentence.sentenceLength }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ calculationBreakdown.consecutiveSentence.sentenceLengthDays }}</td>
+          <td class="govuk-table__cell">{{ calculationBreakdown.consecutiveSentence.sentenceLengthDays }}</td>
         </tr>
         </tbody>
       </table>
@@ -158,11 +202,11 @@
           <tbody class="govuk-table__body">
           {% for part in calculationBreakdown.consecutiveSentence.sentenceParts %}
             <tr class="govuk-table__row">
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.lineSequence }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.caseSequence }}</td>
+              <td class="govuk-table__cell">{{ part.lineSequence }}</td>
+              <td class="govuk-table__cell">{{ part.caseSequence }}</td>
               <td class="govuk-table__cell">{{ part.sentenceLength }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.consecutiveToLineSequence }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ part.consecutiveToCaseSequence }}</td>
+              <td class="govuk-table__cell">{{ part.consecutiveToLineSequence }}</td>
+              <td class="govuk-table__cell">{{ part.consecutiveToCaseSequence }}</td>
             </tr>
           {% endfor %}
           </tbody>
@@ -188,8 +232,8 @@
               <td class="govuk-table__cell">{{ dateType }}</td>
               <td class="govuk-table__cell">{{ dateBreakdown.unadjusted }}</td>
               <td class="govuk-table__cell">{{ dateBreakdown.adjusted }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.daysFromSentenceStart }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ dateBreakdown.adjustedByDays }}</td>
+              <td class="govuk-table__cell">{{ dateBreakdown.daysFromSentenceStart }}</td>
+              <td class="govuk-table__cell">{{ dateBreakdown.adjustedByDays }}</td>
             </tr>
           {% endfor %}
           </tbody>
@@ -224,7 +268,12 @@
                 <p>{{ rule }}</p>
               {% endfor %}
               </td>
-              <td class="govuk-table__cell">{{ releaseDateBreakdown.rulesWithExtraAdjustments }}</td>
+              <td class="govuk-table__cell">
+              {% for rule in releaseDateBreakdown.rules %}
+
+                              <p>{{ releaseDateBreakdown.rulesWithExtraAdjustments[rule].adjustmentValue }} {{ releaseDateBreakdown.rulesWithExtraAdjustments[rule].type }}</p>
+               {% endfor %}
+                            </td>
             </tr>
           {% endif %}
         {% endfor %}
@@ -283,10 +332,10 @@
         </thead>
         <tbody class="govuk-table__body">
         <tr class="govuk-table__row">
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.sentenceSequence }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.lineSequence }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.caseSequence }}</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.consecutiveToSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.sentenceSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.caseSequence }}</td>
+          <td class="govuk-table__cell">{{ sentence.consecutiveToSequence }}</td>
           <td class="govuk-table__cell">{{ sentence.sentenceStatus }}</td>
           <td class="govuk-table__cell">{{ sentence.sentenceCalculationType }}</td>
           <td class="govuk-table__cell">{{ sentence.sentenceCategory }}</td>
@@ -311,10 +360,10 @@
           <tbody class="govuk-table__body">
           {% for term in sentence.terms %}
             <tr class="govuk-table__row">
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.years }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.months }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.weeks }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ term.days }}</td>
+              <td class="govuk-table__cell">{{ term.years }}</td>
+              <td class="govuk-table__cell">{{ term.months }}</td>
+              <td class="govuk-table__cell">{{ term.weeks }}</td>
+              <td class="govuk-table__cell">{{ term.days }}</td>
               <td class="govuk-table__cell">{{ term.code }}</td>
             </tr>
           {% endfor %}
@@ -336,7 +385,7 @@
           </thead>
           <tbody class="govuk-table__body">
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell govuk-table__cell--numeric">{{ sentence.offence.offenderChargeId }}</td>
+            <td class="govuk-table__cell">{{ sentence.offence.offenderChargeId }}</td>
             <td class="govuk-table__cell">{{ sentence.offence.offenceStartDate }}</td>
             <td class="govuk-table__cell">{{ sentence.offence.offenceEndDate }}</td>
             <td class="govuk-table__cell">{{ sentence.offence.offenceCode }}</td>
