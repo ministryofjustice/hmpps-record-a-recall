@@ -25,6 +25,16 @@
     }) }}
   {% endif %}
 
+  {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
+  <article class="moj-ticket-panel" aria-label="Sub navigation 1">
+
+      <section class="moj-ticket-panel__content moj-ticket-panel__content--grey govuk-!-margin-bottom-8" aria-label="Section 1">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Temporary calculation required</h2>
+        <p class="govuk-body">The latest calculation was performed in NOMIS, a temporary calculation is needed (but not yet implemented)</p>
+      </section>
+
+  </article>
+  {% endif %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-three-quarters">
       <h1 class="govuk-heading-l" id="check-sentence-heading">
