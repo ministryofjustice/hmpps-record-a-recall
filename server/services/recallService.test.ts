@@ -164,6 +164,7 @@ describe('Recall service', () => {
 
       const result = await recallService.groupSentencesByRecallDate(username, {
         recallDate: new Date(2024, 1, 1),
+        calculation: { calculationRequestId: 1 },
       } as Recall)
 
       expect(result).toEqual({
@@ -219,6 +220,7 @@ describe('Recall service', () => {
 
       const result = await recallService.groupSentencesByRecallDate(username, {
         recallDate: new Date(2024, 3, 1),
+        calculation: { calculationRequestId: 1 },
       } as Recall)
 
       expect(result).toEqual({
@@ -274,6 +276,7 @@ describe('Recall service', () => {
 
       const result = await recallService.groupSentencesByRecallDate(username, {
         recallDate: new Date(2023, 11, 15),
+        calculation: { calculationRequestId: 1 },
       } as Recall)
 
       expect(result).toEqual({
@@ -351,6 +354,7 @@ describe('Recall service', () => {
 
       const result = await recallService.groupSentencesByRecallDate(username, {
         recallDate: new Date(2024, 2, 15),
+        calculation: { calculationRequestId: 1 },
       } as Recall)
 
       expect(result).toEqual({

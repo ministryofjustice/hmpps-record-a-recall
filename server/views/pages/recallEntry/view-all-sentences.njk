@@ -9,7 +9,59 @@
 <!-- This is a temporary page to aid analysis, will be deleted -->
 {% block content %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
+
+    <h2 class="govuk-heading-m" id="breakdown-info">Latest calculation</h2>
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Latest calculation details</caption>
+          <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Booking ID</th>
+            <th scope="col" class="govuk-table__header">Calculation Req ID</th>
+            <th scope="col" class="govuk-table__header">Calculated At</th>
+            <th scope="col" class="govuk-table__header">Reason</th>
+            <th scope="col" class="govuk-table__header">Establishment</th>
+            <th scope="col" class="govuk-table__header">Source</th>
+          </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ latestCalculation.bookingId }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.calculationRequestId }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.calculatedAt }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.reason }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.establishment }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.source }}</td>
+          </tr>
+          </tbody>
+        </table>
+                <table class="govuk-table">
+                  <caption class="govuk-table__caption govuk-table__caption--m">Latest calculation dates</caption>
+                  <thead class="govuk-table__head">
+                  <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header">Type</th>
+                    <th scope="col" class="govuk-table__header">Description</th>
+                    <th scope="col" class="govuk-table__header">Date</th>
+                    <th scope="col" class="govuk-table__header">Hints</th>
+                  </tr>
+                  </thead>
+                  <tbody class="govuk-table__body">
+                  {% for releaseDate in latestCalculation.dates %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">{{ releaseDate.type }}</td>
+                    <td class="govuk-table__cell">{{ releaseDate.description }}</td>
+                    <td class="govuk-table__cell">{{ releaseDate.date }}</td>
+                    <td class="govuk-table__cell">{{ releaseDate.hints }}</td>
+
+                  </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+
+
   <h2 class="govuk-heading-m" id="breakdown-info">Calculation Breakdown Lookup from CRD</h2>
+  {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
+    <p> Latest calculation was performed in NOMIS, no further details from CRDS available </p>
+  {% endif %}
   <p><a href="#sentence-info" class="govuk-link">Go to Sentences and Offences</a></p>
 
   {% if calculationBreakdown %}
@@ -36,7 +88,7 @@
             <td class="govuk-table__cell">{{ concurrentSentence.sentencedAt }}</td>
             <td class="govuk-table__cell">{{ concurrentSentence.sentenceLength }}</td>
             <td class="govuk-table__cell govuk-table__cell--numeric">{{ concurrentSentence.sentenceLengthDays }}</td>
-            <td class="govuk-table__cell">{{ concurrentSentence.caseReference }}</td>
+            <td class="govuk-table__cell">{% if concurrentSentence.caseReference %}{{ concurrentSentence.caseReference }}{% else %}[null]{% endif %}</td>
           </tr>
           </tbody>
         </table>
@@ -154,8 +206,9 @@
           <th scope="col" class="govuk-table__header">Release Date Type</th>
           <th scope="col" class="govuk-table__header">Unadjusted Date</th>
           <th scope="col" class="govuk-table__header">Adjusted Date</th>
-          <th scope="col" class="govuk-table__header">Days from Sentence Start</th>
           <th scope="col" class="govuk-table__header">Adjusted by Days</th>
+          <th scope="col" class="govuk-table__header">Rules</th>
+          <th scope="col" class="govuk-table__header">Rules with extra adjustments</th>
         </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -163,10 +216,15 @@
           {% if releaseDateBreakdown %}
             <tr class="govuk-table__row">
               <td class="govuk-table__cell">{{ releaseDateType }}</td>
-              <td class="govuk-table__cell">{{ releaseDateBreakdown.unadjusted }}</td>
-              <td class="govuk-table__cell">{{ releaseDateBreakdown.adjusted }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ releaseDateBreakdown.daysFromSentenceStart }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ releaseDateBreakdown.adjustedByDays }}</td>
+              <td class="govuk-table__cell">{{ releaseDateBreakdown.unadjustedDate }}</td>
+              <td class="govuk-table__cell">{{ releaseDateBreakdown.releaseDate }}</td>
+              <td class="govuk-table__cell">{{ releaseDateBreakdown.adjustedDays }}</td>
+              <td class="govuk-table__cell">
+              {% for rule in releaseDateBreakdown.rules %}
+                <p>{{ rule }}</p>
+              {% endfor %}
+              </td>
+              <td class="govuk-table__cell">{{ releaseDateBreakdown.rulesWithExtraAdjustments }}</td>
             </tr>
           {% endif %}
         {% endfor %}
@@ -201,6 +259,9 @@
 
   <div class="govuk-section-break govuk-section-break--xl govuk-section-break--visible"></div>
   <h2 class="govuk-heading-m" id="sentence-info">Sentence and Release Dates Lookup from CRD</h2>
+    {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
+      <p> Latest calculation was performed in NOMIS, no further details from CRDS available </p>
+    {% endif %}
   <p><a href="#breakdown-info" class="govuk-link">Go to Calculation breakdown</a></p>
   {% if sentencesAndReleaseDates and sentencesAndReleaseDates.length %}
     {% for sentence in sentencesAndReleaseDates %}

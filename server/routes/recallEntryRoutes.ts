@@ -80,6 +80,7 @@ export default class RecallEntryRoutes {
   public getCheckSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
     const recall = this.recallService.getRecall(req.session, nomsId)
+    const latestCalculation = await this.prisonerService.getLatestCalculation(nomsId, res.locals.user.username)
     const groupedSentences = await this.recallService.groupSentencesByRecallDate(res.locals.user.username, recall)
     const errors = this.validationService.validateSentences(groupedSentences.onLicenceSentences, recall)
     const nextHref = await this.recallService.getNextHrefForSentencePage(
@@ -91,6 +92,7 @@ export default class RecallEntryRoutes {
     )
     return res.render('pages/recallEntry/check-sentences', {
       nomsId,
+      latestCalculation,
       groupedSentences,
       recallDate: recall.recallDate,
       nextHref,
@@ -101,21 +103,24 @@ export default class RecallEntryRoutes {
   // This is just a temporary screen that displays all sentence data - created to aid analysis
   public getViewAllSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const recall = this.recallService.getRecall(req.session, nomsId)
-    const calculationBreakdown = await this.recallService.getCalculationBreakdown(res.locals.user.username, recall)
-    if (!calculationBreakdown) {
-      return res.render('pages/recallEntry/view-all-sentences', {
-        nomsId,
-        calculationBreakdown: undefined,
-        sentencesAndReleaseDates: undefined,
-      })
-    }
-    const sentencesAndReleaseDates = await this.prisonerService.getSentencesAndReleaseDates(
-      nomsId,
-      res.locals.user.username,
-    )
+    const latestCalculation = await this.prisonerService.getLatestCalculation(nomsId, res.locals.user.username)
+
+    const sentencesAndReleaseDates = latestCalculation.calculationRequestId
+      ? await this.prisonerService.getSentencesAndReleaseDates(
+          latestCalculation.calculationRequestId,
+          res.locals.user.username,
+        )
+      : undefined
+
+    const calculationBreakdown = latestCalculation.calculationRequestId
+      ? await this.recallService.getCalculationBreakdown(
+          res.locals.user.username,
+          latestCalculation.calculationRequestId,
+        )
+      : undefined
     return res.render('pages/recallEntry/view-all-sentences', {
       nomsId,
+      latestCalculation,
       calculationBreakdown,
       sentencesAndReleaseDates,
     })
