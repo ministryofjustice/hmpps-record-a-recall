@@ -12,6 +12,7 @@ import { formatDate, getDateFromForm } from '../utils/utils'
 import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
 import logger from '../../logger'
 import {
+  CalculatedReleaseDates,
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
@@ -161,16 +162,17 @@ export default class RecallService {
     session: CookieSessionInterfaces.CookieSessionObject,
     username: string,
     nomsId: string,
-  ): Promise<void> {
+  ): Promise<CalculatedReleaseDates> {
     const recall = this.getRecall(session, nomsId)
     if (recall.calculation) {
-      return
+      return recall.calculation
     }
 
     const crdApi = await this.getCRDApiClient(username)
     recall.calculation = await crdApi.calculateReleaseDates(nomsId)
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
+    return recall.calculation
   }
 
   async groupSentencesByRecallDate(

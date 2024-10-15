@@ -103,20 +103,17 @@ export default class RecallEntryRoutes {
   // This is just a temporary screen that displays all sentence data - created to aid analysis
   public getViewAllSentences: RequestHandler = async (req, res): Promise<void> => {
     const { nomsId } = req.params
-    const latestCalculation = await this.prisonerService.getLatestCalculation(nomsId, res.locals.user.username)
+    const { username } = res.locals.user
+    const latestCalculation = !req.query.recalculate
+      ? await this.prisonerService.getLatestCalculation(nomsId, username)
+      : await this.recallService.calculateReleaseDatesAndSetInSession(req.session, username, nomsId)
 
     const sentencesAndReleaseDates = latestCalculation.calculationRequestId
-      ? await this.prisonerService.getSentencesAndReleaseDates(
-          latestCalculation.calculationRequestId,
-          res.locals.user.username,
-        )
+      ? await this.prisonerService.getSentencesAndReleaseDates(latestCalculation.calculationRequestId, username)
       : undefined
 
     const calculationBreakdown = latestCalculation.calculationRequestId
-      ? await this.recallService.getCalculationBreakdown(
-          res.locals.user.username,
-          latestCalculation.calculationRequestId,
-        )
+      ? await this.recallService.getCalculationBreakdown(username, latestCalculation.calculationRequestId)
       : undefined
     return res.render('pages/recallEntry/view-all-sentences', {
       nomsId,
