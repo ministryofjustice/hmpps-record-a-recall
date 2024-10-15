@@ -181,9 +181,16 @@ export default class RecallService {
     activeSentences: SentenceDetail[]
     expiredSentences: SentenceDetail[]
   }> {
+    if (!recall?.calculation?.calculationRequestId) {
+      logger.error('Error in groupSentencesByRecallDate: No calculationRequestId')
+      return {
+        onLicenceSentences: [],
+        activeSentences: [],
+        expiredSentences: [],
+      }
+    }
     try {
-      const breakdown = await this.getCalculationBreakdown(username, recall)
-
+      const breakdown = await this.getCalculationBreakdown(username, recall?.calculation?.calculationRequestId)
       // Filter and categorize concurrent sentences
       const { onLicenceConcurrent, activeConcurrent, expiredConcurrent } = this.filterAndCategorizeConcurrentSentences(
         breakdown.concurrentSentences,
@@ -219,10 +226,17 @@ export default class RecallService {
     }
   }
 
-  async getCalculationBreakdown(username: string, recall: Recall): Promise<CalculationBreakdown | undefined> {
+  async getCalculationBreakdown(
+    username: string,
+    calculationRequestId: number,
+  ): Promise<CalculationBreakdown | undefined> {
+    if (!calculationRequestId) {
+      logger.error(`Error in getCalculationBreakdown: No calculation Request id`)
+      return undefined
+    }
     try {
       const crdApi = await this.getCRDApiClient(username)
-      return await crdApi.getCalculationBreakdown(recall.calculation.calculationRequestId)
+      return await crdApi.getCalculationBreakdown(calculationRequestId)
     } catch (error) {
       logger.error(`Error in getCalculationBreakdown: ${error.message}`, error)
       return undefined

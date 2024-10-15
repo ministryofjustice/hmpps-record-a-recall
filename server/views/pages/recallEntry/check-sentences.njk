@@ -25,6 +25,16 @@
     }) }}
   {% endif %}
 
+  {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
+  <article class="moj-ticket-panel" aria-label="Sub navigation 1">
+
+      <section class="moj-ticket-panel__content moj-ticket-panel__content--grey govuk-!-margin-bottom-8" aria-label="Section 1">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Temporary calculation required</h2>
+        <p class="govuk-body">The latest calculation was performed in NOMIS, a temporary calculation is needed (but not yet implemented)</p>
+      </section>
+
+  </article>
+  {% endif %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-three-quarters">
       <h1 class="govuk-heading-l" id="check-sentence-heading">
@@ -37,24 +47,24 @@
   </div>
 
   {% if groupedSentences.onLicenceSentences.length > 0 %}
-    <h2>On Licence Sentences</h2>
+    <h2 class="govuk-heading-m" id="sent-on-licence">On Licence Sentences</h2>
     {{ sentenceTable(groupedSentences.onLicenceSentences) }}
   {% else %}
-    <h2>No sentences on licence.</h2>
+    <h2 class="govuk-heading-m" id="sent-on-licence">No sentences on licence.</h2>
   {% endif %}
 
   {% if groupedSentences.activeSentences.length > 0 %}
-    <h2>Active Sentences</h2>
+    <h2 class="govuk-heading-m" id="active-sentences">Active Sentences</h2>
     {{ sentenceTable(groupedSentences.activeSentences) }}
   {% else %}
-    <h2>No active sentences.</h2>
+    <h2 class="govuk-heading-m" id="active-sentences">No active sentences.</h2>
   {% endif %}
 
   {% if groupedSentences.expiredSentences.length > 0 %}
-    <h2>Expired Sentences</h2>
+   <h2 class="govuk-heading-m" id="expired-sentences">Expired Sentences</h2>
     {{ sentenceTable(groupedSentences.expiredSentences) }}
   {% else %}
-    <h2>No expired sentences.</h2>
+    <h2 class="govuk-heading-m" id="expired-sentences">No expired sentences.</h2>
   {% endif %}
 
   <div class="govuk-button-group">
@@ -74,6 +84,8 @@
   </div>
 
 {% endblock %}
+
+
 
 {% macro sentenceTable(sentences) %}
   <table class="govuk-table">
