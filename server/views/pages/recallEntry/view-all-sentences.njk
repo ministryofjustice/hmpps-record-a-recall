@@ -2,12 +2,14 @@
 
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% set pageTitle = applicationName + " - check information" %}
 {% set pageId = "check-information" %}
 
 <!-- This is a temporary page to aid analysis, will be deleted -->
 {% block content %}
+{% if errorMessage is not defined %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
     {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
     <article class="moj-ticket-panel" aria-label="Sub navigation 1">
@@ -17,7 +19,7 @@
           <p class="govuk-body">The latest calculation was performed in NOMIS so not all of the information below is available.</p>
           <p class="govuk-body">To view all information, a temporary calculation is required. The results of this calculation will not be persisted to NOMIS.</p>
           <p class="govuk-body"></p>
-          <a href="/person/{{ nomsId }}/recall-entry/view-all-sentences?recalculate=true" class="govuk-button govuk-!-margin-bottom-1" data-module="govuk-button">
+          <a href="/person/{{ nomsId }}/recall-entry/view-all-sentences?tempCalc=true" class="govuk-button govuk-!-margin-bottom-1" data-module="govuk-button">
                   Perform temporary calculation
           </a>
         </section>
@@ -56,7 +58,7 @@
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">{{ latestCalculation.bookingId }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.calculationRequestId }}</td>
-            <td class="govuk-table__cell">{{ latestCalculation.calculatedAt | datetime }}</td>
+            <td class="govuk-table__cell">{{ latestCalculation.calculatedAt if latestCalculation.calculatedAt else latestCalculation.calculationDate }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.reason }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.establishment }}</td>
             <td class="govuk-table__cell">{{ latestCalculation.source if latestCalculation.source else 'Temporary calculation' }}</td>
@@ -406,4 +408,10 @@
       href: '/person/' + nomsId + '/recall-entry/enter-recall-type'
     }) }}
   </div>
+{% else %}
+   <div>
+    <h2 class="govuk-heading-m" id="error-occurred">An error occurred</h2>
+   <p> {{ errorMessage }} </p>
+   </div>
+{% endif %}
 {% endblock %}
