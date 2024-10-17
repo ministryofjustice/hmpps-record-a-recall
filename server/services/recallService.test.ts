@@ -88,12 +88,12 @@ describe('Recall service', () => {
       const calculationResults = { calculationRequestId: 'uuid-returned' } as unknown as CalculatedReleaseDates
       fakeCalculateReleaseDatesApi.post(`/calculation/record-a-recall/${nomsId}`).reply(200, calculationResults)
 
-      await recallService.calculateReleaseDatesAndSetInSession(session, 'user11', nomsId)
+      await recallService.retrieveOrCalculateTemporaryDates(session, nomsId, false, 'user11')
       const recall = recallService.getRecall(session, nomsId)
 
       expect(recall.calculation).toEqual(calculationResults)
       // Second call should not trigger another API request
-      await recallService.calculateReleaseDatesAndSetInSession(session, 'user11', nomsId)
+      await recallService.retrieveOrCalculateTemporaryDates(session, nomsId, false, 'user11')
 
       // Ensure that no further API calls were made
       expect(fakeCalculateReleaseDatesApi.isDone()).toBe(true)

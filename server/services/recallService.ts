@@ -48,7 +48,7 @@ export default class RecallService {
   setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
     const recall = this.getRecall(session, nomsId)
     recall.recallDateForm = recallDateForm
-    this.resetDeriableFields(recall)
+    this.resetDerivableFields(recall)
     const recallDate = getDateFromForm(recallDateForm)
 
     if (Number.isNaN(recallDate.getTime())) {
@@ -67,7 +67,7 @@ export default class RecallService {
   ) {
     const recall = this.getRecall(session, nomsId)
     recall.returnToCustodyDateForm = returnToCustodyDateForm
-    this.resetDeriableFields(recall)
+    this.resetDerivableFields(recall)
     const returnToCustodyDate = getDateFromForm(returnToCustodyDateForm)
 
     if (Number.isNaN(returnToCustodyDate.getTime())) {
@@ -80,7 +80,7 @@ export default class RecallService {
   }
 
   // reset fields that need deriving again based on new user input
-  private resetDeriableFields(recall: Recall) {
+  private resetDerivableFields(recall: Recall) {
     // eslint-disable-next-line no-param-reassign
     recall.isFixedTermRecall = undefined
   }
@@ -158,18 +158,26 @@ export default class RecallService {
     })
   }
 
-  async calculateReleaseDatesAndSetInSession(
+  async retrieveOrCalculateTemporaryDates(
     session: CookieSessionInterfaces.CookieSessionObject,
-    username: string,
     nomsId: string,
+    forceRecalculation: string | boolean,
+    username: string,
   ): Promise<CalculatedReleaseDates> {
     const recall = this.getRecall(session, nomsId)
-    if (recall.calculation) {
+    if (recall.calculation && !(forceRecalculation as unknown as boolean)) {
+      logger.info('Retrieved calculation from session')
       return recall.calculation
     }
 
     const crdApi = await this.getCRDApiClient(username)
-    recall.calculation = await crdApi.calculateReleaseDates(nomsId)
+    try {
+      logger.info('Requesting new temporary calculation from CRDS')
+      recall.calculation = await crdApi.calculateReleaseDates(nomsId)
+    } catch (error) {
+      logger.error(`CRDS erorred when requesting a temporary calculation: ${error.message}`)
+      throw error
+    }
     // eslint-disable-next-line no-param-reassign
     session.recalls[nomsId] = recall
     return recall.calculation
@@ -192,7 +200,7 @@ export default class RecallService {
       }
     }
     try {
-      const breakdown = await this.getCalculationBreakdown(username, recall?.calculation?.calculationRequestId)
+      const breakdown = await this.getCalculationBreakdown(recall?.calculation?.calculationRequestId, username)
       // Filter and categorize concurrent sentences
       const { onLicenceConcurrent, activeConcurrent, expiredConcurrent } = this.filterAndCategorizeConcurrentSentences(
         breakdown.concurrentSentences,
@@ -229,8 +237,8 @@ export default class RecallService {
   }
 
   async getCalculationBreakdown(
-    username: string,
     calculationRequestId: number,
+    username: string,
   ): Promise<CalculationBreakdown | undefined> {
     if (!calculationRequestId) {
       logger.error(`Error in getCalculationBreakdown: No calculation Request id`)

@@ -84,6 +84,8 @@ describe('Routes for /person/:nomsId', () => {
 
 describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
   it('should render enter-recall-date page with error messages', () => {
+    recallService.retrieveOrCalculateTemporaryDates.mockResolvedValue(null)
+
     const errorMessages = [
       { text: 'Day must be a valid number', href: '#recallDateDay' },
       { text: 'Month must be a valid number', href: '#recallDateMonth' },
@@ -104,6 +106,7 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
   })
 
   it('should render enter-recall-date page and log page view', () => {
+    recallService.retrieveOrCalculateTemporaryDates.mockResolvedValue(null)
     auditService.logPageView.mockResolvedValue(null)
 
     return request(app)
@@ -120,6 +123,7 @@ describe('GET /person/:nomsId/recall-entry/enter-recall-date', () => {
 
   it('should render enter-recall-date page when recallDate is populated', () => {
     auditService.logPageView.mockResolvedValue(null)
+    recallService.retrieveOrCalculateTemporaryDates.mockResolvedValue(null)
     recallService.getRecall.mockReturnValue({
       recallDate: new Date(2024, 0, 1),
       recallDateForm: { day: '01', month: '01', year: '2024' },
@@ -361,8 +365,13 @@ describe('routes for /person/:nomsId/recall-entry/success-confirmation', () => {
 
 describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
   it('should render the check-sentences page with the correct nextHref in the Continue button', async () => {
+    recallService.retrieveOrCalculateTemporaryDates.mockResolvedValue(null)
+
     const mockRecall = {
       recallDate: new Date(2024, 0, 1),
+      calculation: {
+        calculationRequestId: 1233445,
+      },
     } as Recall
 
     const groupedSentences = {
@@ -402,15 +411,19 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
       })
   })
 
-  it('should show validation message when there are no onLicence sentenmvces', async () => {
+  it('should show validation message when there are no onLicence sentences', async () => {
     validationService.validateSentences.mockReturnValue([
       {
         text: 'There are no sentences eligible for recall using the recall date of 01 Jan 2024 entered \nIf you think this is incorrect, check the sentence details held in the Remand and Sentencing Service.',
       },
     ])
 
+    const mockCalc = {
+      calculationRequestId: 1233445,
+    }
     const mockRecall = {
       recallDate: new Date(2024, 0, 1),
+      calculation: mockCalc,
     } as Recall
 
     const groupedSentences = {
@@ -424,6 +437,7 @@ describe('GET /person/:nomsId/recall-entry/check-sentences', () => {
     recallService.getRecall.mockReturnValue(mockRecall)
     recallService.groupSentencesByRecallDate.mockResolvedValue(groupedSentences)
     recallService.getNextHrefForSentencePage.mockResolvedValue(expectedNextHref)
+    recallService.retrieveOrCalculateTemporaryDates.mockResolvedValue(null)
 
     await request(app)
       .get('/person/123/recall-entry/check-sentences')
