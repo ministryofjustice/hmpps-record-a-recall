@@ -9,7 +9,8 @@
 
 <!-- This is a temporary page to aid analysis, will be deleted -->
 {% block content %}
-{% if errorMessage is not defined %}
+{{ super() }}
+{% if crdError is not defined %}
   <h1 class="govuk-heading-xl" id="check-sentence-heading">Check sentence information</h1>
     {% if not latestCalculation.calculationRequestId and latestCalculation.source == 'NOMIS' %}
     <article class="moj-ticket-panel" aria-label="Sub navigation 1">
@@ -411,7 +412,7 @@
 {% else %}
    <div>
     <h2 class="govuk-heading-m" id="error-occurred">An error occurred</h2>
-   <p> {{ errorMessage }} </p>
+   <p> {{ crdError }} </p>
    </div>
 {% endif %}
 {% endblock %}
