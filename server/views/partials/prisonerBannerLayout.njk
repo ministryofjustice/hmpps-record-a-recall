@@ -2,6 +2,7 @@
 {% from "hmpps/components/mini-profile/macro.njk" import miniProfile %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% block beforeContent %}
     <aside role="complementary">
@@ -21,4 +22,10 @@
 {% endblock %}
 
 {% block content %}
+    {% if crdError %}
+      {{ govukWarningText({
+        text: "There was an error when calculating temporary release dates",
+        iconFallbackText: "Warning"
+      }) }}
+      {% endif %}
 {% endblock %}

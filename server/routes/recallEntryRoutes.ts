@@ -9,6 +9,7 @@ import {
   CalculatedReleaseDates,
   LatestCalculation,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import logger from '../../logger'
 
 export default class RecallEntryRoutes {
   constructor(
@@ -114,8 +115,8 @@ export default class RecallEntryRoutes {
         })
       })
       .catch(error => {
-        const errorMessage = `An error occurred when requesting a temporary calculation from CRDS: ${error}`
-        return res.render('pages/recallEntry/check-sentences', { nomsId, errorMessage, crdError: error })
+        const errorMessage = `An error occurred when requesting a temporary calculation from CRDS: ${error.data.userMessage}`
+        return res.render('pages/recallEntry/check-sentences', { nomsId, crdError: errorMessage })
       })
   }
 
@@ -143,8 +144,12 @@ export default class RecallEntryRoutes {
         })
       })
       .catch(error => {
-        const errorMessage = `An error occurred when requesting a temporary calculation from CRDS: ${error}`
-        return res.render('pages/recallEntry/view-all-sentences', { nomsId, errorMessage })
+        const errorMessage = `An error occurred when requesting a temporary calculation from CRDS: `
+        logger.error(errorMessage + error.data.developerMessage)
+        return res.render('pages/recallEntry/view-all-sentences', {
+          nomsId,
+          crdError: `${errorMessage}${error.data.userMessage}`,
+        })
       })
   }
 
