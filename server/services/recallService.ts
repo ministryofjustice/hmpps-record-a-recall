@@ -1,14 +1,12 @@
 import type { Recall } from 'models'
-import type { DateForm } from 'forms'
 import { HmppsAuthClient } from '../data'
-import { RecallTypes, SentenceDetail, SentenceDetailExtended } from '../@types/refData'
+import { SentenceDetail, SentenceDetailExtended } from '../@types/refData'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
   ApiRecall,
   CreateRecall,
   CreateRecallResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { formatDate, getDateFromForm } from '../utils/utils'
 import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
 import logger from '../../logger'
 import {
@@ -18,6 +16,7 @@ import {
   ConsecutiveSentenceBreakdown,
   ConsecutiveSentencePart,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { RecallTypes } from '../@types/recallTypes'
 
 const SINGLE_MATCH_CRITERIA = [
   ['LASPO_DR', '2003'],
@@ -45,46 +44,6 @@ export default class RecallService {
     return new CalculateReleaseDatesApiClient(await this.getSystemClientToken(username))
   }
 
-  setRecallDate(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallDateForm: DateForm) {
-    const recall = this.getRecall(session, nomsId)
-    recall.recallDateForm = recallDateForm
-    this.resetDerivableFields(recall)
-    const recallDate = getDateFromForm(recallDateForm)
-
-    if (Number.isNaN(recallDate.getTime())) {
-      recall.recallDate = null
-    } else {
-      recall.recallDate = recallDate
-    }
-    // eslint-disable-next-line no-param-reassign
-    session.recalls[nomsId] = recall
-  }
-
-  setReturnToCustodyDate(
-    session: CookieSessionInterfaces.CookieSessionObject,
-    nomsId: string,
-    returnToCustodyDateForm: DateForm,
-  ) {
-    const recall = this.getRecall(session, nomsId)
-    recall.returnToCustodyDateForm = returnToCustodyDateForm
-    this.resetDerivableFields(recall)
-    const returnToCustodyDate = getDateFromForm(returnToCustodyDateForm)
-
-    if (Number.isNaN(returnToCustodyDate.getTime())) {
-      recall.returnToCustodyDate = null
-    } else {
-      recall.returnToCustodyDate = returnToCustodyDate
-    }
-    // eslint-disable-next-line no-param-reassign
-    session.recalls[nomsId] = recall
-  }
-
-  // reset fields that need deriving again based on new user input
-  private resetDerivableFields(recall: Recall) {
-    // eslint-disable-next-line no-param-reassign
-    recall.isFixedTermRecall = undefined
-  }
-
   getRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string): Recall {
     const recall = session.recalls[nomsId] ?? ({} as Recall)
     if (recall.recallDate && typeof recall.recallDate === 'string') {
@@ -96,52 +55,8 @@ export default class RecallService {
     return recall
   }
 
-  removeRecall(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string) {
-    if (session.recalls && session.recalls[nomsId]) {
-      // eslint-disable-next-line no-param-reassign
-      delete session.recalls[nomsId]
-    }
-  }
-
-  removeAllRecallsFromSession(session: CookieSessionInterfaces.CookieSessionObject) {
-    if (session.recalls) {
-      // eslint-disable-next-line no-param-reassign
-      delete session.recalls
-    }
-  }
-
-  setRecallType(session: CookieSessionInterfaces.CookieSessionObject, nomsId: string, recallTypeCode: string) {
-    const recall = this.getRecall(session, nomsId)
-    recall.recallType = Object.values(RecallTypes).find(it => it.code === recallTypeCode)
-    // eslint-disable-next-line no-param-reassign
-    session.recalls[nomsId] = recall
-  }
-
-  setIsFixedTermRecall(
-    session: CookieSessionInterfaces.CookieSessionObject,
-    nomsId: string,
-    isFixedTermRecall: boolean,
-  ) {
-    const recall = this.getRecall(session, nomsId)
-    recall.isFixedTermRecall = isFixedTermRecall
-    // eslint-disable-next-line no-param-reassign
-    session.recalls[nomsId] = recall
-  }
-
-  async createRecall(
-    session: CookieSessionInterfaces.CookieSessionObject,
-    nomsId: string,
-    username: string,
-  ): Promise<CreateRecallResponse> {
-    const recall = this.getRecall(session, nomsId)
-    const createRecall: CreateRecall = {
-      prisonerId: nomsId,
-      recallDate: formatDate(recall.recallDate),
-      returnToCustodyDate: formatDate(recall.returnToCustodyDate),
-      recallType: recall.recallType.code,
-      createdByUsername: username,
-    }
-    return new RemandAndSentencingApiClient(await this.getSystemClientToken(username)).postRecall(createRecall)
+  async postRecall(recall: CreateRecall, username: string): Promise<CreateRecallResponse> {
+    return new RemandAndSentencingApiClient(await this.getSystemClientToken(username)).postRecall(recall)
   }
 
   async getAllRecalls(nomsId: string, username: string): Promise<Recall[]> {

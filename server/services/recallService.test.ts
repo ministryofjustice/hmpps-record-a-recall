@@ -1,15 +1,20 @@
-import type { DateForm } from 'forms'
 import nock from 'nock'
 import type { Recall } from 'models'
 import RecallService from './recallService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 import config from '../config'
-import { RecallTypes, SentenceDetail } from '../@types/refData'
-import { ApiRecall, CreateRecallResponse } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { SentenceDetail } from '../@types/refData'
+import {
+  ApiRecall,
+  CreateRecall,
+  CreateRecallResponse,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   CalculatedReleaseDates,
   CalculationBreakdown,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { RecallTypes } from '../@types/recallTypes'
+import { formatDate } from '../utils/utils'
 
 jest.mock('../data/hmppsAuthClient')
 
@@ -30,36 +35,15 @@ describe('Recall service', () => {
     recallService = new RecallService(hmppsAuthClient)
   })
 
-  describe('setRecallDate', () => {
-    it('should set the recall date correctly in the session', () => {
-      const session: MockSession = {
-        recalls: {},
-      }
-
-      const nomsId = 'A1234BC'
-      const recallDateForm: DateForm = {
-        day: '01',
-        month: '02',
-        year: '2023',
-      }
-
-      recallService.setRecallDate(session, nomsId, recallDateForm)
-
-      expect(session.recalls[nomsId].recallDate).toEqual(new Date(2023, 1, 1))
-    })
-  })
-
   describe('createRecall', () => {
     it('Should construct post request correctly when creating a recall', async () => {
       const nomsId = 'A1234BC'
-      const session: MockSession = {
-        recalls: {
-          [nomsId]: {
-            recallDate: new Date(2024, 0, 1),
-            returnToCustodyDate: new Date(2024, 3, 2),
-            recallType: Object.values(RecallTypes).find(it => it.code === 'STANDARD_RECALL'),
-          } as Recall,
-        },
+      const recallToCreate: CreateRecall = {
+        prisonerId: nomsId,
+        recallDate: formatDate(new Date(2024, 0, 1)),
+        returnToCustodyDate: formatDate(new Date(2024, 3, 2)),
+        recallType: 'STANDARD_RECALL',
+        createdByUsername: 'user11',
       }
 
       fakeRemandAndSentencingApi
@@ -72,7 +56,7 @@ describe('Recall service', () => {
         })
         .reply(200, { recallUuid: 'uuid-returned' } as CreateRecallResponse)
 
-      const recall = await recallService.createRecall(session, nomsId, 'user11')
+      const recall = await recallService.postRecall(recallToCreate, 'user11')
 
       expect(recall.recallUuid).toEqual('uuid-returned')
     })

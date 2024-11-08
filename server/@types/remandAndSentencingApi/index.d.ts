@@ -317,6 +317,7 @@ export interface components {
         | 'TWENTY_EIGHT_DAY_FIXED_TERM_RECALL'
         | 'STANDARD_RECALL'
         | 'HDC_RECALL'
+        | string // TODO Fix ts complaining about pulling this from sessionModel
       createdByUsername: string
     }
     CreateRecallResponse: {

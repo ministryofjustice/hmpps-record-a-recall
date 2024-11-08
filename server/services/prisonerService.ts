@@ -5,8 +5,10 @@ import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerS
 import PrisonApiClient from '../api/prisonApiClient'
 import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
 import {
+  CalculatedReleaseDates,
   LatestCalculation,
   SentenceAndOffenceWithReleaseArrangements,
+  ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class PrisonerService {
@@ -14,6 +16,14 @@ export default class PrisonerService {
 
   async getPrisonerDetails(nomsId: string, username: string): Promise<PrisonerSearchApiPrisoner> {
     return new PrisonerSearchApiClient(await this.getSystemClientToken(username)).getPrisonerDetails(nomsId)
+  }
+
+  async getPrisonersInEstablishment(prisonId: string, username: string): Promise<PrisonerSearchApiPrisoner[]> {
+    return new PrisonerSearchApiClient(await this.getSystemClientToken(username))
+      .getPrisonInmates(prisonId)
+      .then(inmates => {
+        return inmates.content.filter(inmate => inmate.legalStatus === 'SENTENCED')
+      })
   }
 
   async getPrisonerImage(nomsId: string, username: string): Promise<Readable> {
@@ -31,6 +41,16 @@ export default class PrisonerService {
   async getLatestCalculation(nomsId: string, username: string): Promise<LatestCalculation> {
     const crdApi = await this.getCRDApiClient(username)
     return crdApi.getLatestCalculation(nomsId)
+  }
+
+  async getTemporaryCalculation(nomsId: string, username: string): Promise<CalculatedReleaseDates> {
+    const crdApi = await this.getCRDApiClient(username)
+    return crdApi.calculateReleaseDates(nomsId)
+  }
+
+  async performCrdsValidation(nomsId: string, username: string): Promise<ValidationMessage[]> {
+    const crdApi = await this.getCRDApiClient(username)
+    return crdApi.performFullValidation(nomsId)
   }
 
   private async getCRDApiClient(username: string) {
