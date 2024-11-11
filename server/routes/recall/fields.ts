@@ -6,14 +6,14 @@ const fields = {
     validate: ['required', dateTodayOrInPast],
     id: 'recallDate',
     name: 'recallDate',
-    label: {
-      text: 'Enter the date the person’s licence was revoked',
-    },
     fieldset: {
       legend: {
-        text: 'Recall date',
+        text: 'Enter the date the person’s licence was revoked',
         classes: 'govuk-fieldset__legend--m',
       },
+    },
+    hint: {
+      text: 'For example, 27 3 2007',
     },
     nameForErrors: 'Recall date',
   },
@@ -22,14 +22,14 @@ const fields = {
     validate: ['required', dateTodayOrInPast],
     id: 'returnToCustodyDate',
     name: 'returnToCustodyDate',
-    label: {
-      text: 'Enter the date the person returned to custody',
-    },
     fieldset: {
       legend: {
-        text: 'Return to custody date',
+        text: 'Enter the date the person returned to custody',
         classes: 'govuk-fieldset__legend--m',
       },
+    },
+    hint: {
+      text: 'For example, 18 10 2007',
     },
     nameForErrors: 'Return to custody date',
   },
@@ -38,9 +38,6 @@ const fields = {
     validate: ['required'],
     id: 'isFixedTermRecall',
     name: 'isFixedTermRecall',
-    label: {
-      text: 'Is this a fixed-term recall?',
-    },
     fieldset: {
       legend: {
         text: 'Is this a fixed-term recall?',
