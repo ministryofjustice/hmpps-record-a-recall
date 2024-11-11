@@ -12,6 +12,8 @@ const steps = {
     fields: ['nomisId'],
     controller: PersonSearchController,
     template: 'search',
+    checkSession: false,
+    checkJourney: false,
   },
 }
 
