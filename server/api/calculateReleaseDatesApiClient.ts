@@ -5,6 +5,7 @@ import {
   CalculationBreakdown,
   LatestCalculation,
   SentenceAndOffenceWithReleaseArrangements,
+  ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CalculateReleaseDatesApiClient {
@@ -20,6 +21,10 @@ export default class CalculateReleaseDatesApiClient {
 
   async getLatestCalculation(nomsId: string): Promise<LatestCalculation> {
     return this.restClient.get({ path: `/calculation/${nomsId}/latest` }) as Promise<LatestCalculation>
+  }
+
+  async performFullValidation(nomsId: string): Promise<ValidationMessage[]> {
+    return this.restClient.post({ path: `/validation/${nomsId}/full-validation` }) as Promise<ValidationMessage[]>
   }
 
   async getCalculationBreakdown(calculationRequestId: number): Promise<CalculationBreakdown> {

@@ -1,4 +1,4 @@
-import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
+import { PagedCollectionOfPrisoners, PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 
@@ -11,5 +11,11 @@ export default class PrisonerSearchApiClient {
 
   async getPrisonerDetails(nomsId: string): Promise<PrisonerSearchApiPrisoner> {
     return this.restClient.get({ path: `/prisoner/${nomsId}` }) as Promise<PrisonerSearchApiPrisoner>
+  }
+
+  async getPrisonInmates(prisonId: string): Promise<PagedCollectionOfPrisoners> {
+    return this.restClient.get({
+      path: `/prison/${prisonId}/prisoners?size=1000`,
+    }) as Promise<PagedCollectionOfPrisoners>
   }
 }

@@ -1,6 +1,7 @@
 import express from 'express'
 
 import createError from 'http-errors'
+import cookieParser from 'cookie-parser'
 
 import nunjucksSetup from './utils/nunjucksSetup'
 import errorHandler from './errorHandler'
@@ -18,7 +19,7 @@ import setUpWebSession from './middleware/setUpWebSession'
 
 import routes from './routes'
 import type { Services } from './services'
-import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
+//  import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
@@ -30,6 +31,7 @@ export default function createApp(services: Services): express.Application {
   app.use(appInsightsMiddleware())
   app.use(setUpHealthChecks(services.applicationInfo))
   app.use(setUpWebSecurity())
+  app.use(cookieParser())
   app.use(setUpWebSession())
   app.use(setUpWebRequestParsing())
   app.use(setUpStaticResources())
@@ -38,7 +40,7 @@ export default function createApp(services: Services): express.Application {
   app.use(authorisationMiddleware())
   app.use(setUpCsrf())
   app.use(setUpCurrentUser())
-  app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerService))
+  // app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerService))
 
   app.use(routes(services))
 
