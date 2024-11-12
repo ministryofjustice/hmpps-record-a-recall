@@ -9,7 +9,8 @@ import { setPrisonerDetailsInLocals } from './viewPersonHome'
 
 export default async (req: Request, res: Response) => {
   await setPrisonerDetailsInLocals(req.services.prisonerService, res)
-  const { nomisId, prisoner } = req.params
+  const { nomisId } = req.params
+  const { prisoner } = res.locals
   const { username } = res.locals.user
   const { url } = req
   const tempCalc = url === '/temporary'

@@ -4,40 +4,40 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
-{% set formMethod = options.method | default('post') %}
-{% set formAction = options.action | default('') %}
-{% set formEnctype = options.enctype | default('') %}
+    {% set formMethod = options.method | default('post') %}
+    {% set formAction = options.action | default('') %}
+    {% set formEnctype = options.enctype | default('') %}
 
-<form method="{{ formMethod }}" action="{{ formAction }}"
-      {% if formEnctype %}
-      enctype="{{ formEnctype }}"
-      {% endif %}
->
+    <form method="{{ formMethod }}" action="{{ formAction }}"
+            {% if formEnctype %}
+                enctype="{{ formEnctype }}"
+            {% endif %}
+    >
 
-  {% if formMethod == 'post' %}
-  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-  {% endif %}
+        {% if formMethod == 'post' %}
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% endif %}
 
-  <div class='govuk-grid-row'>
-    <div class='govuk-grid-column-two-thirds'>
-      <h1 class="govuk-heading-xl" id="check-nomis-heading">Check your answers</h1>
-      {{ govukSummaryList({
-      rows: summaryListRows
-      }) }}
-    </div>
-  </div>
+        <div class='govuk-grid-row'>
+            <div class='govuk-grid-column-two-thirds'>
+                <h1 class="govuk-heading-xl" id="check-nomis-heading">Check your answers</h1>
+                {{ govukSummaryList({
+                    rows: summaryListRows
+                }) }}
+            </div>
+        </div>
 
-  <div class="govuk-button-group">
-    {% block formActions %}
-    {% block submitAction %}
-    {{ govukButton({
-    text: "Confirm recall",
-    classes: options.buttonClasses,
-    preventDoubleClick: true,
-    type: "submit"
-    }) }}
-    {% endblock %}
-    {% endblock %}
-  </div>
-</form>
+        <div class="govuk-button-group">
+            {% block formActions %}
+                {% block submitAction %}
+                    {{ govukButton({
+                        text: "Confirm recall",
+                        classes: options.buttonClasses,
+                        preventDoubleClick: true,
+                        type: "submit"
+                    }) }}
+                {% endblock %}
+            {% endblock %}
+        </div>
+    </form>
 {% endblock %}

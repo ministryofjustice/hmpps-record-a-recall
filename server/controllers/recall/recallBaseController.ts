@@ -16,8 +16,10 @@ export default class RecallBaseController extends FormInitialStep {
     const locals = super.locals(req, res)
     const prisoner = req.sessionModel.get<PrisonerSearchApiPrisoner>('prisoner')
     const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
+    const recallDate = req.sessionModel.get('recallDate')
+    const nomisId = prisoner?.prisonerNumber
 
-    return { ...locals, prisoner, calculation }
+    return { ...locals, prisoner, calculation, recallDate, nomisId }
   }
 
   async getPrisoner(req: FormWizard.Request, res: Response, next: NextFunction) {

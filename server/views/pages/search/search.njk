@@ -11,79 +11,79 @@
 {% set errors = validationErrors[0].text %}
 
 {% block head %}
-  {{ super() }}
-  <script src="/assets/js/textInputWithCharacterCount.js"></script>
+    {{ super() }}
+    <script src="/assets/js/textInputWithCharacterCount.js"></script>
 {% endblock %}
 
 {% block header %}
-  {{ super() }}
+    {{ super() }}
 {% endblock %}
 
 {% block beforeContent %}
-  <div class="govuk-width-container">
-    <div class="govuk-grid-row govuk-!-margin-bottom-0">
-      <div class="govuk-grid-column-two-thirds">
-        {{ govukBackLink({
-          text: "Back",
-          href: backLink
-        }) }}
-        {% if errorlist.length %}
-          {{ govukErrorSummary({
-            titleText: "There is a problem",
-            errorList: validationErrors,
-            classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0"
-          }) }}
-        {% endif %}
-      </div>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row govuk-!-margin-bottom-0">
+            <div class="govuk-grid-column-two-thirds">
+                {{ govukBackLink({
+                    text: "Back",
+                    href: backLink
+                }) }}
+                {% if errorlist.length %}
+                    {{ govukErrorSummary({
+                        titleText: "There is a problem",
+                        errorList: validationErrors,
+                        classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0"
+                    }) }}
+                {% endif %}
+            </div>
+        </div>
     </div>
-  </div>
 {% endblock %}
 
 {% block content %}
-  {% set formMethod = options.method | default('post') %}
-  {% set formAction = options.action | default('') %}
-  {% set formEnctype = options.enctype | default('') %}
+    {% set formMethod = options.method | default('post') %}
+    {% set formAction = options.action | default('') %}
+    {% set formEnctype = options.enctype | default('') %}
 
-  <div class="govuk-width-container">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <span class="govuk-caption-l">Record a recall</span>
-        <h1 class="govuk-heading-l">Enter a NOMIS ID</h1>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <span class="govuk-caption-l">Record a recall</span>
+                <h1 class="govuk-heading-l">Enter a NOMIS ID</h1>
 
 
-        <form method="{{ formMethod }}" action="{{ formAction }}"
-        {% if formEnctype %}
-          enctype="{{ formEnctype }}"
-        {% endif %}
-        >
+                <form method="{{ formMethod }}" action="{{ formAction }}"
+                        {% if formEnctype %}
+                            enctype="{{ formEnctype }}"
+                        {% endif %}
+                >
 
-          {% if formMethod == 'post' %}
-            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          {% endif %}
+                    {% if formMethod == 'post' %}
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    {% endif %}
 
-          {% block fields %}
+                    {% block fields %}
 
-            {% for key, fieldsOptions in fields %}
-              {% if fieldsOptions.component and not fieldsOptions.skip %}
-                {{ callAsMacro(fieldsOptions.component)(fieldsOptions) }}
-              {% endif %}
-            {% endfor %}
-          {% endblock %}
+                        {% for key, fieldsOptions in fields %}
+                            {% if fieldsOptions.component and not fieldsOptions.skip %}
+                                {{ callAsMacro(fieldsOptions.component)(fieldsOptions) }}
+                            {% endif %}
+                        {% endfor %}
+                    {% endblock %}
 
-          <div class="govuk-button-group">
-            {% block formActions %}
-              {% block submitAction %}
-                {{ govukButton({
-                  text: "Search",
-                  classes: options.buttonClasses,
-                  preventDoubleClick: true,
-                  type: "submit"
-                }) }}
-              {% endblock %}
-            {% endblock %}
-          </div>
-        </form>
-      </div>
+                    <div class="govuk-button-group">
+                        {% block formActions %}
+                            {% block submitAction %}
+                                {{ govukButton({
+                                    text: "Search",
+                                    classes: options.buttonClasses,
+                                    preventDoubleClick: true,
+                                    type: "submit"
+                                }) }}
+                            {% endblock %}
+                        {% endblock %}
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 {% endblock %}
