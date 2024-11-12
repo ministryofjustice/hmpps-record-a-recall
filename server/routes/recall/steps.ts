@@ -7,8 +7,9 @@ import RecallBaseController from '../../controllers/recall/recallBaseController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
 import RecallTypeController from '../../controllers/recall/recallTypeController'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function calculationSuccess(req: FormWizard.Request, res: Response) {
-  return false
+  return true
 }
 
 const steps = {
