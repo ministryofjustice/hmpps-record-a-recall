@@ -19,5 +19,19 @@ generic-service:
     ENVIRONMENT_NAME: PRE-PRODUCTION
     AUDIT_ENABLED: "false"
 
+  allowlist:
+    ark-dom1-farnborough: 194.33.192.0/24
+    ark-dom1-corsham: 194.33.196.0/24
+    cymulate-1: 54.217.50.18/32
+    cymulate-2: 52.208.202.111/32
+    cymulate-3: 52.49.144.209/32
+    penetration-test-ip-1: 54.37.241.156/30
+    penetration-test-ip-2: 167.71.136.237/32
+    groups:
+      - circleci
+      - internal
+      - prisons
+      - private_prisons
+
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts-non-prod
