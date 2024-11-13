@@ -45,7 +45,6 @@ export default class RecallBaseController extends FormInitialStep {
 
   async getTemporaryCalculation(req: FormWizard.Request, res: Response, next: NextFunction) {
     const { nomisId, username } = res.locals
-
     const temporaryCalculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
     if (!temporaryCalculation) {
       req.services.recallService
@@ -55,6 +54,11 @@ export default class RecallBaseController extends FormInitialStep {
           req.sessionModel.save()
           next()
           // TODO Don't crash the service if we fail here, redirect to not-possible
+        })
+        .catch(error => {
+          req.sessionModel.unset('temporaryCalculation')
+          req.sessionModel.set('crdsError', error.userMessage)
+          next()
         })
     } else {
       next()

@@ -8,7 +8,7 @@ const fields = {
     name: 'recallDate',
     fieldset: {
       legend: {
-        text: 'Enter the date the person’s licence was revoked',
+        text: 'Enter the date of revocation',
         classes: 'govuk-fieldset__legend--m',
       },
     },
@@ -17,6 +17,23 @@ const fields = {
     },
     nameForErrors: 'Recall date',
   },
+  inPrisonAtRecall: {
+    component: 'govukRadios',
+    validate: ['required'],
+    id: 'inPrisonAtRecall',
+    name: 'inPrisonAtRecall',
+    fieldset: {
+      legend: {
+        text: 'Was this person in prison when the recall was made?',
+        classes: 'govuk-fieldset__legend--m',
+      },
+    },
+    nameForErrors: 'if they were in prison when the recall was made',
+    items: [
+      { text: 'Yes', value: 'true' },
+      { text: 'No', value: 'false', conditional: 'returnToCustodyDate' },
+    ],
+  },
   returnToCustodyDate: {
     component: 'govukDateInput',
     validate: ['required', dateTodayOrInPast],
@@ -24,7 +41,7 @@ const fields = {
     name: 'returnToCustodyDate',
     fieldset: {
       legend: {
-        text: 'Enter the date the person returned to custody',
+        text: 'Date they were arrested',
         classes: 'govuk-fieldset__legend--m',
       },
     },
@@ -35,6 +52,7 @@ const fields = {
   },
   isFixedTermRecall: {
     component: 'govukRadios',
+    classes: 'govuk-radios--inline',
     validate: ['required'],
     id: 'isFixedTermRecall',
     name: 'isFixedTermRecall',

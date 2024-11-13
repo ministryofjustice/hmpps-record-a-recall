@@ -15,16 +15,20 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form
-      const recallDate = req.sessionModel.get('recallDate')
+      const recallDate = req.sessionModel.get<string>('recallDate')
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 
-      if (values.returnToCustodyDate < recallDate) {
+      if (Boolean(values.inPrisonAtRecall) && dateEqualToOrBefore(values.returnToCustodyDate as string, recallDate)) {
         validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRecallDate')
       }
 
       callback({ ...errors, ...validationErrors })
     })
+
+    function dateEqualToOrBefore(dateOne: string, dateTwo: string) {
+      return new Date(dateOne).getTime() <= new Date(dateTwo).getTime()
+    }
   }
 }
