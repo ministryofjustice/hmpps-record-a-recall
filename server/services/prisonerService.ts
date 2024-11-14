@@ -3,13 +3,6 @@ import PrisonerSearchApiClient from '../api/prisonerSearchApiClient'
 import { HmppsAuthClient } from '../data'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import PrisonApiClient from '../api/prisonApiClient'
-import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
-import {
-  CalculatedReleaseDates,
-  LatestCalculation,
-  SentenceAndOffenceWithReleaseArrangements,
-  ValidationMessage,
-} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class PrisonerService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}

@@ -217,7 +217,7 @@ export function getSingleMatchSentences(decoratedOnLicenceSentences: SentenceDet
   )
 }
 
-function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtended[]): boolean {
+export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtended[]): boolean {
   return FIXED_AND_STANDARD_CRITERIA.some(([calculationType, category]) =>
     decoratedSentences.every(
       sentence => sentence.sentenceCalculationType === calculationType && sentence.sentenceCategory === category,

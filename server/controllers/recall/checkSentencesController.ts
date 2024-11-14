@@ -5,7 +5,6 @@ import RecallBaseController from './recallBaseController'
 import {
   CalculatedReleaseDates,
   CalculationBreakdown,
-  SentenceAndOffenceWithReleaseArrangements,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { groupSentencesByRecallDate } from '../../utils/sentenceUtils'
 
@@ -17,11 +16,8 @@ export default class CheckSentencesController extends RecallBaseController {
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const sentences = req.sessionModel.get<SentenceAndOffenceWithReleaseArrangements[]>('sentences')
     const breakdown = req.sessionModel.get<CalculationBreakdown>('breakdown')
     const recallDate = new Date(req.sessionModel.get<string>('recallDate'))
-    console.log(sentences)
-    console.log(breakdown)
 
     res.locals.groupedSentences = groupSentencesByRecallDate(breakdown, recallDate)
 
@@ -35,14 +31,12 @@ export default class CheckSentencesController extends RecallBaseController {
       req.services.calculationService
         .getSentencesAndReleaseDates(temporaryCalculation.calculationRequestId, username)
         .then(sentences => {
-          console.log(sentences)
           req.sessionModel.set('sentences', sentences)
           req.sessionModel.save()
           next()
           // TODO Don't crash the service if we fail here, redirect to not-possible
         })
         .catch(error => {
-          console.log('errored')
           req.sessionModel.unset('sentences')
           req.sessionModel.set('crdsError', error.userMessage)
           next()
@@ -59,14 +53,12 @@ export default class CheckSentencesController extends RecallBaseController {
       req.services.calculationService
         .getCalculationBreakdown(temporaryCalculation.calculationRequestId, username)
         .then(breakdown => {
-          console.log(breakdown)
           req.sessionModel.set('breakdown', breakdown)
           req.sessionModel.save()
           next()
           // TODO Don't crash the service if we fail here, redirect to not-possible
         })
         .catch(error => {
-          console.log('errored')
           req.sessionModel.unset('sentences')
           req.sessionModel.set('crdsError', error.userMessage)
           next()
