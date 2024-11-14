@@ -1,4 +1,3 @@
-import PrisonerService from './prisonerService'
 import BulkTemporaryCalculationRow from '../model/BulkTemporaryCalculationRow'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import {
@@ -7,15 +6,12 @@ import {
   SentenceAndOffenceWithReleaseArrangements,
   ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import RecallService from './recallService'
 import logger from '../../logger'
 import { components } from '../@types/prisonerSearchApi'
+import CalculationService from './calculationService'
 
 export default class BulkCalculationService {
-  constructor(
-    private readonly prisonerService: PrisonerService,
-    private readonly recallService: RecallService,
-  ) {}
+  constructor(private readonly calculationService: CalculationService) {}
 
   /* eslint-disable */
   public async runCalculations(
@@ -37,21 +33,21 @@ export default class BulkCalculationService {
 
       let validation: ValidationMessage[] = []
       try {
-        validation = await this.prisonerService.performCrdsValidation(prisoner.prisonerNumber, username)
+        validation = await this.calculationService.performCrdsValidation(prisoner.prisonerNumber, username)
 
         bookingId = prisoner.bookingId
 
-        await this.prisonerService
+        await this.calculationService
           .getTemporaryCalculation(prisoner.prisonerNumber, username)
           .then(async latestCalc => {
             //get calculation
             const { calculationRequestId } = latestCalc
             const sentencesAndReleaseDates = calculationRequestId
-              ? await this.prisonerService.getSentencesAndReleaseDates(calculationRequestId, username)
+              ? await this.calculationService.getSentencesAndReleaseDates(calculationRequestId, username)
               : undefined
 
             const calculationBreakdown = calculationRequestId
-              ? await this.recallService.getCalculationBreakdown(calculationRequestId, username)
+              ? await this.calculationService.getCalculationBreakdown(calculationRequestId, username)
               : undefined
 
             if (log) {

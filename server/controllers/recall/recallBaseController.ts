@@ -47,8 +47,8 @@ export default class RecallBaseController extends FormInitialStep {
     const { nomisId, username } = res.locals
     const temporaryCalculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
     if (!temporaryCalculation) {
-      req.services.recallService
-        .retrieveOrCalculateTemporaryDates(req.session, nomisId, false, username)
+      req.services.calculationService
+        .calculateTemporaryDates(nomisId, username)
         .then(newCalc => {
           req.sessionModel.set('temporaryCalculation', newCalc)
           req.sessionModel.save()

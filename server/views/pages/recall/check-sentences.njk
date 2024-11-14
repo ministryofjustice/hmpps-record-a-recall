@@ -117,3 +117,33 @@
         </div>
     </div>
 {% endblock %}
+
+{% macro sentenceTable(sentences) %}
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th class="govuk-table__header">Case Sequence</th>
+            <th class="govuk-table__header">Line Sequence</th>
+            <th class="govuk-table__header">Sentenced At</th>
+            <th class="govuk-table__header">Sentence Length</th>
+            <th class="govuk-table__header">Consecutive To</th>
+            <th class="govuk-table__header">Conditional Release Date (CRD)</th>
+            <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for sentence in sentences %}
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ sentence.caseSequence }}</td>
+                <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
+                <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
+                <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
+                <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
+                <td class="govuk-table__cell">{{ sentence.crd }}</td>
+                <td class="govuk-table__cell">{{ sentence.sled }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
+

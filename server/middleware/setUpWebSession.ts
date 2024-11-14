@@ -34,9 +34,6 @@ export default function setUpWebSession(): Router {
   // Only changes every minute so that it's not sent with every request.
   router.use((req, res, next) => {
     req.session.nowInMinutes = Math.floor(Date.now() / 60e3)
-    if (!req.session.recalls) {
-      req.session.recalls = new Map<string, Recall>()
-    }
     next()
   })
 

@@ -48,6 +48,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
         prisonerId: nomisId,
         recallDate,
         returnToCustodyDate: returnToCustodyDate || recallDate,
+        // @ts-expect-error recallType will be correct
         recallType,
         createdByUsername: username,
       }

@@ -4,8 +4,8 @@ import {
   CalculatedReleaseDates,
   LatestCalculation,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { Services } from '../../services'
 import { setPrisonerDetailsInLocals } from './viewPersonHome'
+import CalculationService from '../../services/calculationService'
 
 export default async (req: Request, res: Response) => {
   await setPrisonerDetailsInLocals(req.services.prisonerService, res)
@@ -15,16 +15,16 @@ export default async (req: Request, res: Response) => {
   const { url } = req
   const tempCalc = url === '/temporary'
 
-  return getCalculation(req.session, nomisId, !tempCalc, username, req.services)
+  return getCalculation(nomisId, !tempCalc, username, req.services.calculationService)
     .then(async latestCalculation => {
       const { calculationRequestId } = latestCalculation
 
       const sentencesAndReleaseDates = calculationRequestId
-        ? await req.services.prisonerService.getSentencesAndReleaseDates(calculationRequestId, username)
+        ? await req.services.calculationService.getSentencesAndReleaseDates(calculationRequestId, username)
         : undefined
 
       const calculationBreakdown = calculationRequestId
-        ? await req.services.recallService.getCalculationBreakdown(calculationRequestId, username)
+        ? await req.services.calculationService.getCalculationBreakdown(calculationRequestId, username)
         : undefined
       return res.render('pages/person/view-all-sentences', {
         prisoner,
@@ -36,7 +36,7 @@ export default async (req: Request, res: Response) => {
     })
     .catch(error => {
       const errorMessage = `An error occurred when requesting a temporary calculation from CRDS: `
-      logger.error(errorMessage + error.data.developerMessage)
+      logger.error(`${errorMessage}${error.data?.developerMessage}`)
       return res.render('pages/person/view-all-sentences', {
         nomisId,
         crdError: `${errorMessage}${error.data.userMessage}`,
@@ -45,13 +45,12 @@ export default async (req: Request, res: Response) => {
 }
 
 export function getCalculation(
-  session: CookieSessionInterfaces.CookieSessionObject,
   nomisId: string,
   storedInNomis: boolean,
   username: string,
-  services: Services,
+  calcService: CalculationService,
 ): Promise<CalculatedReleaseDates> | Promise<LatestCalculation> {
   return storedInNomis
-    ? services.prisonerService.getLatestCalculation(nomisId, username)
-    : services.recallService.retrieveOrCalculateTemporaryDates(session, nomisId, false, username)
+    ? calcService.getLatestCalculation(nomisId, username)
+    : calcService.getTemporaryCalculation(nomisId, username)
 }
