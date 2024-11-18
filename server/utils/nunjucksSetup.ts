@@ -2,6 +2,7 @@
 import path from 'path'
 import nunjucks from 'nunjucks'
 import express from 'express'
+import { isFunction } from 'lodash'
 import {
   personProfileName,
   personDateOfBirth,
@@ -50,6 +51,20 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
       express: app,
     },
   )
+
+  function callAsMacro(name: string) {
+    const macro = this.ctx[name]
+
+    if (!isFunction(macro)) {
+      // eslint-disable-next-line no-console
+      console.log(`'${name}' macro does not exist`)
+      return () => ''
+    }
+
+    return macro
+  }
+
+  njkEnv.addGlobal('callAsMacro', callAsMacro)
 
   njkEnv.addFilter('initialiseName', initialiseName)
   njkEnv.addFilter('personProfileName', personProfileName)

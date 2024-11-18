@@ -2,6 +2,7 @@ import HmppsAuditClient, { AuditEvent } from '../data/hmppsAuditClient'
 
 export enum Page {
   EXAMPLE_PAGE = 'EXAMPLE_PAGE',
+  INDEX = 'INDEX',
   ENTER_RECALL_DATE = 'ENTER_RECALL_DATE',
   ENTER_RETURN_TO_CUSTODY_DATE = 'ENTER_RETURN_TO_CUSTODY_DATE',
   CHECK_SENTENCES = 'CHECK_SENTENCES',
@@ -11,6 +12,7 @@ export enum Page {
   RECALL_ENTRY_SUCCESS = 'RECALL_ENTRY_SUCCESS',
   PERSON_HOME_PAGE = 'PERSON_HOME_PAGE',
   ASK_FTR_QUESTION = 'ASK_FTR_QUESTION',
+  BULK_TEST_PAGE = 'BULK_TEST_PAGE',
 }
 
 export interface PageViewEventDetails {
