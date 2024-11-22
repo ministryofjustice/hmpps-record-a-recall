@@ -6,6 +6,7 @@ import FixedTermRecallController from '../../controllers/recall/fixedTermRecallC
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
 import RecallTypeController from '../../controllers/recall/recallTypeController'
+import CheckSentencesController from '../../controllers/recall/checkSentencesController'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function calculationSuccess(req: FormWizard.Request, res: Response) {
@@ -41,7 +42,7 @@ const steps = {
   },
   '/check-sentences': {
     next: 'fixed-term-recall',
-    controller: RecallBaseController,
+    controller: CheckSentencesController,
   },
   '/fixed-term-recall': {
     fields: ['isFixedTermRecall'],

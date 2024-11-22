@@ -11,3 +11,5 @@ export type ConsecutiveSentenceBreakdown = components['schemas']['ConsecutiveSen
 export type ConsecutiveSentencePart = components['schemas']['ConsecutiveSentencePart']
 export type CalculatedReleaseDates = components['schemas']['CalculatedReleaseDates']
 export type ValidationMessage = components['schemas']['ValidationMessage']
+export type Term = components['schemas']['SentenceTerms']
+export type Offence = components['schemas']['OffenderOffence']

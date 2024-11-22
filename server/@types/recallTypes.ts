@@ -12,7 +12,13 @@ const RecallTypes = {
     fixedTerm: true,
   },
   STANDARD_RECALL: { code: 'STANDARD_RECALL', description: 'Standard recall', fixedTerm: false },
-  HDC_RECALL: { code: 'HDC_RECALL', description: 'HDC recall', fixedTerm: false },
+  HDC_STANDARD_RECALL: { code: 'HDC_STANDARD_RECALL', description: 'HDC Standard recall', fixedTerm: false },
+  HDC_FOURTEEN_DAY_RECALL: { code: 'HDC_FOURTEEN_DAY_RECALL', description: 'HDC 14 day recall', fixedTerm: true },
+  HDC_TWENTY_EIGHT_DAY_RECALL: {
+    code: 'HDC_TWENTY_EIGHT_DAY_RECALL',
+    description: 'HDC 28 day recall',
+    fixedTerm: true,
+  },
 } as const
 
 export { RecallTypes, RecallType }

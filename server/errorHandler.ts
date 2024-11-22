@@ -5,7 +5,6 @@ import logger from '../logger'
 export default function createErrorHandler(production: boolean) {
   return (error: HTTPError, req: Request, res: Response, next: NextFunction): void => {
     logger.error(`Error handling request for '${req.originalUrl}', user '${res.locals.user?.username}'`, error)
-
     if (error.status === 401 || error.status === 403) {
       logger.info('Logging user out')
       return res.redirect('/sign-out')
@@ -18,7 +17,8 @@ export default function createErrorHandler(production: boolean) {
     res.locals.stack = production ? null : error.stack
 
     res.status(error.status || 500)
+    const nomisId = `${req.originalUrl}`.split('/')[2]
 
-    return res.render('pages/error')
+    return production || !nomisId ? res.render('pages/error') : res.redirect(`/person/${nomisId}`)
   }
 }

@@ -1,21 +1,17 @@
-import PrisonerService from './prisonerService'
 import BulkTemporaryCalculationRow from '../model/BulkTemporaryCalculationRow'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import {
   CalculatedReleaseDates,
   CalculationBreakdown,
   SentenceAndOffenceWithReleaseArrangements,
+  Term,
   ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import RecallService from './recallService'
 import logger from '../../logger'
-import { components } from '../@types/prisonerSearchApi'
+import CalculationService from './calculationService'
 
 export default class BulkCalculationService {
-  constructor(
-    private readonly prisonerService: PrisonerService,
-    private readonly recallService: RecallService,
-  ) {}
+  constructor(private readonly calculationService: CalculationService) {}
 
   /* eslint-disable */
   public async runCalculations(
@@ -37,21 +33,21 @@ export default class BulkCalculationService {
 
       let validation: ValidationMessage[] = []
       try {
-        validation = await this.prisonerService.performCrdsValidation(prisoner.prisonerNumber, username)
+        validation = await this.calculationService.performCrdsValidation(prisoner.prisonerNumber, username)
 
         bookingId = prisoner.bookingId
 
-        await this.prisonerService
+        await this.calculationService
           .getTemporaryCalculation(prisoner.prisonerNumber, username)
           .then(async latestCalc => {
             //get calculation
             const { calculationRequestId } = latestCalc
             const sentencesAndReleaseDates = calculationRequestId
-              ? await this.prisonerService.getSentencesAndReleaseDates(calculationRequestId, username)
+              ? await this.calculationService.getSentencesAndReleaseDates(calculationRequestId, username)
               : undefined
 
             const calculationBreakdown = calculationRequestId
-              ? await this.recallService.getCalculationBreakdown(calculationRequestId, username)
+              ? await this.calculationService.getCalculationBreakdown(calculationRequestId, username)
               : undefined
 
             if (log) {
@@ -121,7 +117,7 @@ export default class BulkCalculationService {
       const custodyTerm = this.getCustodialTerm(sentence.terms)
       const licenseTerm = this.getLicenceTerm(sentence.terms)
       let dates
-      let consecutive: boolean
+      let consecutive: boolean = false
 
       dates = breakdowns.concurrentSentences.find(b => {
         return b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence
@@ -199,18 +195,15 @@ export default class BulkCalculationService {
     return validationMessages.length === 0 ? 'TRUE' : 'FALSE'
   }
 
-  // @ts-expect-error SentenceTerms does exist
-  private getCustodialTerm(terms: components['schemas']['SentenceTerms'][]): string {
+  private getCustodialTerm(terms: Term[]): string {
     return this.getTerm(terms, 'IMP')
   }
 
-  // @ts-expect-error SentenceTerms does exist
-  private getLicenceTerm(terms: components['schemas']['SentenceTerms'][]): string {
+  private getLicenceTerm(terms: Term[]): string {
     return this.getTerm(terms, 'LIC')
   }
 
-  // @ts-expect-error SentenceTerms does exist
-  private getTerm(terms: components['schemas']['SentenceTerms'][], type: string): string {
+  private getTerm(terms: Term[], type: string): string {
     const term = terms?.find(t => t.code === type)
 
     return term ? `${term.years}Y,${term.months}M,${term.weeks}W,${term.days}D` : 'N/A'
