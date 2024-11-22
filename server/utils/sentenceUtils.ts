@@ -224,3 +224,12 @@ export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtend
     ),
   )
 }
+
+export function groupSentencesByCaseRefAndCourt(sentences: SentenceAndOffenceWithReleaseArrangements[]) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return sentences.reduce((result: any, currentValue: any) => {
+    const ref = `${currentValue.caseReference || 'Case'} at ${currentValue.courtDescription}`
+    ;(result[ref] = result[ref] || []).push(currentValue)
+    return result
+  }, {})
+}

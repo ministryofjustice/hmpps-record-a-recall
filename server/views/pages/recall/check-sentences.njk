@@ -7,9 +7,8 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-
-{% set title = "Enter recall date" %}
 {% set errors = validationErrors[0].text %}
 
 {% block beforeContent %}
@@ -29,6 +28,9 @@
                     }) }}
                 {% endif %}
             </div>
+            <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
+                <a href="/person/{{ nomisId }}/sentences" class="govuk-link">View raw sentence data</a>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -37,7 +39,6 @@
     {% set formMethod = options.method | default('post') %}
     {% set formAction = options.action | default('') %}
     {% set formEnctype = options.enctype | default('') %}
-
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -55,36 +56,19 @@
                     {% block sentenceInfo %}
 
                         <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-three-quarters">
-                                <h1 class="govuk-heading-l" id="check-sentence-heading">
-                                    Grouped Sentences for Recall Date: {{ recallDate | date }}
-                                </h1>
-                            </div>
-                            <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
-                                <a href="/person/{{ nomisId }}/sentences" class="govuk-link">View raw sentence data</a>
-                            </div>
+                            <h1 class="govuk-heading-xl">
+                                <span class="govuk-caption-xl">Record a recall</span>
+                                Check that the sentences and offences are correct
+                            </h1>
+
                         </div>
-
-                        {% if groupedSentences.onLicenceSentences.length > 0 %}
-                            <h2 class="govuk-heading-m" id="sent-on-licence">On Licence Sentences</h2>
-                            {{ sentenceTable(groupedSentences.onLicenceSentences) }}
-                        {% else %}
-                            <h2 class="govuk-heading-m" id="sent-on-licence">No sentences on licence.</h2>
-                        {% endif %}
-
-                        {% if groupedSentences.activeSentences.length > 0 %}
-                            <h2 class="govuk-heading-m" id="active-sentences">Active Sentences</h2>
-                            {{ sentenceTable(groupedSentences.activeSentences) }}
-                        {% else %}
-                            <h2 class="govuk-heading-m" id="active-sentences">No active sentences.</h2>
-                        {% endif %}
-
-                        {% if groupedSentences.expiredSentences.length > 0 %}
-                            <h2 class="govuk-heading-m" id="expired-sentences">Expired Sentences</h2>
-                            {{ sentenceTable(groupedSentences.expiredSentences) }}
-                        {% else %}
-                            <h2 class="govuk-heading-m" id="expired-sentences">No expired sentences.</h2>
-                        {% endif %}
+                        <p>
+                            The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
+                        </p>
+                        <h2 class="govuk-heading-l">
+                            Court cases with sentences eligible for recall ({{ casesWithEligibleSentences }})
+                        </h2>
+                        {{ sentenceCards(groupedSentences) }}
 
 
                     {% endblock %}
@@ -118,32 +102,47 @@
     </div>
 {% endblock %}
 
-{% macro sentenceTable(sentences) %}
-    <table class="govuk-table">
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th class="govuk-table__header">Case Sequence</th>
-            <th class="govuk-table__header">Line Sequence</th>
-            <th class="govuk-table__header">Sentenced At</th>
-            <th class="govuk-table__header">Sentence Length</th>
-            <th class="govuk-table__header">Consecutive To</th>
-            <th class="govuk-table__header">Conditional Release Date (CRD)</th>
-            <th class="govuk-table__header">Sentence Expiry Date (SED)</th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        {% for sentence in sentences %}
-            <tr class="govuk-table__row">
-                <td class="govuk-table__cell">{{ sentence.caseSequence }}</td>
-                <td class="govuk-table__cell">{{ sentence.lineSequence }}</td>
-                <td class="govuk-table__cell">{{ sentence.sentencedAt }}</td>
-                <td class="govuk-table__cell">{{ sentence.sentenceLength }}</td>
-                <td class="govuk-table__cell">{{ sentence.consecutiveTo }}</td>
-                <td class="govuk-table__cell">{{ sentence.crd }}</td>
-                <td class="govuk-table__cell">{{ sentence.sled }}</td>
-            </tr>
+{%  macro sentenceCards(groups) %}
+    {% for group in groups %}
+    {%  if group.hasEligibleSentences  %}
+        <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
+
+        {% for sentence in group.eligibleSentences %}
+            {{ sentenceCard(sentence) }}
         {% endfor %}
-        </tbody>
-    </table>
+        {% from "govuk/components/details/macro.njk" import govukDetails %}
+        {% if group.hasIneligibleSentences %}
+            {% set ineligibleHtml %}
+                {% for sentence in group.ineligibleSentences %}
+                    {{ sentenceCard(sentence) }}
+                {% endfor %}
+            {% endset %}
+            {% set summaryHtml %}
+                View sentences that are ineligible for recall ({{ group.ineligibleSentences | length }})
+            {%  endset %}
+        {{ govukDetails({
+            summaryHtml: summaryHtml,
+            html: ineligibleHtml
+        }) }}
+        {% endif %}
+        {% endif %}
+    {% endfor %}
+
+{% endmacro %}
+
+{% macro sentenceCard(sentence) %}
+    <div class="offence-card sentence-card">
+        <div class="govuk-width-container">
+            <div class="offence-card-offence-details">
+                <h4 class="govuk-heading-s">{{ sentence.offenceCode }} - {{ sentence.offenceDescription }}</h4>
+
+                {{ govukSummaryList({
+                    rows: sentence.summary
+                }) }}
+
+
+            </div>
+        </div>
+    </div>
 {% endmacro %}
 

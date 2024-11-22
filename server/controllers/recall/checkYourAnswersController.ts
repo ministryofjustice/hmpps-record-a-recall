@@ -6,7 +6,8 @@ import RecallBaseController from './recallBaseController'
 import { SummaryListRow } from '../../@types/govuk'
 import { RecallType, RecallTypes } from '../../@types/recallTypes'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import formatLongDate from '../../formatters/formatDate'
+import { formatLongDate } from '../../formatters/formatDate'
+import toSummaryListRow from '../../helpers/componentHelper'
 
 export default class CheckYourAnswersController extends RecallBaseController {
   middlewareSetup() {
@@ -20,13 +21,9 @@ export default class CheckYourAnswersController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/recall/${step}`
     const typeDescription = this.getRecallType(recallType).description
     const summaryListRows: SummaryListRow[] = compact([
-      this.toSummaryListRow('Recall date', formatLongDate(recallDate), editLink('recall-date')),
-      this.toSummaryListRow(
-        'Return to custody date',
-        formatLongDate(returnToCustodyDate) || 'None',
-        editLink('rtc-date'),
-      ),
-      this.toSummaryListRow('Recall type', typeDescription, editLink('fixed-term-recall')),
+      toSummaryListRow('Recall date', formatLongDate(recallDate), editLink('recall-date')),
+      toSummaryListRow('Return to custody date', formatLongDate(returnToCustodyDate) || 'None', editLink('rtc-date')),
+      toSummaryListRow('Recall type', typeDescription, editLink('fixed-term-recall')),
     ])
 
     return {
@@ -77,30 +74,5 @@ export default class CheckYourAnswersController extends RecallBaseController {
 
   getRecallType(code: string): RecallType {
     return Object.values(RecallTypes).find(it => it.code === code)
-  }
-
-  toSummaryListRow(
-    labelText: string,
-    formValue: string | string[] | undefined,
-    actionHref: string,
-    actionText = 'edit',
-  ) {
-    const value = formValue && (typeof formValue === 'string' ? { text: formValue } : { html: formValue?.join('<br>') })
-
-    return {
-      key: {
-        text: labelText,
-      },
-      value,
-      actions: {
-        items: [
-          {
-            href: actionHref,
-            text: actionText,
-            classes: 'govuk-link--no-visited-state',
-          },
-        ],
-      },
-    }
   }
 }

@@ -4,10 +4,10 @@ import {
   CalculatedReleaseDates,
   CalculationBreakdown,
   SentenceAndOffenceWithReleaseArrangements,
+  Term,
   ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../logger'
-import { components } from '../@types/prisonerSearchApi'
 import CalculationService from './calculationService'
 
 export default class BulkCalculationService {
@@ -117,7 +117,7 @@ export default class BulkCalculationService {
       const custodyTerm = this.getCustodialTerm(sentence.terms)
       const licenseTerm = this.getLicenceTerm(sentence.terms)
       let dates
-      let consecutive: boolean
+      let consecutive: boolean = false
 
       dates = breakdowns.concurrentSentences.find(b => {
         return b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence
@@ -195,18 +195,15 @@ export default class BulkCalculationService {
     return validationMessages.length === 0 ? 'TRUE' : 'FALSE'
   }
 
-  // @ts-expect-error SentenceTerms does exist
-  private getCustodialTerm(terms: components['schemas']['SentenceTerms'][]): string {
+  private getCustodialTerm(terms: Term[]): string {
     return this.getTerm(terms, 'IMP')
   }
 
-  // @ts-expect-error SentenceTerms does exist
-  private getLicenceTerm(terms: components['schemas']['SentenceTerms'][]): string {
+  private getLicenceTerm(terms: Term[]): string {
     return this.getTerm(terms, 'LIC')
   }
 
-  // @ts-expect-error SentenceTerms does exist
-  private getTerm(terms: components['schemas']['SentenceTerms'][], type: string): string {
+  private getTerm(terms: Term[], type: string): string {
     const term = terms?.find(t => t.code === type)
 
     return term ? `${term.years}Y,${term.months}M,${term.weeks}W,${term.days}D` : 'N/A'
