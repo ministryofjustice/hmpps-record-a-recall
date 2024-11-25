@@ -16,6 +16,7 @@ import { groupSentencesByCaseRefAndCourt } from '../../utils/sentenceUtils'
 import toSummaryListRow from '../../helpers/componentHelper'
 import { format8DigitDate } from '../../formatters/formatDate'
 import { SummaryListRow } from '../../@types/govuk'
+import logger from '../../../logger'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -119,6 +120,14 @@ export default class CheckSentencesController extends RecallBaseController {
     recallDate: Date,
   ): boolean {
     const breakdown = concBreakdown || consBreakdown
+
+    if (!breakdown) {
+      logger.warn(
+        `No breakdown found for sentence with line seq ${sentence.lineSequence} and case seq ${sentence.caseSequence}`,
+      )
+      return false
+    }
+
     const dateTypes = Object.keys(breakdown.dates)
 
     if (!(dateTypes.includes('SLED') || dateTypes.includes('SED'))) {
@@ -157,7 +166,7 @@ export default class CheckSentencesController extends RecallBaseController {
     consBreakdown: ConsecutiveSentenceBreakdown,
     dateType: string,
   ) {
-    return consBreakdown ? consBreakdown.dates[dateType] : concBreakdown.dates[dateType]
+    return consBreakdown ? consBreakdown?.dates[dateType] : concBreakdown?.dates[dateType]
   }
 
   async getSentences(req: FormWizard.Request, res: Response, next: NextFunction) {
