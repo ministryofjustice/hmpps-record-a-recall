@@ -50,24 +50,6 @@ const fields = {
     },
     nameForErrors: 'Return to custody date',
   },
-  isFixedTermRecall: {
-    component: 'govukRadios',
-    classes: 'govuk-radios--inline',
-    validate: ['required'],
-    id: 'isFixedTermRecall',
-    name: 'isFixedTermRecall',
-    fieldset: {
-      legend: {
-        text: 'Is this a fixed-term recall?',
-        classes: 'govuk-fieldset__legend--m',
-      },
-    },
-    nameForErrors: 'Fixed term recall',
-    items: [
-      { text: 'Yes', value: 'true' },
-      { text: 'No', value: 'false' },
-    ],
-  },
   recallType: {
     component: 'govukRadios',
     validate: ['required'],

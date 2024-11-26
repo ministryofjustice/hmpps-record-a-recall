@@ -120,7 +120,6 @@
     "hmpo-form-wizard": "^15.0.0",
     "hmpps-court-cases-release-dates-design": "^2.9.5",
     "http-errors": "^2.0.0",
-    "joi": "^17.13.3",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "nocache": "^4.0.0",
