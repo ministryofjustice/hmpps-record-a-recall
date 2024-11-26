@@ -2,7 +2,6 @@ import FormWizard from 'hmpo-form-wizard'
 import { Response } from 'express'
 import RecallDateController from '../../controllers/recall/recallDateController'
 import ReturnToCustodyDateController from '../../controllers/recall/returnToCustodyDateController'
-import FixedTermRecallController from '../../controllers/recall/fixedTermRecallController'
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
 import RecallTypeController from '../../controllers/recall/recallTypeController'
@@ -41,15 +40,8 @@ const steps = {
     controller: ReturnToCustodyDateController,
   },
   '/check-sentences': {
-    next: 'fixed-term-recall',
-    controller: CheckSentencesController,
-  },
-  '/fixed-term-recall': {
-    fields: ['isFixedTermRecall'],
-    // next: [{ field: 'isFixedTermRecall', value: 'no', next: 'recall-type' }, 'check-your-answers'],
     next: 'recall-type',
-    controller: FixedTermRecallController,
-    template: 'base-question',
+    controller: CheckSentencesController,
   },
   '/recall-type': {
     next: 'check-your-answers',
