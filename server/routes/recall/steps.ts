@@ -1,6 +1,5 @@
 import RecallDateController from '../../controllers/recall/recallDateController'
 import ReturnToCustodyDateController from '../../controllers/recall/returnToCustodyDateController'
-import RecallBaseController from '../../controllers/recall/recallBaseController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
 import RecallTypeController from '../../controllers/recall/recallTypeController'
 import CheckSentencesController from '../../controllers/recall/checkSentencesController'
