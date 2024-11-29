@@ -10,12 +10,7 @@ import { formatLongDate } from '../../formatters/formatDate'
 import toSummaryListRow from '../../helpers/componentHelper'
 
 export default class CheckYourAnswersController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-  }
-
-  /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-  locals(req: FormWizard.Request, res: Response): any {
+  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const { nomisId } = res.locals
     const { recallDate, returnToCustodyDate, recallType } = res.locals.values
     const editLink = (step: string) => `/person/${nomisId}/recall/${step}`

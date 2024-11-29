@@ -4,14 +4,6 @@ import { Response } from 'express'
 import RecallBaseController from './recallBaseController'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-  }
-
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    return super.locals(req, res)
-  }
-
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form

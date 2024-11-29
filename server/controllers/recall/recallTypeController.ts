@@ -6,10 +6,6 @@ import { RecallType, RecallTypes } from '../../@types/recallTypes'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class RecallTypeController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-  }
-
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
     const recallTypes = Object.values(RecallTypes)
     req.form.options.fields.recallType.items = Object.values(recallTypes).map(({ code, description }) => ({
