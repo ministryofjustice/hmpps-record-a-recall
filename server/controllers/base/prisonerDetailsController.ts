@@ -26,7 +26,6 @@ export default class PrisonerDetailsController extends FormInitialStep {
       req.services.prisonerService
         .getPrisonerDetails(nomisId, username)
         .then(newPrisoner => {
-          console.log('Retrieved prisoner details from Prisoner search')
           req.sessionModel.set('prisoner', newPrisoner)
           req.sessionModel.save()
           next()
@@ -37,7 +36,6 @@ export default class PrisonerDetailsController extends FormInitialStep {
           next(error)
         })
     } else {
-      console.log('Retrieved prisoner details from session')
       next()
     }
   }
