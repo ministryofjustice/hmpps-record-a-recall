@@ -4,11 +4,9 @@
 import { NextFunction, Response } from 'express'
 
 declare module 'hmpo-form-wizard' {
+  // eslint-disable-next-line import/no-named-as-default
   import Express from 'express'
 
-  // These enums have to live here because of TS/Jest and Enums work..  ¯\_(ツ)_/¯
-  // Also this ESLint override because of how TS/Eslint works.
-  // eslint-disable-next-line no-shadow
   export const enum FieldType {
     Text = 'TEXT',
     Radio = 'RADIO',
@@ -18,7 +16,6 @@ declare module 'hmpo-form-wizard' {
     Dropdown = 'DROPDOWN',
   }
 
-  // eslint-disable-next-line no-shadow
   export const enum ValidationType {
     String = 'string',
     Regex = 'regex',
@@ -49,7 +46,6 @@ declare module 'hmpo-form-wizard' {
     AfterDateField = 'afterField',
   }
 
-  // eslint-disable-next-line no-shadow
   export const enum FormatterType {
     Trim = 'trim',
     Boolean = 'boolean',
@@ -67,7 +63,6 @@ declare module 'hmpo-form-wizard' {
     Base64Decode = 'base64decode',
   }
 
-  // eslint-disable-next-line no-shadow
   export const enum Gender {
     NotKnown = 0,
     Male = 1,

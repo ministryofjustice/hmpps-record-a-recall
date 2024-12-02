@@ -229,6 +229,7 @@ export function groupSentencesByCaseRefAndCourt(sentences: SentenceAndOffenceWit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return sentences.reduce((result: any, currentValue: any) => {
     const ref = `${currentValue.caseReference || 'Case'} at ${currentValue.courtDescription}`
+    // eslint-disable-next-line no-param-reassign
     ;(result[ref] = result[ref] || []).push(currentValue)
     return result
   }, {})
