@@ -20,20 +20,25 @@ export default async (req: Request, res: Response) => {
   }
 
   const { nomisId, prisoner } = res.locals
-  try {
-    const recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
-    return res.render('pages/person/home', {
-      nomisId,
-      prisoner,
-      recalls,
-      banner,
-    })
-  } catch (error) {
-    return res.render('pages/person/home', {
-      nomisId,
-      prisoner,
-      error,
-    })
+  if (prisoner) {
+    try {
+      const recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
+      return res.render('pages/person/home', {
+        nomisId,
+        prisoner,
+        recalls,
+        banner,
+      })
+    } catch (error) {
+      return res.render('pages/person/home', {
+        nomisId,
+        prisoner,
+        error,
+      })
+    }
+  } else {
+    req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)
+    return res.redirect('/search')
   }
 }
 
@@ -46,6 +51,5 @@ export async function setPrisonerDetailsInLocals(prisonerService: PrisonerServic
     })
     .catch(error => {
       logger.error(error, `Failed to retrieve prisoner details for: ${nomisId}`)
-      res.redirect('/search')
     })
 }

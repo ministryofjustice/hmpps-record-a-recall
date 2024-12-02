@@ -1,16 +1,9 @@
-import FormWizard from 'hmpo-form-wizard'
-import { Response } from 'express'
 import RecallDateController from '../../controllers/recall/recallDateController'
 import ReturnToCustodyDateController from '../../controllers/recall/returnToCustodyDateController'
-import RecallBaseController from '../../controllers/recall/recallBaseController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
 import RecallTypeController from '../../controllers/recall/recallTypeController'
 import CheckSentencesController from '../../controllers/recall/checkSentencesController'
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function calculationSuccess(req: FormWizard.Request, res: Response) {
-  return true
-}
+import CheckPossibleController from '../../controllers/recall/checkPossibleController'
 
 const steps = {
   '/': {
@@ -18,10 +11,10 @@ const steps = {
     reset: true,
     resetJourney: true,
     skip: true,
-    controller: RecallBaseController,
+    controller: CheckPossibleController,
     next: [
       {
-        fn: calculationSuccess,
+        fn: 'recallPossible',
         next: 'recall-date',
       },
       'not-possible',
@@ -53,7 +46,7 @@ const steps = {
     controller: CheckYourAnswersController,
   },
   '/not-possible': {
-    controller: RecallBaseController,
+    controller: CheckPossibleController,
     noPost: true,
   },
 }

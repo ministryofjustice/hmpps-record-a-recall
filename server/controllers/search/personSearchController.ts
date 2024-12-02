@@ -11,6 +11,8 @@ export default class PersonSearchController extends FormInitialStep {
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+    res.locals.errorMessage = req.flash('errorMessage')
+
     return super.locals(req, res)
   }
 

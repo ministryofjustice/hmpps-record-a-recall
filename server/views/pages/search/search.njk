@@ -6,6 +6,7 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% set title = "Find a person" %}
 {% set errors = validationErrors[0].text %}
@@ -23,10 +24,12 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row govuk-!-margin-bottom-0">
             <div class="govuk-grid-column-two-thirds">
-                {{ govukBackLink({
-                    text: "Back",
-                    href: backLink
-                }) }}
+                {% if errorMessage != '' %}
+                    {{ govukWarningText({
+                        text: errorMessage,
+                        iconFallbackText: "Warning"
+                    }) }}
+                {%  endif %}
                 {% if errorlist.length %}
                     {{ govukErrorSummary({
                         titleText: "There is a problem",
