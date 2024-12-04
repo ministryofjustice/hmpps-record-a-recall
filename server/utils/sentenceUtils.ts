@@ -234,3 +234,20 @@ export function groupSentencesByCaseRefAndCourt(sentences: SentenceAndOffenceWit
     return result
   }, {})
 }
+
+export function findConsecutiveSentenceBreakdown(
+  sentence: SentenceAndOffenceWithReleaseArrangements,
+  breakdown: CalculationBreakdown,
+): ConsecutiveSentencePart {
+  return breakdown?.consecutiveSentence?.sentenceParts?.find(
+    p => p.caseSequence === sentence.caseSequence && p.lineSequence === sentence.lineSequence,
+  )
+}
+export function findConcurrentSentenceBreakdown(
+  sentence: SentenceAndOffenceWithReleaseArrangements,
+  breakdown: CalculationBreakdown,
+): ConcurrentSentenceBreakdown {
+  return breakdown?.concurrentSentences?.find(
+    b => b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence,
+  )
+}

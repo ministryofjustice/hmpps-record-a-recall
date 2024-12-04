@@ -8,11 +8,16 @@ import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
+  ConsecutiveSentencePart,
   Offence,
   SentenceAndOffenceWithReleaseArrangements,
   Term,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { groupSentencesByCaseRefAndCourt } from '../../utils/sentenceUtils'
+import {
+  findConcurrentSentenceBreakdown,
+  findConsecutiveSentenceBreakdown,
+  groupSentencesByCaseRefAndCourt,
+} from '../../utils/sentenceUtils'
 import toSummaryListRow from '../../helpers/componentHelper'
 import { format8DigitDate } from '../../formatters/formatDate'
 import { SummaryListRow } from '../../@types/govuk'
@@ -48,10 +53,9 @@ export default class CheckSentencesController extends RecallBaseController {
 
       summarisedGroup.caseRefAndCourt = caseRef
       groupsSentences.forEach((sentence: SentenceAndOffenceWithReleaseArrangements) => {
-        const concurrentSentenceBreakdown = breakdown.concurrentSentences.find(b => {
-          return b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence
-        })
+        const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(sentence, breakdown)
         const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
+        const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdown)
 
         const { offence } = sentence
 
@@ -61,6 +65,10 @@ export default class CheckSentencesController extends RecallBaseController {
           consecutiveSentenceBreakdown,
           recallDate,
         )
+        const forthConsConc = this.forthwithConsecutiveConcurrent(
+          concurrentSentenceBreakdown,
+          consecutiveSentencePartBreakdown,
+        )
 
         const summary = compact([
           toSummaryListRow('Committed on', this.stringifyOffenceDate(offence)),
@@ -68,25 +76,44 @@ export default class CheckSentencesController extends RecallBaseController {
           toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
           toSummaryListRow('Custodial term', this.getCustodialTerm(sentence.terms)),
           toSummaryListRow('Licence period', this.getLicenceTerm(sentence.terms)),
-          toSummaryListRow(
-            'Consecutive or concurrent',
-            concurrentSentenceBreakdown && !consecutiveSentenceBreakdown ? 'Concurrent' : 'Consecutive',
-          ),
+          toSummaryListRow('Case Sequence', `${sentence.caseSequence}`),
+          toSummaryListRow('Line Sequence', `${sentence.lineSequence}`),
+          toSummaryListRow('Consecutive or concurrent', forthConsConc),
           toSummaryListRow(
             'Unadjusted SLED',
-            this.getDate(concurrentSentenceBreakdown, consecutiveSentenceBreakdown, 'SLED')?.unadjusted,
+            this.getDate(
+              concurrentSentenceBreakdown,
+              consecutiveSentenceBreakdown,
+              consecutiveSentencePartBreakdown,
+              'SLED',
+            )?.unadjusted,
           ),
           toSummaryListRow(
             'Adjusted SLED',
-            this.getDate(concurrentSentenceBreakdown, consecutiveSentenceBreakdown, 'SLED')?.adjusted,
+            this.getDate(
+              concurrentSentenceBreakdown,
+              consecutiveSentenceBreakdown,
+              consecutiveSentencePartBreakdown,
+              'SLED',
+            )?.adjusted,
           ),
           toSummaryListRow(
             'Unadjusted SED',
-            this.getDate(concurrentSentenceBreakdown, consecutiveSentenceBreakdown, 'SED')?.unadjusted,
+            this.getDate(
+              concurrentSentenceBreakdown,
+              consecutiveSentenceBreakdown,
+              consecutiveSentencePartBreakdown,
+              'SED',
+            )?.unadjusted,
           ),
           toSummaryListRow(
             'Adjusted SED',
-            this.getDate(concurrentSentenceBreakdown, consecutiveSentenceBreakdown, 'SED')?.adjusted,
+            this.getDate(
+              concurrentSentenceBreakdown,
+              consecutiveSentenceBreakdown,
+              consecutiveSentencePartBreakdown,
+              'SED',
+            )?.adjusted,
           ),
         ])
 
@@ -111,6 +138,23 @@ export default class CheckSentencesController extends RecallBaseController {
     res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
 
     return super.locals(req, res)
+  }
+
+  private forthwithConsecutiveConcurrent(
+    concBreakdown: ConcurrentSentenceBreakdown,
+    consPartBreakdown: ConsecutiveSentencePart,
+  ): string {
+    if (concBreakdown) {
+      return 'Concurrent'
+    }
+    if (consPartBreakdown) {
+      if (consPartBreakdown.consecutiveToLineSequence && consPartBreakdown.consecutiveToCaseSequence) {
+        return `Consecutive to case ${consPartBreakdown.consecutiveToCaseSequence}, line ${consPartBreakdown.consecutiveToLineSequence}`
+      }
+      return 'Forthwith'
+    }
+
+    return 'Unknown'
   }
 
   private isEligible(
@@ -164,9 +208,16 @@ export default class CheckSentencesController extends RecallBaseController {
   private getDate(
     concBreakdown: ConcurrentSentenceBreakdown,
     consBreakdown: ConsecutiveSentenceBreakdown,
+    consPartBreakdown: ConsecutiveSentencePart,
     dateType: string,
   ) {
-    return consBreakdown ? consBreakdown?.dates[dateType] : concBreakdown?.dates[dateType]
+    if (concBreakdown) {
+      return concBreakdown.dates[dateType]
+    }
+    if (consPartBreakdown) {
+      return consBreakdown.dates[dateType]
+    }
+    return null
   }
 
   async getSentences(req: FormWizard.Request, res: Response, next: NextFunction) {
