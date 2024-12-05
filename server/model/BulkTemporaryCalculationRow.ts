@@ -19,6 +19,7 @@ type BulkRemandCalculationRow = {
   CUSTODIAL_TERM: string
   LICENSE_PERIOD: string
   CONCURRENT_OR_CONSECUTIVE: string
+  CONSECUTIVE_TO: string
   UNADJUSTED_LED: string
   ADJUSTED_LED: string
   UNADJUSTED_SLED: string

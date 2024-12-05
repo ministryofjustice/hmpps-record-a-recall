@@ -104,7 +104,8 @@
 
 {%  macro sentenceCards(groups) %}
     {% for group in groups %}
-    {%  if group.hasEligibleSentences  %}
+{#      Temporarily disabled in order to help analysis - to be reinstated for business requirement#}
+{#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
         {% for sentence in group.eligibleSentences %}
@@ -125,7 +126,7 @@
             html: ineligibleHtml
         }) }}
         {% endif %}
-        {% endif %}
+{#        {% endif %}#}
     {% endfor %}
 
 {% endmacro %}

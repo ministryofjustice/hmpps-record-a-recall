@@ -9,6 +9,7 @@ import {
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../logger'
 import CalculationService from './calculationService'
+import { findConcurrentSentenceBreakdown, findConsecutiveSentenceBreakdown } from '../utils/sentenceUtils'
 
 export default class BulkCalculationService {
   constructor(private readonly calculationService: CalculationService) {}
@@ -116,21 +117,25 @@ export default class BulkCalculationService {
     try {
       const custodyTerm = this.getCustodialTerm(sentence.terms)
       const licenseTerm = this.getLicenceTerm(sentence.terms)
+
+      const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(sentence, breakdowns)
+      const consecutiveSentenceBreakdown = breakdowns.consecutiveSentence
+      const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdowns)
+
       let dates
-      let consecutive: boolean = false
+      let coc: string = 'Unknown'
+      let consecutiveTo = ''
 
-      dates = breakdowns.concurrentSentences.find(b => {
-        return b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence
-      })?.dates
-
-      if (
-        !dates &&
-        breakdowns.consecutiveSentence?.sentenceParts.some(
-          b => b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence,
-        )
-      ) {
-        consecutive = true
-        dates = breakdowns.consecutiveSentence.dates
+      if (concurrentSentenceBreakdown) {
+        dates = concurrentSentenceBreakdown.dates
+        coc = 'Concurrent'
+      }
+      if (consecutiveSentencePartBreakdown) {
+        dates = consecutiveSentenceBreakdown.dates
+        coc = consecutiveSentencePartBreakdown.consecutiveToLineSequence ? 'Consecutive' : 'Forthwith'
+        consecutiveTo = consecutiveSentencePartBreakdown.consecutiveToLineSequence
+          ? `Case ${consecutiveSentencePartBreakdown.consecutiveToCaseSequence}, Line ${consecutiveSentencePartBreakdown.consecutiveToLineSequence}`
+          : ''
       }
 
       const validationMessages: string[] = this.getValidationMessages(validation)
@@ -155,7 +160,8 @@ export default class BulkCalculationService {
         SENTENCE_DATE: sentence.sentenceDate,
         CUSTODIAL_TERM: custodyTerm,
         LICENSE_PERIOD: licenseTerm,
-        CONCURRENT_OR_CONSECUTIVE: consecutive ? 'CONSECUTIVE' : 'CONCURRENT',
+        CONCURRENT_OR_CONSECUTIVE: coc,
+        CONSECUTIVE_TO: consecutiveTo,
         UNADJUSTED_LED: dates?.LED?.unadjusted || '',
         ADJUSTED_LED: dates?.LED?.adjusted || '',
         UNADJUSTED_SLED: dates?.SLED?.unadjusted || '',
