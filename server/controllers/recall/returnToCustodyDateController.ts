@@ -1,6 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-import { FormatDistanceStrictOptions, isBefore, isEqual, formatDistanceStrict } from 'date-fns'
+import { FormatDistanceStrictOptions, isBefore, formatDistanceStrict } from 'date-fns'
 
 import RecallBaseController from './recallBaseController'
 
