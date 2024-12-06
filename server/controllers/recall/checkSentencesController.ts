@@ -136,6 +136,13 @@ export default class CheckSentencesController extends RecallBaseController {
     })
     res.locals.groupedSentences = summarisedSentenceGroups
     res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
+    const eligibleSentenceCount = summarisedSentenceGroups
+      .filter(group => group.hasEligibleSentences)
+      .map(g => g.eligibleSentences.length)
+      .reduce((sum, current) => sum + current, 0)
+
+    req.sessionModel.set('eligibleSentenceCount', eligibleSentenceCount)
+    req.sessionModel.set('casesWithEligibleSentences', res.locals.casesWithEligibleSentences)
 
     return super.locals(req, res)
   }

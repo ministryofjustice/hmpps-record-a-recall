@@ -4,7 +4,7 @@ export default function toSummaryListRow(
   labelText: string,
   formValue: string | string[] | undefined,
   actionHref?: string,
-  actionText = 'change',
+  actionText = 'Edit',
 ): SummaryListRow {
   const value = formValue && (typeof formValue === 'string' ? { text: formValue } : { html: formValue?.join('<br>') })
   if (!value) {
