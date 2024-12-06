@@ -18,12 +18,9 @@ export default class BulkCalculationService {
   public async runCalculations(
     prisoners: PrisonerSearchApiPrisoner[],
     username: string,
-    log: boolean,
   ): Promise<BulkTemporaryCalculationRow[]> {
     const csvData: BulkTemporaryCalculationRow[] = []
-    if (log) {
-      console.log('logging to console')
-    }
+
     let bookingId: string
     let prisonerDetails: PrisonerSearchApiPrisoner
     let idNum = 0
@@ -50,18 +47,6 @@ export default class BulkCalculationService {
             const calculationBreakdown = calculationRequestId
               ? await this.calculationService.getCalculationBreakdown(calculationRequestId, username)
               : undefined
-
-            if (log) {
-              console.log('Temporary Calculation:')
-              console.log(JSON.stringify(latestCalc))
-              console.log('')
-              console.log('Breakdown:')
-              console.log(JSON.stringify(calculationBreakdown))
-              console.log('')
-              console.log('Sentences:')
-              console.log(JSON.stringify(sentencesAndReleaseDates))
-              console.log('----------------')
-            }
 
             for (const sentence of sentencesAndReleaseDates) {
               csvData.push(

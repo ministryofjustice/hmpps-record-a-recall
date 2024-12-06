@@ -5,6 +5,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 
 {% set pageTitle = applicationName + " - test data" %}
@@ -49,7 +50,7 @@
                     items: [
                     {
                     value: "true",
-                    text: "Log to console"
+                    text: "Show JSON (only applicable when 1 ID provided)"
                     }
                     ]
                     }) }}
@@ -66,5 +67,43 @@
                 </div>
             </div>
         </div>
+
     </form>
+  <div class="govuk-!-width-three-quarters">
+
+    {%  if personDetails %}
+      {{ govukDetails({
+        summaryText: 'Person details',
+        html: personDetails | dump(2)
+      }) }}
+    {% endif %}
+
+    {%  if validation %}
+      {{ govukDetails({
+        summaryText: 'Full validation response',
+        html: validation | dump(2)
+      }) }}
+    {% endif %}
+
+    {%  if latestCalc %}
+      {{ govukDetails({
+        summaryText: 'Temporary calculation',
+        html: latestCalc | dump(2)
+      }) }}
+    {% endif %}
+
+    {%  if sentencesAndReleaseDates %}
+      {{ govukDetails({
+        summaryText: 'Sentences and release dates',
+        html: sentencesAndReleaseDates | dump(2)
+      }) }}
+    {% endif %}
+
+    {%  if calculationBreakdown %}
+      {{ govukDetails({
+        summaryText: 'Calculation breakdown',
+        html: calculationBreakdown | dump(2)
+      }) }}
+    {% endif %}
+  </div>
 {% endblock %}
