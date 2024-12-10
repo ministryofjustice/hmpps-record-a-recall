@@ -2,6 +2,7 @@
 
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% block content %}
     {% set formMethod = options.method | default('post') %}
@@ -24,12 +25,16 @@
                 <h1 class="govuk-heading-xl" id="check-nomis-heading">Check your answers</h1>
                 <h2 class="govuk-heading-m">Recall dates</h2>
                 {{ govukSummaryList({
-                    rows: datesSummaryList
+                    rows: answerSummaryList
                 }) }}
-              <h2 class="govuk-heading-m">Sentences and recall type</h2>
-              {{ govukSummaryList({
-                rows: sentencesRecallSummaryList
-              }) }}
+                {% if ual %}
+                  {%  set ualHtml %}
+                    <b>{{ ual }}</b> of UAL (unlawfully at large) will also be added. You can review and add other adjustments after recording the recall.
+                  {% endset %}
+                {% endif %}
+                {{  govukInsetText({
+                  html: ualHtml
+                }) }}
             </div>
         </div>
 

@@ -33,7 +33,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const ual = formatDistanceStrict(recallDate, rtcDate, options)
       req.sessionModel.set('ual', ual)
     } else {
-      req.sessionModel.set('ual', '0 days')
+      req.sessionModel.unset('ual')
       values.returnToCustodyDate = null
     }
 
