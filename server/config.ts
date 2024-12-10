@@ -137,5 +137,22 @@ export default {
   },
   domain: get('INGRESS_URL', 'http://localhost:3000', requiredInProduction),
   environmentName: get('ENVIRONMENT_NAME', ''),
-  digitalPrisonServicesUrl: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
+  applications: {
+    recordARecall: {
+      domain: get('INGRESS_URL', 'http://localhost:3000', requiredInProduction),
+    },
+    digitalPrisonServices: {
+      url: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
+    },
+    adjustments: {
+      url: get(
+        'ADJUSTMENTS_URL',
+        'https://adjust-release-dates-dev.hmpps.service.justice.gov.uk',
+        requiredInProduction,
+      ),
+    },
+    calculateReleaseDates: {
+      url: get('CRDS_URL', 'https://calculate-release-dates-dev.hmpps.service.justice.gov.uk', requiredInProduction),
+    },
+  },
 }

@@ -8,6 +8,9 @@ generic-service:
     host: record-a-recall-dev.hmpps.service.justice.gov.uk
 
   env:
+    ENVIRONMENT_NAME: DEV
+    AUDIT_ENABLED: "false"
+
     INGRESS_URL: "https://record-a-recall-dev.hmpps.service.justice.gov.uk"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     TOKEN_VERIFICATION_API_URL: "https://token-verification-api-dev.prison.service.justice.gov.uk"
@@ -15,12 +18,14 @@ generic-service:
     PRISONER_SEARCH_API_URL: "https://prisoner-search-dev.prison.service.justice.gov.uk"
     CALCULATE_RELEASE_DATES_API_URL: "https://calculate-release-dates-api-dev.hmpps.service.justice.gov.uk"
     REMAND_AND_SENTENCING_API_URL: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
+
     DIGITAL_PRISON_SERVICES_URL: "https://digital-dev.prison.service.justice.gov.uk"
-    ENVIRONMENT_NAME: DEV
-    AUDIT_ENABLED: "false"
+    ADJUSTMENTS_URL: "https://adjust-release-dates-dev.hmpps.service.justice.gov.uk"
+    CRDS_URL: "https://calculate-release-dates-dev.hmpps.service.justice.gov.uk"
+
 
   # Switches off the allow list in the DEV env only.
   allowlist: null
-  
+
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts-non-prod
