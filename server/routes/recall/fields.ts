@@ -9,7 +9,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'Enter the date of revocation',
-        classes: 'govuk-fieldset__legend--m',
+        classes: 'govuk-fieldset__legend--l',
       },
     },
     hint: {
@@ -25,7 +25,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'Was this person in prison when the recall was made?',
-        classes: 'govuk-fieldset__legend--m',
+        classes: 'govuk-fieldset__legend--l',
       },
     },
     nameForErrors: 'if they were in prison when the recall was made',
@@ -42,7 +42,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'Date they were arrested',
-        classes: 'govuk-fieldset__legend--m',
+        classes: 'govuk-fieldset__legend--l',
       },
     },
     hint: {
@@ -61,7 +61,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'What is the recall type?',
-        classes: 'govuk-fieldset__legend--m',
+        classes: 'govuk-fieldset__legend--l',
       },
     },
     nameForErrors: 'Recall type',

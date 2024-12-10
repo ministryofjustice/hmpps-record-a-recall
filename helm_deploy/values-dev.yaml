@@ -22,6 +22,7 @@ generic-service:
     DIGITAL_PRISON_SERVICES_URL: "https://digital-dev.prison.service.justice.gov.uk"
     ADJUSTMENTS_URL: "https://adjust-release-dates-dev.hmpps.service.justice.gov.uk"
     CRDS_URL: "https://calculate-release-dates-dev.hmpps.service.justice.gov.uk"
+    CCARDS_URL: "https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk"
 
 
   # Switches off the allow list in the DEV env only.

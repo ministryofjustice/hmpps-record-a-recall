@@ -19,6 +19,7 @@ generic-service:
     DIGITAL_PRISON_SERVICES_URL: "https://digital.prison.service.justice.gov.uk"
     ADJUSTMENTS_URL: "https://adjust-release-dates.hmpps.service.justice.gov.uk"
     CRDS_URL: "https://calculate-release-dates.hmpps.service.justice.gov.uk"
+    CCARDS_URL: "https://court-cases-release-dates.hmpps.service.justice.gov.uk"
 
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts

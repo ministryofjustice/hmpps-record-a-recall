@@ -10,7 +10,7 @@
                 text: "Back",
                 href: backLink
             }) }}
-            <h1 class="govuk-heading-xl" id="check-nomis-heading">Recall not possible</h1>
+            <h1 class="govuk-heading-xl" id="not-possible-heading">Recall not possible</h1>
             {% for error in validationErrors %}
                 <h2 class="govuk-heading-m" id="validation-fail-reason-{{loop.index}}">{{ error }}</h2>
             {% endfor %}
