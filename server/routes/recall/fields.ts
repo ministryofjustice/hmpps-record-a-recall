@@ -55,12 +55,13 @@ const fields = {
     validate: ['required'],
     id: 'recallType',
     name: 'recallType',
-    label: {
-      text: 'What is the recall type?',
+    hint: {
+      text: 'We’ve identified these types of recall based on this person’s sentences and offences.',
     },
     fieldset: {
       legend: {
-        text: 'What is the recall type?',
+        text: 'Select the type of recall',
+        isPageHeading: true,
         classes: 'govuk-fieldset__legend--l',
       },
     },

@@ -17,6 +17,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const recallDate = req.sessionModel.get('recallDate')
 
     const urls = {
+      recalls: `${config.applications.recordARecall.url}/person/${locals.nomisId}`,
       crds: `${config.applications.calculateReleaseDates.url}/person/${locals.nomisId}`,
       adjustments: `${config.applications.adjustments.url}/${locals.nomisId}`,
       profile: `${config.applications.digitalPrisonServices.url}/prisoner/${locals.nomisId}`,

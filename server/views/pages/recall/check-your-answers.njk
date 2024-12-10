@@ -23,7 +23,6 @@
             <div class='govuk-grid-column-two-thirds'>
               <span class="govuk-caption-xl">Record a recall</span>
                 <h1 class="govuk-heading-xl" id="check-answers-heading">Check your answers</h1>
-                <h2 class="govuk-heading-m">Recall dates</h2>
                 {{ govukSummaryList({
                     rows: answerSummaryList
                 }) }}
@@ -47,6 +46,15 @@
                         preventDoubleClick: true,
                         type: "submit"
                     }) }}
+                {% endblock %}
+                {% block cancel %}
+                  {{ govukButton({
+                    text: "Cancel",
+                    classes: "govuk-button--secondary",
+                    preventDoubleClick: true,
+                    type: "reset",
+                    href: urls.recalls
+                  }) }}
                 {% endblock %}
             {% endblock %}
         </div>
