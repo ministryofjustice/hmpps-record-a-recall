@@ -50,6 +50,8 @@ const steps = {
   '/recall-recorded': {
     controller: RecallBaseController,
     noPost: true,
+    resetJourney: true,
+    checkJourney: false,
   },
   '/not-possible': {
     controller: CheckPossibleController,
