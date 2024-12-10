@@ -58,20 +58,6 @@ export default class CheckYourAnswersController extends RecallBaseController {
     }
   }
 
-  successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const { nomisId } = res.locals
-
-    req.journeyModel.reset()
-    req.sessionModel.reset()
-
-    req.flash('success', {
-      title: 'Recall recorded',
-      content: `You have successfully recorded a recall for ${nomisId}`,
-    })
-
-    res.redirect(`/person/${nomisId}`)
-  }
-
   getRecallType(code: string): RecallType {
     return Object.values(RecallTypes).find(it => it.code === code)
   }

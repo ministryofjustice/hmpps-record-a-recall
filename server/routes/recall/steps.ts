@@ -4,6 +4,7 @@ import CheckYourAnswersController from '../../controllers/recall/checkYourAnswer
 import RecallTypeController from '../../controllers/recall/recallTypeController'
 import CheckSentencesController from '../../controllers/recall/checkSentencesController'
 import CheckPossibleController from '../../controllers/recall/checkPossibleController'
+import RecallBaseController from '../../controllers/recall/recallBaseController'
 
 const steps = {
   '/': {
@@ -44,6 +45,13 @@ const steps = {
   },
   '/check-your-answers': {
     controller: CheckYourAnswersController,
+    next: 'recall-recorded',
+  },
+  '/recall-recorded': {
+    controller: RecallBaseController,
+    noPost: true,
+    resetJourney: true,
+    checkJourney: false,
   },
   '/not-possible': {
     controller: CheckPossibleController,

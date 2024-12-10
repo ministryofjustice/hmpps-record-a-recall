@@ -3,6 +3,7 @@ import FormWizard from 'hmpo-form-wizard'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
 import logger from '../../../logger'
+import config from '../../config'
 
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
@@ -14,7 +15,14 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const locals = super.locals(req, res)
     const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
     const recallDate = req.sessionModel.get('recallDate')
-    return { ...locals, calculation, recallDate }
+
+    const urls = {
+      crds: `${config.applications.calculateReleaseDates.url}/person/${locals.nomisId}`,
+      adjustments: `${config.applications.adjustments.url}/${locals.nomisId}`,
+      profile: `${config.applications.digitalPrisonServices.url}/prisoner/${locals.nomisId}`,
+    }
+
+    return { ...locals, calculation, recallDate, urls }
   }
 
   async getTemporaryCalculation(req: FormWizard.Request, res: Response, next: NextFunction) {
