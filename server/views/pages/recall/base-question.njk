@@ -68,6 +68,15 @@
                                     type: "submit"
                                 }) }}
                             {% endblock %}
+                            {% block cancel %}
+                              {{ govukButton({
+                                text: "Cancel",
+                                classes: "govuk-button--secondary",
+                                preventDoubleClick: true,
+                                type: "reset",
+                                href: urls.recalls
+                              }) }}
+                            {% endblock %}
                         {% endblock %}
                     </div>
                 </form>

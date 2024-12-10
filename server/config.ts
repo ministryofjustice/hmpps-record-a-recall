@@ -139,7 +139,7 @@ export default {
   environmentName: get('ENVIRONMENT_NAME', ''),
   applications: {
     recordARecall: {
-      domain: get('INGRESS_URL', 'http://localhost:3000', requiredInProduction),
+      url: get('INGRESS_URL', 'http://localhost:3000', requiredInProduction),
     },
     digitalPrisonServices: {
       url: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
