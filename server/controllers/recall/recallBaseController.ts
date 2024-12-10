@@ -20,6 +20,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       crds: `${config.applications.calculateReleaseDates.url}/person/${locals.nomisId}`,
       adjustments: `${config.applications.adjustments.url}/${locals.nomisId}`,
       profile: `${config.applications.digitalPrisonServices.url}/prisoner/${locals.nomisId}`,
+      ccards: `${config.applications.courtCasesReleaseDates.url}/prisoner/${locals.nomisId}/overview`,
     }
 
     return { ...locals, calculation, recallDate, urls }

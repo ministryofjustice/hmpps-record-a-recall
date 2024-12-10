@@ -55,13 +55,11 @@
 
                     {% block sentenceInfo %}
 
-                        <div class="govuk-grid-row">
                             <h1 class="govuk-heading-xl">
                                 <span class="govuk-caption-xl">Record a recall</span>
                                 Check that the sentences and offences are correct
                             </h1>
 
-                        </div>
                         <p>
                             The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
                         </p>
@@ -73,28 +71,33 @@
 
                     {% endblock %}
 
+                  <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
 
-
-                    {% block fields %}
-
-                        {% for key, fieldsOptions in fields %}
-                            {% if fieldsOptions.component and not fieldsOptions.skip %}
-                                {{ callAsMacro(fieldsOptions.component)(fieldsOptions) }}
-                            {% endif %}
-                        {% endfor %}
-                    {% endblock %}
+                  <!-- Call to action -->
+                  <p class="govuk-body">If you think some information is wrong, you can manage all court case
+                    information <a class="govuk-link" target="external" href="{{ urls.ccards }}">Court cases and
+                      release dates (opens in a new tab)</a>.</p>
 
                     <div class="govuk-button-group">
                         {% block formActions %}
-                            {% block submitAction %}
-                                {{ govukButton({
-                                    text: "Continue",
-                                    classes: options.buttonClasses,
-                                    preventDoubleClick: true,
-                                    type: "submit"
-                                }) }}
-                            {% endblock %}
-                        {% endblock %}
+                          {% block submitAction %}
+                              {{ govukButton({
+                                  text: "Confirm and continue",
+                                  classes: options.buttonClasses,
+                                  preventDoubleClick: true,
+                                  type: "submit"
+                              }) }}
+                          {% endblock %}
+
+                          {% block cancel %}
+                            {{ govukButton({
+                                text: "Cancel",
+                                classes: "govuk-button--secondary",
+                                preventDoubleClick: true,
+                                type: "submit"
+                              }) }}
+                          {% endblock %}
+                      {% endblock %}
                     </div>
                 </form>
             </div>

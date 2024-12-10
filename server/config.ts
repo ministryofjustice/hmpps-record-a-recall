@@ -154,5 +154,12 @@ export default {
     calculateReleaseDates: {
       url: get('CRDS_URL', 'https://calculate-release-dates-dev.hmpps.service.justice.gov.uk', requiredInProduction),
     },
+    courtCasesReleaseDates: {
+      url: get(
+        'CCARDS_URL',
+        'https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk',
+        requiredInProduction,
+      ),
+    },
   },
 }

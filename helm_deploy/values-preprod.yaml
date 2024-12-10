@@ -15,11 +15,12 @@ generic-service:
     PRISONER_SEARCH_API_URL: "https://prisoner-search-preprod.prison.service.justice.gov.uk"
     CALCULATE_RELEASE_DATES_API_URL: "https://calculate-release-dates-api-preprod.hmpps.service.justice.gov.uk"
     REMAND_AND_SENTENCING_API_URL: "https://remand-and-sentencing-api-preprod.hmpps.service.justice.gov.uk"
-    DIGITAL_PRISON_SERVICES_URL: "https://digital-preprod.prison.service.justice.gov.uk"
     COMPONENT_API_URL: "https://frontend-components-preprod.hmpps.service.justice.gov.uk"
 
+    DIGITAL_PRISON_SERVICES_URL: "https://digital-preprod.prison.service.justice.gov.uk"
     ADJUSTMENTS_URL: "https://adjust-release-dates-preprod.hmpps.service.justice.gov.uk"
     CRDS_URL: "https://calculate-release-dates-preprod.hmpps.service.justice.gov.uk"
+    CCARDS_URL: "https://court-cases-release-dates-preprod.hmpps.service.justice.gov.uk"
 
     ENVIRONMENT_NAME: PRE-PRODUCTION
     AUDIT_ENABLED: "false"
