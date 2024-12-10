@@ -13,33 +13,22 @@ export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const { nomisId } = res.locals
     const ual = req.sessionModel.get<string>('ual')
-    const casesWithEligibleSentences = req.sessionModel.get<number>('casesWithEligibleSentences')
     const eligibleSentenceCount = req.sessionModel.get<number>('eligibleSentenceCount')
     const { recallDate, returnToCustodyDate, recallType } = res.locals.values
     const editLink = (step: string) => `/person/${nomisId}/recall/${step}`
     const typeDescription = this.getRecallType(recallType).description
-    const datesSummaryList: SummaryListRow[] = compact([
+    const sentences = eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
+    const answerSummaryList: SummaryListRow[] = compact([
       toSummaryListRow('Date of revocation', formatLongDate(recallDate), editLink('recall-date')),
       toSummaryListRow('Arrest date', formatLongDate(returnToCustodyDate) || 'None', editLink('rtc-date')),
-      toSummaryListRow('UAL (Unlawfully at large)', ual),
-    ])
-    const sentences = eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
-    const cases = casesWithEligibleSentences === 1 ? 'case' : 'cases'
-    const sentenceRow: SummaryListRow = toSummaryListRow(
-      'Sentences',
-      `${eligibleSentenceCount} ${sentences} (from ${casesWithEligibleSentences} court ${cases})`,
-      editLink('check-sentences'),
-      'Review',
-    )
-    const sentencesRecallSummaryList: SummaryListRow[] = compact([
-      sentenceRow,
+      toSummaryListRow('Sentences', `${eligibleSentenceCount} ${sentences}`, editLink('check-sentences'), 'Review'),
       toSummaryListRow('Recall type', typeDescription, editLink('recall-type')),
     ])
 
     return {
       ...super.locals(req, res),
-      datesSummaryList,
-      sentencesRecallSummaryList,
+      answerSummaryList,
+      ual,
     }
   }
 
