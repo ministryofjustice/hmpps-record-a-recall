@@ -5,6 +5,7 @@ import { addDays, isBefore, isEqual, max } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { RecallType, RecallTypes } from '../../@types/recallTypes'
 import { summarisedSentence, summarisedSentenceGroup } from './checkSentencesController'
+import logger from '../../../logger'
 
 export default class RecallTypeController extends RecallBaseController {
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
@@ -41,20 +42,20 @@ export default class RecallTypeController extends RecallBaseController {
 
   private fourteenDayRecallRequired(sentences: summarisedSentence[], recallDate: string): boolean {
     if (this.allSentencesEqualToOrOverTwelveMonths(sentences)) {
-      console.log('All sentences are over twelve months')
+      logger.debug('All sentences are over twelve months')
       return false
     }
     if (this.allSentencesUnderTwelveMonths(sentences)) {
-      console.log('All sentences are under twelve months')
+      logger.debug('All sentences are under twelve months')
       return true
     }
     const latestExpiryDateOfTwelveMonthPlusSentences = max(
       sentences.filter(s => this.over12MonthSentence(s)).map(s => s.unadjustedSled),
     )
-    console.log('Mixture of sentence lengths')
+    logger.debug('Mixture of sentence lengths')
 
     const fourteenDaysFromRecall = addDays(recallDate, 14)
-    console.log(
+    logger.debug(
       `Checking if latest SLED [${latestExpiryDateOfTwelveMonthPlusSentences}] is over 14 days from date of recall [${fourteenDaysFromRecall}]`,
     )
 
