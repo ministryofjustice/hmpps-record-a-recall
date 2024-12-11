@@ -20,7 +20,11 @@ export default class CheckYourAnswersController extends RecallBaseController {
     const sentences = eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
     const answerSummaryList: SummaryListRow[] = compact([
       toSummaryListRow('Date of revocation', formatLongDate(recallDate), editLink('recall-date')),
-      toSummaryListRow('Arrest date', formatLongDate(returnToCustodyDate) || 'None', editLink('rtc-date')),
+      toSummaryListRow(
+        'Arrest date',
+        formatLongDate(returnToCustodyDate) || 'In prison when recalled',
+        editLink('rtc-date'),
+      ),
       toSummaryListRow('Sentences', `${eligibleSentenceCount} ${sentences}`, editLink('check-sentences'), 'Review'),
       toSummaryListRow('Recall type', typeDescription, editLink('recall-type')),
     ])
