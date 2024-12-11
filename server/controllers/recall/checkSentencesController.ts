@@ -70,50 +70,38 @@ export default class CheckSentencesController extends RecallBaseController {
           consecutiveSentencePartBreakdown,
         )
 
+        const sentenceLengthDays =
+          concurrentSentenceBreakdown?.sentenceLengthDays || consecutiveSentencePartBreakdown?.sentenceLengthDays
+        const aggregateSentenceLengthDays = consecutiveSentenceBreakdown?.sentenceLengthDays
+
+        const unadjustedSled = this.getDate(
+          concurrentSentenceBreakdown,
+          consecutiveSentenceBreakdown,
+          consecutiveSentencePartBreakdown,
+          'SLED',
+        )?.unadjusted
+
+        const unadjustedLed = this.getDate(
+          concurrentSentenceBreakdown,
+          consecutiveSentenceBreakdown,
+          consecutiveSentencePartBreakdown,
+          'LED',
+        )?.unadjusted
+
         const summary = compact([
           toSummaryListRow('Committed on', this.stringifyOffenceDate(offence)),
-          toSummaryListRow('Conviction date', format8DigitDate(sentence.sentenceDate)),
+          toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
           toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
           toSummaryListRow('Custodial term', this.getCustodialTerm(sentence.terms)),
           toSummaryListRow('Licence period', this.getLicenceTerm(sentence.terms)),
           toSummaryListRow('Case Sequence', `${sentence.caseSequence}`),
           toSummaryListRow('Line Sequence', `${sentence.lineSequence}`),
           toSummaryListRow('Consecutive or concurrent', forthConsConc),
+          toSummaryListRow('Unadjusted SLED', unadjustedSled),
+          toSummaryListRow('Unadjusted LED', unadjustedLed),
           toSummaryListRow(
-            'Unadjusted SLED',
-            this.getDate(
-              concurrentSentenceBreakdown,
-              consecutiveSentenceBreakdown,
-              consecutiveSentencePartBreakdown,
-              'SLED',
-            )?.unadjusted,
-          ),
-          toSummaryListRow(
-            'Adjusted SLED',
-            this.getDate(
-              concurrentSentenceBreakdown,
-              consecutiveSentenceBreakdown,
-              consecutiveSentencePartBreakdown,
-              'SLED',
-            )?.adjusted,
-          ),
-          toSummaryListRow(
-            'Unadjusted SED',
-            this.getDate(
-              concurrentSentenceBreakdown,
-              consecutiveSentenceBreakdown,
-              consecutiveSentencePartBreakdown,
-              'SED',
-            )?.unadjusted,
-          ),
-          toSummaryListRow(
-            'Adjusted SED',
-            this.getDate(
-              concurrentSentenceBreakdown,
-              consecutiveSentenceBreakdown,
-              consecutiveSentencePartBreakdown,
-              'SED',
-            )?.adjusted,
+            consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
+            consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
           ),
         ])
 
@@ -122,6 +110,8 @@ export default class CheckSentencesController extends RecallBaseController {
           summary,
           offenceCode: sentence.offence.offenceCode,
           offenceDescription: sentence.offence.offenceDescription,
+          unadjustedSled: unadjustedSled || unadjustedLed,
+          sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
         }
 
         if (eligibleForRecall) {
@@ -134,6 +124,7 @@ export default class CheckSentencesController extends RecallBaseController {
       })
       summarisedSentenceGroups.push(summarisedGroup)
     })
+    req.sessionModel.set('summarisedSentencesGroups', summarisedSentenceGroups)
     res.locals.groupedSentences = summarisedSentenceGroups
     res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
     const eligibleSentenceCount = summarisedSentenceGroups
@@ -185,11 +176,11 @@ export default class CheckSentencesController extends RecallBaseController {
       return false
     }
 
-    const sled = breakdown.dates.SLED
+    const adjustedSled = breakdown.dates.SLED
       ? new Date(breakdown.dates.SLED.adjusted)
       : new Date(breakdown.dates.SED?.adjusted)
 
-    return recallDate > new Date(sentence.sentenceDate) && recallDate < sled
+    return recallDate > new Date(sentence.sentenceDate) && recallDate < adjustedSled
   }
 
   private getCustodialTerm(terms: Term[]): string {
@@ -274,14 +265,16 @@ export default class CheckSentencesController extends RecallBaseController {
   }
 }
 
-type summarisedSentence = {
+export type summarisedSentence = {
   eligibleForRecall: boolean
   summary: SummaryListRow[]
   offenceCode: string
   offenceDescription: string
+  unadjustedSled?: string
+  sentenceLengthDays?: number
 }
 
-type summarisedSentenceGroup = {
+export type summarisedSentenceGroup = {
   caseRefAndCourt: string
   eligibleSentences: summarisedSentence[]
   ineligibleSentences: summarisedSentence[]

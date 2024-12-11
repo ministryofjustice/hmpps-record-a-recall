@@ -1,9 +1,10 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+import { addDays, isBefore, isEqual, max } from 'date-fns'
 
 import RecallBaseController from './recallBaseController'
 import { RecallType, RecallTypes } from '../../@types/recallTypes'
-import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { summarisedSentence, summarisedSentenceGroup } from './checkSentencesController'
 
 export default class RecallTypeController extends RecallBaseController {
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
@@ -17,15 +18,19 @@ export default class RecallTypeController extends RecallBaseController {
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
+    const summarisedSentenceGroups = req.sessionModel.get<summarisedSentenceGroup[]>('summarisedSentencesGroups')
+    const recallDate = req.sessionModel.get<string>('recallDate')
 
-    const effectivePeriodSubTwelveMonths = this.isSentenceUnder12Months(calculation)
+    const eligibleSentences: summarisedSentence[] =
+      summarisedSentenceGroups?.flatMap(group => group.eligibleSentences) || []
+
+    const fourteenDayRecallRequired = this.fourteenDayRecallRequired(eligibleSentences, recallDate)
 
     const recallTypes: RecallType[] = Object.values(RecallTypes)
 
     req.form.options.fields.recallType.items = Object.values(recallTypes)
       .filter(type => {
-        return !type.fixedTerm || effectivePeriodSubTwelveMonths === type.subTwelveMonthApplicable
+        return !type.fixedTerm || fourteenDayRecallRequired === type.subTwelveMonthApplicable
       })
       .map(({ code, description }) => ({
         text: description,
@@ -34,16 +39,40 @@ export default class RecallTypeController extends RecallBaseController {
     return super.locals(req, res)
   }
 
-  // This is currently using the effectiveSentenceLength from the temporary calc which is known to have issues
-  // and is not in the format we expect it to be. There will be a different endpoint developed which we should
-  // make use of ASAP rather than parsing the Period notation
-  private isSentenceUnder12Months(calculation: CalculatedReleaseDates): boolean {
-    const effectivePeriod: string = calculation.effectiveSentenceLength as unknown as string
-    const years = /(\d)(?=Y)/i.exec(effectivePeriod) || []
-    const year: number = years.length > 0 ? +years[0] : 0
-    const months = /(\d)(?=M)/i.exec(effectivePeriod) || []
-    const month: number = months.length > 0 ? +months[0] : 0
+  private fourteenDayRecallRequired(sentences: summarisedSentence[], recallDate: string): boolean {
+    if (this.allSentencesEqualToOrOverTwelveMonths(sentences)) {
+      console.log('All sentences are over twelve months')
+      return false
+    }
+    if (this.allSentencesUnderTwelveMonths(sentences)) {
+      console.log('All sentences are under twelve months')
+      return true
+    }
+    const latestExpiryDateOfTwelveMonthPlusSentences = max(
+      sentences.filter(s => this.over12MonthSentence(s)).map(s => s.unadjustedSled),
+    )
+    console.log('Mixture of sentence lengths')
 
-    return month < 12 && year === 0
+    const fourteenDaysFromRecall = addDays(recallDate, 14)
+    console.log(
+      `Checking if latest SLED [${latestExpiryDateOfTwelveMonthPlusSentences}] is over 14 days from date of recall [${fourteenDaysFromRecall}]`,
+    )
+
+    return (
+      isEqual(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall) ||
+      isBefore(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall)
+    )
+  }
+
+  private allSentencesEqualToOrOverTwelveMonths(sentences: summarisedSentence[]): boolean {
+    return sentences.some(this.over12MonthSentence)
+  }
+
+  private allSentencesUnderTwelveMonths(sentences: summarisedSentence[]): boolean {
+    return sentences.some(sentence => sentence.sentenceLengthDays < 365)
+  }
+
+  private over12MonthSentence(sentence: summarisedSentence) {
+    return sentence.sentenceLengthDays >= 365
   }
 }
