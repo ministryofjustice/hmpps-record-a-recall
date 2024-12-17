@@ -1,47 +1,90 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
 
+{% block beforeContent %}
+
+  {{ super() }}
+
+  {% block subNavigation %}
+    {% set navigation = {
+      activeSubNav: 'recalls',
+      adjustments: {
+        enabled: not profileBannerParams
+          },
+      courtCases: {
+        enabled: false
+          },
+      documents: {
+        enabled: false
+          },
+      releaseDates: {
+        thingsToDo: "1" if requiresNewCalculation
+          }
+        } %}
+    {{ subNavigation(environment, navigation, prisoner.prisonerNumber) }}
+  {% endblock %}
+
+{% endblock %}
+
 {% block content %}
-  <h1 class="govuk-heading-m">Recalls</h1>
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <div class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">Recalls</h1>
+  {%  if not recalls or recalls.length == 0 %}
+    <p>There are no recalls recorded</p>
+  {% endif %}
   {{ govukButton({
-    classes: "govuk-button--tertiary",
-    text: "Create new recall",
+    classes: "govuk-button--secondary",
+    text: "Record a recall",
     preventDoubleClick: true,
     href: '/person/' + nomisId + '/recall',
     attributes: {  'data-qa': 'create-new-recall-btn' }
   }) }}
 
-  <div class='govuk-grid-row'>
-    <div class='govuk-grid-column-two-thirds'>
-      <table class="govuk-table">
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Recall date</th>
-          <th scope="col" class="govuk-table__header">Return to custody date</th>
-          <th scope="col" class="govuk-table__header">Recall type</th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        {% for recall in recalls %}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              {{ recall.recallDate | date }}
-            </td>
-            <td class="govuk-table__cell">
-              {{ recall.returnToCustodyDate | date }}
-            </td>
-            <td class="govuk-table__cell">
-              {{ recall.recallType.description }}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+    {% for recall in recalls %}
+
+      {{ recallCard(recall) }}
+
+    {%  endfor %}
+  </div></div>
+{% endblock %}
+
+{%  macro recallCard(recall) %}
+<div class="govuk-summary-card govuk-!-margin-bottom-6">
+  <div class="govuk-summary-card__title-wrapper">
+    <h2 class="govuk-summary-card__title">Recalled on {{ recall.recallDate | date }}
+      <span class="moj-badge moj-badge--green govuk-!-margin-bottom-1 govuk-!-margin-left-1">Active</span>
+    </h2>
+    <ul class="govuk-summary-card__actions">
+      <div class="">
+        <li class="govuk-summary-card__action"> <a class="govuk-link" href="#">Edit<span class="govuk-visually-hidden"> recall recorded on {{ recall.recallDate | date }}</span></a>
+        </li>
+      </div>
+    </ul>
+  </div>
+  <div class="govuk-summary-card__content" id="recall-summary">
+    <div class="govuk-grid-row govuk-!-padding-bottom-2 govuk-!-margin-top-2">
+      <div class="govuk-grid-column-one-half">
+        {{ cardInfo('Recall type', recall.recallType.description) }}
+        {{ cardInfo('Location', 'Not stored') }}
+      </div>
+      <div class="govuk-grid-column-one-half">
+        {{ cardInfo('Arrest date',  recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'None' ) }}
+        {{ cardInfo('UAL (unlawfully at large)', recall.ual ) }}
+      </div>
     </div>
   </div>
-{% endblock %}
+</div>
+{% endmacro %}
+
+{% macro cardInfo(field, value) %}
+  <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ field }}</h3>
+  <p class="govuk-body govuk-!-margin-bottom-2">{{ value }}</p>
+{% endmacro %}

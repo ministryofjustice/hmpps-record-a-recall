@@ -1,4 +1,5 @@
 import type { Recall } from 'models'
+import { formatDistanceStrict, FormatDistanceStrictOptions } from 'date-fns'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
@@ -22,6 +23,7 @@ export default class RecallService {
   async getAllRecalls(nomsId: string, username: string): Promise<Recall[]> {
     const client = new RemandAndSentencingApiClient(await this.getSystemClientToken(username))
     const allApiRecalls = await client.getAllRecalls(nomsId)
+    const options: FormatDistanceStrictOptions = { unit: 'day', roundingMethod: 'trunc' }
 
     return allApiRecalls.map((apiRecall: ApiRecall): Recall => {
       const { recallDate, returnToCustodyDate, recallType } = apiRecall
@@ -29,6 +31,8 @@ export default class RecallService {
         recallDate: new Date(recallDate),
         returnToCustodyDate: new Date(returnToCustodyDate),
         recallType: RecallTypes[recallType],
+        // TODO UAL should be stored on the recall in RaS not calculated on the fly
+        ual: formatDistanceStrict(recallDate, returnToCustodyDate, options),
       }
     })
   }
