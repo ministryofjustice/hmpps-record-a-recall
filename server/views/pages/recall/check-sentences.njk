@@ -142,7 +142,8 @@
                 <h4 class="govuk-heading-s">{{ sentence.offenceCode }} - {{ sentence.offenceDescription }}</h4>
 
                 {{ govukSummaryList({
-                    rows: sentence.summary
+                    rows: sentence.summary,
+                    classes: "govuk-summary-list--no-border"
                 }) }}
 
 
