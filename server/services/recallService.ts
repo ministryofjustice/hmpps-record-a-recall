@@ -1,5 +1,4 @@
 import type { Recall } from 'models'
-import { formatDistanceStrict, FormatDistanceStrictOptions } from 'date-fns'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
