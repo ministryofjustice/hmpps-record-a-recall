@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isEqual, parse } from 'date-fns'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -39,4 +39,13 @@ export function parseBooleanString(booleanString?: string): boolean | undefined 
 }
 export const sanitizeString = (string: string | null): string | null => {
   return string ? string.trim().toUpperCase() : null
+}
+
+export function calculateUal(recallDate: string | Date, returnToCustodyDate?: string | Date): number {
+  if (!returnToCustodyDate || isEqual(recallDate, returnToCustodyDate)) {
+    return 0
+  }
+  const parsedRecall = recallDate instanceof Date ? recallDate : parse(recallDate, 'yyyy-MM-dd', new Date())
+
+  return differenceInCalendarDays(returnToCustodyDate, addDays(parsedRecall, 1))
 }

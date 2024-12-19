@@ -1,8 +1,9 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-import { FormatDistanceStrictOptions, isBefore, formatDistanceStrict } from 'date-fns'
+import { isBefore } from 'date-fns'
 
 import RecallBaseController from './recallBaseController'
+import { calculateUal } from '../../utils/utils'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
@@ -28,9 +29,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const recallDate = req.sessionModel.get<string>('recallDate')
 
       const rtcDate = values.returnToCustodyDate as string
-      const options: FormatDistanceStrictOptions = { unit: 'day', roundingMethod: 'trunc' }
 
-      const ual = formatDistanceStrict(recallDate, rtcDate, options)
+      const ual = calculateUal(recallDate, rtcDate)
       req.sessionModel.set('ual', ual)
     } else {
       req.sessionModel.unset('ual')
