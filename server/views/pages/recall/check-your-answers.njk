@@ -26,9 +26,9 @@
                 {{ govukSummaryList({
                     rows: answerSummaryList
                 }) }}
-                {% if ual %}
+                {% if ualText %}
                   {%  set ualHtml %}
-                    <b>{{ ual }}</b> of UAL (unlawfully at large) will also be added. You can review and add other adjustments after recording the recall.
+                    <b>{{ ualText }}</b> of UAL (unlawfully at large) will also be added. You can review and add other adjustments after recording the recall.
                   {% endset %}
                   {{  govukInsetText({
                     html: ualHtml

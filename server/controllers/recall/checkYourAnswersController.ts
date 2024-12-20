@@ -12,7 +12,8 @@ import toSummaryListRow from '../../helpers/componentHelper'
 export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const { nomisId } = res.locals
-    const ual = req.sessionModel.get<string>('ual')
+    const ual = req.sessionModel.get<number>('ual')
+    const ualText = ual !== undefined ? `${ual} day${ual === 1 ? '' : 's'}` : undefined
     const eligibleSentenceCount = req.sessionModel.get<number>('eligibleSentenceCount')
     const { recallDate, returnToCustodyDate, recallType } = res.locals.values
     const editLink = (step: string) => `/person/${nomisId}/recall/${step}`
@@ -32,7 +33,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
     return {
       ...super.locals(req, res),
       answerSummaryList,
-      ual,
+      ualText,
     }
   }
 
