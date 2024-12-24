@@ -97,8 +97,8 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.712.0",
-    "@ministryofjustice/frontend": "^3.2.1",
+    "@aws-sdk/client-sqs": "^3.716.0",
+    "@ministryofjustice/frontend": "^3.2.2",
     "agentkeepalive": "^4.5.0",
     "applicationinsights": "^3.4.0",
     "body-parser": "^1.20.3",
@@ -155,7 +155,7 @@
     "aws-sdk-client-mock": "^4.1.0",
     "concurrently": "^9.1.0",
     "cookie-session": "^2.1.0",
-    "cypress": "^13.16.1",
+    "cypress": "^13.17.0",
     "cypress-multi-reporters": "^2.0.4",
     "dotenv": "^16.4.7",
     "husky": "^9.1.7",
