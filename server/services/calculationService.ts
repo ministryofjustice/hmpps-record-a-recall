@@ -24,7 +24,6 @@ export default class CalculationService {
     calculationRequestId: number,
     username: string,
   ): Promise<SentenceAndOffenceWithReleaseArrangements[]> {
-    console.log(`Getting sentences for request id ${calculationRequestId}`)
     const crdApi = await this.getCRDApiClient(username)
     return crdApi.getSentencesAndReleaseDates(calculationRequestId)
   }
@@ -64,7 +63,6 @@ export default class CalculationService {
       throw new Error('No calculationRequestId provided for breakdown')
     }
     try {
-      console.log(`Getting calculation breakdown for request id ${calculationRequestId}`)
       const crdApi = await this.getCRDApiClient(username)
       return await crdApi.getCalculationBreakdown(calculationRequestId)
     } catch (error) {
