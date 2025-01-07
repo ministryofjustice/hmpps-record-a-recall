@@ -1,5 +1,5 @@
 import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
+import { Response } from 'express'
 
 import { compact } from 'lodash'
 import RecallBaseController from './recallBaseController'
@@ -26,8 +26,6 @@ import logger from '../../../logger'
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
     super.middlewareSetup()
-    this.use(this.getSentences)
-    this.use(this.getCalculationBreakdown)
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -62,7 +60,7 @@ export default class CheckSentencesController extends RecallBaseController {
         const eligibleForRecall = this.isEligible(
           sentence,
           concurrentSentenceBreakdown,
-          consecutiveSentenceBreakdown,
+          consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
           recallDate,
         )
         const forthConsConc = this.forthwithConsecutiveConcurrent(
@@ -216,52 +214,6 @@ export default class CheckSentencesController extends RecallBaseController {
       return consBreakdown.dates[dateType]
     }
     return null
-  }
-
-  async getSentences(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const { username } = req.user
-    const temporaryCalculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
-    const sentences = req.sessionModel.get<SentenceAndOffenceWithReleaseArrangements[]>('sentences')
-    if (temporaryCalculation && !sentences) {
-      req.services.calculationService
-        .getSentencesAndReleaseDates(temporaryCalculation.calculationRequestId, username)
-        .then(newSentences => {
-          req.sessionModel.set('sentences', newSentences)
-          req.sessionModel.save()
-          next()
-          // TODO Don't crash the service if we fail here, redirect to not-possible
-        })
-        .catch(error => {
-          req.sessionModel.unset('sentences')
-          req.sessionModel.set('crdsError', error.userMessage)
-          next()
-        })
-    } else {
-      next()
-    }
-  }
-
-  async getCalculationBreakdown(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const { username } = req.user
-    const temporaryCalculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
-    const breakdown = req.sessionModel.get<CalculationBreakdown>('breakdown')
-    if (temporaryCalculation && !breakdown) {
-      req.services.calculationService
-        .getCalculationBreakdown(temporaryCalculation.calculationRequestId, username)
-        .then(newBreakdown => {
-          req.sessionModel.set('breakdown', newBreakdown)
-          req.sessionModel.save()
-          next()
-          // TODO Don't crash the service if we fail here, redirect to not-possible
-        })
-        .catch(error => {
-          req.sessionModel.unset('breakdown')
-          req.sessionModel.set('crdsError', error.userMessage)
-          next()
-        })
-    } else {
-      next()
-    }
   }
 }
 

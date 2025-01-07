@@ -16,7 +16,13 @@ const steps = {
     next: [
       {
         fn: 'recallPossible',
-        next: 'recall-date',
+        next: [
+          {
+            fn: 'manualEntryRequired',
+            next: 'not-possible',
+          },
+          'recall-date',
+        ],
       },
       'not-possible',
     ],
@@ -54,7 +60,7 @@ const steps = {
     checkJourney: false,
   },
   '/not-possible': {
-    controller: CheckPossibleController,
+    controller: RecallBaseController,
     noPost: true,
   },
 }
