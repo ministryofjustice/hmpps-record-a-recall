@@ -19,7 +19,7 @@ const steps = {
         next: [
           {
             fn: 'manualEntryRequired',
-            next: 'not-possible',
+            next: 'manual-recall',
           },
           'recall-date',
         ],
@@ -58,6 +58,10 @@ const steps = {
     noPost: true,
     resetJourney: true,
     checkJourney: false,
+  },
+  '/manual-recall': {
+    controller: RecallBaseController,
+    noPost: true,
   },
   '/not-possible': {
     controller: RecallBaseController,
