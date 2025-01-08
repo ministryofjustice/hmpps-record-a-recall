@@ -10,9 +10,9 @@
                 text: "Back",
                 href: backLink
             }) }}
-            <h1 class="govuk-heading-xl" id="not-possible-heading">Recall not possible</h1>
-            {% for error in crdsValidationErrors %}
-                <h2 class="govuk-heading-m" id="validation-fail-reason-{{loop.index}}">{{ error }}</h2>
+            <h1 class="govuk-heading-xl" id="manual-recall-heading">Manual recall entry required</h1>
+            {% for error in autoRecallFailErrors %}
+                <h2 class="govuk-heading-m" id="auto-recall-fail-reason-{{loop.index}}">{{ error }}</h2>
             {% endfor %}
         </div>
     </div>

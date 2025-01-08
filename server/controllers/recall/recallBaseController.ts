@@ -13,7 +13,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const locals = super.locals(req, res)
     const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
     const recallDate = req.sessionModel.get('recallDate')
-    const validationErrors = req.sessionModel.get('validationErrors')
+    const validationErrors = req.sessionModel.get('crdsValidationErrors')
+    const autoRecallFailErrors = req.sessionModel.get('autoRecallFailErrors')
 
     const urls = {
       recalls: `${config.applications.recordARecall.url}/person/${locals.nomisId}`,
@@ -23,6 +24,6 @@ export default class RecallBaseController extends PrisonerDetailsController {
       ccards: `${config.applications.courtCasesReleaseDates.url}/prisoner/${locals.nomisId}/overview`,
     }
 
-    return { ...locals, calculation, recallDate, urls, validationErrors }
+    return { ...locals, calculation, recallDate, urls, validationErrors, autoRecallFailErrors }
   }
 }
