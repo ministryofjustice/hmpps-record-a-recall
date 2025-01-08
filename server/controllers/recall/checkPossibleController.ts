@@ -2,18 +2,12 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import {
-  CalculatedReleaseDates,
-  CalculationBreakdown,
   SentenceAndOffenceWithReleaseArrangements,
   ValidationMessage,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import {
-  findConcurrentSentenceBreakdown,
-  findConsecutiveSentenceBreakdown,
-  hasABreakdown,
-} from '../../utils/sentenceUtils'
+import { hasABreakdown } from '../../utils/sentenceUtils'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
