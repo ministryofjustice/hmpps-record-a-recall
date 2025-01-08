@@ -48,7 +48,6 @@ export default class CheckPossibleController extends RecallBaseController {
       )
     }
 
-    console.log('Setting locals in session')
     req.sessionModel.set('sentences', res.locals.sentences)
     req.sessionModel.set('temporaryCalculation', res.locals.temporaryCalculation)
     req.sessionModel.set('breakdown', res.locals.breakdown)
