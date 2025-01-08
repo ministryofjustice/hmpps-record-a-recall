@@ -1,9 +1,13 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  SentenceAndOffenceWithReleaseArrangements,
+  ValidationMessage,
+} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
+import { hasABreakdown } from '../../utils/sentenceUtils'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -39,7 +43,7 @@ export default class CheckPossibleController extends RecallBaseController {
     const errors: ValidationMessage[] = res.locals.validationResponse
     if (errors && errors.length > 0) {
       req.sessionModel.set(
-        'validationErrors',
+        'crdsValidationErrors',
         errors.map(error => error.message),
       )
     }
@@ -53,13 +57,32 @@ export default class CheckPossibleController extends RecallBaseController {
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
-    return !req.sessionModel.get('validationErrors')
+    return !req.sessionModel.get('crdsValidationErrors')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   manualEntryRequired(req: FormWizard.Request, res: Response) {
     // If any sentences don't have a breakdown, send them down manual entry
-    return false
+    const { sentences, breakdown } = res.locals
+
+    if (!sentences || !breakdown) {
+      return false
+    }
+    if (req.sessionModel.get<string[]>('autoRecallFailErrors')) {
+      // We've already checked, no need to go through again
+      return true
+    }
+
+    const sentencesWithNoBreakdown: string[] = []
+
+    sentences.forEach((sentence: SentenceAndOffenceWithReleaseArrangements) => {
+      if (!hasABreakdown(sentence, breakdown)) {
+        const error = `No calculation breakdown found for sentence with case sequence ${sentence.caseSequence} and line sequence ${sentence.lineSequence}`
+        logger.warn(error)
+        sentencesWithNoBreakdown.push(error)
+        req.sessionModel.set('autoRecallFailErrors', sentencesWithNoBreakdown)
+      }
+    })
+    return sentencesWithNoBreakdown.length > 0
   }
 
   getTemporaryCalculation(req: FormWizard.Request, res: Response) {

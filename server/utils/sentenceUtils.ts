@@ -251,3 +251,7 @@ export function findConcurrentSentenceBreakdown(
     b => b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence,
   )
 }
+
+export function hasABreakdown(sentence: SentenceAndOffenceWithReleaseArrangements, breakdowns: CalculationBreakdown) {
+  return findConcurrentSentenceBreakdown(sentence, breakdowns) || findConsecutiveSentenceBreakdown(sentence, breakdowns)
+}
