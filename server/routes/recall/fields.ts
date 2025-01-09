@@ -68,6 +68,23 @@ const fields = {
     nameForErrors: 'Recall type',
     items: [{ text: 'set at runtime', value: '' }],
   },
+  confirmCancel: {
+    component: 'govukRadios',
+    validate: ['required'],
+    id: 'confirmCancel',
+    name: 'confirmCancel',
+    fieldset: {
+      legend: {
+        text: 'Are you sure you want to cancel recording a recall?',
+        classes: 'govuk-fieldset__legend--l',
+      },
+    },
+    nameForErrors: 'if you are sure you want to cancel recording a recall',
+    items: [
+      { text: 'Yes, cancel the recall', value: 'true' },
+      { text: 'No, go back to the recall', value: 'false' },
+    ],
+  },
 }
 
 export default fields

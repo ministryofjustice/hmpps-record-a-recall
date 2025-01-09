@@ -68,15 +68,17 @@
                                     type: "submit"
                                 }) }}
                             {% endblock %}
-                            {% block cancel %}
-                              {{ govukButton({
-                                text: "Cancel",
-                                classes: "govuk-button--secondary",
-                                preventDoubleClick: true,
-                                type: "reset",
-                                href: urls.recalls
-                              }) }}
-                            {% endblock %}
+                            {%  if not hideCancel %}
+                              {% block cancel %}
+                                {{ govukButton({
+                                  text: "Cancel",
+                                  classes: "govuk-button--secondary",
+                                  preventDoubleClick: true,
+                                  type: "reset",
+                                  href: "/person/" + nomisId + "/recall/confirm-cancel"
+                                }) }}
+                              {% endblock %}
+                          {% endif %}
                         {% endblock %}
                     </div>
                 </form>
