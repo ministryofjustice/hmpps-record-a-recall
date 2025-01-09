@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import logger from '../../../logger'
 import PrisonerService from '../../services/prisonerService'
-import config from '../../config'
 import getServiceUrls from '../../helpers/urlHelper'
 
 export default async (req: Request, res: Response) => {
