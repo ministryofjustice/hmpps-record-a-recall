@@ -40,6 +40,7 @@ export default class CheckPossibleController extends RecallBaseController {
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
+    req.sessionModel.set('entrypoint', res.locals.entrypoint)
     const errors: ValidationMessage[] = res.locals.validationResponse
     if (errors && errors.length > 0) {
       req.sessionModel.set(

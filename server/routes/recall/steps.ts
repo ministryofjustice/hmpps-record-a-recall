@@ -5,6 +5,7 @@ import RecallTypeController from '../../controllers/recall/recallTypeController'
 import CheckSentencesController from '../../controllers/recall/checkSentencesController'
 import CheckPossibleController from '../../controllers/recall/checkPossibleController'
 import RecallBaseController from '../../controllers/recall/recallBaseController'
+import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 
 const steps = {
   '/': {
@@ -66,6 +67,12 @@ const steps = {
   '/not-possible': {
     controller: RecallBaseController,
     noPost: true,
+  },
+  '/confirm-cancel': {
+    controller: ConfirmCancelController,
+    template: 'base-question',
+    checkJourney: false,
+    fields: ['confirmCancel'],
   },
 }
 

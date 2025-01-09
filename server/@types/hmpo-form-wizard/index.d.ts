@@ -96,10 +96,11 @@ declare module 'hmpo-form-wizard' {
       }
       isEditing: boolean
       journeyModel: {
-        set: (key: string, value: never) => void
+        set: (key: string, value: unknown) => void
         get: (key: string) => unknown
         unset: (key: string) => unknown
         reset: () => unknown
+        attributes: Record<string, string | string[]>
       }
       sessionModel: {
         updateSessionData(changes: object): unknown

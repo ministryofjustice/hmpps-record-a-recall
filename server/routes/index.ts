@@ -12,6 +12,7 @@ import asyncMiddleware from '../middleware/asyncMiddleware'
 import viewPersonRouter from './viewPersonRouter'
 import populateNomisId from '../middleware/populateNomisId'
 import bulkTestRouter from './bulkTestRouter'
+import populateEntrypoint from '../middleware/populateEntrypoint'
 
 export default function routes(services: Services): Router {
   const router = Router()
@@ -31,7 +32,7 @@ export default function routes(services: Services): Router {
   router.use('/search', searchRouter)
   router.use('/person/:nomisId?', populateNomisId(), viewPersonRouter(services))
   // HMPO Forms defined route
-  router.use('/person/:nomisId/recall', populateNomisId(), recallRouter)
+  router.use('/person/:nomisId/recall', populateEntrypoint(), populateNomisId(), recallRouter)
   router.use('/bulk', bulkTestRouter(services))
 
   return router
