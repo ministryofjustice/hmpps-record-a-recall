@@ -2,7 +2,7 @@ import { Response } from 'express'
 import FormWizard from 'hmpo-form-wizard'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
-import config from '../../config'
+import getServiceUrls from '../../helpers/urlHelper'
 
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
@@ -16,13 +16,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const validationErrors = req.sessionModel.get('crdsValidationErrors')
     const autoRecallFailErrors = req.sessionModel.get('autoRecallFailErrors')
 
-    const urls = {
-      recalls: `${config.applications.recordARecall.url}/person/${locals.nomisId}`,
-      crds: `${config.applications.calculateReleaseDates.url}/person/${locals.nomisId}`,
-      adjustments: `${config.applications.adjustments.url}/${locals.nomisId}`,
-      profile: `${config.applications.digitalPrisonServices.url}/prisoner/${locals.nomisId}`,
-      ccards: `${config.applications.courtCasesReleaseDates.url}/prisoner/${locals.nomisId}/overview`,
-    }
+    const urls = getServiceUrls(res.locals.nomisId)
 
     return { ...locals, calculation, recallDate, urls, validationErrors, autoRecallFailErrors }
   }
