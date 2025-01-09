@@ -15,19 +15,28 @@
   {% block subNavigation %}
     {% set navigation = {
       activeSubNav: 'recalls',
-      adjustments: {
-        enabled: not profileBannerParams
-          },
+      overview: {
+        href: urls.ccards,
+        enabled: true
+      },
       courtCases: {
+        href: urls.ccards,
         enabled: false
-          },
-      documents: {
-        enabled: false
-          },
+      },
+      adjustments: {
+        href: urls.adjustments,
+        enabled: not profileBannerParams
+      },
       releaseDates: {
-        thingsToDo: "1" if requiresNewCalculation
-          }
-        } %}
+        thingsToDo: "1" if requiresNewCalculation,
+        href: urls.crds,
+        enabled: true
+      },
+      recalls: {
+        href: urls.recalls,
+        enabled: true
+      }
+    } %}
     {{ subNavigation(environment, navigation, prisoner.prisonerNumber) }}
   {% endblock %}
 

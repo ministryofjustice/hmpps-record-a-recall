@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import logger from '../../../logger'
 import PrisonerService from '../../services/prisonerService'
+import getServiceUrls from '../../helpers/urlHelper'
 
 export default async (req: Request, res: Response) => {
   await setPrisonerDetailsInLocals(req.services.prisonerService, res)
@@ -18,8 +19,10 @@ export default async (req: Request, res: Response) => {
     // eslint-disable-next-line prefer-destructuring
     banner.success = success[0]
   }
-
   const { nomisId, prisoner } = res.locals
+
+  const urls = getServiceUrls(nomisId)
+
   if (prisoner) {
     try {
       const recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
@@ -28,12 +31,14 @@ export default async (req: Request, res: Response) => {
         prisoner,
         recalls,
         banner,
+        urls,
       })
     } catch (error) {
       return res.render('pages/person/home', {
         nomisId,
         prisoner,
         error,
+        urls,
       })
     }
   } else {
