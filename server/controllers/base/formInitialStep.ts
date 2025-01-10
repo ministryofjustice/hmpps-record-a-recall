@@ -65,6 +65,7 @@ export default class FormInitialStep extends FormWizard.Controller {
       numericString: `${fieldName} must only include numbers`,
       numeric: `${fieldName} must be a number`,
       required: `Enter a ${fieldName?.toLowerCase()}`,
+      selectRequired: `Select ${fieldName?.toLowerCase()}`,
       mustBeEqualOrAfterRecallDate: `${fieldName} must be equal to or after the recall date`,
       prisonerDetailsNotFound: `Prisoner details could not be found for the provided NOMIS ID`,
     }

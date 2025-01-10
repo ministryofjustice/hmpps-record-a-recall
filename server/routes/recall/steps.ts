@@ -1,3 +1,4 @@
+import FormWizard from 'hmpo-form-wizard'
 import RecallDateController from '../../controllers/recall/recallDateController'
 import ReturnToCustodyDateController from '../../controllers/recall/returnToCustodyDateController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
@@ -41,7 +42,13 @@ const steps = {
     controller: ReturnToCustodyDateController,
   },
   '/check-sentences': {
-    next: 'recall-type',
+    next: [
+      {
+        fn: (req: FormWizard.Request) => req.sessionModel.get('eligibleSentenceCount') === 0,
+        next: 'manual-recall',
+      },
+      'recall-type',
+    ],
     controller: CheckSentencesController,
   },
   '/recall-type': {

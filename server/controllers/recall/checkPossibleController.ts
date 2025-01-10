@@ -43,10 +43,8 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set('entrypoint', res.locals.entrypoint)
     const errors: ValidationMessage[] = res.locals.validationResponse
     if (errors && errors.length > 0) {
-      req.sessionModel.set(
-        'crdsValidationErrors',
-        errors.map(error => error.message),
-      )
+      const crdsValidationErrors = errors.map(error => error.message)
+      req.sessionModel.set('crdsValidationErrors', crdsValidationErrors)
     }
 
     req.sessionModel.set('sentences', res.locals.sentences)
