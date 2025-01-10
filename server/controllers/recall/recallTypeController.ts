@@ -41,16 +41,19 @@ export default class RecallTypeController extends RecallBaseController {
   }
 
   private fourteenDayRecallRequired(sentences: summarisedSentence[], recallDate: string): boolean {
-    if (this.allSentencesEqualToOrOverTwelveMonths(sentences)) {
+    if (this.hasSentencesEqualToOrOverTwelveMonths(sentences) && !this.hasSentencesUnderTwelveMonths(sentences)) {
       logger.debug('All sentences are over twelve months')
       return false
     }
-    if (this.allSentencesUnderTwelveMonths(sentences)) {
+    if (this.hasSentencesUnderTwelveMonths(sentences) && !this.hasSentencesEqualToOrOverTwelveMonths(sentences)) {
       logger.debug('All sentences are under twelve months')
       return true
     }
     const latestExpiryDateOfTwelveMonthPlusSentences = max(
-      sentences.filter(s => this.over12MonthSentence(s)).map(s => s.unadjustedSled),
+      sentences
+        .filter(s => this.hasSled(s))
+        .filter(s => this.over12MonthSentence(s))
+        .map(s => s.unadjustedSled),
     )
     logger.debug('Mixture of sentence lengths')
 
@@ -65,15 +68,19 @@ export default class RecallTypeController extends RecallBaseController {
     )
   }
 
-  private allSentencesEqualToOrOverTwelveMonths(sentences: summarisedSentence[]): boolean {
+  private hasSentencesEqualToOrOverTwelveMonths(sentences: summarisedSentence[]): boolean {
     return sentences.some(this.over12MonthSentence)
   }
 
-  private allSentencesUnderTwelveMonths(sentences: summarisedSentence[]): boolean {
+  private hasSentencesUnderTwelveMonths(sentences: summarisedSentence[]): boolean {
     return sentences.some(sentence => sentence.sentenceLengthDays < 365)
   }
 
   private over12MonthSentence(sentence: summarisedSentence) {
     return sentence.sentenceLengthDays >= 365
+  }
+
+  private hasSled(sentence: summarisedSentence) {
+    return sentence.unadjustedSled !== null
   }
 }

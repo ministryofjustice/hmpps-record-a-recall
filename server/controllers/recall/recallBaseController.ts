@@ -13,11 +13,11 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const locals = super.locals(req, res)
     const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
     const recallDate = req.sessionModel.get('recallDate')
-    const validationErrors = req.sessionModel.get('crdsValidationErrors')
+    const crdsValidationErrors = req.sessionModel.get('crdsValidationErrors')
     const autoRecallFailErrors = req.sessionModel.get('autoRecallFailErrors')
 
     const urls = getServiceUrls(res.locals.nomisId)
 
-    return { ...locals, calculation, recallDate, urls, validationErrors, autoRecallFailErrors }
+    return { ...locals, calculation, recallDate, urls, crdsValidationErrors, autoRecallFailErrors }
   }
 }

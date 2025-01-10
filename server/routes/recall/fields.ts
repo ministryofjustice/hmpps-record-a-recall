@@ -28,7 +28,7 @@ const fields = {
         classes: 'govuk-fieldset__legend--l',
       },
     },
-    nameForErrors: 'if they were in prison when the recall was made',
+    errorMessages: { required: 'Select whether the person was in prison when the recall was made' },
     items: [
       { text: 'Yes', value: 'true' },
       { text: 'No', value: 'false', conditional: 'returnToCustodyDate' },
@@ -42,7 +42,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'Date they were arrested',
-        classes: 'govuk-fieldset__legend--l',
+        classes: 'govuk-fieldset__legend--s',
       },
     },
     hint: {
