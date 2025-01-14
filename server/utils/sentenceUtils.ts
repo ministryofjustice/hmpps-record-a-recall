@@ -267,7 +267,7 @@ export function hasStandardOnlySentences(sentences: summarisedSentence[]): boole
 }
 
 export function isSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
-  return sentence.sentenceTypeDescription === 'Sentencing Code Standard Determinate Sentence'
+  return sentence.sentenceTypeDescription.includes('Standard Determinate Sentence')
 }
 
 export function isNonSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
