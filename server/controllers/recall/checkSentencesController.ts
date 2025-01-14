@@ -17,11 +17,15 @@ import {
   findConcurrentSentenceBreakdown,
   findConsecutiveSentenceBreakdown,
   groupSentencesByCaseRefAndCourt,
+  hasManualOnlySentences,
+  isNonSDS,
+  summarisedSentenceGroup,
+  summarisedSentence,
 } from '../../utils/sentenceUtils'
 import toSummaryListRow from '../../helpers/componentHelper'
 import { format8DigitDate } from '../../formatters/formatDate'
-import { SummaryListRow } from '../../@types/govuk'
 import logger from '../../../logger'
+import { eligibilityReasons, RecallEligibility } from '../../@types/recallEligibility'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -57,12 +61,13 @@ export default class CheckSentencesController extends RecallBaseController {
 
         const { offence } = sentence
 
-        const eligibleForRecall = this.isEligible(
+        const recallEligibility = this.getEligibility(
           sentence,
           concurrentSentenceBreakdown,
           consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
           recallDate,
         )
+
         const forthConsConc = this.forthwithConsecutiveConcurrent(
           concurrentSentenceBreakdown,
           consecutiveSentencePartBreakdown,
@@ -103,8 +108,8 @@ export default class CheckSentencesController extends RecallBaseController {
           ),
         ])
 
-        const summarisedSentence: summarisedSentence = {
-          eligibleForRecall,
+        const thisSummarisedSentence: summarisedSentence = {
+          recallEligibility,
           summary,
           offenceCode: sentence.offence.offenceCode,
           offenceDescription: sentence.offence.offenceDescription,
@@ -112,16 +117,17 @@ export default class CheckSentencesController extends RecallBaseController {
           sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
         }
 
-        if (eligibleForRecall) {
+        if (recallEligibility.recallOptions !== 'NOT_POSSIBLE') {
           summarisedGroup.hasEligibleSentences = true
-          summarisedGroup.eligibleSentences.push(summarisedSentence)
+          summarisedGroup.eligibleSentences.push(thisSummarisedSentence)
         } else {
           summarisedGroup.hasIneligibleSentences = true
-          summarisedGroup.ineligibleSentences.push(summarisedSentence)
+          summarisedGroup.ineligibleSentences.push(thisSummarisedSentence)
         }
       })
       summarisedSentenceGroups.push(summarisedGroup)
     })
+
     req.sessionModel.set('summarisedSentencesGroups', summarisedSentenceGroups)
     res.locals.groupedSentences = summarisedSentenceGroups
     res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
@@ -130,8 +136,13 @@ export default class CheckSentencesController extends RecallBaseController {
       .map(g => g.eligibleSentences.length)
       .reduce((sum, current) => sum + current, 0)
 
+    const manualSentenceSelection = summarisedSentenceGroups
+      .filter(group => group.hasEligibleSentences)
+      .map(g => hasManualOnlySentences(g.eligibleSentences))
+
     req.sessionModel.set('eligibleSentenceCount', eligibleSentenceCount)
     req.sessionModel.set('casesWithEligibleSentences', res.locals.casesWithEligibleSentences)
+    req.sessionModel.set('manualSentenceSelection', manualSentenceSelection)
 
     return super.locals(req, res)
   }
@@ -153,32 +164,44 @@ export default class CheckSentencesController extends RecallBaseController {
     return 'Unknown'
   }
 
-  private isEligible(
+  private getEligibility(
     sentence: SentenceAndOffenceWithReleaseArrangements,
     concBreakdown: ConcurrentSentenceBreakdown,
     consBreakdown: ConsecutiveSentenceBreakdown,
     recallDate: Date,
-  ): boolean {
+  ): RecallEligibility {
     const breakdown = concBreakdown || consBreakdown
 
     if (!breakdown) {
       logger.warn(
         `No breakdown found for sentence with line seq ${sentence.lineSequence} and case seq ${sentence.caseSequence}`,
       )
-      return false
+      return eligibilityReasons.NO_BREAKDOWN
     }
 
     const dateTypes = Object.keys(breakdown.dates)
 
-    if (!(dateTypes.includes('SLED') || dateTypes.includes('SED'))) {
-      return false
+    if (!(dateTypes.includes('SLED') || dateTypes.includes('SED')) && !dateTypes.includes('CRD')) {
+      return eligibilityReasons.NO_SLED_OR_SED_AND_CRD
     }
 
     const adjustedSled = breakdown.dates.SLED
       ? new Date(breakdown.dates.SLED.adjusted)
       : new Date(breakdown.dates.SED?.adjusted)
 
-    return recallDate > new Date(sentence.sentenceDate) && recallDate < adjustedSled
+    if (isNonSDS(sentence)) {
+      return eligibilityReasons.NON_SDS
+    }
+
+    if (recallDate < new Date(sentence.sentenceDate)) {
+      return eligibilityReasons.RECALL_DATE_BEFORE_SENTENCE_START
+    }
+
+    if (recallDate < adjustedSled) {
+      return eligibilityReasons.RECALL_DATE_AFTER_EXPIRATION_DATE
+    }
+
+    return eligibilityReasons.HAPPY_PATH_POSSIBLE
   }
 
   private getCustodialTerm(terms: Term[]): string {
@@ -215,21 +238,4 @@ export default class CheckSentencesController extends RecallBaseController {
     }
     return null
   }
-}
-
-export type summarisedSentence = {
-  eligibleForRecall: boolean
-  summary: SummaryListRow[]
-  offenceCode: string
-  offenceDescription: string
-  unadjustedSled?: string
-  sentenceLengthDays?: number
-}
-
-export type summarisedSentenceGroup = {
-  caseRefAndCourt: string
-  eligibleSentences: summarisedSentence[]
-  ineligibleSentences: summarisedSentence[]
-  hasEligibleSentences: boolean
-  hasIneligibleSentences: boolean
 }

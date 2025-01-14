@@ -7,6 +7,8 @@ import {
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { SentenceDetail, SentenceDetailExtended } from '../@types/refData'
 import logger from '../../logger'
+import { RecallEligibility } from '../@types/recallEligibility'
+import { SummaryListRow } from '../@types/govuk'
 
 const FIXED_AND_STANDARD_CRITERIA = [
   ['ADIMP', '2003'],
@@ -254,4 +256,37 @@ export function findConcurrentSentenceBreakdown(
 
 export function hasABreakdown(sentence: SentenceAndOffenceWithReleaseArrangements, breakdowns: CalculationBreakdown) {
   return findConcurrentSentenceBreakdown(sentence, breakdowns) || findConsecutiveSentenceBreakdown(sentence, breakdowns)
+}
+
+export function hasManualOnlySentences(sentences: summarisedSentence[]): boolean {
+  return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'MANUAL_ONLY')
+}
+
+export function hasStandardOnlySentences(sentences: summarisedSentence[]): boolean {
+  return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'STANDARD_ONLY')
+}
+
+export function isSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
+  return sentence.sentenceTypeDescription === 'Sentencing Code Standard Determinate Sentence'
+}
+
+export function isNonSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
+  return !isSDS(sentence)
+}
+
+export type summarisedSentence = {
+  recallEligibility: RecallEligibility
+  summary: SummaryListRow[]
+  offenceCode: string
+  offenceDescription: string
+  unadjustedSled?: string
+  sentenceLengthDays?: number
+}
+
+export type summarisedSentenceGroup = {
+  caseRefAndCourt: string
+  eligibleSentences: summarisedSentence[]
+  ineligibleSentences: summarisedSentence[]
+  hasEligibleSentences: boolean
+  hasIneligibleSentences: boolean
 }
