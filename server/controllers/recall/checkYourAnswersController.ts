@@ -16,7 +16,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
     const ualText = ual !== undefined ? `${ual} day${ual === 1 ? '' : 's'}` : undefined
     const eligibleSentenceCount = req.sessionModel.get<number>('eligibleSentenceCount')
     const { recallDate, returnToCustodyDate, recallType } = res.locals.values
-    const editLink = (step: string) => `/person/${nomisId}/recall/${step}`
+    const editLink = (step: string) => `/person/${nomisId}/recall/${step}/edit`
     const typeDescription = this.getRecallType(recallType).description
     const sentences = eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
     const answerSummaryList: SummaryListRow[] = compact([

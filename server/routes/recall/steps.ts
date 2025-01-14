@@ -34,28 +34,34 @@ const steps = {
     next: 'rtc-date',
     template: 'base-question',
     controller: RecallDateController,
+    editable: false,
   },
   '/rtc-date': {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: 'check-sentences',
     template: 'base-question',
     controller: ReturnToCustodyDateController,
+    editable: true,
   },
   '/check-sentences': {
     next: [
       {
-        fn: (req: FormWizard.Request) => req.sessionModel.get('eligibleSentenceCount') === 0,
+        fn: (req: FormWizard.Request) =>
+          req.sessionModel.get('eligibleSentenceCount') === 0 ||
+          req.sessionModel.get('manualSentenceSelection') === true,
         next: 'manual-recall',
       },
       'recall-type',
     ],
     controller: CheckSentencesController,
+    editable: true,
   },
   '/recall-type': {
     next: 'check-your-answers',
     fields: ['recallType'],
     controller: RecallTypeController,
     template: 'base-question',
+    editable: true,
   },
   '/check-your-answers': {
     controller: CheckYourAnswersController,
