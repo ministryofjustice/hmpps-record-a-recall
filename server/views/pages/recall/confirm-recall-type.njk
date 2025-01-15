@@ -1,0 +1,56 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% block content %}
+    {% set formMethod = options.method | default('post') %}
+    {% set formAction = options.action | default('') %}
+    {% set formEnctype = options.enctype | default('') %}
+
+    <form method="{{ formMethod }}" action="{{ formAction }}"
+            {% if formEnctype %}
+                enctype="{{ formEnctype }}"
+            {% endif %}
+    >
+
+        {% if formMethod == 'post' %}
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% endif %}
+
+        <div class='govuk-grid-row'>
+            <div class='govuk-grid-column-two-thirds'>
+              <span class="govuk-caption-xl">Record a recall</span>
+                <h1 class="govuk-heading-l" id="confirm-recall-type-heading">Confirm the recall type</h1>
+
+              <p class="govuk-body">This service has identified the recall type to be:</p>
+
+              <p class="govuk-body-l govuk-!-margin-bottom-5"><b>Standard recall</b></p>
+
+              <p class="govuk-body">This is based on this person's recall dates and sentences.</p>
+            </div>
+        </div>
+
+        <div class="govuk-button-group">
+            {% block formActions %}
+                {% block submitAction %}
+                    {{ govukButton({
+                        text: "Confirm and continue",
+                        classes: options.buttonClasses,
+                        preventDoubleClick: true,
+                        type: "submit"
+                    }) }}
+                {% endblock %}
+                {% block cancel %}
+                  {{ govukButton({
+                    text: "Cancel",
+                    classes: "govuk-button--secondary",
+                    preventDoubleClick: true,
+                    type: "reset",
+                    href: "/person/" + nomisId + "/recall/confirm-cancel"
+                  }) }}
+                {% endblock %}
+            {% endblock %}
+        </div>
+    </form>
+{% endblock %}

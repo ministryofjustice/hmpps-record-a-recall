@@ -21,6 +21,7 @@ import {
   isNonSDS,
   summarisedSentenceGroup,
   summarisedSentence,
+  hasStandardOnlySentences,
 } from '../../utils/sentenceUtils'
 import toSummaryListRow from '../../helpers/componentHelper'
 import { format8DigitDate } from '../../formatters/formatDate'
@@ -138,11 +139,18 @@ export default class CheckSentencesController extends RecallBaseController {
 
     const manualSentenceSelection = summarisedSentenceGroups
       .filter(group => group.hasEligibleSentences)
-      .map(g => hasManualOnlySentences(g.eligibleSentences))
+      .flatMap(g => hasManualOnlySentences(g.eligibleSentences))
+      .includes(true)
+
+    const standardOnlyRecall = summarisedSentenceGroups
+      .filter(group => group.hasEligibleSentences)
+      .flatMap(g => hasStandardOnlySentences(g.eligibleSentences))
+      .includes(true)
 
     req.sessionModel.set('eligibleSentenceCount', eligibleSentenceCount)
     req.sessionModel.set('casesWithEligibleSentences', res.locals.casesWithEligibleSentences)
     req.sessionModel.set('manualSentenceSelection', manualSentenceSelection)
+    req.sessionModel.set('standardOnlyRecall', standardOnlyRecall)
 
     return super.locals(req, res)
   }

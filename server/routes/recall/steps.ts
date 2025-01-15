@@ -51,6 +51,10 @@ const steps = {
           req.sessionModel.get('manualSentenceSelection') === true,
         next: 'manual-recall',
       },
+      {
+        fn: (req: FormWizard.Request) => req.sessionModel.get('standardOnlyRecall') === true,
+        next: 'confirm-recall-type',
+      },
       'recall-type',
     ],
     controller: CheckSentencesController,
@@ -62,6 +66,10 @@ const steps = {
     controller: RecallTypeController,
     template: 'base-question',
     editable: true,
+  },
+  '/confirm-recall-type': {
+    next: 'check-your-answers',
+    controller: RecallBaseController,
   },
   '/check-your-answers': {
     controller: CheckYourAnswersController,

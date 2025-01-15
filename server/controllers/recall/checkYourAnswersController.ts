@@ -13,9 +13,12 @@ export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const { nomisId } = res.locals
     const ual = req.sessionModel.get<number>('ual')
+    const standardOnly = req.sessionModel.get<boolean>('standardOnlyRecall')
+    const manualSentenceSelection = req.sessionModel.get<boolean>('manualSentenceSelection')
     const ualText = ual !== undefined ? `${ual} day${ual === 1 ? '' : 's'}` : undefined
     const eligibleSentenceCount = req.sessionModel.get<number>('eligibleSentenceCount')
-    const { recallDate, returnToCustodyDate, recallType } = res.locals.values
+    const { recallDate, returnToCustodyDate } = res.locals.values
+    const recallType = standardOnly ? RecallTypes.STANDARD_RECALL.code : res.locals.recallType
     const editLink = (step: string) => `/person/${nomisId}/recall/${step}/edit`
     const typeDescription = this.getRecallType(recallType).description
     const sentences = eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
@@ -26,8 +29,13 @@ export default class CheckYourAnswersController extends RecallBaseController {
         formatLongDate(returnToCustodyDate) || 'In prison when recalled',
         editLink('rtc-date'),
       ),
-      toSummaryListRow('Sentences', `${eligibleSentenceCount} ${sentences}`, editLink('check-sentences'), 'Review'),
-      toSummaryListRow('Recall type', typeDescription, editLink('recall-type')),
+      toSummaryListRow(
+        'Sentences',
+        `${eligibleSentenceCount} ${sentences}`,
+        editLink('check-sentences'),
+        manualSentenceSelection ? 'Edit' : 'Review',
+      ),
+      toSummaryListRow('Recall type', typeDescription, editLink('recall-type'), standardOnly ? 'Review' : 'Edit'),
     ])
 
     return {
@@ -40,7 +48,8 @@ export default class CheckYourAnswersController extends RecallBaseController {
   async saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
     const { sessionModel } = req
     try {
-      const recallType = sessionModel.get<string>('recallType')
+      const standardOnlyRecall = sessionModel.get<boolean>('standardOnlyRecall')
+      const recallType = standardOnlyRecall ? RecallTypes.STANDARD_RECALL.code : sessionModel.get<string>('recallType')
       const recallDate = sessionModel.get<string>('recallDate')
       const returnToCustodyDate = sessionModel.get<string>('returnToCustodyDate')
       const { nomisId } = res.locals

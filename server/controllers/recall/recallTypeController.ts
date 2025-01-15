@@ -5,7 +5,7 @@ import { addDays, isBefore, isEqual, max } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { RecallType, RecallTypes } from '../../@types/recallTypes'
 import logger from '../../../logger'
-import { hasStandardOnlySentences, summarisedSentence, summarisedSentenceGroup } from '../../utils/sentenceUtils'
+import { summarisedSentence, summarisedSentenceGroup } from '../../utils/sentenceUtils'
 
 export default class RecallTypeController extends RecallBaseController {
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
@@ -25,10 +25,7 @@ export default class RecallTypeController extends RecallBaseController {
     const eligibleSentences: summarisedSentence[] =
       summarisedSentenceGroups?.flatMap(group => group.eligibleSentences) || []
 
-    const recallTypes: RecallType[] = hasStandardOnlySentences(eligibleSentences)
-      ? [RecallTypes.STANDARD_RECALL]
-      : Object.values(RecallTypes)
-
+    const recallTypes: RecallType[] = Object.values(RecallTypes)
     const fourteenDayRecallRequired = this.fourteenDayRecallRequired(eligibleSentences, recallDate)
 
     req.form.options.fields.recallType.items = Object.values(recallTypes)
@@ -39,6 +36,7 @@ export default class RecallTypeController extends RecallBaseController {
         text: description,
         value: code,
       }))
+
     return super.locals(req, res)
   }
 
