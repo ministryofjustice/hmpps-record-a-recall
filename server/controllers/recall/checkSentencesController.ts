@@ -107,6 +107,8 @@ export default class CheckSentencesController extends RecallBaseController {
             consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
             consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
           ),
+          toSummaryListRow('Recall Options', recallEligibility.recallOptions),
+          toSummaryListRow('Recall Options reason', recallEligibility.description),
         ])
 
         const thisSummarisedSentence: summarisedSentence = {
@@ -205,7 +207,7 @@ export default class CheckSentencesController extends RecallBaseController {
       return eligibilityReasons.RECALL_DATE_BEFORE_SENTENCE_START
     }
 
-    if (recallDate < adjustedSled) {
+    if (recallDate > adjustedSled) {
       return eligibilityReasons.RECALL_DATE_AFTER_EXPIRATION_DATE
     }
 
