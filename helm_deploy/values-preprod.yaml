@@ -21,6 +21,7 @@ generic-service:
     ADJUSTMENTS_URL: "https://adjust-release-dates-preprod.hmpps.service.justice.gov.uk"
     CRDS_URL: "https://calculate-release-dates-preprod.hmpps.service.justice.gov.uk"
     CCARDS_URL: "https://court-cases-release-dates-preprod.hmpps.service.justice.gov.uk"
+    COURT_CASES_RELEASE_DATES_API_URL: "https://court-cases-release-dates-api-preprod.hmpps.service.justice.gov.uk"
 
     ENVIRONMENT_NAME: PRE-PRODUCTION
     AUDIT_ENABLED: "false"

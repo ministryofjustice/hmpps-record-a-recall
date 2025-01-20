@@ -1,4 +1,6 @@
 import { Request, Response } from 'express'
+// eslint-disable-next-line import/no-unresolved
+import { Recall } from 'models'
 import logger from '../../../logger'
 import PrisonerService from '../../services/prisonerService'
 import getServiceUrls from '../../helpers/urlHelper'
@@ -24,27 +26,27 @@ export default async (req: Request, res: Response) => {
   const urls = getServiceUrls(nomisId)
 
   if (prisoner) {
+    let recalls: Recall[]
     try {
-      const recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
-      return res.render('pages/person/home', {
-        nomisId,
-        prisoner,
-        recalls,
-        banner,
-        urls,
-      })
-    } catch (error) {
-      return res.render('pages/person/home', {
-        nomisId,
-        prisoner,
-        error,
-        urls,
-      })
+      recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
+    } catch {
+      // Nothing to do.
     }
-  } else {
-    req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)
-    return res.redirect('/search')
+    const serviceDefinitions = await req.services.courtCasesReleaseDatesService.getServiceDefinitions(
+      nomisId,
+      req.user.token,
+    )
+    return res.render('pages/person/home', {
+      nomisId,
+      prisoner,
+      recalls,
+      banner,
+      urls,
+      serviceDefinitions,
+    })
   }
+  req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)
+  return res.redirect('/search')
 }
 
 export async function setPrisonerDetailsInLocals(prisonerService: PrisonerService, res: Response) {
