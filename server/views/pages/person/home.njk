@@ -4,6 +4,7 @@
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
+{% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
@@ -13,31 +14,7 @@
   {{ super() }}
 
   {% block subNavigation %}
-    {% set navigation = {
-      activeSubNav: 'recalls',
-      overview: {
-        href: urls.ccards,
-        enabled: true
-      },
-      courtCases: {
-        href: urls.ccards,
-        enabled: false
-      },
-      adjustments: {
-        href: urls.adjustments,
-        enabled: not profileBannerParams
-      },
-      releaseDates: {
-        thingsToDo: "1" if requiresNewCalculation,
-        href: urls.crds,
-        enabled: true
-      },
-      recalls: {
-        href: urls.recalls,
-        enabled: true
-      }
-    } %}
-    {{ subNavigation(environment, navigation, prisoner.prisonerNumber) }}
+    {{ subNavigation(serviceDefinitions.services, 'recalls') }}
   {% endblock %}
 
 {% endblock %}
@@ -46,6 +23,7 @@
 <div class="govuk-grid-row govuk-!-margin-top-6">
   <div class="govuk-grid-column-two-thirds">
   <h1 class="govuk-heading-xl">Recalls</h1>
+  {{ thingsToDo(serviceDefinitions, 'recalls') }}
   {%  if not recalls or recalls.length == 0 %}
     <p>There are no recalls recorded</p>
   {% endif %}
