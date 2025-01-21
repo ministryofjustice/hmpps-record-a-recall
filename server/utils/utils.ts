@@ -1,4 +1,9 @@
 import { addDays, differenceInCalendarDays, format, isEqual, parse } from 'date-fns'
+import { compact } from 'lodash'
+import { SummaryListRow } from '../@types/govuk'
+import toSummaryListRow from '../helpers/componentHelper'
+import { formatLongDate } from '../formatters/formatDate'
+import { RecallJourneyData } from '../helpers/formWizardHelper'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -48,4 +53,31 @@ export function calculateUal(recallDate: string | Date, returnToCustodyDate?: st
   const parsedRecall = recallDate instanceof Date ? recallDate : parse(recallDate, 'yyyy-MM-dd', new Date())
 
   return differenceInCalendarDays(returnToCustodyDate, addDays(parsedRecall, 1))
+}
+
+export function createAnswerSummaryList(
+  journeyData: RecallJourneyData,
+  editLink: (page: string) => string,
+): SummaryListRow[] {
+  const sentences = journeyData.eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
+  return compact([
+    toSummaryListRow('Date of revocation', formatLongDate(journeyData.recallDate), editLink('recall-date')),
+    toSummaryListRow(
+      'Arrest date',
+      formatLongDate(journeyData.returnToCustodyDate) || 'In prison when recalled',
+      editLink('rtc-date'),
+    ),
+    toSummaryListRow(
+      'Sentences',
+      `${journeyData.eligibleSentenceCount} ${sentences}`,
+      editLink('check-sentences'),
+      journeyData.manualSentenceSelection ? 'Edit' : 'Review',
+    ),
+    toSummaryListRow(
+      'Recall type',
+      journeyData.recallType.description,
+      editLink('recall-type'),
+      journeyData.standardOnlyRecall ? 'Review' : 'Edit',
+    ),
+  ])
 }

@@ -4,13 +4,13 @@ import wizard from 'hmpo-form-wizard'
 import steps from './steps'
 import fields from './fields'
 
-const router = express.Router({ mergeParams: true })
+const newRecallRouter = express.Router({ mergeParams: true })
 
-router.use(
+newRecallRouter.use(
   wizard(steps, fields, {
     name: 'record-recall',
     templatePath: 'pages/recall',
     csrf: false,
   }),
 )
-export default router
+export default newRecallRouter

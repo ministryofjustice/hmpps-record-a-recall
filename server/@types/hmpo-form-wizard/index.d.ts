@@ -78,7 +78,7 @@ declare module 'hmpo-form-wizard' {
     type SectionProgressRule = { fieldCode: string; conditionFn: ConditionFn }
 
     interface Request extends Omit<Express.Request, 'flash'> {
-      flash: (type: string, data?: unknown) => void
+      flash: (type: string, data?: unknown) => unknown
       form: {
         values: Record<string, string | string[]>
         options: {

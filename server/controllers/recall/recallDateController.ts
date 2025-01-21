@@ -1,5 +1,5 @@
 import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
+import { Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
@@ -9,12 +9,7 @@ export default class RecallDateController extends RecallBaseController {
     const locals = super.locals(req, res)
     const prisoner: PrisonerSearchApiPrisoner = locals.prisoner as PrisonerSearchApiPrisoner
 
-    const backLink = `/person/${prisoner.prisonerNumber}`
+    const backLink = `/person/${prisoner.prisonerNumber}${locals.isEditRecall ? `/recall/${locals.recallId}/edit/edit-summary` : ''}`
     return { ...locals, backLink }
-  }
-
-  saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
-    req.sessionModel.set('recallDate', req.form.values.recallDate)
-    return next()
   }
 }
