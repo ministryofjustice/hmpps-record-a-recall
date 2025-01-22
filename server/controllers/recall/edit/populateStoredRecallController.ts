@@ -26,6 +26,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+    req.sessionModel.set('entrypoint', res.locals.entrypoint)
     const { storedRecall, recallId } = res.locals
     const { recallType } = storedRecall
     const recallDate = format(new Date(storedRecall.recallDate), 'yyyy-MM-dd')
