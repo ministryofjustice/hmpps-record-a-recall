@@ -76,7 +76,7 @@ export function createAnswerSummaryList(
     toSummaryListRow(
       'Recall type',
       journeyData.recallType.description,
-      editLink('recall-type'),
+      editLink(journeyData.standardOnlyRecall ? 'confirm-recall-type' : 'recall-type'),
       journeyData.standardOnlyRecall ? 'Review' : 'Edit',
     ),
   ])
