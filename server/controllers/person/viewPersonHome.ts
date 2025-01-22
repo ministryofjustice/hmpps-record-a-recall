@@ -27,15 +27,17 @@ export default async (req: Request, res: Response) => {
 
   if (prisoner) {
     let recalls: Recall[]
+    let serviceDefinitions
     try {
       recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
+      serviceDefinitions = await req.services.courtCasesReleaseDatesService.getServiceDefinitions(
+        nomisId,
+        req.user.token,
+      )
     } catch {
       // Nothing to do.
     }
-    const serviceDefinitions = await req.services.courtCasesReleaseDatesService.getServiceDefinitions(
-      nomisId,
-      req.user.token,
-    )
+
     return res.render('pages/person/home', {
       nomisId,
       prisoner,

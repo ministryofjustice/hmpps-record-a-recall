@@ -51,8 +51,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set('temporaryCalculation', res.locals.temporaryCalculation)
     req.sessionModel.set('breakdown', res.locals.breakdown)
 
-    const backLink = `/person/${locals.nomisId}`
-    return { ...locals, backLink }
+    return { ...locals }
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
