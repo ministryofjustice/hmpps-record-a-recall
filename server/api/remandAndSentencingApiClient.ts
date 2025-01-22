@@ -24,6 +24,19 @@ export default class RemandAndSentencingApiClient {
     }) as Promise<CreateRecallResponse>
   }
 
+  async getRecall(recallId: string): Promise<ApiRecall> {
+    return this.restClient.get({
+      path: `/recall/${recallId}`,
+    }) as Promise<ApiRecall>
+  }
+
+  async updateRecall(recallId: string, createRecall: CreateRecall): Promise<CreateRecallResponse> {
+    return this.restClient.put({
+      data: createRecall,
+      path: `/recall/${recallId}`,
+    }) as Promise<CreateRecallResponse>
+  }
+
   async getAllRecalls(prisonerId: string): Promise<ApiRecall[]> {
     return this.restClient.get({
       path: `/recall/person/${prisonerId}`,

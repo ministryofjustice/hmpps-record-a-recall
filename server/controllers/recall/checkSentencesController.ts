@@ -199,16 +199,16 @@ export default class CheckSentencesController extends RecallBaseController {
       ? new Date(breakdown.dates.SLED.adjusted)
       : new Date(breakdown.dates.SED?.adjusted)
 
-    if (isNonSDS(sentence)) {
-      return eligibilityReasons.NON_SDS
-    }
-
     if (recallDate < new Date(sentence.sentenceDate)) {
       return eligibilityReasons.RECALL_DATE_BEFORE_SENTENCE_START
     }
 
     if (recallDate > adjustedSled) {
       return eligibilityReasons.RECALL_DATE_AFTER_EXPIRATION_DATE
+    }
+
+    if (isNonSDS(sentence)) {
+      return eligibilityReasons.NON_SDS
     }
 
     return eligibilityReasons.HAPPY_PATH_POSSIBLE

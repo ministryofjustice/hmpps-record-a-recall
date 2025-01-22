@@ -4,6 +4,7 @@ import BulkCalculationService from '../../services/bulkCalculationService'
 import PrisonerService from '../../services/prisonerService'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import CalculationService from '../../services/calculationService'
+import config from '../../config'
 
 export default class BulkTestController {
   constructor(
@@ -77,9 +78,10 @@ export default class BulkTestController {
     }
 
     const prisoners = await this.getPrisonersDetails(prisonerIds, prisonId, username)
+    const env = config.environmentName
 
     return this.bulkCalculationService.runCalculations(prisoners, username).then(results => {
-      const fileName = prisonId ? `temporary-calculations-${prisonId}.csv` : `temporary-calculations${prisonId}.csv`
+      const fileName = prisonId ? `bulk-${prisonId}-${env}.csv` : `bulk-${env}.csv`
       res.setHeader('Content-Type', 'text/csv')
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
       return stringify(results, {
