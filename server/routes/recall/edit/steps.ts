@@ -44,7 +44,6 @@ const steps = {
     controller: EditSummaryController,
     editable: true,
     next: 'recall-updated',
-    checkJourney: false,
   },
   '/recall-date': {
     fields: ['recallDate'],
@@ -52,7 +51,6 @@ const steps = {
     template: 'base-question',
     controller: RecallDateController,
     editable: false,
-    checkJourney: false,
   },
   '/rtc-date': {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
@@ -60,7 +58,6 @@ const steps = {
     template: 'base-question',
     controller: ReturnToCustodyDateController,
     editable: true,
-    checkJourney: false,
   },
   '/check-sentences': {
     next: [
@@ -78,7 +75,6 @@ const steps = {
     ],
     controller: CheckSentencesController,
     editable: true,
-    checkJourney: false,
   },
   '/recall-type': {
     next: 'edit-summary',
@@ -86,12 +82,10 @@ const steps = {
     controller: RecallTypeController,
     template: 'base-question',
     editable: true,
-    checkJourney: false,
   },
   '/confirm-recall-type': {
     next: 'edit-summary',
     controller: RecallBaseController,
-    checkJourney: false,
   },
   '/recall-updated': {
     controller: RecallBaseController,
@@ -103,7 +97,6 @@ const steps = {
   '/manual-recall': {
     controller: RecallBaseController,
     noPost: true,
-    checkJourney: false,
   },
   '/not-possible': {
     controller: RecallBaseController,

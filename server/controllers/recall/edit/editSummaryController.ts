@@ -47,6 +47,7 @@ export default class EditSummaryController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
+    req.sessionModel.set('journeyComplete', true)
     return super.successHandler(req, res, next)
   }
 }

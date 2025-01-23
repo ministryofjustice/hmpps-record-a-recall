@@ -21,6 +21,8 @@ export default async (req: Request, res: Response) => {
     // eslint-disable-next-line prefer-destructuring
     banner.success = success[0]
   }
+  const error = req.flash('errorMessage')
+
   const { nomisId, prisoner } = res.locals
 
   const urls = getServiceUrls(nomisId)
@@ -45,6 +47,7 @@ export default async (req: Request, res: Response) => {
       banner,
       urls,
       serviceDefinitions,
+      errorMessage: error?.length ? error[0] : null,
     })
   }
   req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)

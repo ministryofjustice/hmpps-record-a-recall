@@ -151,6 +151,8 @@ declare module 'hmpo-form-wizard' {
       render(req: FormWizard.Request, res: Express.Response, next: NextFunction)
 
       setStepComplete(req: FormWizard.Request, res: Express.Response, path?: string)
+
+      checkJourneyProgress(req: FormWizard.Request, res: Express.Response, next: NextFunction)
     }
 
     namespace Controller {
