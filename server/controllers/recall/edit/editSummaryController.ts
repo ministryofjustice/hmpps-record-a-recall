@@ -5,6 +5,7 @@ import RecallBaseController from '../recallBaseController'
 import { createAnswerSummaryList } from '../../../utils/utils'
 import getJourneyDataFromRequest, { RecallJourneyData } from '../../../helpers/formWizardHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { PrisonerSearchApiPrisoner } from '../../../@types/prisonerSearchApi/prisonerSearchTypes'
 
 export default class EditSummaryController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -47,6 +48,7 @@ export default class EditSummaryController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
+    req.sessionModel.set('journeyComplete', true)
     return super.successHandler(req, res, next)
   }
 }

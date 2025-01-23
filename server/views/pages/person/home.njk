@@ -17,6 +17,13 @@
     {{ subNavigation(serviceDefinitions.services, 'recalls') }}
   {% endblock %}
 
+  {% if errorMessage != '' %}
+    {{ govukWarningText({
+      text: errorMessage,
+      iconFallbackText: "Warning"
+    }) }}
+  {%  endif %}
+
 {% endblock %}
 
 {% block content %}

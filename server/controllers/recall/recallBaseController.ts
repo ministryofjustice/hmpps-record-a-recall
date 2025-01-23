@@ -1,4 +1,4 @@
-import { Response } from 'express'
+import { NextFunction, Response } from 'express'
 import FormWizard from 'hmpo-form-wizard'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
@@ -8,6 +8,16 @@ import getJourneyDataFromRequest from '../../helpers/formWizardHelper'
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
     super.middlewareSetup()
+  }
+
+  checkJourneyProgress(req: FormWizard.Request, res: Response, next: NextFunction) {
+    if (!req.sessionModel.get('isEdit') || req.sessionModel.get<boolean>('journeyComplete')) {
+      super.checkJourneyProgress(req, res, next)
+    } else {
+      // Skips journey validation if we're editing and haven't hit the recall updated screen
+      // TODO There should be a nicer way of doing this, preemptively setting steps as complete
+      next()
+    }
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
