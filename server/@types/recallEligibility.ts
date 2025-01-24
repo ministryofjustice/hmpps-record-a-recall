@@ -20,9 +20,21 @@ const eligibilityReasons = {
     recallOptions: 'STANDARD_ONLY',
     affectsEnvelope: true,
   },
-  NO_SLED_OR_SED_AND_CRD: {
-    code: 'NO_SLED_OR_SED_AND_CRD',
-    description: 'No SLED or SED and no CRD in breakdown - only manual recall possible',
+  NO_SENTENCE_START: {
+    code: 'NO_SENTENCE_START',
+    description: 'No sentence start date in breakdown - only manual recall possible',
+    recallOptions: 'MANUAL_ONLY',
+    affectsEnvelope: true,
+  },
+  NO_CRD: {
+    code: 'NO_CRD',
+    description: 'No CRD in breakdown - only manual recall possible',
+    recallOptions: 'MANUAL_ONLY',
+    affectsEnvelope: true,
+  },
+  NO_SLED_OR_SED: {
+    code: 'NO_SLED_OR_SED',
+    description: 'No SLED or SED in breakdown - only manual recall possible',
     recallOptions: 'MANUAL_ONLY',
     affectsEnvelope: true,
   },
@@ -35,6 +47,12 @@ const eligibilityReasons = {
   RECALL_DATE_BEFORE_SENTENCE_START: {
     code: 'RECALL_DATE_BEFORE_SENTENCE_START',
     description: 'Provided revocation date is before the start of this sentence',
+    recallOptions: 'NOT_POSSIBLE',
+    affectsEnvelope: false,
+  },
+  RECALL_DATE_BEFORE_RELEASE_DATE: {
+    code: 'RECALL_DATE_BEFORE_RELEASE_DATE',
+    description: 'Provided revocation date is before the conditional release date',
     recallOptions: 'NOT_POSSIBLE',
     affectsEnvelope: false,
   },

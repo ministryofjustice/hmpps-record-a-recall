@@ -18,15 +18,13 @@ import {
   findConsecutiveSentenceBreakdown,
   groupSentencesByCaseRefAndCourt,
   hasManualOnlySentences,
-  isNonSDS,
   summarisedSentenceGroup,
   summarisedSentence,
   hasStandardOnlySentences,
 } from '../../utils/sentenceUtils'
 import toSummaryListRow from '../../helpers/componentHelper'
 import { format8DigitDate } from '../../formatters/formatDate'
-import logger from '../../../logger'
-import { eligibilityReasons, RecallEligibility } from '../../@types/recallEligibility'
+import getEligibility from '../../utils/RecallEligiblityCalculator'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -62,7 +60,7 @@ export default class CheckSentencesController extends RecallBaseController {
 
         const { offence } = sentence
 
-        const recallEligibility = this.getEligibility(
+        const recallEligibility = getEligibility(
           sentence,
           concurrentSentenceBreakdown,
           consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
@@ -172,46 +170,6 @@ export default class CheckSentencesController extends RecallBaseController {
     }
 
     return 'Unknown'
-  }
-
-  private getEligibility(
-    sentence: SentenceAndOffenceWithReleaseArrangements,
-    concBreakdown: ConcurrentSentenceBreakdown,
-    consBreakdown: ConsecutiveSentenceBreakdown,
-    recallDate: Date,
-  ): RecallEligibility {
-    const breakdown = concBreakdown || consBreakdown
-
-    if (!breakdown) {
-      logger.warn(
-        `No breakdown found for sentence with line seq ${sentence.lineSequence} and case seq ${sentence.caseSequence}`,
-      )
-      return eligibilityReasons.NO_BREAKDOWN
-    }
-
-    const dateTypes = Object.keys(breakdown.dates)
-
-    if (!(dateTypes.includes('SLED') || dateTypes.includes('SED')) && !dateTypes.includes('CRD')) {
-      return eligibilityReasons.NO_SLED_OR_SED_AND_CRD
-    }
-
-    const adjustedSled = breakdown.dates.SLED
-      ? new Date(breakdown.dates.SLED.adjusted)
-      : new Date(breakdown.dates.SED?.adjusted)
-
-    if (recallDate < new Date(sentence.sentenceDate)) {
-      return eligibilityReasons.RECALL_DATE_BEFORE_SENTENCE_START
-    }
-
-    if (recallDate > adjustedSled) {
-      return eligibilityReasons.RECALL_DATE_AFTER_EXPIRATION_DATE
-    }
-
-    if (isNonSDS(sentence)) {
-      return eligibilityReasons.NON_SDS
-    }
-
-    return eligibilityReasons.HAPPY_PATH_POSSIBLE
   }
 
   private getCustodialTerm(terms: Term[]): string {
