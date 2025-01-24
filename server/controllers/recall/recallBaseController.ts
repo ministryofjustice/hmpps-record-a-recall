@@ -31,7 +31,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const autoRecallFailErrors = req.sessionModel.get('autoRecallFailErrors')
 
     const urls = getServiceUrls(res.locals.nomisId)
-    const cancelLink = `/person/${locals.nomisId}/recall${isEditRecall ? `/${recallId}/edit` : ''}/confirm-cancel`
+    const cancelLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}/` : 'record-recall'}/confirm-cancel`
 
     const action = req.flash('action')
 

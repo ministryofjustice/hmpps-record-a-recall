@@ -11,7 +11,7 @@ export default class EditSummaryController extends RecallBaseController {
     const { recallId, nomisId } = res.locals
     req.sessionModel.set('isEdit', true)
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
-    const editLink = (step: string) => `/person/${nomisId}/recall/${recallId}/edit/${step}/edit`
+    const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
 
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 

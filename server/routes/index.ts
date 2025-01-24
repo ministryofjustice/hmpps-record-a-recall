@@ -35,13 +35,13 @@ export default function routes(services: Services): Router {
   router.use('/person/:nomisId?', populateNomisId(), viewPersonRouter(services))
   // HMPO Forms defined route
   router.use(
-    '/person/:nomisId/recall/:recallId/edit',
+    '/person/:nomisId/edit-recall/:recallId',
     populateEntrypoint(),
     populateNomisId(),
     populateRecallId(),
     editRecallRouter,
   )
-  router.use('/person/:nomisId/recall', populateEntrypoint(), populateNomisId(), newRecallRouter)
+  router.use('/person/:nomisId/record-recall', populateEntrypoint(), populateNomisId(), newRecallRouter)
   router.use('/bulk', bulkTestRouter(services))
 
   return router
