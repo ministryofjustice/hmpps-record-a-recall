@@ -7,7 +7,7 @@ import {
   CreateRecallResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { calculateUal } from '../utils/utils'
-import { getRecallType, RecallTypes } from '../@types/recallTypes'
+import { getRecallType } from '../@types/recallTypes'
 
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
