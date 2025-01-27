@@ -44,4 +44,8 @@ const RecallTypes = {
   },
 } as const
 
-export { RecallTypes, RecallType }
+function getRecallType(code: string): RecallType {
+  return Object.values(RecallTypes).find(it => it.code === code)
+}
+
+export { RecallTypes, RecallType, getRecallType }

@@ -7,6 +7,7 @@ import {
   CreateRecallResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { calculateUal } from '../utils/utils'
+import { getRecallType } from '../@types/recallTypes'
 
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -45,7 +46,7 @@ export default class RecallService {
       createdAt: apiRecall.createdAt,
       recallDate: new Date(apiRecall.revocationDate),
       returnToCustodyDate: new Date(apiRecall.returnToCustodyDate),
-      recallType: apiRecall.recallType,
+      recallType: getRecallType(apiRecall.recallType),
       ual,
       ualString: `${ual} day${ual === 1 ? '' : 's'}`,
     }

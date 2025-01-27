@@ -1,7 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
-import { RecallType, RecallTypes } from '../@types/recallTypes'
+import { getRecallType, RecallType, RecallTypes } from '../@types/recallTypes'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const storedRecall = req.sessionModel.get<Recall>('storedRecall')
@@ -47,8 +47,4 @@ export type RecallJourneyData = {
   standardOnlyRecall?: boolean
   eligibleSentenceCount: number
   isEdit: boolean
-}
-
-function getRecallType(code: string): RecallType {
-  return Object.values(RecallTypes).find(it => it.code === code)
 }

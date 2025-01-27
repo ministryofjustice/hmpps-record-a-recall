@@ -30,7 +30,9 @@ export default class PopulateStoredRecallController extends RecallBaseController
     const { storedRecall, recallId } = res.locals
     const { recallType } = storedRecall
     const recallDate = format(new Date(storedRecall.recallDate), 'yyyy-MM-dd')
-    const returnToCustodyDate = format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
+    const returnToCustodyDate = storedRecall.returnToCustodyDate
+      ? format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
+      : null
     storedRecall.ual = calculateUal(recallDate, returnToCustodyDate)
     req.sessionModel.set('storedRecall', storedRecall)
     req.sessionModel.set('recallId', recallId)

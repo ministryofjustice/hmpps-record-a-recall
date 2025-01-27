@@ -30,7 +30,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
       const recallToSave: CreateRecall = {
         prisonerId: nomisId,
         revocationDate: journeyData.recallDateString,
-        returnToCustodyDate: journeyData.returnToCustodyDateString || journeyData.recallDateString,
+        returnToCustodyDate: journeyData.returnToCustodyDateString,
         recallTypeCode: journeyData.recallType.code,
         createdByUsername: username,
         createdByPrison: 'Not known',
