@@ -77,7 +77,7 @@ describe('Recall service', () => {
           recallId: '1234567',
           recallDate: new Date('2023-06-15T00:00:00.000Z'),
           returnToCustodyDate: new Date('2023-06-20T00:00:00.000Z'),
-          recallType: RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL.code,
+          recallType: RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL,
           ual: 4,
           ualString: '4 days',
           createdAt: '2023-06-10T14:30:00Z',
