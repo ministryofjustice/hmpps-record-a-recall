@@ -29,11 +29,11 @@ export default class CheckYourAnswersController extends RecallBaseController {
 
       const recallToSave: CreateRecall = {
         prisonerId: nomisId,
-        recallDate: journeyData.recallDateString,
+        revocationDate: journeyData.recallDateString,
         returnToCustodyDate: journeyData.returnToCustodyDateString || journeyData.recallDateString,
-        // @ts-expect-error recallType will be correct
-        recallType: journeyData.recallType.code,
+        recallTypeCode: journeyData.recallType.code,
         createdByUsername: username,
+        createdByPrison: 'Not known',
       }
       await req.services.recallService.postRecall(recallToSave, username)
 
