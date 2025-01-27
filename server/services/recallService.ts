@@ -7,7 +7,6 @@ import {
   CreateRecallResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { calculateUal } from '../utils/utils'
-import { RecallTypes } from '../@types/recallTypes'
 
 export default class RecallService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -40,13 +39,13 @@ export default class RecallService {
 
   fromApiRecall(apiRecall: ApiRecall) {
     // TODO UAL should be stored on the recall in RaS not calculated on the fly
-    const ual = calculateUal(apiRecall.recallDate, apiRecall.returnToCustodyDate)
+    const ual = calculateUal(apiRecall.revocationDate, apiRecall.returnToCustodyDate)
     return {
-      recallId: apiRecall.recallUniqueIdentifier,
+      recallId: apiRecall.recallUuid,
       createdAt: apiRecall.createdAt,
-      recallDate: new Date(apiRecall.recallDate),
+      recallDate: new Date(apiRecall.revocationDate),
       returnToCustodyDate: new Date(apiRecall.returnToCustodyDate),
-      recallType: RecallTypes[apiRecall.recallType],
+      recallType: apiRecall.recallType,
       ual,
       ualString: `${ual} day${ual === 1 ? '' : 's'}`,
     }

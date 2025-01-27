@@ -29,19 +29,21 @@ describe('Recall service', () => {
       const nomsId = 'A1234BC'
       const recallToCreate: CreateRecall = {
         prisonerId: nomsId,
-        recallDate: formatDate(new Date(2024, 0, 1)),
+        revocationDate: formatDate(new Date(2024, 0, 1)),
         returnToCustodyDate: formatDate(new Date(2024, 3, 2)),
-        recallType: 'STANDARD_RECALL',
+        recallTypeCode: 'LR',
         createdByUsername: 'user11',
+        createdByPrison: 'HMI',
       }
 
       fakeRemandAndSentencingApi
         .post('/recall', {
           prisonerId: nomsId,
-          recallDate: '2024-01-01',
+          revocationDate: '2024-01-01',
           returnToCustodyDate: '2024-04-02',
-          recallType: 'STANDARD_RECALL',
+          recallTypeCode: 'LR',
           createdByUsername: 'user11',
+          createdByPrison: 'HMI',
         })
         .reply(200, { recallUuid: 'uuid-returned' } as CreateRecallResponse)
 
@@ -57,13 +59,14 @@ describe('Recall service', () => {
 
       fakeRemandAndSentencingApi.get(`/recall/person/${nomsId}`).reply(200, [
         {
-          recallUniqueIdentifier: '1234567',
+          recallUuid: '1234567',
           prisonerId: 'ABC12345',
-          recallDate: '2023-06-15',
+          revocationDate: '2023-06-15',
           returnToCustodyDate: '2023-06-20',
-          recallType: 'FOURTEEN_DAY_FIXED_TERM_RECALL',
+          recallType: 'FTR_14',
           createdAt: '2023-06-10T14:30:00Z',
           createdByUsername: 'johndoe',
+          createdByPrison: 'HMI',
         } as ApiRecall,
       ])
 
@@ -74,7 +77,7 @@ describe('Recall service', () => {
           recallId: '1234567',
           recallDate: new Date('2023-06-15T00:00:00.000Z'),
           returnToCustodyDate: new Date('2023-06-20T00:00:00.000Z'),
-          recallType: RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL,
+          recallType: RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL.code,
           ual: 4,
           ualString: '4 days',
           createdAt: '2023-06-10T14:30:00Z',
