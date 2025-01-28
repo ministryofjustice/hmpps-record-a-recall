@@ -33,6 +33,11 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const urls = getServiceUrls(res.locals.nomisId)
     const cancelLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}/` : 'record-recall'}/confirm-cancel`
 
+    const lv = req.journeyModel.attributes.lastVisited
+    if (lv?.includes('check-your-answers') || lv?.includes('edit-summary')) {
+      res.locals.backLink = lv
+    }
+
     const action = req.flash('action')
 
     return {

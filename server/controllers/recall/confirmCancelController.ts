@@ -7,7 +7,9 @@ import config from '../../config'
 export default class ConfirmCancelController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
-    req.sessionModel.set('returnTo', req.journeyModel.attributes.lastVisited)
+    if (!req.journeyModel.attributes.lastVisited.includes('confirm-cancel')) {
+      req.sessionModel.set('returnTo', req.journeyModel.attributes.lastVisited)
+    }
 
     return { ...locals, hideCancel: true }
   }
@@ -21,6 +23,7 @@ export default class ConfirmCancelController extends RecallBaseController {
       }
       return res.redirect(`/person/${res.locals.nomisId}`)
     }
+    req.sessionModel.unset('returnTo')
     return res.redirect(returnTo)
   }
 }
