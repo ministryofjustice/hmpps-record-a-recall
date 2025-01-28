@@ -9,6 +9,8 @@ type BulkRemandCalculationRow = {
 
   CASE_SEQUENCE: number
   LINE_SEQUENCE: number
+  CASE_REF: string
+  COURT_NAME: string
   OFFENCE_DESCRIPTION: string
   OFFENCE_START: string
   OFFENCE_END: string

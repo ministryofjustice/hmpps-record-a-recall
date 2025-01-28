@@ -16,10 +16,12 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row govuk-!-margin-bottom-0">
             <div class="govuk-grid-column-two-thirds">
-                {{ govukBackLink({
+              <nav>
+              {{ govukBackLink({
                     text: "Back",
                     href: backLink
                 }) }}
+              </nav>
                 {% if errorlist.length %}
                     {{ govukErrorSummary({
                         titleText: "There is a problem",

@@ -6,10 +6,12 @@
 {% block content %}
     <div class='govuk-grid-row'>
         <div class='govuk-grid-column-two-thirds'>
+          <nav>
             {{ govukBackLink({
                 text: "Back",
                 href: backLink
             }) }}
+          </nav>
             <h1 class="govuk-heading-xl" id="not-possible-heading">Recall not possible</h1>
             {% for error in crdsValidationErrors %}
                 <h2 class="govuk-heading-m" id="validation-fail-reason-{{loop.index}}">{{ error }}</h2>

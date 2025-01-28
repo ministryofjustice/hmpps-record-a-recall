@@ -136,6 +136,9 @@ export default class BulkCalculationService {
         CASE_SEQUENCE: sentence.caseSequence,
         LINE_SEQUENCE: sentence.lineSequence,
 
+        CASE_REF: sentence.caseReference,
+        COURT_NAME: sentence.courtDescription,
+
         OFFENCE_DESCRIPTION: sentence.offence.offenceDescription,
         OFFENCE_START: sentence.offence.offenceStartDate,
         OFFENCE_END: sentence.offence.offenceEndDate,

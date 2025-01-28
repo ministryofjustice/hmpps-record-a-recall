@@ -6,10 +6,12 @@
 {% block content %}
     <div class='govuk-grid-row'>
         <div class='govuk-grid-column-two-thirds'>
+          <nav>
             {{ govukBackLink({
                 text: "Back",
                 href: backLink
             }) }}
+          </nav>
             <h1 class="govuk-heading-xl" id="manual-recall-heading">Manual recall entry required</h1>
             {% for error in autoRecallFailErrors %}
                 <h2 class="govuk-heading-m" id="auto-recall-fail-reason-{{loop.index}}">{{ error }}</h2>
