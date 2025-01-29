@@ -12,5 +12,6 @@ declare module 'models' {
     recallType: RecallType
     calculation?: CalculatedReleaseDates
     isFixedTermRecall?: boolean
+    location: string
   }
 }

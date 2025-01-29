@@ -81,6 +81,7 @@ describe('Recall service', () => {
           ual: 4,
           ualString: '4 days',
           createdAt: '2023-06-10T14:30:00Z',
+          location: 'HMI',
         },
       ])
     })
