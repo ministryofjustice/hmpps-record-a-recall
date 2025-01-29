@@ -44,11 +44,12 @@ export default class RecallService {
     return {
       recallId: apiRecall.recallUuid,
       createdAt: apiRecall.createdAt,
-      recallDate: new Date(apiRecall.revocationDate),
-      returnToCustodyDate: new Date(apiRecall.returnToCustodyDate),
+      recallDate: apiRecall.revocationDate ? new Date(apiRecall.revocationDate) : null,
+      returnToCustodyDate: apiRecall.returnToCustodyDate ? new Date(apiRecall.returnToCustodyDate) : null,
       recallType: getRecallType(apiRecall.recallType),
       ual,
       ualString: `${ual} day${ual === 1 ? '' : 's'}`,
+      location: apiRecall.createdByPrison,
     }
   }
 }
