@@ -41,7 +41,6 @@ export default class RecallService {
   fromApiRecall(apiRecall: ApiRecall) {
     // TODO UAL should be stored on the recall in RaS not calculated on the fly
     const ual = calculateUal(apiRecall.revocationDate, apiRecall.returnToCustodyDate)
-    console.log(apiRecall)
     return {
       recallId: apiRecall.recallUuid,
       createdAt: apiRecall.createdAt,
