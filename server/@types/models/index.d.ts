@@ -14,4 +14,13 @@ declare module 'models' {
     isFixedTermRecall?: boolean
     location: string
   }
+
+  export interface CourtCase {
+    caseId: string
+    status: string
+    date: string
+    location: string
+    reference: string
+    sentences?: string[]
+  }
 }

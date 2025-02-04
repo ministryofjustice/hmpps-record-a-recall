@@ -234,11 +234,7 @@ export interface paths {
      */
     put: operations['putCourtCase']
     post?: never
-    /**
-     * Delete Court case
-     * @description This endpoint will delete a court case
-     */
-    delete: operations['deleteCourtCase']
+    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -264,26 +260,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/court-appearance/{lifetimeUuid}/lifetime': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /**
-     * Create Court appearance
-     * @description This endpoint will create a court appearance in a given court case
-     */
-    put: operations['updateCourtAppearanceByLifetime']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/court-appearance/{appearanceUuid}': {
     parameters: {
       query?: never
@@ -302,39 +278,7 @@ export interface paths {
      */
     put: operations['updateCourtAppearance']
     post?: never
-    /**
-     * Delete Appearance
-     * @description This endpoint will delete an appearance
-     */
-    delete: operations['deleteAppearance']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/charge/{chargeUuid}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Retrieve charge details
-     * @description This endpoint will retrieve charge details
-     */
-    get: operations['getChargeDetails']
-    /**
-     * Create Charge
-     * @description This endpoint will create a charge in a given court appearance
-     */
-    put: operations['updateCharge']
-    post?: never
-    /**
-     * Delete Charge
-     * @description This endpoint will delete a charge
-     */
-    delete: operations['deleteCharge']
+    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -540,26 +484,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/charge': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Create Charge
-     * @description This endpoint will create a charge in a given court appearance
-     */
-    post: operations['createCharge']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/sentence/{sentenceUuid}': {
     parameters: {
       query?: never
@@ -571,7 +495,7 @@ export interface paths {
      * Retrieve sentence details
      * @description This endpoint will retrieve sentence details
      */
-    get: operations['getChargeDetails_1']
+    get: operations['getChargeDetails']
     put?: never
     post?: never
     delete?: never
@@ -712,6 +636,26 @@ export interface paths {
      * @description This endpoint will retrieve all court cases for a person
      */
     get: operations['searchCourtCases']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/charge/{chargeUuid}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve charge details
+     * @description This endpoint will retrieve charge details
+     */
+    get: operations['getChargeDetails_1']
     put?: never
     post?: never
     delete?: never
@@ -867,9 +811,9 @@ export interface components {
     CreateRecall: {
       prisonerId: string
       /** Format: date */
-      revocationDate: string
+      revocationDate?: string
       /** Format: date */
-      returnToCustodyDate: string
+      returnToCustodyDate?: string
       /** @enum {string} */
       recallTypeCode: 'LR' | 'FTR_14' | 'FTR_28' | 'LR_HDC' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
       createdByUsername: string
@@ -882,6 +826,18 @@ export interface components {
     LegacyCreateFine: {
       fineAmount: number
     }
+    LegacyCreatePeriodLength: {
+      periodType: string
+      /** Format: int32 */
+      periodYears?: number
+      /** Format: int32 */
+      periodMonths?: number
+      /** Format: int32 */
+      periodWeeks?: number
+      /** Format: int32 */
+      periodDays?: number
+      legacyData: components['schemas']['PeriodLengthLegacyData']
+    }
     LegacyCreateSentence: {
       /** Format: uuid */
       chargeLifetimeUuid: string
@@ -892,6 +848,12 @@ export interface components {
       active: boolean
       prisonId: string
       legacyData: components['schemas']['SentenceLegacyData']
+      periodLengths: components['schemas']['LegacyCreatePeriodLength'][]
+    }
+    PeriodLengthLegacyData: {
+      lifeSentence?: boolean
+      sentenceTermCode?: string
+      sentenceTermDescription?: string
     }
     SentenceLegacyData: {
       sentenceCalcType?: string
@@ -911,8 +873,10 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 09:27:42.045132815 */
+      /** @example 08:38:42.825093511 */
       appearanceTime?: string
+      outcomeDispositionCode?: string
+      outcomeConvictionFlag?: boolean
     }
     LegacyCreateCourtAppearance: {
       courtCaseUuid: string
@@ -1004,7 +968,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:27:42.045132815 */
+      /** @example 08:38:42.825093511 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -1028,6 +992,7 @@ export interface components {
         | 'TARIFF_LENGTH'
         | 'TERM_LENGTH'
         | 'OVERALL_SENTENCE_LENGTH'
+        | 'UNSUPPORTED'
     }
     CreateSentence: {
       /** Format: uuid */
@@ -1099,6 +1064,18 @@ export interface components {
     MigrationCreateFine: {
       fineAmount: number
     }
+    MigrationCreatePeriodLength: {
+      periodType: string
+      /** Format: int32 */
+      periodYears?: number
+      /** Format: int32 */
+      periodMonths?: number
+      /** Format: int32 */
+      periodWeeks?: number
+      /** Format: int32 */
+      periodDays?: number
+      legacyData: components['schemas']['PeriodLengthLegacyData']
+    }
     MigrationCreateSentence: {
       sentenceId: components['schemas']['MigrationSentenceId']
       chargeNumber?: string
@@ -1112,6 +1089,7 @@ export interface components {
        * @description The consecutive to lifetime uuid if the sentence is not in the same court case
        */
       consecutiveToSentenceLifetimeUuid?: string
+      periodLengths: components['schemas']['MigrationCreatePeriodLength'][]
     }
     MigrationSentenceId: {
       /** Format: int64 */
@@ -1195,6 +1173,8 @@ export interface components {
         | 'TARIFF_LENGTH'
         | 'TERM_LENGTH'
         | 'OVERALL_SENTENCE_LENGTH'
+        | 'UNSUPPORTED'
+      legacyData?: components['schemas']['PeriodLengthLegacyData']
     }
     Sentence: {
       /** Format: uuid */
@@ -1234,9 +1214,9 @@ export interface components {
       recallUuid: string
       prisonerId: string
       /** Format: date */
-      revocationDate: string
+      revocationDate?: string
       /** Format: date */
-      returnToCustodyDate: string
+      returnToCustodyDate?: string
       /** @enum {string} */
       recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'LR_HDC' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
       /** Format: date-time */
@@ -1255,6 +1235,18 @@ export interface components {
       pncNumber?: string
       status?: string
     }
+    LegacyPeriodLength: {
+      /** Format: int32 */
+      periodYears?: number
+      /** Format: int32 */
+      periodMonths?: number
+      /** Format: int32 */
+      periodWeeks?: number
+      /** Format: int32 */
+      periodDays?: number
+      isLifeSentence?: boolean
+      sentenceTermCode?: string
+    }
     LegacySentence: {
       prisonerId: string
       /** Format: uuid */
@@ -1268,6 +1260,7 @@ export interface components {
       chargeNumber?: string
       fineAmount?: number
       legacyData?: components['schemas']['SentenceLegacyData']
+      periodLengths: components['schemas']['LegacyPeriodLength'][]
     }
     LegacyCourtCase: {
       courtCaseUuid: string
@@ -1301,7 +1294,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 09:27:42.045132815 */
+      /** @example 08:38:42.825093511 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -1309,7 +1302,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:27:42.045132815 */
+      /** @example 08:38:42.825093511 */
       appearanceTime?: string
       courtId: string
     }
@@ -1397,7 +1390,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:27:42.045132815 */
+      /** @example 08:38:42.825093511 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -1433,10 +1426,10 @@ export interface components {
       sort?: components['schemas']['SortObject']
       /** Format: int32 */
       pageSize?: number
-      unpaged?: boolean
       paged?: boolean
       /** Format: int32 */
       pageNumber?: number
+      unpaged?: boolean
     }
     SortObject: {
       empty?: boolean
@@ -2379,40 +2372,6 @@ export interface operations {
       }
     }
   }
-  deleteCourtCase: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        courtCaseUuid: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description No Content */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-    }
-  }
   refreshCaseReferences: {
     parameters: {
       query?: never
@@ -2448,50 +2407,6 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
-      }
-    }
-  }
-  updateCourtAppearanceByLifetime: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        lifetimeUuid: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateCourtAppearance']
-      }
-    }
-    responses: {
-      /** @description Returns court case UUID */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateCourtAppearanceResponse']
-        }
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateCourtAppearanceResponse']
-        }
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateCourtAppearanceResponse']
-        }
       }
     }
   }
@@ -2585,167 +2500,6 @@ export interface operations {
         content: {
           '*/*': components['schemas']['CreateCourtAppearanceResponse']
         }
-      }
-    }
-  }
-  deleteAppearance: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        appearanceUuid: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description No Content */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-    }
-  }
-  getChargeDetails: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        chargeUuid: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Returns charge details */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['Charge']
-        }
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['Charge']
-        }
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['Charge']
-        }
-      }
-      /** @description Not found if no charge at uuid */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['Charge']
-        }
-      }
-    }
-  }
-  updateCharge: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        chargeUuid: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateCharge']
-      }
-    }
-    responses: {
-      /** @description Returns court case UUID */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateChargeResponse']
-        }
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateChargeResponse']
-        }
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateChargeResponse']
-        }
-      }
-    }
-  }
-  deleteCharge: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        chargeUuid: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description No Content */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
       }
     }
   }
@@ -3180,49 +2934,7 @@ export interface operations {
       }
     }
   }
-  createCharge: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateCharge']
-      }
-    }
-    responses: {
-      /** @description Returns court case UUID */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateChargeResponse']
-        }
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateChargeResponse']
-        }
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['CreateChargeResponse']
-        }
-      }
-    }
-  }
-  getChargeDetails_1: {
+  getChargeDetails: {
     parameters: {
       query?: never
       header?: never
@@ -3567,6 +3279,55 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['PageCourtCase']
+        }
+      }
+    }
+  }
+  getChargeDetails_1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        chargeUuid: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns charge details */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['Charge']
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['Charge']
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['Charge']
+        }
+      }
+      /** @description Not found if no charge at uuid */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['Charge']
         }
       }
     }
