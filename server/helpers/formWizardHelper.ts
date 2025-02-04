@@ -8,6 +8,8 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
   const ual = req.sessionModel.get<number>('ual')
   const standardOnlyRecall = req.sessionModel.get<boolean>('standardOnlyRecall')
   const manualSentenceSelection = req.sessionModel.get<boolean>('manualSentenceSelection')
+  const courtCases = req.sessionModel.get<string[]>('courtCases')
+  const courtCaseCount = courtCases ? courtCases.length : 0
   const ualText = ual !== undefined ? `${ual} day${ual === 1 ? '' : 's'}` : undefined
   const eligibleSentenceCount = req.sessionModel.get<number>('eligibleSentenceCount')
   const recallType = standardOnlyRecall
@@ -28,6 +30,7 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
     manualSentenceSelection,
     recallType,
     standardOnlyRecall,
+    courtCaseCount,
     eligibleSentenceCount,
     isEdit: req.sessionModel.get<boolean>('isEdit'),
   }
@@ -44,6 +47,7 @@ export type RecallJourneyData = {
   ualText?: string
   manualSentenceSelection: boolean
   recallType: RecallType
+  courtCaseCount: number
   standardOnlyRecall?: boolean
   eligibleSentenceCount: number
   isEdit: boolean
