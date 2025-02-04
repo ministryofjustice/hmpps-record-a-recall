@@ -5,7 +5,6 @@ import {
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import logger from '../../logger'
-import { isNonSDS } from './sentenceUtils'
 
 export default function getEligibility(
   sentence: SentenceAndOffenceWithReleaseArrangements,
@@ -57,4 +56,12 @@ export default function getEligibility(
   }
 
   return eligibilityReasons.HAPPY_PATH_POSSIBLE
+}
+
+function isSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
+  return sentence.sentenceTypeDescription.includes('Standard Determinate Sentence')
+}
+
+function isNonSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
+  return !isSDS(sentence)
 }

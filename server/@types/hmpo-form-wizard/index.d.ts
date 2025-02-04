@@ -247,6 +247,7 @@ declare module 'hmpo-form-wizard' {
       dependent?: Dependent
       invalidates?: string[]
       value?: string | string[]
+      values?: string[]
       labelClasses?: string
       formGroupClasses?: string
       characterCountMax?: number

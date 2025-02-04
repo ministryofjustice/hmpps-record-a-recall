@@ -1,30 +1,8 @@
 import FormWizard from 'hmpo-form-wizard'
 import { Response } from 'express'
 
-import { compact } from 'lodash'
 import RecallBaseController from './recallBaseController'
-import {
-  CalculatedReleaseDates,
-  CalculationBreakdown,
-  ConcurrentSentenceBreakdown,
-  ConsecutiveSentenceBreakdown,
-  ConsecutiveSentencePart,
-  Offence,
-  SentenceAndOffenceWithReleaseArrangements,
-  Term,
-} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import {
-  findConcurrentSentenceBreakdown,
-  findConsecutiveSentenceBreakdown,
-  groupSentencesByCaseRefAndCourt,
-  hasManualOnlySentences,
-  summarisedSentenceGroup,
-  summarisedSentence,
-  hasStandardOnlySentences,
-} from '../../utils/sentenceUtils'
-import toSummaryListRow from '../../helpers/componentHelper'
-import { format8DigitDate } from '../../formatters/formatDate'
-import getEligibility from '../../utils/RecallEligiblityCalculator'
+import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -32,178 +10,17 @@ export default class CheckSentencesController extends RecallBaseController {
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const sentences = req.sessionModel.get<SentenceAndOffenceWithReleaseArrangements[]>('sentences')
+    const manualJourney = req.sessionModel.get<boolean>('manualSentenceSelection')
+
     const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
-    const breakdown = req.sessionModel.get<CalculationBreakdown>('breakdown')
-    const recallDate = new Date(req.sessionModel.get<string>('recallDate'))
 
     res.locals.latestSled = calculation.dates.SLED
 
-    const groupedSentences = groupSentencesByCaseRefAndCourt(sentences)
-    const summarisedSentenceGroups: summarisedSentenceGroup[] = []
+    res.locals.summarisedSentencesGroups = req.sessionModel.get('summarisedSentencesGroups')
+    res.locals.casesWithEligibleSentences = req.sessionModel.get('casesWithEligibleSentences')
 
-    Object.keys(groupedSentences).forEach(caseRef => {
-      const groupsSentences = groupedSentences[caseRef]
-      const summarisedGroup: summarisedSentenceGroup = {
-        caseRefAndCourt: caseRef,
-        ineligibleSentences: [],
-        hasIneligibleSentences: false,
-        eligibleSentences: [],
-        hasEligibleSentences: false,
-      }
-
-      summarisedGroup.caseRefAndCourt = caseRef
-      groupsSentences.forEach((sentence: SentenceAndOffenceWithReleaseArrangements) => {
-        const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(sentence, breakdown)
-        const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
-        const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdown)
-
-        const { offence } = sentence
-
-        const recallEligibility = getEligibility(
-          sentence,
-          concurrentSentenceBreakdown,
-          consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
-          recallDate,
-        )
-
-        const forthConsConc = this.forthwithConsecutiveConcurrent(
-          concurrentSentenceBreakdown,
-          consecutiveSentencePartBreakdown,
-        )
-
-        const sentenceLengthDays =
-          concurrentSentenceBreakdown?.sentenceLengthDays || consecutiveSentencePartBreakdown?.sentenceLengthDays
-        const aggregateSentenceLengthDays = consecutiveSentenceBreakdown?.sentenceLengthDays
-
-        const unadjustedSled = this.getDate(
-          concurrentSentenceBreakdown,
-          consecutiveSentenceBreakdown,
-          consecutiveSentencePartBreakdown,
-          'SLED',
-        )?.unadjusted
-
-        const unadjustedLed = this.getDate(
-          concurrentSentenceBreakdown,
-          consecutiveSentenceBreakdown,
-          consecutiveSentencePartBreakdown,
-          'LED',
-        )?.unadjusted
-
-        const summary = compact([
-          toSummaryListRow('Committed on', this.stringifyOffenceDate(offence)),
-          toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
-          toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
-          toSummaryListRow('Custodial term', this.getCustodialTerm(sentence.terms)),
-          toSummaryListRow('Licence period', this.getLicenceTerm(sentence.terms)),
-          toSummaryListRow('Case Sequence', `${sentence.caseSequence}`),
-          toSummaryListRow('Line Sequence', `${sentence.lineSequence}`),
-          toSummaryListRow('Consecutive or concurrent', forthConsConc),
-          toSummaryListRow('Unadjusted SLED', unadjustedSled),
-          toSummaryListRow('Unadjusted LED', unadjustedLed),
-          toSummaryListRow(
-            consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-            consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-          ),
-          toSummaryListRow('Recall Options', recallEligibility.recallOptions),
-          toSummaryListRow('Recall Options reason', recallEligibility.description),
-        ])
-
-        const thisSummarisedSentence: summarisedSentence = {
-          recallEligibility,
-          summary,
-          offenceCode: sentence.offence.offenceCode,
-          offenceDescription: sentence.offence.offenceDescription,
-          unadjustedSled: unadjustedSled || unadjustedLed,
-          sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
-        }
-
-        if (recallEligibility.recallOptions !== 'NOT_POSSIBLE') {
-          summarisedGroup.hasEligibleSentences = true
-          summarisedGroup.eligibleSentences.push(thisSummarisedSentence)
-        } else {
-          summarisedGroup.hasIneligibleSentences = true
-          summarisedGroup.ineligibleSentences.push(thisSummarisedSentence)
-        }
-      })
-      summarisedSentenceGroups.push(summarisedGroup)
-    })
-
-    req.sessionModel.set('summarisedSentencesGroups', summarisedSentenceGroups)
-    res.locals.groupedSentences = summarisedSentenceGroups
-    res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
-    const eligibleSentenceCount = summarisedSentenceGroups
-      .filter(group => group.hasEligibleSentences)
-      .map(g => g.eligibleSentences.length)
-      .reduce((sum, current) => sum + current, 0)
-
-    const manualSentenceSelection = summarisedSentenceGroups
-      .filter(group => group.hasEligibleSentences)
-      .flatMap(g => hasManualOnlySentences(g.eligibleSentences))
-      .includes(true)
-
-    const standardOnlyRecall = summarisedSentenceGroups
-      .filter(group => group.hasEligibleSentences)
-      .flatMap(g => hasStandardOnlySentences(g.eligibleSentences))
-      .includes(true)
-
-    req.sessionModel.set('eligibleSentenceCount', eligibleSentenceCount)
-    req.sessionModel.set('casesWithEligibleSentences', res.locals.casesWithEligibleSentences)
-    req.sessionModel.set('manualSentenceSelection', manualSentenceSelection)
-    req.sessionModel.set('standardOnlyRecall', standardOnlyRecall)
+    res.locals.manualJourney = manualJourney
 
     return super.locals(req, res)
-  }
-
-  private forthwithConsecutiveConcurrent(
-    concBreakdown: ConcurrentSentenceBreakdown,
-    consPartBreakdown: ConsecutiveSentencePart,
-  ): string {
-    if (concBreakdown) {
-      return 'Concurrent'
-    }
-    if (consPartBreakdown) {
-      if (consPartBreakdown.consecutiveToLineSequence && consPartBreakdown.consecutiveToCaseSequence) {
-        return `Consecutive to case ${consPartBreakdown.consecutiveToCaseSequence}, line ${consPartBreakdown.consecutiveToLineSequence}`
-      }
-      return 'Forthwith'
-    }
-
-    return 'Unknown'
-  }
-
-  private getCustodialTerm(terms: Term[]): string {
-    return this.getTerm(terms, 'IMP')
-  }
-
-  private getLicenceTerm(terms: Term[]): string {
-    return this.getTerm(terms, 'LIC')
-  }
-
-  private getTerm(terms: Term[], type: string): string {
-    const term = terms?.find(t => t.code === type)
-
-    return term ? `${term.years} years ${term.months} months ${term.weeks} weeks ${term.days} days` : undefined
-  }
-
-  private stringifyOffenceDate(offence: Offence) {
-    return offence.offenceEndDate
-      ? `${format8DigitDate(offence.offenceStartDate)} to ${format8DigitDate(offence.offenceEndDate)}`
-      : format8DigitDate(offence.offenceStartDate)
-  }
-
-  private getDate(
-    concBreakdown: ConcurrentSentenceBreakdown,
-    consBreakdown: ConsecutiveSentenceBreakdown,
-    consPartBreakdown: ConsecutiveSentencePart,
-    dateType: string,
-  ) {
-    if (concBreakdown) {
-      return concBreakdown.dates[dateType]
-    }
-    if (consPartBreakdown) {
-      return consBreakdown.dates[dateType]
-    }
-    return null
   }
 }

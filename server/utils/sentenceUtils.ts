@@ -227,7 +227,9 @@ export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtend
   )
 }
 
-export function groupSentencesByCaseRefAndCourt(sentences: SentenceAndOffenceWithReleaseArrangements[]) {
+export function groupSentencesByCaseRefAndCourt(
+  sentences: SentenceAndOffenceWithReleaseArrangements[],
+): Record<string, SentenceAndOffenceWithReleaseArrangements[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return sentences.reduce((result: any, currentValue: any) => {
     const ref = `${currentValue.caseReference || 'Case'} at ${currentValue.courtDescription}`
@@ -264,14 +266,6 @@ export function hasManualOnlySentences(sentences: summarisedSentence[]): boolean
 
 export function hasStandardOnlySentences(sentences: summarisedSentence[]): boolean {
   return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'STANDARD_ONLY')
-}
-
-export function isSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
-  return sentence.sentenceTypeDescription.includes('Standard Determinate Sentence')
-}
-
-export function isNonSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
-  return !isSDS(sentence)
 }
 
 export type summarisedSentence = {

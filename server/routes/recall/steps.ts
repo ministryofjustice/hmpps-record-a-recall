@@ -7,6 +7,7 @@ import CheckSentencesController from '../../controllers/recall/checkSentencesCon
 import CheckPossibleController from '../../controllers/recall/checkPossibleController'
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
+import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
 
 const steps = {
   '/': {
@@ -18,13 +19,7 @@ const steps = {
     next: [
       {
         fn: 'recallPossible',
-        next: [
-          {
-            fn: 'manualEntryRequired',
-            next: 'manual-recall',
-          },
-          'recall-date',
-        ],
+        next: 'recall-date',
       },
       'not-possible',
     ],
@@ -38,19 +33,21 @@ const steps = {
   },
   '/rtc-date': {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
-    next: 'check-sentences',
+    next: [
+      {
+        fn: (req: FormWizard.Request) =>
+          req.sessionModel.get('eligibleSentenceCount') === 0 ||
+          req.sessionModel.get('manualSentenceSelection') === true,
+        next: 'select-cases',
+      },
+      'check-sentences',
+    ],
     template: 'base-question',
     controller: ReturnToCustodyDateController,
     editable: true,
   },
   '/check-sentences': {
     next: [
-      {
-        fn: (req: FormWizard.Request) =>
-          req.sessionModel.get('eligibleSentenceCount') === 0 ||
-          req.sessionModel.get('manualSentenceSelection') === true,
-        next: 'manual-recall',
-      },
       {
         fn: (req: FormWizard.Request) => req.sessionModel.get('standardOnlyRecall') === true,
         next: 'confirm-recall-type',
@@ -84,6 +81,12 @@ const steps = {
   '/manual-recall': {
     controller: RecallBaseController,
     noPost: true,
+  },
+  '/select-cases': {
+    controller: SelectCourtCaseController,
+    fields: ['courtCases'],
+    template: 'base-question',
+    next: 'check-sentences',
   },
   '/not-possible': {
     controller: RecallBaseController,

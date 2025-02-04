@@ -68,6 +68,26 @@ const fields = {
     nameForErrors: 'Recall type',
     items: [{ text: 'set at runtime', value: '' }],
   },
+  courtCases: {
+    component: 'govukCheckboxes',
+    validate: ['required'],
+    multiple: true,
+    id: 'courtCases',
+    name: 'courtCases',
+    hint: {
+      text: 'Select all the court cases to recall the prisoner on',
+    },
+    fieldset: {
+      legend: {
+        text: 'Select court cases',
+        isPageHeading: true,
+        classes: 'govuk-fieldset__legend--l',
+      },
+    },
+    nameForErrors: 'Court cases',
+    // @ts-expect-error set at runtime
+    items: [],
+  },
   confirmCancel: {
     component: 'govukRadios',
     validate: ['required'],
