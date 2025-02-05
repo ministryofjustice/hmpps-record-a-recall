@@ -22,5 +22,6 @@ declare module 'models' {
     location: string
     reference: string
     sentences?: string[]
+    sentenced: boolean
   }
 }

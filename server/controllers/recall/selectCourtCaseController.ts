@@ -24,8 +24,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
       const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
       const items = cases
         .filter((c: CourtCase) => c.status !== 'DRAFT')
+        .filter((c: CourtCase) => c.sentenced)
         .map((c: CourtCase) => ({
-          text: `${c.reference} at ${c.location}`,
+          text: `${c.reference ? c.reference : 'Case held'} at ${c.location}`,
           value: c.caseId,
         }))
       req.form.options.fields.courtCases.items = items
