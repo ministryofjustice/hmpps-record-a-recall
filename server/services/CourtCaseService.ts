@@ -39,6 +39,7 @@ export default class CourtCaseService {
       // TODO decorate this with court name
       location: apiCase.latestAppearance?.courtCode,
       reference: apiCase.latestAppearance?.courtCaseReference,
+      sentenced: apiCase.latestAppearance?.warrantType === 'SENTENCING' || false,
     }
   }
 }
