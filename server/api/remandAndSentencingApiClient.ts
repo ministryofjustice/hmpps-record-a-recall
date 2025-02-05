@@ -44,10 +44,10 @@ export default class RemandAndSentencingApiClient {
     }) as Promise<ApiRecall[]>
   }
 
-  async getCourtCases(prisonerId: string): Promise<ApiCourtCasePage> {
+  async getCourtCases(prisonerId: string, page: number = 0): Promise<ApiCourtCasePage> {
     return this.restClient.get({
       path: `/court-case/search`,
-      query: { prisonerId, sort: 'latestCourtAppearance_appearanceDate,desc' },
+      query: { prisonerId, sort: 'latestCourtAppearance_appearanceDate,desc', size: 20, page },
     }) as Promise<ApiCourtCasePage>
   }
 }

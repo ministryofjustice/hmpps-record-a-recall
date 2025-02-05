@@ -1,15 +1,26 @@
 import type { CourtCase } from 'models'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
-import { ApiCourtCase } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { ApiCourtCase, ApiCourtCasePage } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
 
   async getAllCourtCases(nomsId: string, username: string): Promise<CourtCase[]> {
-    const firstPageOfCases = await (await this.getApiClient(username)).getCourtCases(nomsId)
+    return (await this.getCases(nomsId, username)).map(
+      (apiCase: ApiCourtCase): CourtCase => this.fromApiCourtCase(apiCase),
+    )
+  }
 
-    return firstPageOfCases.content.map((apiCase: ApiCourtCase): CourtCase => this.fromApiCourtCase(apiCase))
+  async getCases(nomisId: string, username: string, page = 0, result: ApiCourtCase[] = []): Promise<ApiCourtCase[]> {
+    const courtCasePage = await this.getPage(nomisId, page, username)
+    return courtCasePage.last
+      ? result.concat(courtCasePage.content)
+      : this.getCases(nomisId, username, page + 1, result.concat(courtCasePage.content))
+  }
+
+  private async getPage(nomisId: string, page: number, username: string): Promise<ApiCourtCasePage> {
+    return (await this.getApiClient(username)).getCourtCases(nomisId, page)
   }
 
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {
