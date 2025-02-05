@@ -139,6 +139,14 @@ export default {
       },
       agent: new AgentConfig(Number(get('COURT_CASES_RELEASE_DATES_API_TIMEOUT_RESPONSE', 10000))),
     },
+    courtRegisterApi: {
+      url: get('COURT_REGISTER_API_URL', 'http://localhost:8083', requiredInProduction),
+      timeout: {
+        response: Number(get('COURT_REGISTER_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('COURT_REGISTER_API_TIMEOUT_DEADLINE', 10000)),
+      },
+      agent: new AgentConfig(Number(get('COURT_REGISTER_API_TIMEOUT_RESPONSE', 10000))),
+    },
   },
   sqs: {
     audit: auditConfig(),
