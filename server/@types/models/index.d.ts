@@ -20,8 +20,36 @@ declare module 'models' {
     status: string
     date: string
     location: string
+    locationName?: string
     reference: string
-    sentences?: string[]
+    sentences?: Sentence[]
     sentenced: boolean
+  }
+
+  export interface Sentence {
+    /** Format: uuid */
+    sentenceUuid: string
+    chargeNumber?: string
+    custodialTerm: Term
+    licenceTerm: Term
+    sentenceServeType: string
+    consecutiveToChargeNumber?: string
+    sentenceType?: string
+    /** Format: date */
+    convictionDate?: string
+    offenceDate?: string
+    offenceCode: string
+    offenceDescription?: string
+  }
+
+  export interface Term {
+    years?: number
+    /** Format: int32 */
+    months?: number
+    /** Format: int32 */
+    weeks?: number
+    /** Format: int32 */
+    days?: number
+    code?: string
   }
 }

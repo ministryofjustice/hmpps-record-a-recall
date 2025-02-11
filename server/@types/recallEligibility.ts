@@ -62,6 +62,12 @@ const eligibilityReasons = {
     recallOptions: 'NOT_POSSIBLE',
     affectsEnvelope: false,
   },
+  RAS_SENTENCE: {
+    code: 'RAS_SENTENCE',
+    description: 'This sentence is retrieved from RaS and has no associated calculation',
+    recallOptions: 'MANUAL_ONLY',
+    affectsEnvelope: true,
+  },
 } as const
 
 export { RecallEligibility, RecallOptions, eligibilityReasons }
