@@ -196,8 +196,8 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
       toSummaryListRow('Sentence type', s.sentenceType),
       toSummaryListRow('Custodial term', stringifyTerm(s.custodialTerm)),
       toSummaryListRow('Licence period', stringifyTerm(s.licenceTerm)),
+      toSummaryListRow('Consecutive or concurrent', s.sentenceServeType),
       // TODO We don't have the following for RaS sentences
-      // toSummaryListRow('Consecutive or concurrent', forthConsConc),
       // toSummaryListRow('Unadjusted SLED', unadjustedSled),
       // toSummaryListRow('Unadjusted LED', unadjustedLed),
       // toSummaryListRow(
