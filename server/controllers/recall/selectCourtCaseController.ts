@@ -24,11 +24,14 @@ export default class SelectCourtCaseController extends RecallBaseController {
       const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
       const courtCodes = cases.map((c: CourtCase) => c.location)
       const courtNames = await req.services.courtService.getCourtNames(courtCodes, req.user.username)
+      // eslint-disable-next-line no-param-reassign,no-return-assign
+      cases.forEach(c => (c.locationName = courtNames.get(c.location)))
+      req.sessionModel.set('allCourtCases', cases)
       const items = cases
         .filter((c: CourtCase) => c.status !== 'DRAFT')
         .filter((c: CourtCase) => c.sentenced)
         .map((c: CourtCase) => ({
-          text: `${c.reference ? c.reference : 'Case held'} at ${courtNames.get(c.location) || c.location}`,
+          text: `Case ${c.reference ?? 'held'} at ${c.locationName || c.location} on ${c.date}`,
           value: c.caseId,
         }))
       req.form.options.fields.courtCases.items = items

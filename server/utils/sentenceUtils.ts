@@ -260,27 +260,27 @@ export function hasABreakdown(sentence: SentenceAndOffenceWithReleaseArrangement
   return findConcurrentSentenceBreakdown(sentence, breakdowns) || findConsecutiveSentenceBreakdown(sentence, breakdowns)
 }
 
-export function hasManualOnlySentences(sentences: summarisedSentence[]): boolean {
+export function hasManualOnlySentences(sentences: SummarisedSentence[]): boolean {
   return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'MANUAL_ONLY')
 }
 
-export function hasStandardOnlySentences(sentences: summarisedSentence[]): boolean {
+export function hasStandardOnlySentences(sentences: SummarisedSentence[]): boolean {
   return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'STANDARD_ONLY')
 }
 
-export type summarisedSentence = {
+export type SummarisedSentence = {
   recallEligibility: RecallEligibility
   summary: SummaryListRow[]
   offenceCode: string
-  offenceDescription: string
+  offenceDescription?: string
   unadjustedSled?: string
   sentenceLengthDays?: number
 }
 
-export type summarisedSentenceGroup = {
+export type SummarisedSentenceGroup = {
   caseRefAndCourt: string
-  eligibleSentences: summarisedSentence[]
-  ineligibleSentences: summarisedSentence[]
+  eligibleSentences: SummarisedSentence[]
+  ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean
   hasIneligibleSentences: boolean
 }

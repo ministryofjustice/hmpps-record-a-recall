@@ -5,7 +5,7 @@ import { addDays, isBefore, isEqual, max } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { RecallType, RecallTypes } from '../../@types/recallTypes'
 import logger from '../../../logger'
-import { summarisedSentence, summarisedSentenceGroup } from '../../utils/sentenceUtils'
+import { SummarisedSentence, SummarisedSentenceGroup } from '../../utils/sentenceUtils'
 
 export default class RecallTypeController extends RecallBaseController {
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
@@ -19,10 +19,10 @@ export default class RecallTypeController extends RecallBaseController {
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const summarisedSentenceGroups = req.sessionModel.get<summarisedSentenceGroup[]>('summarisedSentencesGroups')
+    const summarisedSentenceGroups = req.sessionModel.get<SummarisedSentenceGroup[]>('summarisedSentencesGroups')
     const recallDate = req.sessionModel.get<string>('recallDate')
 
-    const eligibleSentences: summarisedSentence[] =
+    const eligibleSentences: SummarisedSentence[] =
       summarisedSentenceGroups?.flatMap(group => group.eligibleSentences) || []
 
     const recallTypes: RecallType[] = Object.values(RecallTypes)
@@ -40,7 +40,7 @@ export default class RecallTypeController extends RecallBaseController {
     return super.locals(req, res)
   }
 
-  private fourteenDayRecallRequired(sentences: summarisedSentence[], recallDate: string): boolean {
+  private fourteenDayRecallRequired(sentences: SummarisedSentence[], recallDate: string): boolean {
     if (this.hasSentencesEqualToOrOverTwelveMonths(sentences) && !this.hasSentencesUnderTwelveMonths(sentences)) {
       logger.debug('All sentences are over twelve months')
       return false
@@ -68,19 +68,19 @@ export default class RecallTypeController extends RecallBaseController {
     )
   }
 
-  private hasSentencesEqualToOrOverTwelveMonths(sentences: summarisedSentence[]): boolean {
+  private hasSentencesEqualToOrOverTwelveMonths(sentences: SummarisedSentence[]): boolean {
     return sentences.some(this.over12MonthSentence)
   }
 
-  private hasSentencesUnderTwelveMonths(sentences: summarisedSentence[]): boolean {
+  private hasSentencesUnderTwelveMonths(sentences: SummarisedSentence[]): boolean {
     return sentences.some(sentence => sentence.sentenceLengthDays < 365)
   }
 
-  private over12MonthSentence(sentence: summarisedSentence) {
+  private over12MonthSentence(sentence: SummarisedSentence) {
     return sentence.sentenceLengthDays >= 365
   }
 
-  private hasSled(sentence: summarisedSentence) {
+  private hasSled(sentence: SummarisedSentence) {
     return sentence.unadjustedSled !== null
   }
 }
