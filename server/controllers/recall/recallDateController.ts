@@ -11,7 +11,7 @@ import {
   groupSentencesByCaseRefAndCourt,
   hasManualOnlySentences,
   hasStandardOnlySentences,
-  summarisedSentenceGroup,
+  SummarisedSentenceGroup,
 } from '../../utils/sentenceUtils'
 import summariseSentencesGroups from '../../utils/CaseSentenceSummariser'
 
@@ -32,7 +32,7 @@ export default class RecallDateController extends RecallBaseController {
     const groupedSentences = groupSentencesByCaseRefAndCourt(sentences)
     req.sessionModel.set('groupedSentences', groupedSentences)
 
-    const summarisedSentenceGroups: summarisedSentenceGroup[] = summariseSentencesGroups(
+    const summarisedSentenceGroups: SummarisedSentenceGroup[] = summariseSentencesGroups(
       groupedSentences,
       breakdown,
       recallDate,

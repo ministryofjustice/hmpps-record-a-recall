@@ -61,9 +61,6 @@
                                 <span class="govuk-caption-xl">Record a recall</span>
                                 Check that the sentences and offences are correct
                             </h1>
-                        {% if manualJourney or casesWithEligibleSentences == 0 %}
-                          <p>As court cases were manually selected, the sentence information to be shown here will be pulled from Remand and Sentencing for the selected.</p>
-                        {% else %}
                           <p>
                               The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
                           </p>
@@ -71,7 +68,6 @@
                               Court cases with sentences eligible for recall ({{ casesWithEligibleSentences }})
                           </h2>
                           {{ sentenceCards(summarisedSentencesGroups) }}
-                        {% endif %}
 
                     {% endblock %}
 
