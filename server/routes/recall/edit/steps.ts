@@ -8,6 +8,7 @@ import RecallBaseController from '../../../controllers/recall/recallBaseControll
 import ConfirmCancelController from '../../../controllers/recall/confirmCancelController'
 import EditSummaryController from '../../../controllers/recall/edit/editSummaryController'
 import PopulateStoredRecallController from '../../../controllers/recall/edit/populateStoredRecallController'
+import { getEligibleSentenceCount, isManualCaseSelection, isStandardOnly } from '../../../helpers/formWizardHelper'
 
 const steps = {
   '/': {
@@ -62,13 +63,11 @@ const steps = {
   '/check-sentences': {
     next: [
       {
-        fn: (req: FormWizard.Request) =>
-          req.sessionModel.get('eligibleSentenceCount') === 0 ||
-          req.sessionModel.get('manualSentenceSelection') === true,
+        fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0 || isManualCaseSelection(req),
         next: 'manual-recall',
       },
       {
-        fn: (req: FormWizard.Request) => req.sessionModel.get('standardOnlyRecall') === true,
+        fn: (req: FormWizard.Request) => isStandardOnly(req) === true,
         next: 'confirm-recall-type',
       },
       'recall-type',

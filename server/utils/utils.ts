@@ -68,14 +68,14 @@ export function createAnswerSummaryList(
       formatLongDate(journeyData.returnToCustodyDate) || 'In prison when recalled',
       editLink('rtc-date'),
     ),
-    journeyData.manualSentenceSelection || journeyData.eligibleSentenceCount === 0
+    journeyData.manualCaseSelection || journeyData.eligibleSentenceCount === 0
       ? toSummaryListRow('Court cases', `${journeyData.courtCaseCount} ${cases}`, editLink('select-cases'))
       : null,
     toSummaryListRow(
       'Sentences',
       `${journeyData.eligibleSentenceCount} ${sentences}`,
       editLink('check-sentences'),
-      journeyData.manualSentenceSelection ? 'Edit' : 'Review',
+      journeyData.manualCaseSelection ? 'Edit' : 'Review',
     ),
     toSummaryListRow(
       'Recall type',

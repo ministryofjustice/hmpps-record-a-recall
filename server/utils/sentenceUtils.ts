@@ -269,6 +269,7 @@ export function hasStandardOnlySentences(sentences: SummarisedSentence[]): boole
 }
 
 export type SummarisedSentence = {
+  sentenceId?: string
   recallEligibility: RecallEligibility
   summary: SummaryListRow[]
   offenceCode: string

@@ -4,12 +4,13 @@ import { isBefore } from 'date-fns'
 
 import RecallBaseController from './recallBaseController'
 import { calculateUal } from '../../utils/utils'
+import { getRecallDate, sessionModelFields } from '../../helpers/formWizardHelper'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form
-      const recallDate = req.sessionModel.get<string>('recallDate')
+      const recallDate = getRecallDate(req)
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
@@ -26,14 +27,14 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const { values } = req.form
 
     if (values.inPrisonAtRecall === 'false') {
-      const recallDate = req.sessionModel.get<string>('recallDate')
+      const recallDate = getRecallDate(req)
 
       const rtcDate = values.returnToCustodyDate as string
 
       const ual = calculateUal(recallDate, rtcDate)
-      req.sessionModel.set('ual', ual)
+      req.sessionModel.set(sessionModelFields.UAL, ual)
     } else {
-      req.sessionModel.unset('ual')
+      req.sessionModel.unset(sessionModelFields.UAL)
       values.returnToCustodyDate = null
     }
 

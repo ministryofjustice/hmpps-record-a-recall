@@ -8,6 +8,7 @@ import {
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { hasABreakdown } from '../../utils/sentenceUtils'
+import { sessionModelFields } from '../../helpers/formWizardHelper'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -40,22 +41,22 @@ export default class CheckPossibleController extends RecallBaseController {
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
-    req.sessionModel.set('entrypoint', res.locals.entrypoint)
+    req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     const errors: ValidationMessage[] = res.locals.validationResponse
     if (errors && errors.length > 0) {
       const crdsValidationErrors = errors.map(error => error.message)
-      req.sessionModel.set('crdsValidationErrors', crdsValidationErrors)
+      req.sessionModel.set(sessionModelFields.CRDS_ERRORS, crdsValidationErrors)
     }
 
-    req.sessionModel.set('sentences', res.locals.sentences)
-    req.sessionModel.set('temporaryCalculation', res.locals.temporaryCalculation)
-    req.sessionModel.set('breakdown', res.locals.breakdown)
+    req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.sentences)
+    req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
+    req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
 
     return { ...locals }
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
-    return !req.sessionModel.get('crdsValidationErrors')
+    return !req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
   }
 
   manualEntryRequired(req: FormWizard.Request, res: Response) {
@@ -65,7 +66,7 @@ export default class CheckPossibleController extends RecallBaseController {
     if (!sentences || !breakdown) {
       return false
     }
-    if (req.sessionModel.get<string[]>('autoRecallFailErrors')) {
+    if (req.sessionModel.get<string[]>(sessionModelFields.HAPPY_PATH_FAIL_REASONS)) {
       // We've already checked, no need to go through again
       return true
     }
@@ -77,7 +78,7 @@ export default class CheckPossibleController extends RecallBaseController {
         const error = `No calculation breakdown found for sentence with case sequence ${sentence.caseSequence} and line sequence ${sentence.lineSequence}`
         logger.warn(error)
         sentencesWithNoBreakdown.push(error)
-        req.sessionModel.set('autoRecallFailErrors', sentencesWithNoBreakdown)
+        req.sessionModel.set(sessionModelFields.HAPPY_PATH_FAIL_REASONS, sentencesWithNoBreakdown)
       }
     })
     return sentencesWithNoBreakdown.length > 0

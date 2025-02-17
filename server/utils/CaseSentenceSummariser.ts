@@ -208,6 +208,7 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
       toSummaryListRow('Recall Options reason', recallEligibility.description),
     ])
     const summarisedSentence: SummarisedSentence = {
+      sentenceId: s.sentenceUuid,
       recallEligibility,
       summary,
       offenceCode: s.offenceCode,
