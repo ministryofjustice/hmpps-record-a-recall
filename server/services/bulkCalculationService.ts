@@ -52,7 +52,7 @@ export default class BulkCalculationService {
               csvData.push(
                 this.addRow(
                   prisoner.prisonerNumber,
-                  bookingId,
+                  sentence.bookingId.toString(),
                   prisonerDetails,
                   latestCalc,
                   calculationBreakdown,

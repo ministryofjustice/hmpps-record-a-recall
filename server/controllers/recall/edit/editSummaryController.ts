@@ -3,13 +3,13 @@ import { NextFunction, Response } from 'express'
 
 import RecallBaseController from '../recallBaseController'
 import { createAnswerSummaryList } from '../../../utils/utils'
-import getJourneyDataFromRequest, { RecallJourneyData } from '../../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { RecallJourneyData, sessionModelFields } from '../../../helpers/formWizardHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class EditSummaryController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const { recallId, nomisId } = res.locals
-    req.sessionModel.set('isEdit', true)
+    req.sessionModel.set(sessionModelFields.IS_EDIT, true)
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
 
@@ -47,7 +47,7 @@ export default class EditSummaryController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
-    req.sessionModel.set('journeyComplete', true)
+    req.sessionModel.set(sessionModelFields.JOURNEY_COMPLETE, true)
     return super.successHandler(req, res, next)
   }
 }

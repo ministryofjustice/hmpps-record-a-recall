@@ -6,6 +6,7 @@ import RecallBaseController from '../recallBaseController'
 
 import logger from '../../../../logger'
 import { calculateUal } from '../../../utils/utils'
+import { sessionModelFields } from '../../../helpers/formWizardHelper'
 
 export default class PopulateStoredRecallController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -26,7 +27,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    req.sessionModel.set('entrypoint', res.locals.entrypoint)
+    req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     const { storedRecall, recallId } = res.locals
     const { recallType } = storedRecall
     const recallDate = format(new Date(storedRecall.recallDate), 'yyyy-MM-dd')
@@ -34,13 +35,16 @@ export default class PopulateStoredRecallController extends RecallBaseController
       ? format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
       : null
     storedRecall.ual = calculateUal(recallDate, returnToCustodyDate)
-    req.sessionModel.set('storedRecall', storedRecall)
-    req.sessionModel.set('recallId', recallId)
-    req.sessionModel.set('isEdit', true)
-    req.sessionModel.set('recallDate', recallDate)
-    req.sessionModel.set('recallType', recallType.code)
-    req.sessionModel.set('returnToCustodyDate', returnToCustodyDate)
-    req.sessionModel.set('inPrisonAtRecall', this.getBooleanAsFormValue(!storedRecall.returnToCustodyDate))
+    req.sessionModel.set(sessionModelFields.STORED_RECALL, storedRecall)
+    req.sessionModel.set(sessionModelFields.RECALL_ID, recallId)
+    req.sessionModel.set(sessionModelFields.IS_EDIT, true)
+    req.sessionModel.set(sessionModelFields.RECALL_DATE, recallDate)
+    req.sessionModel.set(sessionModelFields.RECALL_TYPE, recallType.code)
+    req.sessionModel.set(sessionModelFields.RTC_DATE, returnToCustodyDate)
+    req.sessionModel.set(
+      sessionModelFields.IN_PRISON_AT_RECALL,
+      this.getBooleanAsFormValue(!storedRecall.returnToCustodyDate),
+    )
     return {
       ...super.locals(req, res),
       isEdit: true,

@@ -1,9 +1,8 @@
 import { NextFunction, Response } from 'express'
 import FormWizard from 'hmpo-form-wizard'
-import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
 import getServiceUrls from '../../helpers/urlHelper'
-import getJourneyDataFromRequest from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/formWizardHelper'
 
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
@@ -11,7 +10,10 @@ export default class RecallBaseController extends PrisonerDetailsController {
   }
 
   checkJourneyProgress(req: FormWizard.Request, res: Response, next: NextFunction) {
-    if (!req.sessionModel.get('isEdit') || req.sessionModel.get<boolean>('journeyComplete')) {
+    if (
+      !req.sessionModel.get(sessionModelFields.IS_EDIT) ||
+      req.sessionModel.get<boolean>(sessionModelFields.JOURNEY_COMPLETE)
+    ) {
       super.checkJourneyProgress(req, res, next)
     } else {
       // Skips journey validation if we're editing and haven't hit the recall updated screen
@@ -25,10 +27,10 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const journeyData = getJourneyDataFromRequest(req)
     const isEditRecall = journeyData.isEdit
     const recallId = journeyData.storedRecall?.recallId
-    const calculation = req.sessionModel.get<CalculatedReleaseDates>('temporaryCalculation')
+    const calculation = getTemporaryCalc(req)
     const { recallDate } = journeyData
-    const crdsValidationErrors = req.sessionModel.get('crdsValidationErrors')
-    const autoRecallFailErrors = req.sessionModel.get('autoRecallFailErrors')
+    const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
+    const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
 
     const urls = getServiceUrls(res.locals.nomisId)
     const cancelLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}/` : 'record-recall'}/confirm-cancel`

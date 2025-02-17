@@ -5,7 +5,8 @@ import { addDays, isBefore, isEqual, max } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { RecallType, RecallTypes } from '../../@types/recallTypes'
 import logger from '../../../logger'
-import { SummarisedSentence, SummarisedSentenceGroup } from '../../utils/sentenceUtils'
+import { SummarisedSentence } from '../../utils/sentenceUtils'
+import { getRecallDate, getSummarisedSentenceGroups } from '../../helpers/formWizardHelper'
 
 export default class RecallTypeController extends RecallBaseController {
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
@@ -19,8 +20,8 @@ export default class RecallTypeController extends RecallBaseController {
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const summarisedSentenceGroups = req.sessionModel.get<SummarisedSentenceGroup[]>('summarisedSentencesGroups')
-    const recallDate = req.sessionModel.get<string>('recallDate')
+    const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
+    const recallDate = getRecallDate(req)
 
     const eligibleSentences: SummarisedSentence[] =
       summarisedSentenceGroups?.flatMap(group => group.eligibleSentences) || []
@@ -40,7 +41,7 @@ export default class RecallTypeController extends RecallBaseController {
     return super.locals(req, res)
   }
 
-  private fourteenDayRecallRequired(sentences: SummarisedSentence[], recallDate: string): boolean {
+  private fourteenDayRecallRequired(sentences: SummarisedSentence[], recallDate: Date): boolean {
     if (this.hasSentencesEqualToOrOverTwelveMonths(sentences) && !this.hasSentencesUnderTwelveMonths(sentences)) {
       logger.debug('All sentences are over twelve months')
       return false

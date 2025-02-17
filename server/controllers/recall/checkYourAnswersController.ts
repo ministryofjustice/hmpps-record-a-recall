@@ -34,9 +34,9 @@ export default class CheckYourAnswersController extends RecallBaseController {
         recallTypeCode: journeyData.recallType.code,
         createdByUsername: username,
         createdByPrison: 'Not known',
+        sentenceIds: journeyData.sentenceIds,
       }
       await req.services.recallService.postRecall(recallToSave, username)
-
       return next()
     } catch (error) {
       return next(error)
