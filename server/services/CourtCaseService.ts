@@ -12,7 +12,12 @@ export default class CourtCaseService {
     )
   }
 
-  async getCases(nomisId: string, username: string, page = 0, result: ApiCourtCase[] = []): Promise<ApiCourtCase[]> {
+  private async getCases(
+    nomisId: string,
+    username: string,
+    page = 0,
+    result: ApiCourtCase[] = [],
+  ): Promise<ApiCourtCase[]> {
     const courtCasePage = await this.getPage(nomisId, page, username)
     return courtCasePage.last
       ? result.concat(courtCasePage.content)

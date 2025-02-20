@@ -50,6 +50,8 @@ export default class RecallService {
       ual,
       ualString: `${ual} day${ual === 1 ? '' : 's'}`,
       location: apiRecall.createdByPrison,
+      sentenceIds: apiRecall.sentences.map(s => s.sentenceUuid),
+      courtCaseIds: apiRecall.courtCaseIds,
     }
   }
 }

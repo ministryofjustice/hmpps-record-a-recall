@@ -65,7 +65,6 @@ export const sessionModelFields = {
   MANUAL_CASE_SELECTION: 'manualCaseSelection',
   COURT_CASE_OPTIONS: 'CourtCaseOptions',
   COURT_CASES: 'courtCases',
-  ALL_COURT_CASES: 'allCourtCases',
   IN_PRISON_AT_RECALL: 'inPrisonAtRecall',
   RTC_DATE: 'returnToCustodyDate',
   RECALL_DATE: 'recallDate',
@@ -142,10 +141,7 @@ export function getCrdsSentences(req: FormWizard.Request): SentenceAndOffenceWit
   return get<SentenceAndOffenceWithReleaseArrangements[]>(req, sessionModelFields.SENTENCES)
 }
 
-export function getAllCourtCases(req: FormWizard.Request): CourtCase[] {
-  return get<CourtCase[]>(req, sessionModelFields.ALL_COURT_CASES)
-}
-export function getCourtCaseOptions(req: FormWizard.Request): { text: string; value: string }[] {
+export function getCourtCaseOptions(req: FormWizard.Request): CourtCase[] {
   return get(req, sessionModelFields.COURT_CASE_OPTIONS)
 }
 
