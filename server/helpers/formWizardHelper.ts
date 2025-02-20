@@ -65,7 +65,6 @@ export const sessionModelFields = {
   MANUAL_CASE_SELECTION: 'manualCaseSelection',
   COURT_CASE_OPTIONS: 'CourtCaseOptions',
   COURT_CASES: 'courtCases',
-  ALL_COURT_CASES: 'allCourtCases',
   IN_PRISON_AT_RECALL: 'inPrisonAtRecall',
   RTC_DATE: 'returnToCustodyDate',
   RECALL_DATE: 'recallDate',
