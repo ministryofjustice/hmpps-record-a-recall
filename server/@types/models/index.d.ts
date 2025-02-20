@@ -13,6 +13,8 @@ declare module 'models' {
     calculation?: CalculatedReleaseDates
     isFixedTermRecall?: boolean
     location: string
+    sentenceIds: string[]
+    courtCaseIds: string[]
   }
 
   export interface CourtCase {

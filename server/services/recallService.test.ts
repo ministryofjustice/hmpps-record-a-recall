@@ -67,6 +67,8 @@ describe('Recall service', () => {
           createdAt: '2023-06-10T14:30:00Z',
           createdByUsername: 'johndoe',
           createdByPrison: 'HMI',
+          sentences: [{ sentenceUuid: '123ABC' }],
+          courtCaseIds: ['CASE1'],
         } as ApiRecall,
       ])
 
@@ -82,6 +84,8 @@ describe('Recall service', () => {
           ualString: '4 days',
           createdAt: '2023-06-10T14:30:00Z',
           location: 'HMI',
+          sentenceIds: ['123ABC'],
+          courtCaseIds: ['CASE1'],
         },
       ])
     })

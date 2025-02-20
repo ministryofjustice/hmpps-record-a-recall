@@ -68,7 +68,7 @@ export function createAnswerSummaryList(
       formatLongDate(journeyData.returnToCustodyDate) || 'In prison when recalled',
       editLink('rtc-date'),
     ),
-    journeyData.manualCaseSelection || journeyData.eligibleSentenceCount === 0
+    journeyData.courtCaseCount
       ? toSummaryListRow('Court cases', `${journeyData.courtCaseCount} ${cases}`, editLink('select-cases'))
       : null,
     toSummaryListRow(

@@ -9,6 +9,7 @@ import ConfirmCancelController from '../../../controllers/recall/confirmCancelCo
 import EditSummaryController from '../../../controllers/recall/edit/editSummaryController'
 import PopulateStoredRecallController from '../../../controllers/recall/edit/populateStoredRecallController'
 import { getEligibleSentenceCount, isManualCaseSelection, isStandardOnly } from '../../../helpers/formWizardHelper'
+import SelectCourtCaseController from '../../../controllers/recall/selectCourtCaseController'
 
 const steps = {
   '/': {
@@ -16,29 +17,18 @@ const steps = {
     reset: true,
     resetJourney: true,
     skip: true,
-    controller: PopulateStoredRecallController,
-    next: 'check-edit-possible',
-  },
-  '/check-edit-possible': {
-    skip: true,
     controller: CheckPossibleController,
     next: [
       {
         fn: 'recallPossible',
-        next: [
-          {
-            fn: 'manualEntryRequired',
-            next: 'manual-recall',
-          },
-          'check-sentences-before-edit',
-        ],
+        next: 'populate-stored-recall',
       },
       'not-possible',
     ],
   },
-  '/check-sentences-before-edit': {
-    skip: 'true',
-    controller: CheckSentencesController,
+  '/populate-stored-recall': {
+    skip: true,
+    controller: PopulateStoredRecallController,
     next: 'edit-summary',
   },
   '/edit-summary': {
@@ -55,7 +45,13 @@ const steps = {
   },
   '/rtc-date': {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
-    next: 'check-sentences',
+    next: [
+      {
+        fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0 || isManualCaseSelection(req),
+        next: 'select-cases',
+      },
+      'check-sentences',
+    ],
     template: 'base-question',
     controller: ReturnToCustodyDateController,
     editable: true,
@@ -93,9 +89,11 @@ const steps = {
     resetJourney: true,
     checkJourney: false,
   },
-  '/manual-recall': {
-    controller: RecallBaseController,
-    noPost: true,
+  '/select-cases': {
+    controller: SelectCourtCaseController,
+    fields: ['courtCases'],
+    template: 'base-question',
+    next: 'check-sentences',
   },
   '/not-possible': {
     controller: RecallBaseController,

@@ -12,7 +12,6 @@ export default class EditSummaryController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.IS_EDIT, true)
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
-
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
     return {
@@ -20,6 +19,7 @@ export default class EditSummaryController extends RecallBaseController {
       answerSummaryList,
       ualText: journeyData.ualText,
       ualDiff: journeyData.ual && journeyData.storedRecall.ual !== journeyData.ual,
+      storedRecall: journeyData.storedRecall,
     }
   }
 
@@ -36,6 +36,7 @@ export default class EditSummaryController extends RecallBaseController {
         recallTypeCode: journeyData.recallType.code,
         createdByUsername: username,
         createdByPrison: 'Not known',
+        sentenceIds: journeyData.sentenceIds || journeyData.storedRecall.sentenceIds,
       }
       await req.services.recallService.updateRecall(recallId, recallToSave, username)
 

@@ -142,10 +142,7 @@ export function getCrdsSentences(req: FormWizard.Request): SentenceAndOffenceWit
   return get<SentenceAndOffenceWithReleaseArrangements[]>(req, sessionModelFields.SENTENCES)
 }
 
-export function getAllCourtCases(req: FormWizard.Request): CourtCase[] {
-  return get<CourtCase[]>(req, sessionModelFields.ALL_COURT_CASES)
-}
-export function getCourtCaseOptions(req: FormWizard.Request): { text: string; value: string }[] {
+export function getCourtCaseOptions(req: FormWizard.Request): CourtCase[] {
   return get(req, sessionModelFields.COURT_CASE_OPTIONS)
 }
 
