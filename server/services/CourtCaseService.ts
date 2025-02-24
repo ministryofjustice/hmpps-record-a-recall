@@ -55,13 +55,13 @@ export default class CourtCaseService {
     const apiSentence = apiCharge.sentence
 
     return {
-      sentenceUuid: apiSentence.sentenceUuid,
-      chargeNumber: apiSentence.chargeNumber,
-      custodialTerm: apiSentence.periodLengths.find(pl => pl.periodLengthType === 'CUSTODIAL_TERM'),
-      licenceTerm: apiSentence.periodLengths.find(pl => pl.periodLengthType === 'LICENCE_PERIOD'),
-      sentenceServeType: apiSentence.sentenceServeType,
-      sentenceType: apiSentence.sentenceType.description,
-      convictionDate: apiSentence.convictionDate,
+      sentenceUuid: apiSentence?.sentenceUuid,
+      chargeNumber: apiSentence?.chargeNumber,
+      custodialTerm: apiSentence?.periodLengths.find(pl => pl.periodLengthType === 'CUSTODIAL_TERM'),
+      licenceTerm: apiSentence?.periodLengths.find(pl => pl.periodLengthType === 'LICENCE_PERIOD'),
+      sentenceServeType: apiSentence?.sentenceServeType,
+      sentenceType: apiSentence?.sentenceType.description,
+      convictionDate: apiSentence?.convictionDate,
       offenceDate: `${apiCharge.offenceStartDate}${apiCharge.offenceEndDate ? ` to ${apiCharge.offenceEndDate}` : ''}`,
       offenceCode: apiCharge.offenceCode,
       // TODO decorate with proper description
