@@ -4,6 +4,7 @@ import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import recallDateCrdsDataComparison from '../../utils/recallDateCrdsDataComparison'
+import { getRecallOptions } from '../../helpers/formWizardHelper'
 
 export default class RecallDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -15,7 +16,9 @@ export default class RecallDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    recallDateCrdsDataComparison(req)
+    if (getRecallOptions(req) !== 'MANUAL_ONLY') {
+      recallDateCrdsDataComparison(req)
+    }
     return super.successHandler(req, res, next)
   }
 }

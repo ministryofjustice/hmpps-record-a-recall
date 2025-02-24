@@ -1,14 +1,12 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import {
-  SentenceAndOffenceWithReleaseArrangements,
-  ValidationMessage,
-} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import { hasABreakdown } from '../../utils/sentenceUtils'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { getRecallOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
+import { eligibilityReasons } from '../../@types/recallEligibility'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -16,7 +14,9 @@ export default class CheckPossibleController extends RecallBaseController {
     try {
       const errors: ValidationMessage[] = await req.services.calculationService.performCrdsValidation(nomisId, username)
       res.locals.validationResponse = errors
-      if (errors && errors.length === 0) {
+      const recallEligibility = determineRecallEligibilityFromValidation(errors)
+      res.locals.recallEligibility = recallEligibility
+      if (recallEligibility !== eligibilityReasons.CRITICAL_VALIDATION_FAIL) {
         await this.getTemporaryCalculation(req, res)
           .then(async newCalc => {
             res.locals.temporaryCalculation = newCalc
@@ -42,12 +42,14 @@ export default class CheckPossibleController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
     req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
+    req.sessionModel.set(sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
     const errors: ValidationMessage[] = res.locals.validationResponse
-    if (errors && errors.length > 0) {
+    if (getRecallOptions(req) === 'NOT_POSSIBLE') {
       const crdsValidationErrors = errors.map(error => error.message)
       req.sessionModel.set(sessionModelFields.CRDS_ERRORS, crdsValidationErrors)
+    } else if (getRecallOptions(req) === 'MANUAL_ONLY') {
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
     }
-
     req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.sentences)
     req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
@@ -56,32 +58,7 @@ export default class CheckPossibleController extends RecallBaseController {
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
-    return !req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
-  }
-
-  manualEntryRequired(req: FormWizard.Request, res: Response) {
-    // If any sentences don't have a breakdown, send them down manual entry
-    const { sentences, breakdown } = res.locals
-
-    if (!sentences || !breakdown) {
-      return false
-    }
-    if (req.sessionModel.get<string[]>(sessionModelFields.HAPPY_PATH_FAIL_REASONS)) {
-      // We've already checked, no need to go through again
-      return true
-    }
-
-    const sentencesWithNoBreakdown: string[] = []
-
-    sentences.forEach((sentence: SentenceAndOffenceWithReleaseArrangements) => {
-      if (!hasABreakdown(sentence, breakdown)) {
-        const error = `No calculation breakdown found for sentence with case sequence ${sentence.caseSequence} and line sequence ${sentence.lineSequence}`
-        logger.warn(error)
-        sentencesWithNoBreakdown.push(error)
-        req.sessionModel.set(sessionModelFields.HAPPY_PATH_FAIL_REASONS, sentencesWithNoBreakdown)
-      }
-    })
-    return sentencesWithNoBreakdown.length > 0
+    return getRecallOptions(req) && getRecallOptions(req) !== 'NOT_POSSIBLE'
   }
 
   getTemporaryCalculation(req: FormWizard.Request, res: Response) {

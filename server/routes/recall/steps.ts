@@ -8,6 +8,7 @@ import CheckPossibleController from '../../controllers/recall/checkPossibleContr
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
+import { getEligibleSentenceCount, isManualCaseSelection, isStandardOnly } from '../../helpers/formWizardHelper'
 
 const steps = {
   '/': {
@@ -35,10 +36,12 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
-        fn: (req: FormWizard.Request) =>
-          req.sessionModel.get('eligibleSentenceCount') === 0 ||
-          req.sessionModel.get('manualSentenceSelection') === true,
-        next: 'select-cases',
+        next: [
+          {
+            fn: (req: FormWizard.Request) => isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0,
+            next: 'select-cases',
+          },
+        ],
       },
       'check-sentences',
     ],
@@ -49,7 +52,7 @@ const steps = {
   '/check-sentences': {
     next: [
       {
-        fn: (req: FormWizard.Request) => req.sessionModel.get('standardOnlyRecall') === true,
+        fn: (req: FormWizard.Request) => isStandardOnly(req),
         next: 'confirm-recall-type',
       },
       'recall-type',

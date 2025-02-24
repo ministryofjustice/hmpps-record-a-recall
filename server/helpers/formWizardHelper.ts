@@ -8,6 +8,7 @@ import {
   CalculationBreakdown,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { RecallEligibility } from '../@types/recallEligibility'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
@@ -78,12 +79,21 @@ export const sessionModelFields = {
   BREAKDOWN: 'breakdown',
   GROUPED_SENTENCES: 'groupedSentences',
   CASES_WITH_ELIGIBLE_SENTENCES: 'casesWithEligibleSentences',
+  RECALL_ELIGIBILITY: 'recallEligibility',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
 }
 export function getUal(req: FormWizard.Request): number {
   return get<number>(req, sessionModelFields.UAL)
+}
+
+export function getRecallEligibility(req: FormWizard.Request) {
+  return get<RecallEligibility>(req, sessionModelFields.RECALL_ELIGIBILITY)
+}
+
+export function getRecallOptions(req: FormWizard.Request) {
+  return get<RecallEligibility>(req, sessionModelFields.RECALL_ELIGIBILITY)?.recallOptions
 }
 
 export function getUalText(req: FormWizard.Request): string {
@@ -122,7 +132,7 @@ export function getRecallDate(req: FormWizard.Request): Date {
 }
 
 export function getEligibleSentenceCount(req: FormWizard.Request): number {
-  return get<number>(req, sessionModelFields.ELIGIBLE_SENTENCE_COUNT)
+  return get<number>(req, sessionModelFields.ELIGIBLE_SENTENCE_COUNT) || 0
 }
 
 export function getSummarisedSentenceGroups(req: FormWizard.Request): SummarisedSentenceGroup[] {

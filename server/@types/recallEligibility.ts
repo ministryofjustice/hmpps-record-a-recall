@@ -14,6 +14,18 @@ const eligibilityReasons = {
     recallOptions: 'ALL',
     affectsEnvelope: false,
   },
+  CRITICAL_VALIDATION_FAIL: {
+    code: 'CRITICAL_VALIDATION_FAIL',
+    description: 'CRDS returned a critical validation failure',
+    recallOptions: 'NOT_POSSIBLE',
+    affectsEnvelope: true,
+  },
+  NON_CRITICAL_VALIDATION_FAIL: {
+    code: 'NON_CRITICAL_VALIDATION_FAIL',
+    description: 'CRDS returned a validation failure that is not critical',
+    recallOptions: 'MANUAL_ONLY',
+    affectsEnvelope: true,
+  },
   NON_SDS: {
     code: 'NON_SDS',
     description: 'Non-SDS Sentence - only standard recall possible',
