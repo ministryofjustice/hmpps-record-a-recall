@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import recallDateCrdsDataComparison from '../../utils/recallDateCrdsDataComparison'
-import { getRecallOptions } from '../../helpers/formWizardHelper'
+import { getRecallOptions, isManualCaseSelection } from '../../helpers/formWizardHelper'
 
 export default class RecallDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -19,6 +19,7 @@ export default class RecallDateController extends RecallBaseController {
     if (getRecallOptions(req) !== 'MANUAL_ONLY') {
       recallDateCrdsDataComparison(req)
     }
+    console.log(isManualCaseSelection(req))
     return super.successHandler(req, res, next)
   }
 }
