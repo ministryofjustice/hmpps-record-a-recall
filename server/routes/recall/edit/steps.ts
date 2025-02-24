@@ -47,7 +47,7 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
-        fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0 || isManualCaseSelection(req),
+        fn: (req: FormWizard.Request) => isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0,
         next: 'select-cases',
       },
       'check-sentences',
