@@ -46,6 +46,7 @@ export default class CheckPossibleController extends RecallBaseController {
     const errors: ValidationMessage[] = res.locals.validationResponse
     if (getRecallOptions(req) === 'NOT_POSSIBLE') {
       const crdsValidationErrors = errors.map(error => error.message)
+      res.locals.crdsValidationErrors = crdsValidationErrors
       req.sessionModel.set(sessionModelFields.CRDS_ERRORS, crdsValidationErrors)
     } else if (getRecallOptions(req) === 'MANUAL_ONLY') {
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)

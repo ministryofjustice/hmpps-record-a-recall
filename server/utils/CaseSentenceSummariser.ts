@@ -144,11 +144,11 @@ function getLicenceTerm(terms: Term[]): string {
 function getTerm(terms: Term[], type: string): string {
   const term = terms?.find(t => t.code === type)
 
-  return term ? stringifyTerm(term) : undefined
+  return stringifyTerm(term)
 }
 
 function stringifyTerm(term: Term): string {
-  return `${term.years} years ${term.months} months ${term.weeks} weeks ${term.days} days`
+  return term ? `${term.years} years ${term.months} months ${term.weeks} weeks ${term.days} days` : undefined
 }
 
 function stringifyOffenceDate(offence: Offence) {
