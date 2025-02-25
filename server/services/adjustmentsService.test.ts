@@ -24,7 +24,7 @@ describe('Adjustments Service', () => {
         id: '123',
         bookingId: 1,
         person: 'change',
-        adjustmentType: 'REMAND', // | "TAGGED_BAIL" | "UNLAWFULLY_AT_LARGE" | "LAWFULLY_AT_LARGE" | "ADDITIONAL_DAYS_AWARDED" | "RESTORATION_OF_ADDITIONAL_DAYS_AWARDED" | "SPECIAL_REMISSION" | "UNUSED_DEDUCTIONS" | "CUSTODY_ABROAD" | "APPEAL_APPLICANT";
+        adjustmentType: 'UNLAWFULLY_AT_LARGE',
         toDate: '2024-01-01',
         fromDate: '2024-01-02',
         days: 5,
@@ -34,7 +34,7 @@ describe('Adjustments Service', () => {
           id: '123',
           bookingId: 1,
           person: 'change',
-          adjustmentType: 'REMAND',
+          adjustmentType: 'UNLAWFULLY_AT_LARGE',
           toDate: '2024-01-01',
           fromDate: '2024-01-02',
           days: 5,
