@@ -4,8 +4,6 @@ import HmppsAuthClient from '../data/hmppsAuthClient'
 import config from '../config'
 import { CreateResponse, AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
-import { formatDate } from '../utils/utils'
-
 jest.mock('../data/hmppsAuthClient')
 
 describe('Adjustments Service', () => {
