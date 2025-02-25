@@ -30,26 +30,6 @@ describe('Adjustments Service', () => {
         toDate: '2024-01-01',
         fromDate: '2024-01-02',
         days: 5,
-        // remand?: components["schemas"]["RemandDto"];
-        // additionalDaysAwarded?: components["schemas"]["AdditionalDaysAwardedDto"];
-        // unlawfullyAtLarge?: components["schemas"]["UnlawfullyAtLargeDto"];
-        // lawfullyAtLarge?: components["schemas"]["LawfullyAtLargeDto"];
-        // specialRemission?: components["schemas"]["SpecialRemissionDto"];
-        // taggedBail?: components["schemas"]["TaggedBailDto"];
-        // timeSpentInCustodyAbroad?: components["schemas"]["TimeSpentInCustodyAbroadDto"];
-        // timeSpentAsAnAppealApplicant?: components["schemas"]["TimeSpentAsAnAppealApplicantDto"];
-        // sentenceSequence?: number;
-
-        // readonly adjustmentTypeText?: string;
-        // readonly adjustmentArithmeticType?: "ADDITION" | "DEDUCTION" | "NONE";
-        // readonly prisonName?: string;
-        // readonly prisonId?: string;
-        // readonly lastUpdatedBy?: string;
-        // readonly status?: "ACTIVE" | "INACTIVE" | "DELETED" | "INACTIVE_WHEN_DELETED";
-        // readonly lastUpdatedDate?: string;
-        // readonly createdDate?: string
-        // readonly effectiveDays?: number;
-        // readonly source?: "NOMIS" | "DPS";
       }
       fakeAdjustmentsApi
         .post('/adjustments', {
