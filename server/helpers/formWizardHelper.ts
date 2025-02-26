@@ -9,6 +9,7 @@ import {
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallEligibility } from '../@types/recallEligibility'
+import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
@@ -152,7 +153,11 @@ export function getCrdsSentences(req: FormWizard.Request): SentenceAndOffenceWit
 }
 
 export function getCourtCaseOptions(req: FormWizard.Request): CourtCase[] {
-  return get(req, sessionModelFields.COURT_CASE_OPTIONS)
+  return get<CourtCase[]>(req, sessionModelFields.COURT_CASE_OPTIONS)
+}
+
+export function getPrisoner(req: FormWizard.Request): PrisonerSearchApiPrisoner {
+  return get<PrisonerSearchApiPrisoner>(req, sessionModelFields.PRISONER)
 }
 
 function get<T>(req: FormWizard.Request, key: string): T {

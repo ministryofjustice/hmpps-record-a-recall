@@ -17,6 +17,15 @@ declare module 'models' {
     courtCaseIds: string[]
   }
 
+  export interface UAL {
+    recallId: string
+    nomisId: string
+    bookingId: number
+    recallDate: Date
+    returnToCustodyDate: Date
+    days: number
+  }
+
   export interface CourtCase {
     caseId: string
     status: string
