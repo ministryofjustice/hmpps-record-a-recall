@@ -31,6 +31,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const { recallDate } = journeyData
     const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
     const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
+    const selectedRecallType = journeyData.recallType
 
     const urls = getServiceUrls(res.locals.nomisId)
     const cancelLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}/` : 'record-recall'}/confirm-cancel`
@@ -52,6 +53,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       cancelLink,
       isEditRecall,
       action,
+      selectedRecallType,
     }
   }
 }

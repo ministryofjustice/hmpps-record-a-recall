@@ -81,7 +81,6 @@ export function createAnswerSummaryList(
       'Recall type',
       journeyData.recallType.description,
       editLink(journeyData.standardOnlyRecall ? 'confirm-recall-type' : 'recall-type'),
-      journeyData.standardOnlyRecall ? 'Review' : 'Edit',
     ),
   ])
 }
