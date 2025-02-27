@@ -80,6 +80,7 @@ export const sessionModelFields = {
   GROUPED_SENTENCES: 'groupedSentences',
   CASES_WITH_ELIGIBLE_SENTENCES: 'casesWithEligibleSentences',
   RECALL_ELIGIBILITY: 'recallEligibility',
+  RECALL_TYPE_MISMATCH: 'recallTypeMismatch',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -103,6 +104,10 @@ export function getUalText(req: FormWizard.Request): string {
 
 export function isStandardOnly(req: FormWizard.Request): boolean {
   return get<boolean>(req, sessionModelFields.STANDARD_ONLY) === true
+}
+
+export function isRecallTypeMismatch(req: FormWizard.Request): boolean {
+  return get<boolean>(req, sessionModelFields.RECALL_TYPE_MISMATCH) === true
 }
 
 export function getRecallTypeCode(req: FormWizard.Request): string {
