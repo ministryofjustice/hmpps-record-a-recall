@@ -26,7 +26,7 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
     ual: getUal(req),
     ualText: getUalText(req),
     manualCaseSelection: isManualCaseSelection(req),
-    recallType: isStandardOnly(req) ? RecallTypes.STANDARD_RECALL : getRecallType(getRecallTypeCode(req)),
+    recallType: getRecallType(getRecallTypeCode(req)),
     standardOnlyRecall: isStandardOnly(req),
     courtCaseCount,
     eligibleSentenceCount: getEligibleSentenceCount(req),
