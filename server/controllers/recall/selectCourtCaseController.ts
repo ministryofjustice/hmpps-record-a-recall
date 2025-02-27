@@ -49,6 +49,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
     ).length
     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
     res.locals.casesWithEligibleSentences = sentenceCount
+    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
 
     return super.successHandler(req, res, next)
   }

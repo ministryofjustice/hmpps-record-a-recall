@@ -3,10 +3,17 @@ import { NextFunction, Response } from 'express'
 import { addDays, isBefore, isEqual, max } from 'date-fns'
 
 import RecallBaseController from './recallBaseController'
-import { RecallType, RecallTypes } from '../../@types/recallTypes'
+import { RecallTypes } from '../../@types/recallTypes'
 import logger from '../../../logger'
 import { SummarisedSentence } from '../../utils/sentenceUtils'
-import { getRecallDate, getSummarisedSentenceGroups } from '../../helpers/formWizardHelper'
+import {
+  getRecallDate,
+  getRecallTypeCode,
+  getSummarisedSentenceGroups,
+  isManualCaseSelection,
+  isStandardOnly,
+  sessionModelFields,
+} from '../../helpers/formWizardHelper'
 
 export default class RecallTypeController extends RecallBaseController {
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
@@ -19,26 +26,31 @@ export default class RecallTypeController extends RecallBaseController {
     next()
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
+    const selectedType = getRecallTypeCode(req)
+
     const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
     const recallDate = getRecallDate(req)
 
     const eligibleSentences: SummarisedSentence[] =
       summarisedSentenceGroups?.flatMap(group => group.eligibleSentences) || []
 
-    const recallTypes: RecallType[] = Object.values(RecallTypes)
-    const fourteenDayRecallRequired = this.fourteenDayRecallRequired(eligibleSentences, recallDate)
-
-    req.form.options.fields.recallType.items = Object.values(recallTypes)
+    const validTypes = Object.values(RecallTypes)
       .filter(type => {
-        return !type.fixedTerm || fourteenDayRecallRequired === type.subTwelveMonthApplicable
+        if (isStandardOnly(req)) {
+          return type.code === RecallTypes.STANDARD_RECALL.code
+        }
+        return (
+          isManualCaseSelection(req) ||
+          !type.fixedTerm ||
+          this.fourteenDayRecallRequired(eligibleSentences, recallDate) === type.subTwelveMonthApplicable
+        )
       })
-      .map(({ code, description }) => ({
-        text: description,
-        value: code,
-      }))
+      .map(t => t.code)
 
-    return super.locals(req, res)
+    // @ts-expect-error Type code will be correct
+    req.sessionModel.set(sessionModelFields.RECALL_TYPE_MISMATCH, !validTypes.includes(selectedType))
+    return super.successHandler(req, res, next)
   }
 
   private fourteenDayRecallRequired(sentences: SummarisedSentence[], recallDate: Date): boolean {

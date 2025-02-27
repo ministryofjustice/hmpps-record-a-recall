@@ -8,7 +8,7 @@ import CheckPossibleController from '../../controllers/recall/checkPossibleContr
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
-import { getEligibleSentenceCount, isManualCaseSelection, isStandardOnly } from '../../helpers/formWizardHelper'
+import { getEligibleSentenceCount, isManualCaseSelection, isRecallTypeMismatch } from '../../helpers/formWizardHelper'
 
 const steps = {
   '/': {
@@ -36,12 +36,8 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
-        next: [
-          {
-            fn: (req: FormWizard.Request) => isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0,
-            next: 'select-cases',
-          },
-        ],
+        fn: (req: FormWizard.Request) => isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0,
+        next: 'select-cases',
       },
       'check-sentences',
     ],
@@ -50,24 +46,24 @@ const steps = {
     editable: true,
   },
   '/check-sentences': {
-    next: [
-      {
-        fn: (req: FormWizard.Request) => isStandardOnly(req),
-        next: 'confirm-recall-type',
-      },
-      'recall-type',
-    ],
+    next: 'recall-type',
     controller: CheckSentencesController,
     editable: true,
   },
   '/recall-type': {
-    next: 'check-your-answers',
+    next: [
+      {
+        fn: (req: FormWizard.Request) => isRecallTypeMismatch(req),
+        next: 'recall-type-interrupt',
+      },
+      'check-your-answers',
+    ],
     fields: ['recallType'],
     controller: RecallTypeController,
     template: 'base-question',
     editable: true,
   },
-  '/confirm-recall-type': {
+  '/recall-type-interrupt': {
     next: 'check-your-answers',
     controller: RecallBaseController,
   },
