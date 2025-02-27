@@ -1,7 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Recall } from 'models'
-import { getRecallType, RecallType, RecallTypes } from '../@types/recallTypes'
+import { getRecallType, RecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import {
   CalculatedReleaseDates,
