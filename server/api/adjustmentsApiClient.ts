@@ -9,9 +9,9 @@ export default class AdjustmentsApiClient {
     this.restClient = new RestClient('Adjustments API', config.apis.adjustmentsApi as ApiConfig, token)
   }
 
-  async postAdjustment(adjustment: AdjustmentDto): Promise<CreateResponse> {
+  async postAdjustments(adjustments: AdjustmentDto[]): Promise<CreateResponse> {
     return this.restClient.post({
-      data: adjustment,
+      data: adjustments,
       path: `/adjustments`,
     }) as Promise<CreateResponse>
   }
