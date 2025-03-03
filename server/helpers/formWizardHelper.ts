@@ -1,7 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Recall } from 'models'
-import { getRecallType, RecallType, RecallTypes } from '../@types/recallTypes'
+import { getRecallType, RecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import {
   CalculatedReleaseDates,
@@ -27,7 +27,7 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
     ual: getUal(req),
     ualText: getUalText(req),
     manualCaseSelection: isManualCaseSelection(req),
-    recallType: isStandardOnly(req) ? RecallTypes.STANDARD_RECALL : getRecallType(getRecallTypeCode(req)),
+    recallType: getRecallType(getRecallTypeCode(req)),
     standardOnlyRecall: isStandardOnly(req),
     courtCaseCount,
     eligibleSentenceCount: getEligibleSentenceCount(req),
@@ -81,6 +81,7 @@ export const sessionModelFields = {
   GROUPED_SENTENCES: 'groupedSentences',
   CASES_WITH_ELIGIBLE_SENTENCES: 'casesWithEligibleSentences',
   RECALL_ELIGIBILITY: 'recallEligibility',
+  RECALL_TYPE_MISMATCH: 'recallTypeMismatch',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -104,6 +105,10 @@ export function getUalText(req: FormWizard.Request): string {
 
 export function isStandardOnly(req: FormWizard.Request): boolean {
   return get<boolean>(req, sessionModelFields.STANDARD_ONLY) === true
+}
+
+export function isRecallTypeMismatch(req: FormWizard.Request): boolean {
+  return get<boolean>(req, sessionModelFields.RECALL_TYPE_MISMATCH) === true
 }
 
 export function getRecallTypeCode(req: FormWizard.Request): string {
