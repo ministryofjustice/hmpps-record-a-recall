@@ -23,7 +23,7 @@ declare module 'models' {
     bookingId: number
     recallDate: Date
     returnToCustodyDate: Date
-    days: number
+    days?: number
   }
 
   export interface CourtCase {

@@ -27,7 +27,6 @@ describe('Adjustments Service', () => {
         bookingId: 1,
         recallDate: new Date('2024-01-01'),
         returnToCustodyDate: new Date('2024-01-02'),
-        days: 5,
       }
       fakeAdjustmentsApi
         .post('/adjustments', [

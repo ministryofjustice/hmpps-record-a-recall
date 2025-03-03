@@ -14,7 +14,6 @@ export default class AdjustmentsService {
       person: ual.nomisId,
       toDate: formatDate(ual.returnToCustodyDate),
       fromDate: formatDate(ual.recallDate),
-      days: ual.days,
       unlawfullyAtLarge: {
         type: 'RECALL',
       },
