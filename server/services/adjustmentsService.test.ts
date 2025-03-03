@@ -1,8 +1,9 @@
+import type { UAL } from 'models'
 import nock from 'nock'
 import AdjustmentsService from './adjustmentsService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 import config from '../config'
-import { CreateResponse, AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { CreateResponse } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
 jest.mock('../data/hmppsAuthClient')
 
@@ -20,28 +21,30 @@ describe('Adjustments Service', () => {
   describe('post adjustments', () => {
     it('Should construct post request correctly when creating an adjustment', async () => {
       const username = 'A1234BC'
-      const adjustmentToCreate: AdjustmentDto = {
-        id: '123',
+      const ual: UAL = {
+        recallId: 'recallId',
+        nomisId: 'nomidId',
         bookingId: 1,
-        person: 'change',
-        adjustmentType: 'UNLAWFULLY_AT_LARGE',
-        toDate: '2024-01-01',
-        fromDate: '2024-01-02',
-        days: 5,
+        recallDate: new Date('2024-01-01'),
+        returnToCustodyDate: new Date('2024-01-02'),
       }
       fakeAdjustmentsApi
-        .post('/adjustments', {
-          id: '123',
-          bookingId: 1,
-          person: 'change',
-          adjustmentType: 'UNLAWFULLY_AT_LARGE',
-          toDate: '2024-01-01',
-          fromDate: '2024-01-02',
-          days: 5,
-        })
+        .post('/adjustments', [
+          {
+            bookingId: ual.bookingId,
+            adjustmentType: 'UNLAWFULLY_AT_LARGE',
+            person: ual.nomisId,
+            toDate: '2024-01-02',
+            fromDate: '2024-01-01',
+            days: ual.days,
+            unlawfullyAtLarge: {
+              type: 'RECALL',
+            },
+          },
+        ])
         .reply(200, { adjustmentIds: ['123'] } as CreateResponse)
 
-      const adjustment = await adjustmentsService.postAdjustments(adjustmentToCreate, username)
+      const adjustment = await adjustmentsService.postUal(ual, username)
       expect(adjustment.adjustmentIds).toEqual(['123'])
     })
   })

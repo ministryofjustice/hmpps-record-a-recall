@@ -46,8 +46,12 @@ export const sanitizeString = (string: string | null): string | null => {
   return string ? string.trim().toUpperCase() : null
 }
 
+// TODO RCLL-316 align adjustments API calculation
 export function calculateUal(recallDate: string | Date, returnToCustodyDate?: string | Date): number {
-  if (!returnToCustodyDate || isEqual(recallDate, returnToCustodyDate)) {
+  if (!returnToCustodyDate) {
+    return null
+  }
+  if (isEqual(recallDate, returnToCustodyDate)) {
     return 0
   }
   const parsedRecall = recallDate instanceof Date ? recallDate : parse(recallDate, 'yyyy-MM-dd', new Date())

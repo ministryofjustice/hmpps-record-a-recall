@@ -1,10 +1,12 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
+import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { createAnswerSummaryList } from '../../utils/utils'
-import getJourneyDataFromRequest, { RecallJourneyData } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getPrisoner, RecallJourneyData } from '../../helpers/formWizardHelper'
+import logger from '../../../logger'
 
 export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -25,6 +27,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
     try {
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const { nomisId } = res.locals
+      const prisonerDetails = getPrisoner(req)
       const { username } = res.locals.user
 
       const recallToSave: CreateRecall = {
@@ -36,7 +39,23 @@ export default class CheckYourAnswersController extends RecallBaseController {
         createdByPrison: 'Not known',
         sentenceIds: journeyData.sentenceIds,
       }
-      await req.services.recallService.postRecall(recallToSave, username)
+
+      const createResponse = await req.services.recallService.postRecall(recallToSave, username)
+
+      const ualToCreate: UAL = {
+        recallId: createResponse.recallUuid,
+        nomisId,
+        bookingId: parseInt(prisonerDetails.bookingId, 10),
+        recallDate: journeyData.recallDate,
+        returnToCustodyDate: journeyData.returnToCustodyDate,
+        days: journeyData.ual,
+      }
+
+      if (journeyData.ual !== null) {
+        await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
+          logger.error('Error while posting UAL to adjustments API')
+        })
+      }
       return next()
     } catch (error) {
       return next(error)
