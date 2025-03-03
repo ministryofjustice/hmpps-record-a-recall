@@ -6,6 +6,7 @@ import RecallBaseController from './recallBaseController'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { createAnswerSummaryList } from '../../utils/utils'
 import getJourneyDataFromRequest, { getPrisoner, RecallJourneyData } from '../../helpers/formWizardHelper'
+import logger from '../../../logger'
 
 export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -51,7 +52,9 @@ export default class CheckYourAnswersController extends RecallBaseController {
       }
 
       if (journeyData.ual !== null) {
-        await req.services.adjustmentsService.postUal(ualToCreate, username)
+        await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
+          logger.error('Error while posting UAL to adjustments API')
+        })
       }
       return next()
     } catch (error) {

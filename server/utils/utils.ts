@@ -46,6 +46,7 @@ export const sanitizeString = (string: string | null): string | null => {
   return string ? string.trim().toUpperCase() : null
 }
 
+// TODO RCLL-316 align adjustments API calculation
 export function calculateUal(recallDate: string | Date, returnToCustodyDate?: string | Date): number {
   if (!returnToCustodyDate) {
     return null
