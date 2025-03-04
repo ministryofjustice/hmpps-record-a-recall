@@ -67,6 +67,7 @@ export default class FormInitialStep extends FormWizard.Controller {
       required: `Enter a ${fieldName?.toLowerCase()}`,
       selectRequired: `Select ${fieldName?.toLowerCase()}`,
       mustBeEqualOrAfterRecallDate: `${fieldName} must be equal to or after the recall date`,
+      mustBeAfterEarliestSentenceDate: `${fieldName} must after the earliest sentence start date`,
       prisonerDetailsNotFound: `Prisoner details could not be found for the provided NOMIS ID`,
     }
 
