@@ -21,6 +21,12 @@ export default class AdjustmentsService {
     return (await this.getApiClient(username)).postAdjustments([adjustmentToCreate])
   }
 
+  async searchUal(nomisId: string, username: string): Promise<AdjustmentDto[]> {
+    const result = await (await this.getApiClient(username)).getAdjustments(nomisId)
+    console.log('result!!!!!!!!!', result)
+    return result
+  }
+
   private async getApiClient(username: string): Promise<AdjustmentsApiClient> {
     return new AdjustmentsApiClient(await this.getSystemClientToken(username))
   }

@@ -15,4 +15,17 @@ export default class AdjustmentsApiClient {
       path: `/adjustments`,
     }) as Promise<CreateResponse>
   }
+
+  async getAdjustments(
+    person: string,
+    // currentPeriodOfCustody: boolean,
+  ): Promise<AdjustmentDto[]> {
+    return this.restClient.get({
+      query: {
+        person,
+        // currentPeriodOfCustody,
+      },
+      path: `/adjustments`,
+    }) as Promise<AdjustmentDto[]>
+  }
 }
