@@ -5,7 +5,7 @@ import { isBefore, min } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import recallDateCrdsDataComparison from '../../utils/recallDateCrdsDataComparison'
-import { getCrdsSentences, getRecallDate, getRecallOptions } from '../../helpers/formWizardHelper'
+import { getCrdsSentences, getRecallOptions } from '../../helpers/formWizardHelper'
 
 export default class RecallDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
