@@ -69,6 +69,7 @@ export default class FormInitialStep extends FormWizard.Controller {
       mustBeEqualOrAfterRecallDate: `${fieldName} must be equal to or after the recall date`,
       mustBeAfterEarliestSentenceDate: `${fieldName} must after the earliest sentence start date`,
       prisonerDetailsNotFound: `Prisoner details could not be found for the provided NOMIS ID`,
+      conflictingAdjustment: `There is a conflicting adjustment for these dates`,
     }
 
     const errorMessage = errorMessageOverrides[error.type] || errorMessages[error.type] || `${fieldName} is invalid`

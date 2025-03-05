@@ -7,6 +7,7 @@ import RecallBaseController from './recallBaseController'
 import { getRecallOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
 import { eligibilityReasons } from '../../@types/recallEligibility'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -32,6 +33,13 @@ export default class CheckPossibleController extends RecallBaseController {
           .catch(error => {
             logger.error(error.userMessage)
           })
+
+        res.locals.existingAdjustments = await req.services.adjustmentsService
+          .searchUal(nomisId, username)
+          .catch((e: Error): AdjustmentDto[] => {
+            logger.error(e.message)
+            return []
+          })
       }
     } catch (error) {
       logger.error(error)
@@ -54,6 +62,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.sentences)
     req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
+    req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
 
     return { ...locals }
   }

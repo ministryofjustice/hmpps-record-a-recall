@@ -482,6 +482,11 @@ export interface components {
        * @description The NOMIS sentence sequence of the adjustment
        */
       sentenceSequence?: number
+      /**
+       * Format: uuid
+       * @description The ID of a recall that may be associated to the adjustment
+       */
+      recallId?: string
       /** @description Human readable text for type of adjustment */
       readonly adjustmentTypeText?: string
       /**
@@ -1132,11 +1137,13 @@ export interface operations {
         /** @description The noms ID of the person */
         person: string
         /** @description The status of adjustments. Defaults to ACTIVE */
-        status?: 'ACTIVE' | 'INACTIVE' | 'DELETED' | 'INACTIVE_WHEN_DELETED'
+        status?: ('ACTIVE' | 'INACTIVE' | 'DELETED' | 'INACTIVE_WHEN_DELETED')[]
         /** @description Only get the adjustments linked to the current period of custody. Defaults to true */
         currentPeriodOfCustody?: boolean
         /** @description The earliest sentence date to filter adjustments by. Defaults to earliest active sentence date */
         sentenceEnvelopeDate?: string
+        /** @description The recall ID to filter adjustments by. */
+        recallId?: string
       }
       header?: never
       path?: never

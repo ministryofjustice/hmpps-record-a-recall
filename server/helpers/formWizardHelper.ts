@@ -1,6 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase, Recall } from 'models'
+import { CourtCase, Recall, UAL } from 'models'
 import { getRecallType, RecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import {
@@ -10,6 +10,7 @@ import {
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallEligibility } from '../@types/recallEligibility'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
+import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
@@ -82,6 +83,8 @@ export const sessionModelFields = {
   CASES_WITH_ELIGIBLE_SENTENCES: 'casesWithEligibleSentences',
   RECALL_ELIGIBILITY: 'recallEligibility',
   RECALL_TYPE_MISMATCH: 'recallTypeMismatch',
+  EXISTING_ADJUSTMENTS: 'existingAdjustments',
+  UAL_TO_SAVE: 'ualToSave',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -163,6 +166,14 @@ export function getCourtCaseOptions(req: FormWizard.Request): CourtCase[] {
 
 export function getPrisoner(req: FormWizard.Request): PrisonerSearchApiPrisoner {
   return get<PrisonerSearchApiPrisoner>(req, sessionModelFields.PRISONER)
+}
+
+export function getExistingAdjustments(req: FormWizard.Request): AdjustmentDto[] {
+  return get<AdjustmentDto[]>(req, sessionModelFields.EXISTING_ADJUSTMENTS)
+}
+
+export function getUalToSave(req: FormWizard.Request): UAL {
+  return get<UAL>(req, sessionModelFields.UAL_TO_SAVE)
 }
 
 function get<T>(req: FormWizard.Request, key: string): T {
