@@ -1,6 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-import { isBefore } from 'date-fns'
+import { isBefore, isAfter, parseISO } from 'date-fns'
 
 import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
@@ -17,7 +17,7 @@ import logger from '../../../logger'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
-    super.validateFields(req, res, async errors => {
+    super.validateFields(req, res, errors => {
       const { values } = req.form
       const { username } = res.locals.user
       const recallDate = getRecallDate(req)
@@ -34,20 +34,20 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
       // console.log('existingAdjustments', existingAdjustments)
 
-      this.hasConflictingAdjustment(recallDate, rtcDate, existingAdjustments)
+      this.getConflictingAdjustment(recallDate, rtcDate, existingAdjustments)
 
       callback({ ...errors, ...validationErrors })
     })
   }
 
-  hasConflictingAdjustment(
+  getConflictingAdjustment(
     recallDate: Date,
     rtcDate: Date,
     searchResults?: AdjustmentDto[],
-  ): { hasConflict: boolean; conflictingAdjustments: AdjustmentDto[] } {
+  ): { conflictingAdjustments: AdjustmentDto[] } {
     if (!searchResults || searchResults.length === 0) {
       console.log('returning false')
-      return { hasConflict: false, conflictingAdjustments: [] } // No adjustments to check
+      return { conflictingAdjustments: [] } // No adjustments to check
     }
 
     // Pass recallDate and returnToCustodyDate explicitly
@@ -55,30 +55,25 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       this.doesConflict(recallDate, rtcDate, adjustment),
     )
 
-    const hasConflict = conflictingAdjustments.length > 0
+    // const hasConflict = conflictingAdjustments.length > 0
     console.log('Conflicting Adjustments:', conflictingAdjustments)
 
-    return { hasConflict, conflictingAdjustments } // Return boolean and conflicting adjustments
+    return { conflictingAdjustments } // Return boolean and conflicting adjustments
   }
 
   doesConflict(recallDate: Date, rtcDate: Date, adjustment: AdjustmentDto): boolean {
     if (!adjustment.fromDate || !adjustment.toDate) {
       return false // Ignore adjustments without both dates
     }
-
     const recallStart = recallDate.getTime()
     const recallEnd = rtcDate.getTime()
-    const adjStart = new Date(adjustment.fromDate).getTime()
-    const adjEnd = new Date(adjustment.toDate).getTime()
+    const adjStart = parseISO(adjustment.fromDate)
+    const adjEnd = parseISO(adjustment.toDate)
 
-    // Use an anonymous function to check for overlap without <= and >=
-    const isOverlapping = (() => {
-      const startsBeforeRecallEnds = Math.min(adjStart, recallEnd) !== recallEnd
-      const endsAfterRecallStarts = Math.max(adjEnd, recallStart) !== recallStart
-      return startsBeforeRecallEnds && endsAfterRecallStarts
-    })()
+    const startsBeforeRecallEnds = isBefore(adjStart, recallEnd)
+    const endsAfterRecallStarts = isAfter(adjEnd, recallStart)
 
-    return isOverlapping
+    return startsBeforeRecallEnds && endsAfterRecallStarts
   }
 
   saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
