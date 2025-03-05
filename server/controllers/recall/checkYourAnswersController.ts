@@ -28,7 +28,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const { nomisId } = res.locals
       const prisonerDetails = getPrisoner(req)
-      const { username } = res.locals.user
+      const { username, activeCaseload } = res.locals.user
 
       const recallToSave: CreateRecall = {
         prisonerId: nomisId,
@@ -36,7 +36,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
         returnToCustodyDate: journeyData.returnToCustodyDateString,
         recallTypeCode: journeyData.recallType.code,
         createdByUsername: username,
-        createdByPrison: 'Not known',
+        createdByPrison: activeCaseload.id,
         sentenceIds: journeyData.sentenceIds,
       }
 
