@@ -13,13 +13,11 @@ import getJourneyDataFromRequest, {
   sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import logger from '../../../logger'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form
-      const { username } = res.locals.user
       const recallDate = getRecallDate(req)
       const rtcDate = new Date(values.returnToCustodyDate as string)
 
@@ -34,20 +32,34 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
       // console.log('existingAdjustments', existingAdjustments)
 
-      this.getConflictingAdjustment(recallDate, rtcDate, existingAdjustments)
+      const conflictingAdjustments: AdjustmentDto[] = this.getConflictingAdjustment(
+        recallDate,
+        rtcDate,
+        existingAdjustments,
+      )
+
+      if (conflictingAdjustments.some(adjustment => adjustment.adjustmentType !== 'UNLAWFULLY_AT_LARGE')) {
+        validationErrors.adjustmentType = this.formError('adjustment', 'mustBeUnlawfullyAtLarge')
+        // return callback(validationErrors)
+      }
+
+      if (
+        conflictingAdjustments
+          .filter(adjustment => adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE')
+          .some(adjustment => !adjustment.unlawfullyAtLarge || adjustment.unlawfullyAtLarge.type !== 'RECALL')
+      ) {
+        validationErrors.unlawfullyAtLarge = this.formError('unlawfullyAtLarge', 'mustBeRecallType')
+        // return callback(validationErrors)
+      }
 
       callback({ ...errors, ...validationErrors })
     })
   }
 
-  getConflictingAdjustment(
-    recallDate: Date,
-    rtcDate: Date,
-    searchResults?: AdjustmentDto[],
-  ): { conflictingAdjustments: AdjustmentDto[] } {
+  getConflictingAdjustment(recallDate: Date, rtcDate: Date, searchResults?: AdjustmentDto[]): AdjustmentDto[] {
     if (!searchResults || searchResults.length === 0) {
       console.log('returning false')
-      return { conflictingAdjustments: [] } // No adjustments to check
+      return [] // No adjustments to check
     }
 
     // Pass recallDate and returnToCustodyDate explicitly
@@ -58,7 +70,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     // const hasConflict = conflictingAdjustments.length > 0
     console.log('Conflicting Adjustments:', conflictingAdjustments)
 
-    return { conflictingAdjustments } // Return boolean and conflicting adjustments
+    return conflictingAdjustments // Return boolean and conflicting adjustments
   }
 
   doesConflict(recallDate: Date, rtcDate: Date, adjustment: AdjustmentDto): boolean {
