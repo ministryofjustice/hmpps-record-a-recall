@@ -13,12 +13,15 @@ import getJourneyDataFromRequest, {
   sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import logger from '../../../logger'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
-    super.validateFields(req, res, errors => {
+    super.validateFields(req, res, async errors => {
       const { values } = req.form
+      const { username } = res.locals.user
       const recallDate = getRecallDate(req)
+      const rtcDate = new Date(values.returnToCustodyDate as string)
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
@@ -29,63 +32,54 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
       const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
       // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
-      console.log(existingAdjustments)
+      // console.log('existingAdjustments', existingAdjustments)
+
+      this.hasConflictingAdjustment(recallDate, rtcDate, existingAdjustments)
 
       callback({ ...errors, ...validationErrors })
     })
   }
 
   hasConflictingAdjustment(
-    ual: UAL,
+    recallDate: Date,
+    rtcDate: Date,
     searchResults?: AdjustmentDto[],
   ): { hasConflict: boolean; conflictingAdjustments: AdjustmentDto[] } {
-    console.log('*****************1', searchResults)
-
     if (!searchResults || searchResults.length === 0) {
       console.log('returning false')
       return { hasConflict: false, conflictingAdjustments: [] } // No adjustments to check
     }
 
-    // collect all conflicting adjustments in an array
-    const conflictingAdjustments = searchResults.filter(adjustment => this.doesConflict(ual, adjustment))
+    // Pass recallDate and returnToCustodyDate explicitly
+    const conflictingAdjustments = searchResults.filter(adjustment =>
+      this.doesConflict(recallDate, rtcDate, adjustment),
+    )
 
     const hasConflict = conflictingAdjustments.length > 0
     console.log('Conflicting Adjustments:', conflictingAdjustments)
 
-    return { hasConflict, conflictingAdjustments } // boolean and arr of conflicting sdjustments
+    return { hasConflict, conflictingAdjustments } // Return boolean and conflicting adjustments
   }
 
-  doesConflict(ual: UAL, adjustment: AdjustmentDto): boolean {
+  doesConflict(recallDate: Date, rtcDate: Date, adjustment: AdjustmentDto): boolean {
     if (!adjustment.fromDate || !adjustment.toDate) {
-      return false // toDate amd fromDate are optional in AdjustmentDto, so may not have both dates, therefore ignore
+      return false // Ignore adjustments without both dates
     }
 
-    const recallStart = new Date(ual.recallDate).getTime()
-    const recallEnd = new Date(ual.returnToCustodyDate).getTime()
+    const recallStart = recallDate.getTime()
+    const recallEnd = rtcDate.getTime()
     const adjStart = new Date(adjustment.fromDate).getTime()
     const adjEnd = new Date(adjustment.toDate).getTime()
 
-    // Check if the date ranges overlap
-    return adjStart <= recallEnd && adjEnd >= recallStart
+    // Use an anonymous function to check for overlap without <= and >=
+    const isOverlapping = (() => {
+      const startsBeforeRecallEnds = Math.min(adjStart, recallEnd) !== recallEnd
+      const endsAfterRecallStarts = Math.max(adjEnd, recallStart) !== recallStart
+      return startsBeforeRecallEnds && endsAfterRecallStarts
+    })()
+
+    return isOverlapping
   }
-
-  // hasConflictingAdjustment(ual: UAL, searchResults?: AdjustmentDto[]) {
-  //   console.log('*****************1', searchResults)
-  //   if (searchResults && searchResults.length === 0) {
-  //     console.log('returning false')
-  //     //no comparison
-  //     return false
-  //   }
-  //   console.log('returning true')
-
-  //   // for each/map iterate adjustmentDto searchResults fn to see if true or false
-  //   // return false if even one is overlapping
-  //   // when conflicing return ALL conflicting ones in conflictingAdjustments array
-  //   // return arr is not empty
-  //   // this.doesConflict() // for each search result
-
-  //   return true
-  // }
 
   saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
     const { values } = req.form
