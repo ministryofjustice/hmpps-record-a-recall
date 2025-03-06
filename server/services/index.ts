@@ -10,6 +10,7 @@ import CourtCaseService from './CourtCaseService'
 import CourtService from './CourtService'
 import AdjustmentsService from './adjustmentsService'
 import ManageUsersService from './manageUsersService'
+import PrisonService from './PrisonService'
 
 export const services = () => {
   const { applicationInfo, hmppsAuditClient, hmppsAuthClient, feComponentsClient, manageUsersApiClient } = dataAccess()
@@ -23,6 +24,7 @@ export const services = () => {
   const courtCasesReleaseDatesService = new CourtCasesReleaseDatesService()
   const courtCaseService = new CourtCaseService(hmppsAuthClient)
   const courtService = new CourtService(hmppsAuthClient)
+  const prisonService = new PrisonService(hmppsAuthClient)
   const adjustmentsService = new AdjustmentsService(hmppsAuthClient)
   const manageUsersService = new ManageUsersService(manageUsersApiClient)
 
@@ -37,6 +39,7 @@ export const services = () => {
     courtCasesReleaseDatesService,
     courtCaseService,
     courtService,
+    prisonService,
     adjustmentsService,
     manageUsersService,
   }

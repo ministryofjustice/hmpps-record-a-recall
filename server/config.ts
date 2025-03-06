@@ -155,6 +155,14 @@ export default {
       },
       agent: new AgentConfig(Number(get('COURT_REGISTER_API_TIMEOUT_RESPONSE', 10000))),
     },
+    prisonRegisterApi: {
+      url: get('PRISON_REGISTER_API_URL', 'http://localhost:8083', requiredInProduction),
+      timeout: {
+        response: Number(get('PRISON_REGISTER_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('PRISON_REGISTER_API_TIMEOUT_DEADLINE', 10000)),
+      },
+      agent: new AgentConfig(Number(get('PRISON_REGISTER_API_TIMEOUT_RESPONSE', 10000))),
+    },
     adjustmentsApi: {
       url: get('ADJUSTMENTS_API_URL', 'http://localhost:8083', requiredInProduction),
       timeout: {

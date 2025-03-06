@@ -2,7 +2,7 @@ import { HmppsAuthClient } from '../data'
 import CourtRegisterApiClient from '../api/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 
-export default class CourtCaseService {
+export default class CourtService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
 
   async getCourtNames(courtIds: string[], username: string): Promise<Map<string, string>> {
