@@ -31,6 +31,8 @@ export const user: HmppsUser = {
   authSource: 'nomis',
   staffId: 1234,
   userRoles: [],
+  caseloads: [],
+  activeCaseload: { id: 'TSI', name: 'HM Test' },
 }
 
 function appSetup(
