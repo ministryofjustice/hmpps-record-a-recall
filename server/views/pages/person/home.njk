@@ -67,11 +67,11 @@
     <div class="govuk-grid-row govuk-!-padding-bottom-2 govuk-!-margin-top-2">
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Recall type', recall.recallType.description) }}
-        {{ cardInfo('Location', recall.location) }}
+        {{ cardInfo('Location', recall.locationName if recall.locationName else recall.location ) }}
       </div>
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Arrest date',  recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall' ) }}
-        {{ cardInfo('UAL (unlawfully at large)', recall.ual ) }}
+        {{ cardInfo('UAL (unlawfully at large)', recall.ual if recall.ual else 'None recorded') }}
       </div>
     </div>
   </div>

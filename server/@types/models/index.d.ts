@@ -13,6 +13,7 @@ declare module 'models' {
     calculation?: CalculatedReleaseDates
     isFixedTermRecall?: boolean
     location: string
+    locationName?: string
     sentenceIds: string[]
     courtCaseIds: string[]
   }

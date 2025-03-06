@@ -24,6 +24,7 @@ export default async (req: Request, res: Response) => {
   const error = req.flash('errorMessage')
 
   const { nomisId, prisoner } = res.locals
+  const { username } = res.locals.user
 
   const urls = getServiceUrls(nomisId)
 
@@ -31,7 +32,11 @@ export default async (req: Request, res: Response) => {
     let recalls: Recall[]
     let serviceDefinitions
     try {
-      recalls = await req.services.recallService.getAllRecalls(nomisId, res.locals.user.username)
+      recalls = await req.services.recallService.getAllRecalls(nomisId, username)
+      const locationIds = recalls.map(r => r.location)
+      const prisonNames = await req.services.prisonService.getPrisonNames(locationIds, username)
+      // eslint-disable-next-line no-param-reassign,no-return-assign
+      recalls.forEach(r => (r.locationName = prisonNames.get(r.location)))
       serviceDefinitions = await req.services.courtCasesReleaseDatesService.getServiceDefinitions(
         nomisId,
         req.user.token,
