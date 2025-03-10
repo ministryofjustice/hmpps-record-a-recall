@@ -20,13 +20,13 @@ const steps = {
     next: [
       {
         fn: 'recallPossible',
-        next: 'recall-date',
+        next: 'revocation-date',
       },
       'not-possible',
     ],
   },
-  '/recall-date': {
-    fields: ['recallDate'],
+  '/revocation-date': {
+    fields: ['revocationDate'],
     next: 'rtc-date',
     template: 'base-question',
     controller: RecallDateController,

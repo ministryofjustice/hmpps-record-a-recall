@@ -70,7 +70,7 @@ export default class FormInitialStep extends FormWizard.Controller {
       mustBeAfterEarliestSentenceDate: `${fieldName} must after the earliest sentence start date`,
       prisonerDetailsNotFound: `Prisoner details could not be found for the provided NOMIS ID`,
       conflictingAdjustment: `There is a conflicting adjustment for these dates`,
-      cannotBeWithinAdjustmentPeriod: `${fieldName} must be outside existing adjustment date`,
+      cannotBeWithinAdjustmentPeriod: `${fieldName} must be outside existing adjustment window`,
     }
 
     const errorMessage = errorMessageOverrides[error.type] || errorMessages[error.type] || `${fieldName} is invalid`

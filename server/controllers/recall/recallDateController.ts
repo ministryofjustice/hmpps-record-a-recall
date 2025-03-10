@@ -26,25 +26,22 @@ export default class RecallDateController extends RecallBaseController {
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 
-      if (isBefore(values.recallDate as string, earliestSentenceDate)) {
-        validationErrors.recallDate = this.formError('recallDate', 'mustBeAfterEarliestSentenceDate')
+      if (isBefore(values.revocationDate as string, earliestSentenceDate)) {
+        validationErrors.revocationDate = this.formError('revocationDate', 'mustBeAfterEarliestSentenceDate')
       }
 
       const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
 
-      const recallDate = new Date(values.recallDate as string)
+      const revocationDate = new Date(values.revocationDate as string)
 
       const isWithinAdjustment = existingAdjustments.some(adjustment => {
         if (!adjustment.fromDate || !adjustment.toDate) return false
 
-        const fromDate = new Date(adjustment.fromDate)
-        const toDate = new Date(adjustment.toDate)
-
-        return !isBefore(recallDate, fromDate) && !isAfter(recallDate, toDate)
+        return isAfter(revocationDate, adjustment.fromDate) && isBefore(revocationDate, adjustment.toDate)
       })
 
       if (isWithinAdjustment) {
-        validationErrors.recallDate = this.formError('recallDate', 'cannotBeWithinAdjustmentPeriod')
+        validationErrors.revocationDate = this.formError('revocationDate', 'cannotBeWithinAdjustmentPeriod')
       }
 
       callback({ ...errors, ...validationErrors })
