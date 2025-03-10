@@ -34,7 +34,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const selectedRecallType = journeyData.recallType
 
     const urls = getServiceUrls(res.locals.nomisId)
-    const cancelLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}/` : 'record-recall'}/confirm-cancel`
+    const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
+    const cancelLink = `${journeyBaseLink}/confirm-cancel`
 
     const lv = req.journeyModel.attributes.lastVisited
     if (lv?.includes('check-your-answers') || lv?.includes('edit-summary')) {
@@ -50,6 +51,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       urls,
       crdsValidationErrors,
       autoRecallFailErrors,
+      journeyBaseLink,
       cancelLink,
       isEditRecall,
       action,

@@ -27,7 +27,7 @@ export default class EditSummaryController extends RecallBaseController {
     try {
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const { nomisId, recallId } = res.locals
-      const { username } = res.locals.user
+      const { username, activeCaseload } = res.locals.user
 
       const recallToSave: CreateRecall = {
         prisonerId: nomisId,
@@ -35,7 +35,7 @@ export default class EditSummaryController extends RecallBaseController {
         returnToCustodyDate: journeyData.returnToCustodyDateString,
         recallTypeCode: journeyData.recallType.code,
         createdByUsername: username,
-        createdByPrison: 'Not known',
+        createdByPrison: activeCaseload.id,
         sentenceIds: journeyData.sentenceIds || journeyData.storedRecall.sentenceIds,
       }
       await req.services.recallService.updateRecall(recallId, recallToSave, username)

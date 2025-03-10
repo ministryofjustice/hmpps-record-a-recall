@@ -11,12 +11,13 @@ initialiseAppInsights()
 buildAppInsightsClient(applicationInfo)
 
 import HmppsAuthClient from './hmppsAuthClient'
-import { createRedisClient } from './redisClient'
+import { createRedisClient, redisClient } from './redisClient'
 import RedisTokenStore from './tokenStore/redisTokenStore'
 import InMemoryTokenStore from './tokenStore/inMemoryTokenStore'
 import config from '../config'
 import HmppsAuditClient from './hmppsAuditClient'
 import FeComponentsClient from './feComponentsClient'
+import ManageUsersApiClient from './manageUsersApiClient'
 
 type RestClientBuilder<T> = (token: string) => T
 
@@ -27,6 +28,7 @@ export const dataAccess = () => ({
   ),
   hmppsAuditClient: new HmppsAuditClient(config.sqs.audit),
   feComponentsClient: new FeComponentsClient(),
+  manageUsersApiClient: new ManageUsersApiClient(redisClient),
 })
 
 export type DataAccess = ReturnType<typeof dataAccess>

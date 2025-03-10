@@ -2,8 +2,9 @@ import { RequestHandler } from 'express'
 import { jwtDecode } from 'jwt-decode'
 import logger from '../../logger'
 import { convertToTitleCase } from '../utils/utils'
+import { Services } from '../services'
 
-export default function populateCurrentUser(): RequestHandler {
+export default function populateCurrentUser({ manageUsersService }: Services): RequestHandler {
   return async (req, res, next) => {
     try {
       const {
@@ -16,12 +17,15 @@ export default function populateCurrentUser(): RequestHandler {
         authorities?: string[]
       }
 
+      const caseloadsData = await manageUsersService.getUserCaseloads(res.locals.user.token)
       res.locals.user = {
         ...res.locals.user,
         userId,
         name,
-        displayName: convertToTitleCase(name),
+        displayName: `${convertToTitleCase(name)}`,
         userRoles: roles.map(role => role.substring(role.indexOf('_') + 1)),
+        activeCaseload: caseloadsData.activeCaseload,
+        caseloads: caseloadsData.caseloads,
       }
 
       if (res.locals.user.authSource === 'nomis') {

@@ -6,7 +6,7 @@ export default class CourtRegisterApiClient {
   restClient: RestClient
 
   constructor(token: string) {
-    this.restClient = new RestClient('Court Register  API', config.apis.courtRegisterApi as ApiConfig, token)
+    this.restClient = new RestClient('Court Register API', config.apis.courtRegisterApi as ApiConfig, token)
   }
 
   async getCourtDetails(courtIds: string): Promise<Court[]> {

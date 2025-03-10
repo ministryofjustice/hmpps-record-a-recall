@@ -81,6 +81,14 @@ export default {
       systemClientId: get('SYSTEM_CLIENT_ID', 'clientid', requiredInProduction),
       systemClientSecret: get('SYSTEM_CLIENT_SECRET', 'clientsecret', requiredInProduction),
     },
+    manageUsersApi: {
+      url: get('MANAGE_USERS_API_URL', 'http://localhost:9091', requiredInProduction),
+      timeout: {
+        response: Number(get('MANAGE_USERS_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('MANAGE_USERS_API_TIMEOUT_DEADLINE', 10000)),
+      },
+      agent: new AgentConfig(Number(get('MANAGE_USERS_API_TIMEOUT_RESPONSE', 10000))),
+    },
     tokenVerification: {
       url: get('TOKEN_VERIFICATION_API_URL', 'http://localhost:8100', requiredInProduction),
       timeout: {
@@ -101,24 +109,24 @@ export default {
     prisonApi: {
       url: get('PRISON_API_URL', 'http://127.0.0.1:8080', requiredInProduction),
       timeout: {
-        response: get('PRISON_API_TIMEOUT_RESPONSE', 10000),
-        deadline: get('PRISON_API_TIMEOUT_DEADLINE', 10000),
+        response: Number(get('PRISON_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('PRISON_API_TIMEOUT_DEADLINE', 10000)),
       },
       agent: new AgentConfig(),
     },
     calculateReleaseDatesApi: {
       url: get('CALCULATE_RELEASE_DATES_API_URL', 'http://127.0.0.1:8089', requiredInProduction),
       timeout: {
-        response: get('CALCULATE_RELEASE_DATES_API_TIMEOUT_RESPONSE', 10000),
-        deadline: get('CALCULATE_RELEASE_DATES_API_TIMEOUT_DEADLINE', 10000),
+        response: Number(get('CALCULATE_RELEASE_DATES_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('CALCULATE_RELEASE_DATES_API_TIMEOUT_DEADLINE', 10000)),
       },
       agent: new AgentConfig(),
     },
     remandAndSentencingApi: {
       url: get('REMAND_AND_SENTENCING_API_URL', 'http://127.0.0.1:8087', requiredInProduction),
       timeout: {
-        response: get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 10000),
-        deadline: get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 10000),
+        response: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 10000)),
       },
       agent: new AgentConfig(),
     },
@@ -146,6 +154,14 @@ export default {
         deadline: Number(get('COURT_REGISTER_API_TIMEOUT_DEADLINE', 10000)),
       },
       agent: new AgentConfig(Number(get('COURT_REGISTER_API_TIMEOUT_RESPONSE', 10000))),
+    },
+    prisonRegisterApi: {
+      url: get('PRISON_REGISTER_API_URL', 'http://localhost:8083', requiredInProduction),
+      timeout: {
+        response: Number(get('PRISON_REGISTER_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('PRISON_REGISTER_API_TIMEOUT_DEADLINE', 10000)),
+      },
+      agent: new AgentConfig(Number(get('PRISON_REGISTER_API_TIMEOUT_RESPONSE', 10000))),
     },
     adjustmentsApi: {
       url: get('ADJUSTMENTS_API_URL', 'http://localhost:8083', requiredInProduction),

@@ -36,8 +36,12 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
-        fn: (req: FormWizard.Request) => isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0,
+        fn: (req: FormWizard.Request) => isManualCaseSelection(req),
         next: 'select-cases',
+      },
+      {
+        fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0,
+        next: 'no-sentences-interrupt',
       },
       'check-sentences',
     ],
@@ -65,6 +69,9 @@ const steps = {
   },
   '/recall-type-interrupt': {
     next: 'check-your-answers',
+    controller: RecallBaseController,
+  },
+  '/no-sentences-interrupt': {
     controller: RecallBaseController,
   },
   '/check-your-answers': {
