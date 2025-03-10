@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { createAnswerSummaryList } from '../../utils/utils'
-import getJourneyDataFromRequest, { getUalToSave, RecallJourneyData } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getUalToSave, getPrisoner, RecallJourneyData } from '../../helpers/formWizardHelper'
 import logger from '../../../logger'
 
 export default class CheckYourAnswersController extends RecallBaseController {
@@ -26,7 +26,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
     try {
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const { nomisId } = res.locals
-      const prisonerDetails = getPrisoner(req)
+      // const prisonerDetails = getPrisoner(req)
       const { username, activeCaseload } = res.locals.user
 
       const recallToSave: CreateRecall = {

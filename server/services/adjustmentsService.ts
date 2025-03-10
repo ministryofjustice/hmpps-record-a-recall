@@ -23,7 +23,6 @@ export default class AdjustmentsService {
 
   async searchUal(nomisId: string, username: string): Promise<AdjustmentDto[]> {
     const result = await (await this.getApiClient(username)).getAdjustments(nomisId)
-    console.log('result!!!!!!!!!', result)
     return result
   }
 

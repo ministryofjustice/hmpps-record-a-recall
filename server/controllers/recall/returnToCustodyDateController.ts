@@ -24,27 +24,28 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 
-      if (values.inPrisonAtRecall === 'false' && isBefore(values.returnToCustodyDate as string, recallDate)) {
-        validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRecallDate')
-      }
+      if (values.inPrisonAtRecall === 'false') {
+        if (isBefore(values.returnToCustodyDate as string, recallDate)) {
+          validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRecallDate')
+        }
 
-      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-      // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
+        const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+        // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
 
-      const conflictingAdjustments: AdjustmentDto[] = this.getConflictingAdjustments(
-        recallDate,
-        rtcDate,
-        existingAdjustments,
-      )
-
-      if (
-        conflictingAdjustments.some(
-          adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment),
+        const conflictingAdjustments: AdjustmentDto[] = this.getConflictingAdjustments(
+          recallDate,
+          rtcDate,
+          existingAdjustments,
         )
-      ) {
-        validationErrors.adjustmentType = this.formError('returnToCustodyDate', 'conflictingAdjustment')
-      }
 
+        if (
+          conflictingAdjustments.some(
+            adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment),
+          )
+        ) {
+          validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
+        }
+      }
       callback({ ...errors, ...validationErrors })
     })
   }
@@ -59,24 +60,19 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
   getConflictingAdjustments(recallDate: Date, rtcDate: Date, searchResults?: AdjustmentDto[]): AdjustmentDto[] {
     if (!searchResults || searchResults.length === 0) {
-      console.log('returning false')
       return []
     }
 
-    // Pass recallDate and returnToCustodyDate explicitly
     const conflictingAdjustments = searchResults.filter(adjustment =>
       this.doesConflict(recallDate, rtcDate, adjustment),
     )
-
-    // const hasConflict = conflictingAdjustments.length > 0
-    console.log('Conflicting Adjustments:', conflictingAdjustments)
 
     return conflictingAdjustments
   }
 
   doesConflict(recallDate: Date, rtcDate: Date, adjustment: AdjustmentDto): boolean {
     if (!adjustment.fromDate || !adjustment.toDate) {
-      return false // Ignore adjustments without both dates
+      return false
     }
     const recallStart = recallDate.getTime()
     const recallEnd = rtcDate.getTime()
@@ -103,7 +99,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const ual = calculateUal(recallDate, rtcDate)
 
       const ualToSave: UAL = {
-        // We don't have the recall id yet, but we can create everything else and set the recall id once we have it
         nomisId,
         bookingId: parseInt(prisonerDetails.bookingId, 10),
         recallDate: journeyData.recallDate,
@@ -113,8 +108,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       }
 
       const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-      // We may also need to update existing adjustments if we're merging with them. We can do that here and stick in the session
-      // ready to update them when saving the recall
 
       req.sessionModel.set(sessionModelFields.UAL_TO_SAVE, ualToSave)
       req.sessionModel.set(sessionModelFields.UAL, ual)
@@ -123,7 +116,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       req.sessionModel.unset(sessionModelFields.UAL_TO_SAVE)
       values.returnToCustodyDate = null
     }
-
     return super.saveValues(req, res, next)
   }
 }
