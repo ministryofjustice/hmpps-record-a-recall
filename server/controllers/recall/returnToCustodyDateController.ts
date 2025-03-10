@@ -58,12 +58,12 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     return adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adjustment.unlawfullyAtLarge!.type !== 'RECALL'
   }
 
-  getConflictingAdjustments(recallDate: Date, rtcDate: Date, searchResults?: AdjustmentDto[]): AdjustmentDto[] {
-    if (!searchResults || searchResults.length === 0) {
+  getConflictingAdjustments(recallDate: Date, rtcDate: Date, existingAdjustments?: AdjustmentDto[]): AdjustmentDto[] {
+    if (!existingAdjustments || existingAdjustments.length === 0) {
       return []
     }
 
-    const conflictingAdjustments = searchResults.filter(adjustment =>
+    const conflictingAdjustments = existingAdjustments.filter(adjustment =>
       this.doesConflict(recallDate, rtcDate, adjustment),
     )
 
@@ -74,13 +74,12 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     if (!adjustment.fromDate || !adjustment.toDate) {
       return false
     }
-    const recallStart = recallDate.getTime()
     const recallEnd = rtcDate.getTime()
     const adjStart = parseISO(adjustment.fromDate)
     const adjEnd = parseISO(adjustment.toDate)
 
     const startsBeforeRecallEnds = isBefore(adjStart, recallEnd)
-    const endsAfterRecallStarts = isAfter(adjEnd, recallStart)
+    const endsAfterRecallStarts = isAfter(adjEnd, recallDate)
 
     return startsBeforeRecallEnds && endsAfterRecallStarts
   }

@@ -22,8 +22,7 @@ export default class AdjustmentsService {
   }
 
   async searchUal(nomisId: string, username: string): Promise<AdjustmentDto[]> {
-    const result = await (await this.getApiClient(username)).getAdjustments(nomisId)
-    return result
+    return (await this.getApiClient(username)).getAdjustments(nomisId)
   }
 
   private async getApiClient(username: string): Promise<AdjustmentsApiClient> {
