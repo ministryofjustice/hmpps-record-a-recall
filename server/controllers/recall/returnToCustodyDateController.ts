@@ -107,7 +107,9 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         days: journeyData.ual,
       }
 
-      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+      // const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+      // We may also need to update existing adjustments if we're merging with them. We can do that here and stick in the session
+      // ready to update them when saving the recall
 
       req.sessionModel.set(sessionModelFields.UAL_TO_SAVE, ualToSave)
       req.sessionModel.set(sessionModelFields.UAL, ual)
