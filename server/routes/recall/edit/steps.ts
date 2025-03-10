@@ -40,8 +40,8 @@ const steps = {
     editable: true,
     next: 'recall-updated',
   },
-  '/recall-date': {
-    fields: ['recallDate'],
+  '/revocation-date': {
+    fields: ['revocationDate'],
     next: 'rtc-date',
     template: 'base-question',
     controller: RecallDateController,

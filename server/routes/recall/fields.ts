@@ -1,11 +1,11 @@
 import dateTodayOrInPast from '../../validators/dateTodayOrInPast'
 
 const fields = {
-  recallDate: {
+  revocationDate: {
     component: 'govukDateInput',
     validate: ['required', dateTodayOrInPast],
-    id: 'recallDate',
-    name: 'recallDate',
+    id: 'revocationDate',
+    name: 'revocationDate',
     fieldset: {
       legend: {
         text: 'Enter the date of revocation',

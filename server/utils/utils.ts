@@ -66,7 +66,7 @@ export function createAnswerSummaryList(
   const sentences = journeyData.eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
   const cases = journeyData.courtCaseCount === 1 ? 'case' : 'cases'
   return compact([
-    toSummaryListRow('Date of revocation', formatLongDate(journeyData.recallDate), editLink('recall-date')),
+    toSummaryListRow('Date of revocation', formatLongDate(journeyData.recallDate), editLink('revocation-date')),
     toSummaryListRow(
       'Arrest date',
       formatLongDate(journeyData.returnToCustodyDate) || 'In prison when recalled',

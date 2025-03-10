@@ -1,11 +1,12 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { isBefore, min } from 'date-fns'
+import { isBefore, isAfter, min } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import recallDateCrdsDataComparison from '../../utils/recallDateCrdsDataComparison'
-import { getCrdsSentences, getRecallOptions } from '../../helpers/formWizardHelper'
+import { getCrdsSentences, getRecallOptions, getExistingAdjustments } from '../../helpers/formWizardHelper'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RecallDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -25,8 +26,22 @@ export default class RecallDateController extends RecallBaseController {
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 
-      if (isBefore(values.recallDate as string, earliestSentenceDate)) {
-        validationErrors.recallDate = this.formError('recallDate', 'mustBeAfterEarliestSentenceDate')
+      if (isBefore(values.revocationDate as string, earliestSentenceDate)) {
+        validationErrors.revocationDate = this.formError('revocationDate', 'mustBeAfterEarliestSentenceDate')
+      }
+
+      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+
+      const revocationDate = new Date(values.revocationDate as string)
+
+      const isWithinAdjustment = existingAdjustments.some(adjustment => {
+        if (!adjustment.fromDate || !adjustment.toDate) return false
+
+        return isAfter(revocationDate, adjustment.fromDate) && isBefore(revocationDate, adjustment.toDate)
+      })
+
+      if (isWithinAdjustment) {
+        validationErrors.revocationDate = this.formError('revocationDate', 'cannotBeWithinAdjustmentPeriod')
       }
 
       callback({ ...errors, ...validationErrors })
