@@ -1,11 +1,12 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { isBefore, min } from 'date-fns'
+import { isBefore, isAfter, min } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import recallDateCrdsDataComparison from '../../utils/recallDateCrdsDataComparison'
-import { getCrdsSentences, getRecallOptions } from '../../helpers/formWizardHelper'
+import { getCrdsSentences, getRecallOptions, getExistingAdjustments } from '../../helpers/formWizardHelper'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RecallDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -27,6 +28,23 @@ export default class RecallDateController extends RecallBaseController {
 
       if (isBefore(values.recallDate as string, earliestSentenceDate)) {
         validationErrors.recallDate = this.formError('recallDate', 'mustBeAfterEarliestSentenceDate')
+      }
+
+      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+
+      const recallDate = new Date(values.recallDate as string)
+
+      const isWithinAdjustment = existingAdjustments.some(adjustment => {
+        if (!adjustment.fromDate || !adjustment.toDate) return false
+
+        const fromDate = new Date(adjustment.fromDate)
+        const toDate = new Date(adjustment.toDate)
+
+        return !isBefore(recallDate, fromDate) && !isAfter(recallDate, toDate)
+      })
+
+      if (isWithinAdjustment) {
+        validationErrors.recallDate = this.formError('recallDate', 'cannotBeWithinAdjustmentPeriod')
       }
 
       callback({ ...errors, ...validationErrors })
