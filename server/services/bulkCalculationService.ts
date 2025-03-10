@@ -26,7 +26,6 @@ export default class BulkCalculationService {
     let idNum = 0
     const total = prisoners.length
     for (const prisoner of prisoners) {
-      console.log('----------------')
       logger.info(`${++idNum} of ${total}`)
 
       let validation: ValidationMessage[] = []
