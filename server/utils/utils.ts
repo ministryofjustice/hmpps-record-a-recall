@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, format, isEqual, parse, subDays } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isEqual, subDays } from 'date-fns'
 import { compact } from 'lodash'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
