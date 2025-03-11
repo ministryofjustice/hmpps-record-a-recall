@@ -19,7 +19,7 @@ declare module 'models' {
   }
 
   export interface UAL {
-    recallId: string
+    recallId?: string
     nomisId: string
     bookingId: number
     recallDate: Date
