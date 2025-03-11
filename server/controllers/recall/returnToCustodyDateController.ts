@@ -84,6 +84,15 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     return startsBeforeRecallEnds && endsAfterRecallStarts
   }
 
+  // check if exact matches here to know if post or updating something call exact match
+  // and just overlapping/conflicting ones.
+  // no matches - post
+  //  if only an exact - put update exisitng one with recall id
+  // conflicting( exact/overlap) after passed error checks - save to session will be edit in validate
+
+  // we want to editUal - change start/end date to reduce OR exact match dont do that
+
+  // in checkyouranswers controller needs to update new recall
   saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
     const { values } = req.form
     const { nomisId } = res.locals
@@ -110,6 +119,28 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       // We may also need to update existing adjustments if we're merging with them. We can do that here and stick in the session
       // ready to update them when saving the recall
 
+      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+
+      const conflictingAdjustments: AdjustmentDto[] = this.getConflictingAdjustments(
+        recallDate,
+        rtcDate,
+        existingAdjustments,
+      )
+      console.log('in save values', conflictingAdjustments)
+
+      const hasExactMatch = conflictingAdjustments.some(
+        adjustment =>
+          adjustment.fromDate === recallDate.toISOString().split('T')[0] && // T cos iso date string have full timestamp and just want date
+          adjustment.toDate === rtcDate.toISOString().split('T')[0],
+      )
+
+      if (hasExactMatch) {
+        req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, ual)
+      } else {
+        console.log('No exact match. Update or create a new UAL adjustment.')
+      }
+
+      // ualtoupdate and ualtocreate not ualtosave
       req.sessionModel.set(sessionModelFields.UAL_TO_SAVE, ualToSave)
       req.sessionModel.set(sessionModelFields.UAL, ual)
     } else {
