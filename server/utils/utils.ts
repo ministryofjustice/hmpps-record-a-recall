@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, format, isEqual, parse } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isEqual, subDays } from 'date-fns'
 import { compact } from 'lodash'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
@@ -46,17 +46,13 @@ export const sanitizeString = (string: string | null): string | null => {
   return string ? string.trim().toUpperCase() : null
 }
 
-// TODO RCLL-316 align adjustments API calculation
 export function calculateUal(recallDate: string | Date, returnToCustodyDate?: string | Date): number {
-  if (!returnToCustodyDate) {
+  const ualStart = addDays(recallDate, 1)
+  if (!returnToCustodyDate || isEqual(recallDate, returnToCustodyDate) || isEqual(ualStart, returnToCustodyDate)) {
     return null
   }
-  if (isEqual(recallDate, returnToCustodyDate)) {
-    return 0
-  }
-  const parsedRecall = recallDate instanceof Date ? recallDate : parse(recallDate, 'yyyy-MM-dd', new Date())
-
-  return differenceInCalendarDays(returnToCustodyDate, addDays(parsedRecall, 1))
+  const ualEnd = subDays(returnToCustodyDate, 1)
+  return differenceInCalendarDays(ualEnd, ualStart) + 1
 }
 
 export function createAnswerSummaryList(
