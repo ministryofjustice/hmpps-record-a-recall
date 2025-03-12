@@ -12,8 +12,8 @@ export default class AdjustmentsService {
       bookingId: ual.bookingId,
       adjustmentType: 'UNLAWFULLY_AT_LARGE',
       person: ual.nomisId,
-      toDate: formatDate(ual.returnToCustodyDate),
-      fromDate: formatDate(ual.revocationDate),
+      toDate: formatDate(ual.lastDay),
+      fromDate: formatDate(ual.firstDay),
       unlawfullyAtLarge: {
         type: 'RECALL',
       },
