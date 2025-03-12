@@ -16,14 +16,18 @@ export default class AdjustmentsApiClient {
     }) as Promise<CreateResponse>
   }
 
-  async getAdjustments(
-    person: string,
-    // currentPeriodOfCustody: boolean,
-  ): Promise<AdjustmentDto[]> {
+  // updating just one or many? yes or promise.all later
+  async updateAdjustment(adjustmentId: string, adjustment: AdjustmentDto): Promise<CreateResponse> {
+    return this.restClient.put({
+      data: adjustment,
+      path: `/adjustments/${adjustmentId}`,
+    }) as Promise<CreateResponse>
+  }
+
+  async getAdjustments(person: string): Promise<AdjustmentDto[]> {
     return this.restClient.get({
       query: {
         person,
-        // currentPeriodOfCustody,
       },
       path: `/adjustments`,
     }) as Promise<AdjustmentDto[]>
