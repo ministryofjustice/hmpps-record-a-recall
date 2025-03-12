@@ -86,6 +86,7 @@ export const sessionModelFields = {
   EXISTING_ADJUSTMENTS: 'existingAdjustments',
   CONFLICTING_ADJUSTMENTS: 'conflictingAdjustments',
   UAL_TO_SAVE: 'ualToSave',
+  UAL_TO_EDIT: 'ualToEdit',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -179,6 +180,10 @@ export function getConflictingAdjustments(req: FormWizard.Request): ConflictingA
 
 export function getUalToSave(req: FormWizard.Request): UAL {
   return get<UAL>(req, sessionModelFields.UAL_TO_SAVE)
+}
+
+export function getUalToEdit(req: FormWizard.Request): UAL {
+  return get<UAL>(req, sessionModelFields.UAL_TO_EDIT)
 }
 
 function get<T>(req: FormWizard.Request, key: string): T {

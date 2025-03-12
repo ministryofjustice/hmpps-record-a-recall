@@ -29,6 +29,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
       if (values.inPrisonAtRecall === 'false') {
         if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
+          console.log('1 ---------equal or after')
           validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRevDate')
         } else {
           const proposedUal = calculateUal(revocationDate, rtcDate)
@@ -39,10 +40,12 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
               proposedUal,
               existingAdjustments,
             )
+            console.log('2 ------------*****************happy path')
             req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
             const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
             if (allConflicting.length > 1) {
+              console.log('3 ----------too many')
               validationErrors.returnToCustodyDate = this.formError(
                 'returnToCustodyDate',
                 'multipleConflictingAdjustment',
@@ -50,6 +53,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             } else if (
               allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
             ) {
+              console.log('4 ---------- conflicting')
               validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
             }
           }
@@ -121,13 +125,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const ual = values.inPrisonAtRecall === 'false' ? calculateUal(journeyData.revocationDate, rtcDate) : null
     const conflAdj: ConflictingAdjustments = getConflictingAdjustments(req)
 
-    // TODO We now want to identify if we should be creating and/or updatina djustments
-
-    // IF no conflicting, just remember that we want to post new UAL, set recall ID on it later
-    // ELSE if exact match or within, remember that we want to update it (make start/end dates match, set recallId on it later)
-    // ELSE if overlap remember that we want to
-    //  1- update start date to day after our UAL, NOT add recallId later
-    //  2- post our new UAL, set recallID on it later
+    console.log(conflAdj, '--------------------------')
 
     if (ual) {
       const ualToSave: UAL = {
@@ -136,12 +134,27 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         bookingId: parseInt(prisonerDetails.bookingId, 10),
       }
 
+      if (Object.values(conflAdj).every(arr => arr.length === 0)) {
+        req.sessionModel.set(sessionModelFields.UAL_TO_SAVE, ualToSave)
+        req.sessionModel.set(sessionModelFields.UAL, ual)
+      } else if (conflAdj.exact.length === 1 || conflAdj.within.length === 1) {
+        req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, ual)
+      } else {
+        req.sessionModel.set(sessionModelFields.UAL_TO_SAVE, ualToSave)
+        req.sessionModel.set(sessionModelFields.UAL, ual)
+      }
+
+      // TODO We now want to identify if we should be creating and/or updatina djustments
+
+      // IF no conflicting, just remember that we want to post new UAL, set recall ID on it later
+      // ELSE if exact match or within, remember that we want to update it (make start/end dates match, set recallId on it later)
+      // ELSE if overlap remember that we want to
+      //  1- update start date to day after our UAL, NOT add recallId later
+      //  2- post our new UAL, set recallID on it later
+
       // const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
       // We may also need to update existing adjustments if we're merging with them. We can do that here and stick in the session
       // ready to update them when saving the recall
-
-      req.sessionModel.set(sessionModelFields.UAL_TO_SAVE, ualToSave)
-      req.sessionModel.set(sessionModelFields.UAL, ual)
     } else {
       req.sessionModel.unset(sessionModelFields.UAL)
       req.sessionModel.unset(sessionModelFields.UAL_TO_SAVE)
