@@ -1,3 +1,6 @@
+import { RecallEligibility } from '../recallEligibility'
+import { SummaryListRow } from '../govuk'
+
 declare module 'models' {
   import { RecallType } from '../recallTypes'
   import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -20,10 +23,10 @@ declare module 'models' {
 
   export interface UAL {
     recallId?: string
-    nomisId: string
-    bookingId: number
-    revocationDate: Date
-    returnToCustodyDate: Date
+    nomisId?: string
+    bookingId?: number
+    firstDay: Date
+    lastDay: Date
     days?: number
   }
 
@@ -63,5 +66,14 @@ declare module 'models' {
     /** Format: int32 */
     days?: number
     code?: string
+  }
+  export type conflicting = {
+    sentenceId?: string
+    recallEligibility: RecallEligibility
+    summary: SummaryListRow[]
+    offenceCode: string
+    offenceDescription?: string
+    unadjustedSled?: string
+    sentenceLengthDays?: number
   }
 }

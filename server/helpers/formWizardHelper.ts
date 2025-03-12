@@ -10,7 +10,7 @@ import {
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallEligibility } from '../@types/recallEligibility'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
-import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { AdjustmentDto, ConflictingAdjustments } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
@@ -84,6 +84,7 @@ export const sessionModelFields = {
   RECALL_ELIGIBILITY: 'recallEligibility',
   RECALL_TYPE_MISMATCH: 'recallTypeMismatch',
   EXISTING_ADJUSTMENTS: 'existingAdjustments',
+  CONFLICTING_ADJUSTMENTS: 'conflictingAdjustments',
   UAL_TO_SAVE: 'ualToSave',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
@@ -170,6 +171,10 @@ export function getPrisoner(req: FormWizard.Request): PrisonerSearchApiPrisoner 
 
 export function getExistingAdjustments(req: FormWizard.Request): AdjustmentDto[] {
   return get<AdjustmentDto[]>(req, sessionModelFields.EXISTING_ADJUSTMENTS)
+}
+
+export function getConflictingAdjustments(req: FormWizard.Request): ConflictingAdjustments {
+  return get<ConflictingAdjustments>(req, sessionModelFields.CONFLICTING_ADJUSTMENTS)
 }
 
 export function getUalToSave(req: FormWizard.Request): UAL {
