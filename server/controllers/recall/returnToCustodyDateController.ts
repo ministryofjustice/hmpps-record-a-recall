@@ -21,19 +21,14 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const revocationDate = getRevocationDate(req)
       const rtcDate = new Date(values.returnToCustodyDate as string)
 
-      console.log(revocationDate)
-
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 
       if (values.inPrisonAtRecall === 'false') {
         if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
-          console.log('RTC is before revdat, adding error')
           validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRevDate')
         } else {
-          console.log('calculating ual')
           const ual = calculateUal(revocationDate, rtcDate)
-          console.log(ual)
           if (ual) {
             const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
             // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
