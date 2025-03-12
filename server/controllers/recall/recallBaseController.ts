@@ -28,7 +28,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const isEditRecall = journeyData.isEdit
     const recallId = journeyData.storedRecall?.recallId
     const calculation = getTemporaryCalc(req)
-    const { recallDate } = journeyData
+    const { revocationDate } = journeyData
     const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
     const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
     const selectedRecallType = journeyData.recallType
@@ -47,7 +47,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
     return {
       ...locals,
       calculation,
-      recallDate,
+      revocationDate,
       urls,
       crdsValidationErrors,
       autoRecallFailErrors,

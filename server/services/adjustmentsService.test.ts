@@ -25,7 +25,7 @@ describe('Adjustments Service', () => {
         recallId: 'recallId',
         nomisId: 'nomidId',
         bookingId: 1,
-        recallDate: new Date('2024-01-01'),
+        revocationDate: new Date('2024-01-01'),
         returnToCustodyDate: new Date('2024-01-02'),
       }
       fakeAdjustmentsApi

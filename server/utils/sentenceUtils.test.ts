@@ -1,8 +1,8 @@
 import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { groupSentencesByRecallDate } from './sentenceUtils'
+import { groupSentencesByRevocationDate } from './sentenceUtils'
 
 describe('sentenceUtils', () => {
-  describe('groupSentencesByRecallDate', () => {
+  describe('groupSentencesByRevocationDate', () => {
     it('should group sentences based on recall date - expired sentences', async () => {
       const calculationBreakdown = {
         concurrentSentences: [
@@ -35,7 +35,7 @@ describe('sentenceUtils', () => {
         ersedNotApplicableDueToDtoLaterThanCrd: false,
       } as CalculationBreakdown
 
-      const result = groupSentencesByRecallDate(calculationBreakdown, new Date(2024, 1, 1))
+      const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2024, 1, 1))
 
       expect(result).toEqual({
         onLicenceSentences: [],
@@ -86,7 +86,7 @@ describe('sentenceUtils', () => {
         ersedNotApplicableDueToDtoLaterThanCrd: false,
       } as CalculationBreakdown
 
-      const result = groupSentencesByRecallDate(calculationBreakdown, new Date(2024, 3, 1))
+      const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2024, 3, 1))
 
       expect(result).toEqual({
         onLicenceSentences: [
@@ -137,7 +137,7 @@ describe('sentenceUtils', () => {
         ersedNotApplicableDueToDtoLaterThanCrd: false,
       } as CalculationBreakdown
 
-      const result = groupSentencesByRecallDate(calculationBreakdown, new Date(2023, 11, 15))
+      const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2023, 11, 15))
 
       expect(result).toEqual({
         onLicenceSentences: [],
@@ -210,7 +210,7 @@ describe('sentenceUtils', () => {
         ersedNotApplicableDueToDtoLaterThanCrd: false,
       } as CalculationBreakdown
 
-      const result = groupSentencesByRecallDate(calculationBreakdown, new Date(2024, 2, 15))
+      const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2024, 2, 15))
 
       expect(result).toEqual({
         activeSentences: [],
@@ -248,7 +248,7 @@ describe('sentenceUtils', () => {
         ersedNotApplicableDueToDtoLaterThanCrd: false,
       } as CalculationBreakdown
 
-      const result = groupSentencesByRecallDate(breakdown, new Date(2024, 2, 15))
+      const result = groupSentencesByRevocationDate(breakdown, new Date(2024, 2, 15))
 
       expect(result).toEqual({ activeSentences: [], expiredSentences: [], onLicenceSentences: [] })
     })

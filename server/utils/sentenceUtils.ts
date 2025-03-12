@@ -27,7 +27,7 @@ const SINGLE_MATCH_CRITERIA = [
 
 export function filterAndCategorizeConcurrentSentences(
   sentences: ConcurrentSentenceBreakdown[],
-  recallDate: Date,
+  revocationDate: Date,
 ): {
   onLicenceConcurrent: SentenceDetail[]
   activeConcurrent: SentenceDetail[]
@@ -50,11 +50,11 @@ export function filterAndCategorizeConcurrentSentences(
     const sled = sentence.dates.SLED ? new Date(sentence.dates.SLED.adjusted) : new Date(sentence.dates.SED?.adjusted)
 
     // Categorize the sentence based on the recall date
-    if (recallDate > sled) {
+    if (revocationDate > sled) {
       expiredConcurrent.push(mapConcurrentToSentenceDetail(sentence))
-    } else if (recallDate >= crd && recallDate < sled) {
+    } else if (revocationDate >= crd && revocationDate < sled) {
       onLicenceConcurrent.push(mapConcurrentToSentenceDetail(sentence))
-    } else if (recallDate < crd) {
+    } else if (revocationDate < crd) {
       activeConcurrent.push(mapConcurrentToSentenceDetail(sentence))
     } else {
       expiredConcurrent.push(mapConcurrentToSentenceDetail(sentence))
@@ -66,7 +66,7 @@ export function filterAndCategorizeConcurrentSentences(
 
 export function filterAndCategorizeConsecutiveSentenceParts(
   consecutiveSentence: ConsecutiveSentenceBreakdown,
-  recallDate: Date,
+  revocationDate: Date,
 ): {
   onLicenceConsecutive: SentenceDetail[]
   activeConsecutive: SentenceDetail[]
@@ -93,11 +93,11 @@ export function filterAndCategorizeConsecutiveSentenceParts(
     : new Date(consecutiveSentence.dates.SED?.adjusted)
 
   consecutiveSentence.sentenceParts.forEach(part => {
-    if (recallDate > sled) {
+    if (revocationDate > sled) {
       expiredConsecutive.push(mapConsecutivePartToSentenceDetail(part, crd, sled))
-    } else if (recallDate >= crd && recallDate < sled) {
+    } else if (revocationDate >= crd && revocationDate < sled) {
       onLicenceConsecutive.push(mapConsecutivePartToSentenceDetail(part, crd, sled))
-    } else if (recallDate < crd) {
+    } else if (revocationDate < crd) {
       activeConsecutive.push(mapConsecutivePartToSentenceDetail(part, crd, sled))
     } else {
       expiredConsecutive.push(mapConsecutivePartToSentenceDetail(part, crd, sled))
@@ -135,16 +135,16 @@ export function mapConsecutivePartToSentenceDetail(
   }
 }
 
-export function groupSentencesByRecallDate(
+export function groupSentencesByRevocationDate(
   breakdown: CalculationBreakdown,
-  recallDate: Date,
+  revocationDate: Date,
 ): {
   onLicenceSentences: SentenceDetail[]
   activeSentences: SentenceDetail[]
   expiredSentences: SentenceDetail[]
 } {
   if (!breakdown) {
-    logger.error('Error in groupSentencesByRecallDate: No calculationRequestId')
+    logger.error('Error in groupSentencesByRevocationDate: No calculationRequestId')
     return {
       onLicenceSentences: [],
       activeSentences: [],
@@ -155,12 +155,12 @@ export function groupSentencesByRecallDate(
     // Filter and categorize concurrent sentences
     const { onLicenceConcurrent, activeConcurrent, expiredConcurrent } = filterAndCategorizeConcurrentSentences(
       breakdown.concurrentSentences,
-      recallDate,
+      revocationDate,
     )
 
     // Filter and categorize consecutive sentence parts
     const { onLicenceConsecutive, activeConsecutive, expiredConsecutive } = breakdown.consecutiveSentence
-      ? filterAndCategorizeConsecutiveSentenceParts(breakdown.consecutiveSentence, recallDate)
+      ? filterAndCategorizeConsecutiveSentenceParts(breakdown.consecutiveSentence, revocationDate)
       : { onLicenceConsecutive: [], activeConsecutive: [], expiredConsecutive: [] }
 
     // Combine all filtered sentences into their respective categories
@@ -178,7 +178,7 @@ export function groupSentencesByRecallDate(
       expiredSentences,
     }
   } catch (error) {
-    logger.error(`Error in groupSentencesByRecallDate: ${error.message}`, error)
+    logger.error(`Error in groupSentencesByRevocationDate: ${error.message}`, error)
     return {
       onLicenceSentences: [],
       activeSentences: [],

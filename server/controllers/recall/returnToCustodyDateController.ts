@@ -8,7 +8,7 @@ import { calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
   getExistingAdjustments,
   getPrisoner,
-  getRecallDate,
+  getRevocationDate,
   RecallJourneyData,
   sessionModelFields,
 } from '../../helpers/formWizardHelper'
@@ -18,32 +18,40 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form
-      const recallDate = getRecallDate(req)
+      const revocationDate = getRevocationDate(req)
       const rtcDate = new Date(values.returnToCustodyDate as string)
+
+      console.log(revocationDate)
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 
       if (values.inPrisonAtRecall === 'false') {
-        if (isBefore(values.returnToCustodyDate as string, recallDate)) {
-          validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRecallDate')
-        }
+        if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
+          console.log('RTC is before revdat, adding error')
+          validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRevDate')
+        } else {
+          console.log('calculating ual')
+          const ual = calculateUal(revocationDate, rtcDate)
+          console.log(ual)
+          if (ual) {
+            const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+            // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
+            const conflictingAdjustments: AdjustmentDto[] = this.getConflictingAdjustments(
+              revocationDate,
+              rtcDate,
+              existingAdjustments,
+            )
 
-        const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-        // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
-
-        const conflictingAdjustments: AdjustmentDto[] = this.getConflictingAdjustments(
-          recallDate,
-          rtcDate,
-          existingAdjustments,
-        )
-
-        if (
-          conflictingAdjustments.some(
-            adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment),
-          )
-        ) {
-          validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
+            if (
+              conflictingAdjustments.length > 0 &&
+              conflictingAdjustments.some(
+                adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment),
+              )
+            ) {
+              validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
+            }
+          }
         }
       }
       callback({ ...errors, ...validationErrors })
@@ -55,22 +63,29 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
   }
 
   isNonRecallUal(adjustment: AdjustmentDto) {
-    return adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adjustment.unlawfullyAtLarge!.type !== 'RECALL'
+    return (
+      adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE' &&
+      (!adjustment.unlawfullyAtLarge || adjustment.unlawfullyAtLarge.type !== 'RECALL')
+    )
   }
 
-  getConflictingAdjustments(recallDate: Date, rtcDate: Date, existingAdjustments?: AdjustmentDto[]): AdjustmentDto[] {
+  getConflictingAdjustments(
+    revocationDate: Date,
+    rtcDate: Date,
+    existingAdjustments?: AdjustmentDto[],
+  ): AdjustmentDto[] {
     if (!existingAdjustments || existingAdjustments.length === 0) {
       return []
     }
 
     const conflictingAdjustments = existingAdjustments.filter(adjustment =>
-      this.doesConflict(recallDate, rtcDate, adjustment),
+      this.doesConflict(revocationDate, rtcDate, adjustment),
     )
 
     return conflictingAdjustments
   }
 
-  doesConflict(recallDate: Date, rtcDate: Date, adjustment: AdjustmentDto): boolean {
+  doesConflict(revocationDate: Date, rtcDate: Date, adjustment: AdjustmentDto): boolean {
     if (!adjustment.fromDate || !adjustment.toDate) {
       return false
     }
@@ -79,7 +94,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const adjEnd = parseISO(adjustment.toDate)
 
     const startsBeforeRecallEnds = isBefore(adjStart, recallEnd)
-    const endsAfterRecallStarts = isAfter(adjEnd, recallDate)
+    const endsAfterRecallStarts = isAfter(adjEnd, revocationDate)
 
     return startsBeforeRecallEnds && endsAfterRecallStarts
   }
@@ -91,16 +106,16 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
 
     if (values.inPrisonAtRecall === 'false') {
-      const recallDate = getRecallDate(req)
+      const revocationDate = getRevocationDate(req)
 
       const rtcDate = new Date(values.returnToCustodyDate as string)
 
-      const ual = calculateUal(recallDate, rtcDate)
+      const ual = calculateUal(revocationDate, rtcDate)
 
       const ualToSave: UAL = {
         nomisId,
         bookingId: parseInt(prisonerDetails.bookingId, 10),
-        recallDate: journeyData.recallDate,
+        revocationDate: journeyData.revocationDate,
         returnToCustodyDate: rtcDate,
         // We're not currently using this pending aligning with adjustments
         days: journeyData.ual,

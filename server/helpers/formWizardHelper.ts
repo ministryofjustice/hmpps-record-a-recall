@@ -20,8 +20,8 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
 
   return {
     storedRecall: getStoredRecall(req),
-    recallDate: getRecallDate(req),
-    recallDateString: get<string>(req, sessionModelFields.RECALL_DATE),
+    revocationDate: getRevocationDate(req),
+    revDateString: get<string>(req, sessionModelFields.REVOCATION_DATE),
     inPrisonAtRecall: inPrisonAtRecall(req),
     returnToCustodyDate: getReturnToCustodyDate(req),
     returnToCustodyDateString: get<string>(req, sessionModelFields.RTC_DATE),
@@ -39,8 +39,8 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
 
 export type RecallJourneyData = {
   storedRecall?: Recall
-  recallDate?: Date
-  recallDateString?: string
+  revocationDate?: Date
+  revDateString?: string
   inPrisonAtRecall: boolean
   returnToCustodyDate?: Date
   returnToCustodyDateString?: string
@@ -70,7 +70,7 @@ export const sessionModelFields = {
   COURT_CASES: 'courtCases',
   IN_PRISON_AT_RECALL: 'inPrisonAtRecall',
   RTC_DATE: 'returnToCustodyDate',
-  RECALL_DATE: 'recallDate',
+  REVOCATION_DATE: 'revocationDate',
   ELIGIBLE_SENTENCE_COUNT: 'eligibleSentenceCount',
   SUMMARISED_SENTENCES: 'summarisedSentenceGroups',
   IS_EDIT: 'isEdit',
@@ -135,9 +135,9 @@ export function getReturnToCustodyDate(req: FormWizard.Request): Date {
   return returnToCustodyDate ? new Date(returnToCustodyDate) : null
 }
 
-export function getRecallDate(req: FormWizard.Request): Date {
-  const recallDate = req.sessionModel.get<string>(sessionModelFields.RECALL_DATE)
-  return recallDate ? new Date(recallDate) : null
+export function getRevocationDate(req: FormWizard.Request): Date {
+  const revocationDate = req.sessionModel.get<string>(sessionModelFields.REVOCATION_DATE)
+  return revocationDate ? new Date(revocationDate) : null
 }
 
 export function getEligibleSentenceCount(req: FormWizard.Request): number {
