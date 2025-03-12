@@ -4,8 +4,14 @@ import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { createAnswerSummaryList } from '../../utils/utils'
-import getJourneyDataFromRequest, { getUalToSave, RecallJourneyData } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, {
+  getUalToSave,
+  RecallJourneyData,
+  getExistingAdjustments,
+  getUalToEdit,
+} from '../../helpers/formWizardHelper'
 import logger from '../../../logger'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -39,6 +45,20 @@ export default class CheckYourAnswersController extends RecallBaseController {
       }
 
       const createResponse = await req.services.recallService.postRecall(recallToSave, username)
+
+      const existingUal = await req.services.adjustmentsService.searchUal(nomisId, username)
+
+      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+      // set recallID on one to post if we have both post and update
+
+      const ualToEdit = getUalToEdit(req)
+
+      if (ualToEdit !== null) {
+        ualToEdit.recallId = createResponse.recallUuid
+        await req.services.adjustmentsService.updateUal(ualToEdit, username, existingAdjustments[0].id).catch(() => {
+          logger.error('Error while updating UAL in adjustments API')
+        })
+      }
 
       const ualToCreate = getUalToSave(req)
       if (ualToCreate !== null) {
