@@ -1,5 +1,5 @@
 import FormWizard from 'hmpo-form-wizard'
-import { getBreakdown, getCrdsSentences, getRecallDate, sessionModelFields } from '../helpers/formWizardHelper'
+import { getBreakdown, getCrdsSentences, getRevocationDate, sessionModelFields } from '../helpers/formWizardHelper'
 import {
   groupSentencesByCaseRefAndCourt,
   hasManualOnlySentences,
@@ -8,10 +8,10 @@ import {
 } from './sentenceUtils'
 import summariseSentencesGroups from './CaseSentenceSummariser'
 
-export default function recallDateCrdsDataComparison(req: FormWizard.Request) {
+export default function revocationDateCrdsDataComparison(req: FormWizard.Request) {
   const sentences = getCrdsSentences(req)
   const breakdown = getBreakdown(req)
-  const recallDate = getRecallDate(req)
+  const revocationDate = getRevocationDate(req)
 
   const groupedSentences = groupSentencesByCaseRefAndCourt(sentences)
   req.sessionModel.set(sessionModelFields.GROUPED_SENTENCES, groupedSentences)
@@ -19,7 +19,7 @@ export default function recallDateCrdsDataComparison(req: FormWizard.Request) {
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = summariseSentencesGroups(
     groupedSentences,
     breakdown,
-    recallDate,
+    revocationDate,
   )
   req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroups)
 

@@ -13,7 +13,7 @@ export default class AdjustmentsService {
       adjustmentType: 'UNLAWFULLY_AT_LARGE',
       person: ual.nomisId,
       toDate: formatDate(ual.returnToCustodyDate),
-      fromDate: formatDate(ual.recallDate),
+      fromDate: formatDate(ual.revocationDate),
       unlawfullyAtLarge: {
         type: 'RECALL',
       },

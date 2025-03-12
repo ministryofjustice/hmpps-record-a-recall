@@ -5,7 +5,7 @@ declare module 'models' {
   export interface Recall {
     recallId: string
     createdAt: string
-    recallDate: Date
+    revocationDate: Date
     returnToCustodyDate: Date
     ual: number
     ualString: string
@@ -22,7 +22,7 @@ declare module 'models' {
     recallId?: string
     nomisId: string
     bookingId: number
-    recallDate: Date
+    revocationDate: Date
     returnToCustodyDate: Date
     days?: number
   }

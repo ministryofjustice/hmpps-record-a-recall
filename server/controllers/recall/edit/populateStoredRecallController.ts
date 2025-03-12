@@ -14,7 +14,7 @@ import {
   isManualCaseSelection,
   sessionModelFields,
 } from '../../../helpers/formWizardHelper'
-import recallDateCrdsDataComparison from '../../../utils/recallDateCrdsDataComparison'
+import revocationDateCrdsDataComparison from '../../../utils/revocationDateCrdsDataComparison'
 import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'
 import getCourtCaseOptionsFromRas from '../../../utils/rasCourtCasesUtils'
 
@@ -50,15 +50,15 @@ export default class PopulateStoredRecallController extends RecallBaseController
     req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     const { storedRecall, recallId } = res.locals
     const { recallType } = storedRecall
-    const recallDate = format(new Date(storedRecall.recallDate), 'yyyy-MM-dd')
+    const revocationDate = format(new Date(storedRecall.revocationDate), 'yyyy-MM-dd')
     const returnToCustodyDate = storedRecall.returnToCustodyDate
       ? format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
       : null
-    storedRecall.ual = calculateUal(recallDate, returnToCustodyDate)
+    storedRecall.ual = calculateUal(revocationDate, returnToCustodyDate)
     req.sessionModel.set(sessionModelFields.STORED_RECALL, storedRecall)
     req.sessionModel.set(sessionModelFields.RECALL_ID, recallId)
     req.sessionModel.set(sessionModelFields.IS_EDIT, true)
-    req.sessionModel.set(sessionModelFields.RECALL_DATE, recallDate)
+    req.sessionModel.set(sessionModelFields.REVOCATION_DATE, revocationDate)
     req.sessionModel.set(sessionModelFields.RECALL_TYPE, recallType.code)
     req.sessionModel.set(sessionModelFields.RTC_DATE, returnToCustodyDate)
     req.sessionModel.set(
@@ -69,7 +69,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
 
     // We do a crds comparison here to figure out if it was a manual recall
     // If it was, we replace the sentence info with RaS data
-    recallDateCrdsDataComparison(req)
+    revocationDateCrdsDataComparison(req)
     if (isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0) {
       req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, storedRecall.sentenceIds.length)
       const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>

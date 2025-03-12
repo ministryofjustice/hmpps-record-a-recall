@@ -23,7 +23,7 @@ import { eligibilityReasons } from '../@types/recallEligibility'
 export default function summariseSentencesGroups(
   groupedSentences: Record<string, SentenceAndOffenceWithReleaseArrangements[]>,
   breakdown: CalculationBreakdown,
-  recallDate: Date,
+  revocationDate: Date,
 ): SummarisedSentenceGroup[] {
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = []
 
@@ -49,7 +49,7 @@ export default function summariseSentencesGroups(
         sentence,
         concurrentSentenceBreakdown,
         consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
-        recallDate,
+        revocationDate,
       )
 
       const forthConsConc = forthwithConsecutiveConcurrent(

@@ -4,11 +4,11 @@ import { NextFunction, Response } from 'express'
 import { isBefore, isAfter, min } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
-import recallDateCrdsDataComparison from '../../utils/recallDateCrdsDataComparison'
+import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
 import { getCrdsSentences, getRecallOptions, getExistingAdjustments } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
-export default class RecallDateController extends RecallBaseController {
+export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
     const prisoner: PrisonerSearchApiPrisoner = locals.prisoner as PrisonerSearchApiPrisoner
@@ -50,7 +50,7 @@ export default class RecallDateController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     if (getRecallOptions(req) !== 'MANUAL_ONLY') {
-      recallDateCrdsDataComparison(req)
+      revocationDateCrdsDataComparison(req)
     }
     return super.successHandler(req, res, next)
   }

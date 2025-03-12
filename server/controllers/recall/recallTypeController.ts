@@ -7,7 +7,7 @@ import { RecallTypes } from '../../@types/recallTypes'
 import logger from '../../../logger'
 import { SummarisedSentence } from '../../utils/sentenceUtils'
 import {
-  getRecallDate,
+  getRevocationDate,
   getRecallTypeCode,
   getSummarisedSentenceGroups,
   isManualCaseSelection,
@@ -30,7 +30,7 @@ export default class RecallTypeController extends RecallBaseController {
     const selectedType = getRecallTypeCode(req)
 
     const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
-    const recallDate = getRecallDate(req)
+    const revDate = getRevocationDate(req)
 
     const eligibleSentences: SummarisedSentence[] =
       summarisedSentenceGroups?.flatMap(group => group.eligibleSentences) || []
@@ -43,7 +43,7 @@ export default class RecallTypeController extends RecallBaseController {
         return (
           isManualCaseSelection(req) ||
           !type.fixedTerm ||
-          this.fourteenDayRecallRequired(eligibleSentences, recallDate) === type.subTwelveMonthApplicable
+          this.fourteenDayRecallRequired(eligibleSentences, revDate) === type.subTwelveMonthApplicable
         )
       })
       .map(t => t.code)
@@ -53,7 +53,7 @@ export default class RecallTypeController extends RecallBaseController {
     return super.successHandler(req, res, next)
   }
 
-  private fourteenDayRecallRequired(sentences: SummarisedSentence[], recallDate: Date): boolean {
+  private fourteenDayRecallRequired(sentences: SummarisedSentence[], revocationDate: Date): boolean {
     if (this.hasSentencesEqualToOrOverTwelveMonths(sentences) && !this.hasSentencesUnderTwelveMonths(sentences)) {
       logger.debug('All sentences are over twelve months')
       return false
@@ -70,7 +70,7 @@ export default class RecallTypeController extends RecallBaseController {
     )
     logger.debug('Mixture of sentence lengths')
 
-    const fourteenDaysFromRecall = addDays(recallDate, 14)
+    const fourteenDaysFromRecall = addDays(revocationDate, 14)
     logger.debug(
       `Checking if latest SLED [${latestExpiryDateOfTwelveMonthPlusSentences}] is over 14 days from date of recall [${fourteenDaysFromRecall}]`,
     )

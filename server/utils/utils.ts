@@ -46,9 +46,9 @@ export const sanitizeString = (string: string | null): string | null => {
   return string ? string.trim().toUpperCase() : null
 }
 
-export function calculateUal(recallDate: string | Date, returnToCustodyDate?: string | Date): number {
-  const ualStart = addDays(recallDate, 1)
-  if (!returnToCustodyDate || isEqual(recallDate, returnToCustodyDate) || isEqual(ualStart, returnToCustodyDate)) {
+export function calculateUal(revDate: string | Date, returnToCustodyDate?: string | Date): number {
+  const ualStart = addDays(revDate, 1)
+  if (!returnToCustodyDate || isEqual(revDate, returnToCustodyDate) || isEqual(ualStart, returnToCustodyDate)) {
     return null
   }
   const ualEnd = subDays(returnToCustodyDate, 1)
@@ -62,7 +62,7 @@ export function createAnswerSummaryList(
   const sentences = journeyData.eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
   const cases = journeyData.courtCaseCount === 1 ? 'case' : 'cases'
   return compact([
-    toSummaryListRow('Date of revocation', formatLongDate(journeyData.recallDate), editLink('revocation-date')),
+    toSummaryListRow('Date of revocation', formatLongDate(journeyData.revocationDate), editLink('revocation-date')),
     toSummaryListRow(
       'Arrest date',
       formatLongDate(journeyData.returnToCustodyDate) || 'In prison when recalled',

@@ -10,7 +10,7 @@ export default function getEligibility(
   sentence: SentenceAndOffenceWithReleaseArrangements,
   concBreakdown: ConcurrentSentenceBreakdown,
   consBreakdown: ConsecutiveSentenceBreakdown,
-  recallDate: Date,
+  revocationDate: Date,
 ): RecallEligibility {
   const breakdown = concBreakdown || consBreakdown
 
@@ -39,15 +39,15 @@ export default function getEligibility(
 
   const adjustedCrd = new Date(breakdown.dates.CRD.adjusted)
 
-  if (recallDate < new Date(sentence.sentenceDate)) {
+  if (revocationDate < new Date(sentence.sentenceDate)) {
     return eligibilityReasons.RECALL_DATE_BEFORE_SENTENCE_START
   }
 
-  if (recallDate < adjustedCrd) {
+  if (revocationDate < adjustedCrd) {
     return eligibilityReasons.RECALL_DATE_BEFORE_RELEASE_DATE
   }
 
-  if (recallDate > adjustedSled) {
+  if (revocationDate > adjustedSled) {
     return eligibilityReasons.RECALL_DATE_AFTER_EXPIRATION_DATE
   }
 

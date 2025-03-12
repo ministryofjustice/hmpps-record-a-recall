@@ -1,5 +1,5 @@
 import FormWizard from 'hmpo-form-wizard'
-import RecallDateController from '../../controllers/recall/recallDateController'
+import RevocationDateController from '../../controllers/recall/revocationDateController'
 import ReturnToCustodyDateController from '../../controllers/recall/returnToCustodyDateController'
 import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
 import RecallTypeController from '../../controllers/recall/recallTypeController'
@@ -29,7 +29,7 @@ const steps = {
     fields: ['revocationDate'],
     next: 'rtc-date',
     template: 'base-question',
-    controller: RecallDateController,
+    controller: RevocationDateController,
     editable: false,
   },
   '/rtc-date': {
