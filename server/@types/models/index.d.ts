@@ -1,6 +1,3 @@
-import { RecallEligibility } from '../recallEligibility'
-import { SummaryListRow } from '../govuk'
-
 declare module 'models' {
   import { RecallType } from '../recallTypes'
   import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -66,14 +63,5 @@ declare module 'models' {
     /** Format: int32 */
     days?: number
     code?: string
-  }
-  export type conflicting = {
-    sentenceId?: string
-    recallEligibility: RecallEligibility
-    summary: SummaryListRow[]
-    offenceCode: string
-    offenceDescription?: string
-    unadjustedSled?: string
-    sentenceLengthDays?: number
   }
 }
