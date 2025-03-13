@@ -25,8 +25,8 @@ describe('Adjustments Service', () => {
         recallId: 'recallId',
         nomisId: 'nomidId',
         bookingId: 1,
-        revocationDate: new Date('2024-01-01'),
-        returnToCustodyDate: new Date('2024-01-02'),
+        firstDay: new Date('2024-01-01'),
+        lastDay: new Date('2024-01-02'),
       }
       fakeAdjustmentsApi
         .post('/adjustments', [
@@ -45,6 +45,40 @@ describe('Adjustments Service', () => {
         .reply(200, { adjustmentIds: ['123'] } as CreateResponse)
 
       const adjustment = await adjustmentsService.postUal(ual, username)
+      expect(adjustment.adjustmentIds).toEqual(['123'])
+    })
+  })
+
+  describe('update adjustments', () => {
+    it('Should update correctly when updating an adjustment', async () => {
+      const username = 'A1234BC'
+      const adjustmentId = 'adjustmentId'
+      const ual: UAL = {
+        recallId: 'recallId',
+        nomisId: 'nomidId',
+        bookingId: 1,
+        firstDay: new Date('2024-01-01'),
+        lastDay: new Date('2024-01-02'),
+      }
+
+      hmppsAuthClient.getSystemClientToken.mockResolvedValue('mocked-token')
+
+      fakeAdjustmentsApi
+        .put(`/adjustments/${adjustmentId}`, {
+          id: adjustmentId,
+          bookingId: ual.bookingId,
+          adjustmentType: 'UNLAWFULLY_AT_LARGE',
+          person: ual.nomisId,
+          toDate: '2024-01-02',
+          fromDate: '2024-01-01',
+          unlawfullyAtLarge: {
+            type: 'RECALL',
+          },
+        })
+        .matchHeader('authorization', 'Bearer mocked-token')
+        .reply(200, { adjustmentIds: ['123'] } as CreateResponse)
+
+      const adjustment = await adjustmentsService.updateUal(ual, username, adjustmentId)
       expect(adjustment.adjustmentIds).toEqual(['123'])
     })
   })

@@ -20,10 +20,10 @@ declare module 'models' {
 
   export interface UAL {
     recallId?: string
-    nomisId: string
-    bookingId: number
-    revocationDate: Date
-    returnToCustodyDate: Date
+    nomisId?: string
+    bookingId?: number
+    firstDay: Date
+    lastDay: Date
     days?: number
   }
 

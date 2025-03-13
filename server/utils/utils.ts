@@ -1,5 +1,7 @@
 import { addDays, differenceInCalendarDays, format, isEqual, subDays } from 'date-fns'
 import { compact } from 'lodash'
+// eslint-disable-next-line import/no-unresolved
+import { UAL } from 'models'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
@@ -46,13 +48,17 @@ export const sanitizeString = (string: string | null): string | null => {
   return string ? string.trim().toUpperCase() : null
 }
 
-export function calculateUal(revDate: string | Date, returnToCustodyDate?: string | Date): number {
+export function calculateUal(revDate: string | Date, returnToCustodyDate?: string | Date): UAL {
   const ualStart = addDays(revDate, 1)
   if (!returnToCustodyDate || isEqual(revDate, returnToCustodyDate) || isEqual(ualStart, returnToCustodyDate)) {
     return null
   }
   const ualEnd = subDays(returnToCustodyDate, 1)
-  return differenceInCalendarDays(ualEnd, ualStart) + 1
+  return {
+    firstDay: ualStart,
+    lastDay: ualEnd,
+    days: differenceInCalendarDays(ualEnd, ualStart) + 1,
+  }
 }
 
 export function createAnswerSummaryList(

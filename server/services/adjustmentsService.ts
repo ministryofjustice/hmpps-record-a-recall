@@ -12,13 +12,29 @@ export default class AdjustmentsService {
       bookingId: ual.bookingId,
       adjustmentType: 'UNLAWFULLY_AT_LARGE',
       person: ual.nomisId,
-      toDate: formatDate(ual.returnToCustodyDate),
-      fromDate: formatDate(ual.revocationDate),
+      toDate: formatDate(ual.lastDay),
+      fromDate: formatDate(ual.firstDay),
       unlawfullyAtLarge: {
         type: 'RECALL',
       },
     }
     return (await this.getApiClient(username)).postAdjustments([adjustmentToCreate])
+  }
+
+  async updateUal(ual: UAL, username: string, adjustmentId: string): Promise<CreateResponse> {
+    const adjustmentToUpdate: AdjustmentDto = {
+      id: adjustmentId,
+      bookingId: ual.bookingId,
+      adjustmentType: 'UNLAWFULLY_AT_LARGE',
+      person: ual.nomisId,
+      toDate: formatDate(ual.lastDay),
+      fromDate: formatDate(ual.firstDay),
+      unlawfullyAtLarge: {
+        type: 'RECALL',
+      },
+    }
+    // recallid is null and set this to new recallid
+    return (await this.getApiClient(username)).updateAdjustment(adjustmentId, adjustmentToUpdate)
   }
 
   async searchUal(nomisId: string, username: string): Promise<AdjustmentDto[]> {
