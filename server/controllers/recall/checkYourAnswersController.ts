@@ -46,6 +46,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
 
       const createResponse = await req.services.recallService.postRecall(recallToSave, username)
 
+      // We don't need to go and search these again, the existing one we're concerned with will be stored in the session model
       const existingUal = await req.services.adjustmentsService.searchUal(nomisId, username)
 
       const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)

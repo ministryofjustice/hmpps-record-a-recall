@@ -1,6 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-import { isBefore, isAfter, parseISO, isEqual } from 'date-fns'
+import { isBefore, isAfter, isEqual } from 'date-fns'
 
 import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
@@ -14,8 +14,6 @@ import getJourneyDataFromRequest, {
   sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import { RecallEligibility } from '../../@types/recallEligibility'
-import { SummaryListRow } from '../../@types/govuk'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
