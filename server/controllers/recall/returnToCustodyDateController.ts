@@ -107,7 +107,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
       const proposedEndsBeforeAdjEnd = isBefore(proposedUal.lastDay, adj.toDate)
 
-      console.log(adj.id, startsOnSameDay, proposedStartsBeforeAdjStart, proposedEndsBeforeAdjEnd)
+      console.log(existingAdjustments, adj.id, startsOnSameDay, proposedStartsBeforeAdjStart, proposedEndsBeforeAdjEnd)
 
       return (startsOnSameDay || proposedStartsBeforeAdjStart) && proposedEndsBeforeAdjEnd
     })

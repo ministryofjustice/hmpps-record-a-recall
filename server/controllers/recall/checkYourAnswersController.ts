@@ -44,16 +44,8 @@ export default class CheckYourAnswersController extends RecallBaseController {
 
       const createResponse = await req.services.recallService.postRecall(recallToSave, username)
 
-      const ualToEdit = getUalToEdit(req)
-      const ualToCreate = getUalToCreate(req)
-
-      // set recall id and update
-      if (ualToEdit !== null) {
-        ualToEdit.recallId = createResponse.recallUuid
-        await req.services.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
-          logger.error('Error while updating UAL in adjustments API')
-        })
-      }
+      const ualToEdit = getUalToEdit(req) ?? null
+      const ualToCreate = getUalToCreate(req) ?? null
 
       // set recall id and post that
       // OR have both: set recall id and post ual to create, AND dont set recallid to update
@@ -61,6 +53,14 @@ export default class CheckYourAnswersController extends RecallBaseController {
         ualToCreate.recallId = createResponse.recallUuid
         await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
           logger.error('Error while posting UAL to adjustments API')
+        })
+      }
+
+      // set recall id and update
+      if (ualToEdit !== null) {
+        ualToEdit.recallId = createResponse.recallUuid
+        await req.services.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
+          logger.error('Error while updating UAL in adjustments API')
         })
       }
 
