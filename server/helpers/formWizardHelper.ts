@@ -29,7 +29,6 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
     ualText: getUalText(req),
     manualCaseSelection: isManualCaseSelection(req),
     recallType: getRecallType(getRecallTypeCode(req)),
-    standardOnlyRecall: isStandardOnly(req),
     courtCaseCount,
     eligibleSentenceCount: getEligibleSentenceCount(req),
     sentenceIds,
@@ -49,7 +48,6 @@ export type RecallJourneyData = {
   manualCaseSelection: boolean
   recallType: RecallType
   courtCaseCount: number
-  standardOnlyRecall?: boolean
   eligibleSentenceCount: number
   sentenceIds?: string[]
   isEdit: boolean
@@ -85,6 +83,7 @@ export const sessionModelFields = {
   RECALL_TYPE_MISMATCH: 'recallTypeMismatch',
   EXISTING_ADJUSTMENTS: 'existingAdjustments',
   UAL_TO_SAVE: 'ualToSave',
+  INVALID_RECALL_TYPES: 'invalidRecallTypes',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -93,21 +92,17 @@ export function getUal(req: FormWizard.Request): number {
   return get<number>(req, sessionModelFields.UAL)
 }
 
-export function getRecallEligibility(req: FormWizard.Request) {
-  return get<RecallEligibility>(req, sessionModelFields.RECALL_ELIGIBILITY)
+export function getInvalidRecallTypes(req: FormWizard.Request) {
+  return get<RecallType[]>(req, sessionModelFields.INVALID_RECALL_TYPES) || []
 }
 
-export function getRecallOptions(req: FormWizard.Request) {
-  return get<RecallEligibility>(req, sessionModelFields.RECALL_ELIGIBILITY)?.recallOptions
+export function getRecallRoute(req: FormWizard.Request) {
+  return get<RecallEligibility>(req, sessionModelFields.RECALL_ELIGIBILITY)?.recallRoute
 }
 
 export function getUalText(req: FormWizard.Request): string {
   const ual = getUal(req)
   return ual !== undefined ? `${ual} day${ual === 1 ? '' : 's'}` : undefined
-}
-
-export function isStandardOnly(req: FormWizard.Request): boolean {
-  return get<boolean>(req, sessionModelFields.STANDARD_ONLY) === true
 }
 
 export function isRecallTypeMismatch(req: FormWizard.Request): boolean {

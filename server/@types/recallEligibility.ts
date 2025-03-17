@@ -1,85 +1,128 @@
+import { ineligibleTypes, RecallType, RecallTypes } from './recallTypes'
+
 type RecallEligibility = {
   code: string
   description: string
-  recallOptions: RecallOptions
+  recallRoute: RecallRoute
+  ineligibleRecallTypes?: RecallType[]
   affectsEnvelope: boolean
 }
 
-type RecallOptions = 'ALL' | 'STANDARD_ONLY' | 'MANUAL_ONLY' | 'NOT_POSSIBLE'
+type RecallRoute = 'NORMAL' | 'MANUAL' | 'NOT_POSSIBLE'
 
 const eligibilityReasons = {
   HAPPY_PATH_POSSIBLE: {
     code: 'HAPPY_PATH_POSSIBLE',
     description: 'Normal user journey possible',
-    recallOptions: 'ALL',
+    recallRoute: 'NORMAL',
     affectsEnvelope: false,
   },
   CRITICAL_VALIDATION_FAIL: {
     code: 'CRITICAL_VALIDATION_FAIL',
     description: 'CRDS returned a critical validation failure',
-    recallOptions: 'NOT_POSSIBLE',
+    recallRoute: 'NOT_POSSIBLE',
     affectsEnvelope: true,
   },
   NON_CRITICAL_VALIDATION_FAIL: {
     code: 'NON_CRITICAL_VALIDATION_FAIL',
     description: 'CRDS returned a validation failure that is not critical',
-    recallOptions: 'MANUAL_ONLY',
-    affectsEnvelope: true,
-  },
-  NON_SDS: {
-    code: 'NON_SDS',
-    description: 'Non-SDS Sentence - only standard recall possible',
-    recallOptions: 'STANDARD_ONLY',
+    recallRoute: 'MANUAL',
     affectsEnvelope: true,
   },
   NO_SENTENCE_START: {
     code: 'NO_SENTENCE_START',
     description: 'No sentence start date in breakdown - only manual recall possible',
-    recallOptions: 'MANUAL_ONLY',
+    recallRoute: 'MANUAL',
     affectsEnvelope: true,
   },
   NO_CRD: {
     code: 'NO_CRD',
     description: 'No CRD in breakdown - only manual recall possible',
-    recallOptions: 'MANUAL_ONLY',
+    recallRoute: 'MANUAL',
     affectsEnvelope: true,
   },
   NO_SLED_OR_SED: {
     code: 'NO_SLED_OR_SED',
     description: 'No SLED or SED in breakdown - only manual recall possible',
-    recallOptions: 'MANUAL_ONLY',
+    recallRoute: 'MANUAL',
     affectsEnvelope: true,
   },
   NO_BREAKDOWN: {
     code: 'NO_BREAKDOWN',
     description: 'No calculation breakdown for sentence - only manual recall possible',
-    recallOptions: 'MANUAL_ONLY',
+    recallRoute: 'MANUAL',
     affectsEnvelope: true,
   },
   RECALL_DATE_BEFORE_SENTENCE_START: {
     code: 'RECALL_DATE_BEFORE_SENTENCE_START',
     description: 'Provided revocation date is before the start of this sentence',
-    recallOptions: 'NOT_POSSIBLE',
+    recallRoute: 'NOT_POSSIBLE',
     affectsEnvelope: false,
   },
   RECALL_DATE_BEFORE_RELEASE_DATE: {
     code: 'RECALL_DATE_BEFORE_RELEASE_DATE',
     description: 'Provided revocation date is before the conditional release date',
-    recallOptions: 'NOT_POSSIBLE',
+    recallRoute: 'NOT_POSSIBLE',
     affectsEnvelope: false,
   },
   RECALL_DATE_AFTER_EXPIRATION_DATE: {
     code: 'RECALL_DATE_AFTER_EXPIRATION_DATE',
     description: 'Provided revocation date is after the expiration of this sentence',
-    recallOptions: 'NOT_POSSIBLE',
+    recallRoute: 'NOT_POSSIBLE',
     affectsEnvelope: false,
   },
   RAS_SENTENCE: {
     code: 'RAS_SENTENCE',
     description: 'This sentence is retrieved from RaS and has no associated calculation',
-    recallOptions: 'MANUAL_ONLY',
+    recallRoute: 'MANUAL',
     affectsEnvelope: true,
+  },
+  NON_SDS: {
+    code: 'NON_SDS',
+    description: 'Non-SDS Sentence - only standard recall possible',
+    recallRoute: 'MANUAL',
+    affectsEnvelope: true,
+  },
+  INDETERMINATE: {
+    code: 'INDETERMINATE',
+    description: 'Indeterminate Sentence - only standard recall possible',
+    recallRoute: 'NORMAL',
+    affectsEnvelope: true,
+    ineligibleRecallTypes: ineligibleTypes([RecallTypes.STANDARD_RECALL]),
+  },
+  SOPC: {
+    code: 'SOPC',
+    description: 'SOPC Sentence - only standard recall possible',
+    recallRoute: 'NORMAL',
+    affectsEnvelope: true,
+    ineligibleRecallTypes: ineligibleTypes([RecallTypes.STANDARD_RECALL]),
+  },
+  HDC: {
+    code: 'HDC',
+    description: 'SDS sentence - HDC',
+    recallRoute: 'MANUAL',
+    affectsEnvelope: true,
+    ineligibleRecallTypes: ineligibleTypes([
+      RecallTypes.HDC_STANDARD_RECALL,
+      RecallTypes.HDC_FOURTEEN_DAY_RECALL,
+      RecallTypes.HDC_TWENTY_EIGHT_DAY_RECALL,
+      RecallTypes.HDC_INABILITY_TO_MONITOR_RECALL,
+      RecallTypes.HDC_CURFEW_VIOLATION_RECALL,
+      // 14/28 can't be determined at an individual sentence level
+    ]),
+  },
+  SDS: {
+    code: 'SDS',
+    description: 'SDS sentence',
+    recallRoute: 'NORMAL',
+    affectsEnvelope: true,
+    ineligibleRecallTypes: ineligibleTypes([
+      RecallTypes.STANDARD_RECALL,
+      RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL,
+      RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL,
+      // 14/28 can't be determined at an individual sentence level
+    ]),
   },
 } as const
 
-export { RecallEligibility, RecallOptions, eligibilityReasons }
+export { RecallEligibility, RecallRoute, eligibilityReasons }

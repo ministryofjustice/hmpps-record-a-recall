@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import { getRecallOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
@@ -52,11 +52,11 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     req.sessionModel.set(sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
     const errors: ValidationMessage[] = res.locals.validationResponse
-    if (getRecallOptions(req) === 'NOT_POSSIBLE') {
+    if (getRecallRoute(req) === 'NOT_POSSIBLE') {
       const crdsValidationErrors = errors.map(error => error.message)
       res.locals.crdsValidationErrors = crdsValidationErrors
       req.sessionModel.set(sessionModelFields.CRDS_ERRORS, crdsValidationErrors)
-    } else if (getRecallOptions(req) === 'MANUAL_ONLY') {
+    } else if (getRecallRoute(req) === 'MANUAL') {
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
     }
     req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.sentences)
@@ -68,7 +68,7 @@ export default class CheckPossibleController extends RecallBaseController {
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
-    return getRecallOptions(req) && getRecallOptions(req) !== 'NOT_POSSIBLE'
+    return getRecallRoute(req) && getRecallRoute(req) !== 'NOT_POSSIBLE'
   }
 
   getTemporaryCalculation(req: FormWizard.Request, res: Response) {
