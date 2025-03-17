@@ -9,11 +9,11 @@ export default class AdjustmentsService {
 
   async postUal(ual: UAL, username: string): Promise<CreateResponse> {
     const adjustmentToCreate: AdjustmentDto = {
-      bookingId: ual.bookingId,
+      bookingId: Number(ual.bookingId),
       adjustmentType: 'UNLAWFULLY_AT_LARGE',
       person: ual.nomisId,
-      toDate: formatDate(ual.lastDay),
-      fromDate: formatDate(ual.firstDay),
+      toDate: formatDate(new Date(ual.lastDay)),
+      fromDate: formatDate(new Date(ual.firstDay)),
       unlawfullyAtLarge: {
         type: 'RECALL',
       },
@@ -24,11 +24,11 @@ export default class AdjustmentsService {
   async updateUal(ual: UAL, username: string, adjustmentId: string): Promise<CreateResponse> {
     const adjustmentToUpdate: AdjustmentDto = {
       id: adjustmentId,
-      bookingId: ual.bookingId,
+      bookingId: Number(ual.bookingId),
       adjustmentType: 'UNLAWFULLY_AT_LARGE',
       person: ual.nomisId,
-      toDate: formatDate(ual.lastDay),
-      fromDate: formatDate(ual.firstDay),
+      toDate: formatDate(new Date(ual.lastDay)),
+      fromDate: formatDate(new Date(ual.firstDay)),
       unlawfullyAtLarge: {
         type: 'RECALL',
       },

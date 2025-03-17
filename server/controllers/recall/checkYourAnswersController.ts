@@ -7,11 +7,9 @@ import { createAnswerSummaryList } from '../../utils/utils'
 import getJourneyDataFromRequest, {
   getUalToCreate,
   RecallJourneyData,
-  getExistingAdjustments,
   getUalToEdit,
 } from '../../helpers/formWizardHelper'
 import logger from '../../../logger'
-import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -52,20 +50,20 @@ export default class CheckYourAnswersController extends RecallBaseController {
       // set recall id and update
       if (ualToEdit !== null) {
         ualToEdit.recallId = createResponse.recallUuid
-        await req.services.adjustmentsService.updateUal(ualToEdit, username, ual.adjustmentId).catch(() => {
+        await req.services.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
           logger.error('Error while updating UAL in adjustments API')
         })
       }
 
       // set recall id and post that
-      if (ualToCreate !== null) {
+      // OR have both: set recall id and post ual to create, AND dont set recallid to update
+      if (ualToCreate !== null || (ualToEdit !== null && ualToCreate !== null)) {
         ualToCreate.recallId = createResponse.recallUuid
         await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
           logger.error('Error while posting UAL to adjustments API')
         })
       }
 
-      // have both: set recall id and post ual to create, AND dont set recallid to update
       return next()
     } catch (error) {
       return next(error)

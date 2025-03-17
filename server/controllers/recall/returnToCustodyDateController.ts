@@ -165,18 +165,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
         req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
       }
-
-      // TODO We now want to identify if we should be creating and/or updatina djustments
-
-      // IF no conflicting, just remember that we want to post new UAL, set recall ID on it later
-      // ELSE if exact match or within, remember that we want to update it (make start/end dates match, set recallId on it later)
-      // ELSE if overlap remember that we want to
-      //  1- existingadj: update start date to day after our UAL, NOT add recallId later, (ual to create is our ual, update is ual with start date set after ours)
-      //  2- our adjustment: post our new UAL , set recallID on it later
-
-      // const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-      // We may also need to update existing adjustments if we're merging with them. We can do that here and stick in the session
-      // ready to update them when saving the recall
     } else {
       req.sessionModel.unset(sessionModelFields.UAL)
       req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
