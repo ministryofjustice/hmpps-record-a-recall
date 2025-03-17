@@ -1,6 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-import { isBefore, isAfter, isEqual, format, addDays } from 'date-fns'
+import { isBefore, isAfter, isEqual } from 'date-fns'
 import _ from 'lodash'
 
 import type { UAL } from 'models'
@@ -28,7 +28,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
       if (values.inPrisonAtRecall === 'false') {
         if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
-          console.log('1 ---------equal or after')
           validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRevDate')
         } else {
           const proposedUal = calculateUal(revocationDate, rtcDate)
@@ -39,7 +38,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
               proposedUal,
               existingAdjustments,
             )
-            console.log('2 ------------*****************happy path')
             req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
             const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
@@ -51,7 +49,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             } else if (
               allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
             ) {
-              console.log('4 ---------- conflicting')
               validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
             }
           }
@@ -77,22 +74,14 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       return { exact: [], overlap: [], within: [] }
     }
 
-    //  exact.push(existingAdjustments.filter(adj => { isEqual(adj.fromDate, proposedUal.firstDay) && isEqual(adj.toDate, proposedUal.lastDay)) } ))
     const exactMatches = existingAdjustments.filter(
       (adj: AdjustmentDto) => isEqual(adj.fromDate, proposedUal.firstDay) && isEqual(adj.toDate, proposedUal.lastDay),
     )
 
     const existingWithinProposed = existingAdjustments.filter((adj: AdjustmentDto) => {
-      // UAL 2
       const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
       const proposedEndsAfterAdjEnd = isAfter(proposedUal.lastDay, adj.toDate)
-
-      // UAL 3
       const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
-      // and proposedEndsAfterAdjEnd
-
-      // UAL 4
-      // proposedStartsBeforeAdjStart and
       const endsOnSameDay = isEqual(adj.toDate, proposedUal.lastDay)
 
       return (
@@ -106,8 +95,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
       const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
       const proposedEndsBeforeAdjEnd = isBefore(proposedUal.lastDay, adj.toDate)
-
-      console.log(existingAdjustments, adj.id, startsOnSameDay, proposedStartsBeforeAdjStart, proposedEndsBeforeAdjEnd)
 
       return (startsOnSameDay || proposedStartsBeforeAdjStart) && proposedEndsBeforeAdjEnd
     })
@@ -124,8 +111,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const rtcDate = new Date(values.returnToCustodyDate as string)
     const ual = values.inPrisonAtRecall === 'false' ? calculateUal(journeyData.revocationDate, rtcDate) : null
     const conflAdj: ConflictingAdjustments = getConflictingAdjustments(req)
-
-    console.log(conflAdj, '--------------------------')
 
     if (ual) {
       const ualToSave: UAL = {
@@ -151,7 +136,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
         req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
       } else {
-        // update start date to day after our UAL
         const existingAdj = _.first(conflAdj.overlap)
 
         const updatedUal: UAL = {

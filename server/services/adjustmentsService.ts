@@ -33,7 +33,6 @@ export default class AdjustmentsService {
         type: 'RECALL',
       },
     }
-    // recallid is null and set this to new recallid
     return (await this.getApiClient(username)).updateAdjustment(adjustmentId, adjustmentToUpdate)
   }
 

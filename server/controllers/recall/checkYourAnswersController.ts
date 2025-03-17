@@ -56,7 +56,6 @@ export default class CheckYourAnswersController extends RecallBaseController {
         })
       }
 
-      // set recall id and update
       if (ualToEdit !== null) {
         ualToEdit.recallId = createResponse.recallUuid
         await req.services.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
