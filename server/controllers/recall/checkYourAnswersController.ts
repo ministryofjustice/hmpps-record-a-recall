@@ -47,13 +47,14 @@ export default class CheckYourAnswersController extends RecallBaseController {
       const createResponse = await req.services.recallService.postRecall(recallToSave, username)
 
       // We don't need to go and search these again, the existing one we're concerned with will be stored in the session model
-      const existingUal = await req.services.adjustmentsService.searchUal(nomisId, username)
+      // const existingUal = await req.services.adjustmentsService.searchUal(nomisId, username)
 
       const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
       // set recallID on one to post if we have both post and update
 
       const ualToEdit = getUalToEdit(req)
 
+      // set recall id and update
       if (ualToEdit !== null) {
         ualToEdit.recallId = createResponse.recallUuid
         await req.services.adjustmentsService.updateUal(ualToEdit, username, existingAdjustments[0].id).catch(() => {
@@ -61,6 +62,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
         })
       }
 
+      // set recall id and post that
       const ualToCreate = getUalToSave(req)
       if (ualToCreate !== null) {
         ualToCreate.recallId = createResponse.recallUuid
@@ -68,6 +70,8 @@ export default class CheckYourAnswersController extends RecallBaseController {
           logger.error('Error while posting UAL to adjustments API')
         })
       }
+
+      // have both: set recall id and post ual to create, AND dont set recallid to update
       return next()
     } catch (error) {
       return next(error)
