@@ -178,7 +178,7 @@ export function getConflictingAdjustments(req: FormWizard.Request): ConflictingA
   return get<ConflictingAdjustments>(req, sessionModelFields.CONFLICTING_ADJUSTMENTS)
 }
 
-export function getUalToSave(req: FormWizard.Request): UAL {
+export function getUalToCreate(req: FormWizard.Request): UAL {
   return get<UAL>(req, sessionModelFields.UAL_TO_CREATE)
 }
 

@@ -44,15 +44,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
             const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
             if (allConflicting.length > 1) {
-              console.log(
-                '3 ----------too many',
-                'ex"',
-                conflAdjs.exact,
-                'over',
-                conflAdjs.overlap,
-                'wothin',
-                conflAdjs.within,
-              )
               validationErrors.returnToCustodyDate = this.formError(
                 'returnToCustodyDate',
                 'multipleConflictingAdjustment',
@@ -140,43 +131,39 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const ualToSave: UAL = {
         ...ual,
         nomisId,
-        bookingId: parseInt(prisonerDetails.bookingId, 10),
+        bookingId: prisonerDetails.bookingId,
       }
 
       if (Object.values(conflAdj).every(arr => arr.length === 0)) {
         req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-        req.sessionModel.set(sessionModelFields.UAL, ual)
         req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
       } else if (conflAdj.exact.length === 1 || conflAdj.within.length === 1) {
-        const withinAndExactAdjustments = [...conflAdj.exact, ...conflAdj.within]
-        const firstAdjustment = _.first(withinAndExactAdjustments)
+        const existingAdjustment = _.first([...conflAdj.exact, ...conflAdj.within])
 
-        if (firstAdjustment) {
-          // adjustment ID to the UAL we are updating + Set recallId from existing adjustment
-          const updatedUal: UAL = {
-            ...ual,
-            recallId: firstAdjustment.id, // recall id in other controller
-          }
-
-          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-          req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+        const updatedUal: UAL = {
+          adjustmentId: existingAdjustment.id,
+          bookingId: existingAdjustment.bookingId,
+          firstDay: ual.firstDay,
+          lastDay: ual.lastDay,
+          nomisId: existingAdjustment.person,
         }
-      } else if (conflAdj.overlap.length > 0) {
+
+        req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+        req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+      } else {
         // update start date to day after our UAL
-        const newToDate = format(addDays(new Date(ual.firstDay), 1), 'yyyy-MM-dd')
-        conflAdj.overlap[0].toDate = newToDate
-        const firstOverlap = _.first(conflAdj.overlap)
+        const existingAdj = _.first(conflAdj.overlap)
 
-        if (firstOverlap) {
-          const updatedUal: UAL = {
-            ...ual,
-            recallId: firstOverlap.id, // Set recallId from the overlapping adjustment
-            firstDay: rtcDate, // Update start date to returnToCustodyDate
-          }
-
-          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-          req.sessionModel.set(sessionModelFields.UAL, updatedUal)
+        const updatedUal: UAL = {
+          adjustmentId: existingAdj.id,
+          bookingId: existingAdj.bookingId,
+          firstDay: rtcDate,
+          lastDay: existingAdj.toDate,
+          nomisId: existingAdj.person,
         }
+
+        req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
+        req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
       }
 
       // TODO We now want to identify if we should be creating and/or updatina djustments

@@ -19,11 +19,12 @@ declare module 'models' {
   }
 
   export interface UAL {
+    adjustmentId?: string
     recallId?: string
     nomisId?: string
-    bookingId?: number
-    firstDay: Date
-    lastDay: Date
+    bookingId?: number | string
+    firstDay: Date | string
+    lastDay: Date | string
     days?: number
   }
 

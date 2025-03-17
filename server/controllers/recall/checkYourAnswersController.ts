@@ -5,7 +5,7 @@ import RecallBaseController from './recallBaseController'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { createAnswerSummaryList } from '../../utils/utils'
 import getJourneyDataFromRequest, {
-  getUalToSave,
+  getUalToCreate,
   RecallJourneyData,
   getExistingAdjustments,
   getUalToEdit,
@@ -46,24 +46,18 @@ export default class CheckYourAnswersController extends RecallBaseController {
 
       const createResponse = await req.services.recallService.postRecall(recallToSave, username)
 
-      // We don't need to go and search these again, the existing one we're concerned with will be stored in the session model
-      // const existingUal = await req.services.adjustmentsService.searchUal(nomisId, username)
-
-      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-      // set recallID on one to post if we have both post and update
-
       const ualToEdit = getUalToEdit(req)
+      const ualToCreate = getUalToCreate(req)
 
       // set recall id and update
       if (ualToEdit !== null) {
         ualToEdit.recallId = createResponse.recallUuid
-        await req.services.adjustmentsService.updateUal(ualToEdit, username, existingAdjustments[0].id).catch(() => {
+        await req.services.adjustmentsService.updateUal(ualToEdit, username, ual.adjustmentId).catch(() => {
           logger.error('Error while updating UAL in adjustments API')
         })
       }
 
       // set recall id and post that
-      const ualToCreate = getUalToSave(req)
       if (ualToCreate !== null) {
         ualToCreate.recallId = createResponse.recallUuid
         await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
