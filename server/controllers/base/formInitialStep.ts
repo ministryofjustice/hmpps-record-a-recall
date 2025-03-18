@@ -71,6 +71,7 @@ export default class FormInitialStep extends FormWizard.Controller {
       prisonerDetailsNotFound: `Prisoner details could not be found for the provided NOMIS ID`,
       conflictingAdjustment: `There is a conflicting adjustment for these dates`,
       cannotBeWithinAdjustmentPeriod: `${fieldName} must be outside existing adjustment window`,
+      multipleConflictingAdjustment: `There are multiple existing adjustments for the dates provided`,
     }
 
     const errorMessage = errorMessageOverrides[error.type] || errorMessages[error.type] || `${fieldName} is invalid`
