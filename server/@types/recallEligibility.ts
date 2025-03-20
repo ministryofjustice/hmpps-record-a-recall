@@ -82,6 +82,7 @@ const eligibilityReasons = {
     description: 'Non-SDS Sentence - only standard recall possible',
     recallRoute: 'MANUAL',
     affectsEnvelope: true,
+    ineligibleRecallTypes: ineligibleTypes([RecallTypes.STANDARD_RECALL]),
   },
   INDETERMINATE: {
     code: 'INDETERMINATE',

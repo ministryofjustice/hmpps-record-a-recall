@@ -1,4 +1,7 @@
-import { addDays, isBefore, isEqual, max } from 'date-fns'
+import { addDays, isAfter, isBefore, isEqual, isValid, max } from 'date-fns'
+// eslint-disable-next-line import/no-unresolved
+import { Sentence } from 'models'
+import { compact } from 'lodash'
 import {
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
@@ -6,7 +9,8 @@ import {
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import logger from '../../logger'
-import { SummarisedSentence } from './sentenceUtils'
+import { SummarisedSentence, SummarisedSentenceGroup } from './sentenceUtils'
+import { RecallType, RecallTypes } from '../@types/recallTypes'
 
 export default function getIndividualEligibility(
   sentence: SentenceAndOffenceWithReleaseArrangements,
@@ -53,37 +57,41 @@ export default function getIndividualEligibility(
     return eligibilityReasons.HDC
   }
 
-  // pull out fn to determine based on sentence type to be called after fetching ras data
-  if (isNonSDS(sentence)) {
+  return determineEligibilityOnCrdsSentenceType(sentence)
+}
+
+export function determineEligibilityOnRasSentenceType(sentence: Sentence): RecallEligibility {
+  if (isNonSDS(sentence.sentenceType)) {
+    return eligibilityReasons.NON_SDS
+  }
+  return eligibilityReasons.SDS
+}
+
+function determineEligibilityOnCrdsSentenceType(
+  sentence: SentenceAndOffenceWithReleaseArrangements,
+): RecallEligibility {
+  if (isNonSDS(sentence.sentenceTypeDescription)) {
     return eligibilityReasons.NON_SDS
   }
 
   return eligibilityReasons.SDS
 }
 
-function isSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
-  return sentence.sentenceTypeDescription.includes('Standard Determinate Sentence')
+function isSDS(sentenceDescription: string) {
+  return sentenceDescription.includes('Standard Determinate Sentence')
 }
 
-function isNonSDS(sentence: SentenceAndOffenceWithReleaseArrangements) {
-  return !isSDS(sentence)
+function isNonSDS(sentenceDescription: string) {
+  return !isSDS(sentenceDescription)
 }
 
-export function fourteenDayRecallRequired(sentences: SummarisedSentence[], revocationDate: Date): boolean {
-  if (hasSentencesEqualToOrOverTwelveMonths(sentences) && !hasSentencesUnderTwelveMonths(sentences)) {
-    logger.debug('All sentences are over twelve months')
-    return false
-  }
+export function fourteenDayRecallPossible(sentences: SummarisedSentence[], revocationDate: Date): boolean {
   if (hasSentencesUnderTwelveMonths(sentences) && !hasSentencesEqualToOrOverTwelveMonths(sentences)) {
     logger.debug('All sentences are under twelve months')
     return true
   }
-  const latestExpiryDateOfTwelveMonthPlusSentences = max(
-    sentences
-      .filter(s => hasSled(s))
-      .filter(s => over12MonthSentence(s))
-      .map(s => s.unadjustedSled),
-  )
+  const latestExpiryDateOfTwelveMonthPlusSentences = getLatestExpiryDateOfTwelveMonthPlusSentences(sentences)
+
   logger.debug('Mixture of sentence lengths')
 
   const fourteenDaysFromRecall = addDays(revocationDate, 14)
@@ -92,8 +100,41 @@ export function fourteenDayRecallRequired(sentences: SummarisedSentence[], revoc
   )
 
   return (
-    isEqual(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall) ||
-    isBefore(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall)
+    isValid(latestExpiryDateOfTwelveMonthPlusSentences) &&
+    (isEqual(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall) ||
+      isBefore(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall))
+  )
+}
+
+export function twentyEightDayRecallPossible(sentences: SummarisedSentence[], revocationDate: Date): boolean {
+  if (hasSentencesEqualToOrOverTwelveMonths(sentences) && !hasSentencesUnderTwelveMonths(sentences)) {
+    logger.debug('All sentences are over twelve months')
+    return true
+  }
+  if (hasSentencesUnderTwelveMonths(sentences) && !hasSentencesEqualToOrOverTwelveMonths(sentences)) {
+    logger.debug('All sentences are under twelve months')
+    return false
+  }
+  const latestExpiryDateOfTwelveMonthPlusSentences = getLatestExpiryDateOfTwelveMonthPlusSentences(sentences)
+  logger.debug('Mixture of sentence lengths')
+
+  const fourteenDaysFromRecall = addDays(revocationDate, 14)
+  logger.debug(
+    `Checking if latest SLED [${latestExpiryDateOfTwelveMonthPlusSentences}] is over 14 days from date of recall [${fourteenDaysFromRecall}]`,
+  )
+
+  return (
+    isValid(latestExpiryDateOfTwelveMonthPlusSentences) &&
+    isAfter(latestExpiryDateOfTwelveMonthPlusSentences, fourteenDaysFromRecall)
+  )
+}
+
+function getLatestExpiryDateOfTwelveMonthPlusSentences(sentences: SummarisedSentence[]) {
+  return max(
+    sentences
+      .filter(s => hasSled(s))
+      .filter(s => over12MonthSentence(s))
+      .map(s => s.unadjustedSled),
   )
 }
 
@@ -111,4 +152,28 @@ function over12MonthSentence(sentence: SummarisedSentence) {
 
 function hasSled(sentence: SummarisedSentence) {
   return sentence.unadjustedSled !== null
+}
+
+export function determineInvalidRecallTypes(
+  summarisedSentenceGroups: SummarisedSentenceGroup[],
+  revocationDate: Date,
+): RecallType[] {
+  const eligibleSentences = summarisedSentenceGroups.flatMap(g => g.eligibleSentences)
+  return compact([
+    ...new Set([
+      ...eligibleSentences.flatMap(s => s.recallEligibility.ineligibleRecallTypes),
+      ...getInvalidFixedTermTypes(eligibleSentences, revocationDate),
+    ]),
+  ])
+}
+
+function getInvalidFixedTermTypes(sentences: SummarisedSentence[], revocationDate: Date): RecallType[] {
+  const invalidFixedTerms: RecallType[] = []
+  if (!fourteenDayRecallPossible(sentences, revocationDate)) {
+    invalidFixedTerms.push(RecallTypes.HDC_FOURTEEN_DAY_RECALL, RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL)
+  }
+  if (!twentyEightDayRecallPossible(sentences, revocationDate)) {
+    invalidFixedTerms.push(RecallTypes.HDC_TWENTY_EIGHT_DAY_RECALL, RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL)
+  }
+  return invalidFixedTerms
 }

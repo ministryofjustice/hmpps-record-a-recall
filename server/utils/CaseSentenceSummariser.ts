@@ -17,8 +17,7 @@ import {
   SummarisedSentence,
   SummarisedSentenceGroup,
 } from './sentenceUtils'
-import { eligibilityReasons } from '../@types/recallEligibility'
-import getIndividualEligibility from './RecallEligiblityCalculator'
+import getIndividualEligibility, { determineEligibilityOnRasSentenceType } from './RecallEligiblityCalculator'
 
 export default function summariseSentencesGroups(
   groupedSentences: Record<string, SentenceAndOffenceWithReleaseArrangements[]>,
@@ -51,7 +50,6 @@ export default function summariseSentencesGroups(
         consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
         revocationDate,
       )
-      console.log(`Eligibilty for ${offence.offenceDescription}: ${recallEligibility.description}`)
 
       const forthConsConc = forthwithConsecutiveConcurrent(
         concurrentSentenceBreakdown,
@@ -193,7 +191,7 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
 
   courtCase.sentences.forEach(s => {
     summarisedGroup.hasEligibleSentences = true
-    const recallEligibility = eligibilityReasons.RAS_SENTENCE
+    const recallEligibility = determineEligibilityOnRasSentenceType(s)
     const summary = compact([
       toSummaryListRow('Committed on', s.offenceDate),
       toSummaryListRow('Sentence date', s.convictionDate),
