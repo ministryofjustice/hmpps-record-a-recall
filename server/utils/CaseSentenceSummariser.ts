@@ -9,7 +9,6 @@ import {
   Offence,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import getEligibility from './RecallEligiblityCalculator'
 import toSummaryListRow from '../helpers/componentHelper'
 import { format8DigitDate } from '../formatters/formatDate'
 import {
@@ -18,7 +17,7 @@ import {
   SummarisedSentence,
   SummarisedSentenceGroup,
 } from './sentenceUtils'
-import { eligibilityReasons } from '../@types/recallEligibility'
+import getIndividualEligibility, { determineEligibilityOnRasSentenceType } from './RecallEligiblityCalculator'
 
 export default function summariseSentencesGroups(
   groupedSentences: Record<string, SentenceAndOffenceWithReleaseArrangements[]>,
@@ -45,7 +44,7 @@ export default function summariseSentencesGroups(
 
       const { offence } = sentence
 
-      const recallEligibility = getEligibility(
+      const recallEligibility = getIndividualEligibility(
         sentence,
         concurrentSentenceBreakdown,
         consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
@@ -90,7 +89,10 @@ export default function summariseSentencesGroups(
           consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
           consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
         ),
-        toSummaryListRow('Recall Options', recallEligibility.recallOptions),
+        toSummaryListRow(
+          'Invalid recall types',
+          recallEligibility.ineligibleRecallTypes?.map(t => t.description).join(', '),
+        ),
         toSummaryListRow('Recall Options reason', recallEligibility.description),
       ])
 
@@ -103,7 +105,7 @@ export default function summariseSentencesGroups(
         sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
       }
 
-      if (recallEligibility.recallOptions !== 'NOT_POSSIBLE') {
+      if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
         summarisedGroup.hasEligibleSentences = true
         summarisedGroup.eligibleSentences.push(thisSummarisedSentence)
       } else {
@@ -189,7 +191,7 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
 
   courtCase.sentences.forEach(s => {
     summarisedGroup.hasEligibleSentences = true
-    const recallEligibility = eligibilityReasons.RAS_SENTENCE
+    const recallEligibility = determineEligibilityOnRasSentenceType(s)
     const summary = compact([
       toSummaryListRow('Committed on', s.offenceDate),
       toSummaryListRow('Sentence date', s.convictionDate),
@@ -204,7 +206,7 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
       //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
       //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
       // ),
-      toSummaryListRow('Recall Options', recallEligibility.recallOptions),
+      toSummaryListRow('Recall Options', recallEligibility.code),
       toSummaryListRow('Recall Options reason', recallEligibility.description),
     ])
     const summarisedSentence: SummarisedSentence = {

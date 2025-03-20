@@ -81,12 +81,8 @@ export function createAnswerSummaryList(
       'Sentences',
       `${journeyData.eligibleSentenceCount} ${sentences}`,
       editLink('check-sentences'),
-      journeyData.manualCaseSelection ? 'Edit' : 'Review',
+      'Review',
     ),
-    toSummaryListRow(
-      'Recall type',
-      journeyData.recallType.description,
-      editLink(journeyData.standardOnlyRecall ? 'confirm-recall-type' : 'recall-type'),
-    ),
+    toSummaryListRow('Recall type', journeyData.recallType.description, editLink('recall-type')),
   ])
 }

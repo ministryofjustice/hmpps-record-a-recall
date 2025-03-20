@@ -5,7 +5,7 @@ import { isBefore, isAfter, min } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
-import { getCrdsSentences, getRecallOptions, getExistingAdjustments } from '../../helpers/formWizardHelper'
+import { getCrdsSentences, getExistingAdjustments, getRecallRoute } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RevocationDateController extends RecallBaseController {
@@ -49,7 +49,7 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    if (getRecallOptions(req) !== 'MANUAL_ONLY') {
+    if (getRecallRoute(req) !== 'MANUAL') {
       revocationDateCrdsDataComparison(req)
     }
     return super.successHandler(req, res, next)

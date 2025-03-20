@@ -6,8 +6,14 @@ import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
-import { getCourtCaseOptions, getCourtCases, sessionModelFields } from '../../helpers/formWizardHelper'
+import {
+  getCourtCaseOptions,
+  getCourtCases,
+  getRevocationDate,
+  sessionModelFields,
+} from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
+import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
 
 export default class SelectCourtCaseController extends RecallBaseController {
   middlewareSetup() {
@@ -41,6 +47,11 @@ export default class SelectCourtCaseController extends RecallBaseController {
     const selectedCases = getCourtCases(req)
     const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) => selectedCases.includes(detail.caseId))
     const summarisedSentencesGroups = summariseRasCases(caseDetails)
+    const revocationDate = getRevocationDate(req)
+
+    const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+
+    req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length

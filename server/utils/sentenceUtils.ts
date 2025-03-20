@@ -261,11 +261,7 @@ export function hasABreakdown(sentence: SentenceAndOffenceWithReleaseArrangement
 }
 
 export function hasManualOnlySentences(sentences: SummarisedSentence[]): boolean {
-  return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'MANUAL_ONLY')
-}
-
-export function hasStandardOnlySentences(sentences: SummarisedSentence[]): boolean {
-  return sentences.some(sentence => sentence.recallEligibility.recallOptions === 'STANDARD_ONLY')
+  return sentences.some(sentence => sentence.recallEligibility.recallRoute === 'MANUAL')
 }
 
 export type SummarisedSentence = {
