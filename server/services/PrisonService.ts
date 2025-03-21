@@ -10,6 +10,9 @@ export default class PrisonService {
   }
 
   async getPrisonNames(prisonIds: string[], username: string): Promise<Map<string, string>> {
+    if (!prisonIds || prisonIds.length === 0) {
+      return new Map()
+    }
     const details: Prison[] = await (await this.getApiClient(username)).getPrisonsDetails(prisonIds)
     const prisonMap = new Map()
     details.forEach((p: Prison) => {
