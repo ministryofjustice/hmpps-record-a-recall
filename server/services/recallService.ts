@@ -41,14 +41,15 @@ export default class RecallService {
   fromApiRecall(apiRecall: ApiRecall) {
     // TODO UAL should be stored on the recall in RaS not calculated on the fly
     const ual = calculateUal(apiRecall.revocationDate, apiRecall.returnToCustodyDate)
+    const ualString = ual ? `${ual.days} day${ual.days === 1 ? '' : 's'}` : null
     return {
       recallId: apiRecall.recallUuid,
       createdAt: apiRecall.createdAt,
       revocationDate: apiRecall.revocationDate ? new Date(apiRecall.revocationDate) : null,
       returnToCustodyDate: apiRecall.returnToCustodyDate ? new Date(apiRecall.returnToCustodyDate) : null,
       recallType: getRecallType(apiRecall.recallType),
-      ual: ual.days ?? 0,
-      ualString: `${ual.days ?? 0} day${ual.days === 1 ? '' : 's'}`,
+      ual,
+      ualString,
       location: apiRecall.createdByPrison,
       sentenceIds: apiRecall.sentences.map(s => s.sentenceUuid),
       courtCaseIds: apiRecall.courtCaseIds,

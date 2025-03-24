@@ -80,7 +80,11 @@ describe('Recall service', () => {
           revocationDate: new Date('2023-06-15T00:00:00.000Z'),
           returnToCustodyDate: new Date('2023-06-20T00:00:00.000Z'),
           recallType: RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL,
-          ual: 4,
+          ual: {
+            days: 4,
+            firstDay: '2023-06-16T00:00:00.000Z',
+            lastDay: '2023-06-19T00:00:00.000Z',
+          },
           ualString: '4 days',
           createdAt: '2023-06-10T14:30:00Z',
           location: 'HMI',
