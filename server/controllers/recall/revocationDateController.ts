@@ -1,7 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { isBefore, isAfter, min } from 'date-fns'
+import { isBefore, isAfter, min, isEqual } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
@@ -37,7 +37,10 @@ export default class RevocationDateController extends RecallBaseController {
       const isWithinAdjustment = existingAdjustments.some(adjustment => {
         if (!adjustment.fromDate || !adjustment.toDate) return false
 
-        return isAfter(revocationDate, adjustment.fromDate) && isBefore(revocationDate, adjustment.toDate)
+        return (
+          (isEqual(revocationDate, adjustment.fromDate) || isAfter(revocationDate, adjustment.fromDate)) &&
+          isBefore(revocationDate, adjustment.toDate)
+        )
       })
 
       if (isWithinAdjustment) {
