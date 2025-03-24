@@ -82,8 +82,8 @@ describe('Recall service', () => {
           recallType: RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL,
           ual: {
             days: 4,
-            firstDay: '2023-06-16T00:00:00.000Z',
-            lastDay: '2023-06-19T00:00:00.000Z',
+            firstDay: new Date('2023-06-16T00:00:00.000Z'),
+            lastDay: new Date('2023-06-19T00:00:00.000Z'),
           },
           ualString: '4 days',
           createdAt: '2023-06-10T14:30:00Z',

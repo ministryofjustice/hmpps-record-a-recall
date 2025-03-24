@@ -42,7 +42,7 @@ export default async (req: Request, res: Response) => {
         req.user.token,
       )
     } catch (e) {
-      console.log(e)
+      logger.error(e)
     }
     // Nothing to do.
 
