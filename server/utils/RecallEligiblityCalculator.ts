@@ -62,7 +62,7 @@ export default function getIndividualEligibility(
 
 export function determineEligibilityOnRasSentenceType(sentence: Sentence): RecallEligibility {
   if (!sentence.sentenceType) {
-    return eligibilityReasons.RAS_SENTENCE
+    return eligibilityReasons.RAS_LEGACY_SENTENCE
   }
   if (isNonSDS(sentence.sentenceType)) {
     return eligibilityReasons.NON_SDS

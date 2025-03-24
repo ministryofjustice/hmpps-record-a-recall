@@ -71,7 +71,7 @@ const eligibilityReasons = {
     recallRoute: 'NOT_POSSIBLE',
     affectsEnvelope: false,
   },
-  RAS_SENTENCE: {
+  RAS_LEGACY_SENTENCE: {
     code: 'RAS_LEGACY_SENTENCE',
     description: 'This is a legacy sentence retrieved from RaS and has no associated calculation',
     recallRoute: 'MANUAL',
