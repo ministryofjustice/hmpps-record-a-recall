@@ -38,7 +38,7 @@ export default class RecallService {
     return this.hmppsAuthClient.getSystemClientToken(username)
   }
 
-  fromApiRecall(apiRecall: ApiRecall) {
+  fromApiRecall(apiRecall: ApiRecall): Recall {
     // TODO UAL should be stored on the recall in RaS not calculated on the fly
     const ual = calculateUal(apiRecall.revocationDate, apiRecall.returnToCustodyDate)
     const ualString = ual ? `${ual.days} day${ual.days === 1 ? '' : 's'}` : null
