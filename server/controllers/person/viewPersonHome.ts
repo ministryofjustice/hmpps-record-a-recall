@@ -41,9 +41,10 @@ export default async (req: Request, res: Response) => {
         nomisId,
         req.user.token,
       )
-    } catch {
-      // Nothing to do.
+    } catch (e) {
+      logger.error(e)
     }
+    // Nothing to do.
 
     return res.render('pages/person/home', {
       nomisId,
