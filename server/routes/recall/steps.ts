@@ -74,6 +74,9 @@ const steps = {
   '/no-sentences-interrupt': {
     controller: RecallBaseController,
   },
+  '/conflicting-adjustments-interrupt': {
+    controller: RecallBaseController,
+  },
   '/check-your-answers': {
     controller: CheckYourAnswersController,
     next: 'recall-recorded',

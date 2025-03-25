@@ -1,0 +1,39 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+
+{% block beforeContent %}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
+    <h1 class="govuk-heading-l moj-interruption-card__heading">"The revocation date and arrest date overlap with existing adjustments"</h1>
+
+        <p>You have entered:</p>
+        <p>A revocation date of <b>{{ revocationDate | eightDigitDate }}</b>.</p>
+        <p>An arrest date of <b>{{ arrestDate | eightDigitDate }}</b>.</p>
+        <p>These dates overlap with:</p>
+        <p>Tagged bail on <b>{{ bailDate | eightDigitDate }}</b>.</p>
+        <h2 class="govuk-heading-m moj-interruption-card__heading">What you need to do</h2>
+        <p>If the revocation date or arrest date are incorrect, go back and update these recall dates.</p>
+        <p>If the adjustment dates are incorrect, cancel this recall and update the relevant adjustments.</p>
+
+      {% call interruptionCard({
+        primaryAction: {
+          text: "Update the recall dates",
+          href: journeyBaseLink + "/revocation-date",
+          preventDoubleClick: true,
+          type: "submit"
+        },
+        secondaryAction: {
+          text: "Cancel recall",
+          href: cancelLink,
+          preventDoubleClick: true,
+          type: "reset",
+          style: "button"
+        }
+    }) -%}
+
+      {%- endcall %}
+{% endblock %}
