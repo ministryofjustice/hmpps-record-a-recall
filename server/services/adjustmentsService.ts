@@ -17,6 +17,7 @@ export default class AdjustmentsService {
       unlawfullyAtLarge: {
         type: 'RECALL',
       },
+      recallId: ual.recallId,
     }
     return (await this.getApiClient(username)).postAdjustments([adjustmentToCreate])
   }
@@ -32,6 +33,7 @@ export default class AdjustmentsService {
       unlawfullyAtLarge: {
         type: 'RECALL',
       },
+      recallId: ual.recallId,
     }
     return (await this.getApiClient(username)).updateAdjustment(adjustmentId, adjustmentToUpdate)
   }

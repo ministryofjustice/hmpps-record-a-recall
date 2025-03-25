@@ -40,6 +40,7 @@ describe('Adjustments Service', () => {
             unlawfullyAtLarge: {
               type: 'RECALL',
             },
+            recallId: 'recallId',
           },
         ])
         .reply(200, { adjustmentIds: ['123'] } as CreateResponse)
@@ -50,7 +51,7 @@ describe('Adjustments Service', () => {
   })
 
   describe('update adjustments', () => {
-    it('Should update correctly when updating an adjustment', async () => {
+    it('Should update correctly when updating an adjustment with a recallId', async () => {
       const username = 'A1234BC'
       const adjustmentId = 'adjustmentId'
       const ual: UAL = {
@@ -74,6 +75,7 @@ describe('Adjustments Service', () => {
           unlawfullyAtLarge: {
             type: 'RECALL',
           },
+          recallId: 'recallId',
         })
         .matchHeader('authorization', 'Bearer mocked-token')
         .reply(200, { adjustmentIds: ['123'] } as CreateResponse)
@@ -81,5 +83,37 @@ describe('Adjustments Service', () => {
       const adjustment = await adjustmentsService.updateUal(ual, username, adjustmentId)
       expect(adjustment.adjustmentIds).toEqual(['123'])
     })
+  })
+  it('Should update correctly when updating an adjustment with no recallId', async () => {
+    const username = 'A1234BC'
+    const adjustmentId = 'adjustmentId'
+    const ual: UAL = {
+      recallId: null,
+      nomisId: 'nomidId',
+      bookingId: 1,
+      firstDay: new Date('2024-01-01'),
+      lastDay: new Date('2024-01-02'),
+    }
+
+    hmppsAuthClient.getSystemClientToken.mockResolvedValue('mocked-token')
+
+    fakeAdjustmentsApi
+      .put(`/adjustments/${adjustmentId}`, {
+        id: adjustmentId,
+        bookingId: ual.bookingId,
+        adjustmentType: 'UNLAWFULLY_AT_LARGE',
+        person: ual.nomisId,
+        toDate: '2024-01-02',
+        fromDate: '2024-01-01',
+        unlawfullyAtLarge: {
+          type: 'RECALL',
+        },
+        recallId: null,
+      })
+      .matchHeader('authorization', 'Bearer mocked-token')
+      .reply(200, { adjustmentIds: ['123'] } as CreateResponse)
+
+    const adjustment = await adjustmentsService.updateUal(ual, username, adjustmentId)
+    expect(adjustment.adjustmentIds).toEqual(['123'])
   })
 })

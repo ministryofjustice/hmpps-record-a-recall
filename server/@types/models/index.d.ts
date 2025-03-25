@@ -7,8 +7,8 @@ declare module 'models' {
     createdAt: string
     revocationDate: Date
     returnToCustodyDate: Date
-    ual: number
-    ualString: string
+    ual?: UAL
+    ualString?: string
     recallType: RecallType
     calculation?: CalculatedReleaseDates
     isFixedTermRecall?: boolean

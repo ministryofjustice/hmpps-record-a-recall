@@ -71,7 +71,7 @@
       </div>
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Arrest date',  recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall' ) }}
-        {{ cardInfo('UAL (unlawfully at large)', recall.ual if recall.ual else 'None recorded') }}
+        {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
       </div>
     </div>
   </div>
