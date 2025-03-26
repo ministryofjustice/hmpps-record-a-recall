@@ -21,7 +21,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     super.validateFields(req, res, errors => {
       const { values } = req.form
       const revocationDate = getRevocationDate(req)
-      const rtcDate = new Date(values.returnToCustodyDate as string)
+      // const rtcDate = new Date(values.returnToCustodyDate as string)
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
@@ -29,29 +29,30 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       if (values.inPrisonAtRecall === 'false') {
         if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
           validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRevDate')
-        } else {
-          const proposedUal = calculateUal(revocationDate, rtcDate)
-          if (proposedUal) {
-            const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-            // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
-            const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(
-              proposedUal,
-              existingAdjustments,
-            )
-            req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
+          // FROM HERE MOVE TO SAVE VALUES?
+          // } else {
+          //   const proposedUal = calculateUal(revocationDate, rtcDate)
+          //   if (proposedUal) {
+          //     const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+          //     // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
+          //     const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(
+          //       proposedUal,
+          //       existingAdjustments,
+          //     )
+          //     req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
-            const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
-            if (allConflicting.length > 1) {
-              validationErrors.returnToCustodyDate = this.formError(
-                'returnToCustodyDate',
-                'multipleConflictingAdjustment',
-              )
-            } else if (
-              allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
-            ) {
-              validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
-            }
-          }
+          //     const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
+          //     if (allConflicting.length > 1) {
+          //       validationErrors.returnToCustodyDate = this.formError(
+          //         'returnToCustodyDate',
+          //         'multipleConflictingAdjustment',
+          //       )
+          //     } else if (
+          //       allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
+          //     ) {
+          //       validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
+          //     }
+          //    }
         }
       }
       callback({ ...errors, ...validationErrors })
@@ -107,6 +108,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const { nomisId } = res.locals
     const prisonerDetails = getPrisoner(req)
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
+    const revocationDate = getRevocationDate(req)
 
     const rtcDate = new Date(values.returnToCustodyDate as string)
     const ual = values.inPrisonAtRecall === 'false' ? calculateUal(journeyData.revocationDate, rtcDate) : null
@@ -117,6 +119,28 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         ...ual,
         nomisId,
         bookingId: prisonerDetails.bookingId,
+      }
+
+      const proposedUal = calculateUal(revocationDate, rtcDate)
+      if (proposedUal) {
+        const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+        const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
+        req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
+
+        const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
+        if (allConflicting.length > 1) {
+          // validationErrors.returnToCustodyDate = this.formError(
+          //   'returnToCustodyDate',
+          //   'multipleConflictingAdjustment',
+          // )
+          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
+        } else if (
+          allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
+        ) {
+          // flag for multiple conflicting
+          // validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
+          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
+        }
       }
 
       if (Object.values(conflAdj).every(arr => arr.length === 0)) {
