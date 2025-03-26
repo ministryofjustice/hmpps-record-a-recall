@@ -122,19 +122,16 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       }
 
       const proposedUal = calculateUal(revocationDate, rtcDate)
+      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+      const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
+
       if (proposedUal) {
-        const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-        const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
         req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
         const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
-        if (allConflicting.length > 1) {
-          // validationErrors.returnToCustodyDate = this.formError(
-          //   'returnToCustodyDate',
-          //   'multipleConflictingAdjustment',
-          // )
-          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
-        } else if (
+
+        //Expand the if below to check for the conflicting adjustments of the types that we care about
+        if (
           allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
         ) {
           // flag for multiple conflicting
@@ -143,11 +140,11 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         }
       }
 
-      if (Object.values(conflAdj).every(arr => arr.length === 0)) {
+      if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
         req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
         req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
-      } else if (conflAdj.exact.length === 1 || conflAdj.within.length === 1) {
-        const existingAdjustment = _.first([...conflAdj.exact, ...conflAdj.within])
+      } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
+        const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
 
         const updatedUal: UAL = {
           adjustmentId: existingAdjustment.id,
@@ -160,7 +157,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
         req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
       } else {
-        const existingAdj = _.first(conflAdj.overlap)
+        const existingAdj = _.first(conflAdjs.overlap)
 
         const updatedUal: UAL = {
           adjustmentId: existingAdj.id,
