@@ -41,10 +41,6 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
-        fn: (req: FormWizard.Request) => hasMultipleConflicting(req),
-        next: 'conflicting-adjustments-interrupt',
-      },
-      {
         fn: (req: FormWizard.Request) => isManualCaseSelection(req),
         next: 'select-cases',
       },
@@ -52,10 +48,10 @@ const steps = {
         fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0,
         next: 'no-sentences-interrupt',
       },
-      // {
-      //   fn: (req: FormWizard.Request) => hasMultipleConflicting(req),
-      //   next: 'conflicting-adjustments-interrupt',
-      // },
+      {
+        fn: (req: FormWizard.Request) => hasMultipleConflicting(req),
+        next: 'conflicting-adjustments-interrupt',
+      },
       'check-sentences',
     ],
     template: 'base-question',

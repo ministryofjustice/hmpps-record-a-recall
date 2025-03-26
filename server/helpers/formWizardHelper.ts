@@ -170,8 +170,7 @@ export function getExistingAdjustments(req: FormWizard.Request): AdjustmentDto[]
 }
 
 export function hasMultipleConflicting(req: FormWizard.Request): boolean {
-  return true
-  // return req.sessionModel.get<boolean>(sessionModelFields.CONFLICTING_ADJUSTMENTS) === true
+  return req.sessionModel.get<boolean>(sessionModelFields.CONFLICTING_ADJUSTMENTS) === true
 }
 
 export function getConflictingAdjustments(req: FormWizard.Request): ConflictingAdjustments {
