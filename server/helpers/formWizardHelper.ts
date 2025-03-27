@@ -181,6 +181,10 @@ export function getUalToEdit(req: FormWizard.Request): UAL {
   return get<UAL>(req, sessionModelFields.UAL_TO_EDIT)
 }
 
+export function getEntrypoint(req: FormWizard.Request): string {
+  return get<string>(req, sessionModelFields.ENTRYPOINT)
+}
+
 function get<T>(req: FormWizard.Request, key: string): T {
   return req.sessionModel.get<T>(key)
 }
