@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
 import config from '../../config'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { getEntrypoint, sessionModelFields } from '../../helpers/formWizardHelper'
 
 export default class ConfirmCancelController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -19,12 +19,21 @@ export default class ConfirmCancelController extends RecallBaseController {
     const { confirmCancel } = req.form.values
     const returnTo = req.sessionModel.get<string>(sessionModelFields.RETURN_TO)
     if (confirmCancel === 'true') {
-      if (req.sessionModel.get(sessionModelFields.ENTRYPOINT) === 'ccards') {
-        return res.redirect(`${config.applications.courtCasesReleaseDates.url}/prisoner/${res.locals.nomisId}/overview`)
-      }
-      return res.redirect(`/person/${res.locals.nomisId}`)
+      const cancelRedirectUrl = this.confirmCancelRedirect(getEntrypoint(req), res.locals.nomisId)
+      return res.redirect(cancelRedirectUrl)
     }
     req.sessionModel.unset(sessionModelFields.RETURN_TO)
     return res.redirect(returnTo)
+  }
+
+  confirmCancelRedirect(entrypoint: string, nomisId: string) {
+    if (entrypoint === 'ccards') {
+      return `${config.applications.courtCasesReleaseDates.url}/prisoner/${nomisId}/overview`
+    }
+    if (entrypoint?.startsWith('adj_')) {
+      const adjustmentTypeUrl = entrypoint.substring(entrypoint.indexOf('_') + 1)
+      return `${config.applications.adjustments.url}/${nomisId}/${adjustmentTypeUrl}/view`
+    }
+    return `/person/${nomisId}`
   }
 }

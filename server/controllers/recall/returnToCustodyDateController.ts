@@ -173,6 +173,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     } else {
       req.sessionModel.unset(sessionModelFields.UAL)
       req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+    }
+    if (values.inPrisonAtRecall === 'true') {
       values.returnToCustodyDate = null
     }
     return super.saveValues(req, res, next)
