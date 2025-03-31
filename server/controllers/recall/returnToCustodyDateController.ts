@@ -29,45 +29,30 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       if (values.inPrisonAtRecall === 'false') {
         if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
           validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'mustBeEqualOrAfterRevDate')
-          // FROM HERE MOVE TO SAVE VALUES?
-          // } else {
-          //   const proposedUal = calculateUal(revocationDate, rtcDate)
-          //   if (proposedUal) {
-          //     const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-          //     // We want to check that any overlapping UAL here is a recall UAL, otherwise fail validation per RCLL-322
-          //     const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(
-          //       proposedUal,
-          //       existingAdjustments,
-          //     )
-          //     req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
-
-          //     const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
-          //     if (allConflicting.length > 1) {
-          //       validationErrors.returnToCustodyDate = this.formError(
-          //         'returnToCustodyDate',
-          //         'multipleConflictingAdjustment',
-          //       )
-          //     } else if (
-          //       allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
-          //     ) {
-          //       validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
-          //     }
-          //    }
         }
       }
       callback({ ...errors, ...validationErrors })
     })
   }
 
-  isNonUalAdjustment(adjustment: AdjustmentDto) {
-    return adjustment.adjustmentType !== 'UNLAWFULLY_AT_LARGE'
-  }
-
-  isNonRecallUal(adjustment: AdjustmentDto) {
-    return (
+  isRelevantAdjustment(adjustment: AdjustmentDto): { isRelevant: boolean; type?: string } {
+    if (adjustment.adjustmentType === 'REMAND') {
+      return { isRelevant: true, type: 'REMAND' }
+    }
+    if (adjustment.adjustmentType === 'LAWFULLY_AT_LARGE') {
+      return { isRelevant: true, type: 'LAWFULLY_AT_LARGE' }
+    }
+    if (
       adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE' &&
       (!adjustment.unlawfullyAtLarge || adjustment.unlawfullyAtLarge.type !== 'RECALL')
-    )
+    ) {
+      return { isRelevant: true, type: 'NON_RECALL_UNLAWFULLY_AT_LARGE' }
+    }
+    if (adjustment.adjustmentType !== 'UNLAWFULLY_AT_LARGE') {
+      return { isRelevant: true, type: 'NON_UNLAWFULLY_AT_LARGE' }
+    }
+
+    return { isRelevant: false }
   }
 
   identifyConflictingAdjustments(proposedUal: UAL, existingAdjustments?: AdjustmentDto[]): ConflictingAdjustments {
@@ -112,7 +97,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
     const rtcDate = new Date(values.returnToCustodyDate as string)
     const ual = values.inPrisonAtRecall === 'false' ? calculateUal(journeyData.revocationDate, rtcDate) : null
-    const conflAdj: ConflictingAdjustments = getConflictingAdjustments(req)
+    // const conflAdj: ConflictingAdjustments = getConflictingAdjustments(req)
 
     if (ual) {
       const ualToSave: UAL = {
@@ -130,13 +115,17 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
         const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
-        //Expand the if below to check for the conflicting adjustments of the types that we care about
-        if (
-          allConflicting.some(adjustment => this.isNonUalAdjustment(adjustment) || this.isNonRecallUal(adjustment))
-        ) {
+        // Expand the if below to check for the conflicting adjustments of the types that we care about
+        const relevantAdjustment = allConflicting.find(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
+
+        if (relevantAdjustment) {
+          const { type } = this.isRelevantAdjustment(relevantAdjustment)
+          // console.log(`Relevant adjustment type: ${type}`);
+          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
+        } else {
+          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
           // flag for multiple conflicting
           // validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
-          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
         }
       }
 
