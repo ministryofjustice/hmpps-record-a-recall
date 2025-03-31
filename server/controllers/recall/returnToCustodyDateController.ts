@@ -117,17 +117,21 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
         // DOES RELEVANT ADJUSTMENT NEED TO BE AN ARRAY OF OBJECT, ATM THERES ONLY ONE, BUT MAY BE MORE?
         console.log('allConflicting array of object', allConflicting)
-        const relevantAdjustment = allConflicting.find(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
+        const relevantAdjustments = allConflicting.filter(
+          adjustment => this.isRelevantAdjustment(adjustment).isRelevant,
+        )
+        if (relevantAdjustments.length > 0) {
+          relevantAdjustments.forEach(adjustment => {
+            const { type } = this.isRelevantAdjustment(adjustment)
+            const { fromDate, toDate, adjustmentType } = adjustment
 
-        if (relevantAdjustment) {
-          const { type } = this.isRelevantAdjustment(relevantAdjustment)
-          const { fromDate, toDate, adjustmentType } = relevantAdjustment
-          console.log('RELEVANT ADJUSMTENT ************', relevantAdjustment)
-          console.log(
-            `Relevant adjustment type ***********: ${type} / ${adjustmentType} and the fromDate ${fromDate} and toDate ${toDate}`,
-          )
+            console.log('RELEVANT ADJUSTMENT ************', adjustment)
+            console.log(
+              `Relevant adjustment type ***********: ${type} / ${adjustmentType} and the fromDate ${fromDate} and toDate ${toDate}`,
+            )
+          })
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
-          req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENT, relevantAdjustment)
+          req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, relevantAdjustments)
         } else {
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
           // flag for multiple conflicting

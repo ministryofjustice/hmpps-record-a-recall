@@ -33,10 +33,11 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
     const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
     const selectedRecallType = journeyData.recallType
-    const relevantAdjustment: AdjustmentDto = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENT)
+    const relevantAdjustments: AdjustmentDto[] = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) || []
     const arrestDate: Date = journeyData.returnToCustodyDate
-    console.log('____________________relevantAdjustment in base controller', relevantAdjustment)
-    const { adjustmentType, fromDate, toDate, unlawfullyAtLarge } = relevantAdjustment || {}
+    console.log('____________________relevantAdjustment in base controller', relevantAdjustments)
+    // const { adjustmentType, fromDate, toDate, unlawfullyAtLarge } = relevantAdjustment || {}
+    const adjustmentsArray = relevantAdjustments.map(adj => [adj.adjustmentType, adj.fromDate, adj.toDate])
 
     // locals?.. we need to save the relevantAdjustmetns somewhere
     // access to journeyData.returnToCustodyDate, but thats not the same as arrest date,
@@ -66,10 +67,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
       isEditRecall,
       action,
       selectedRecallType,
-      relevantAdjustment,
-      adjustmentType,
-      fromDate,
-      toDate,
+      relevantAdjustments, // Full array of objects
+      adjustmentsArray, // Array of tuples: [adjustmentType, fromDate, toDate]
       arrestDate,
     }
   }
