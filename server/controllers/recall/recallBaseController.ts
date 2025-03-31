@@ -34,8 +34,9 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
     const selectedRecallType = journeyData.recallType
     const relevantAdjustment: AdjustmentDto = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENT)
+    const arrestDate: Date = journeyData.returnToCustodyDate
     console.log('____________________relevantAdjustment in base controller', relevantAdjustment)
-    const { adjustmentType, fromDate, toDate } = relevantAdjustment || {}
+    const { adjustmentType, fromDate, toDate, unlawfullyAtLarge } = relevantAdjustment || {}
 
     // locals?.. we need to save the relevantAdjustmetns somewhere
     // access to journeyData.returnToCustodyDate, but thats not the same as arrest date,
@@ -69,6 +70,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       adjustmentType,
       fromDate,
       toDate,
+      arrestDate,
     }
   }
 }

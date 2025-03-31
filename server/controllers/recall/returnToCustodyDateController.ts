@@ -34,7 +34,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
   }
 
-  isRelevantAdjustment(adjustment: AdjustmentDto): { isRelevant: boolean; type?: string } {
+  isRelevantAdjustment(adjustment: AdjustmentDto): { isRelevant: boolean; type?: string; ualType?: string } {
     console.log('adjustment object', adjustment)
     if (adjustment.adjustmentType === 'REMAND') {
       return { isRelevant: true, type: 'REMAND' }
@@ -46,7 +46,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE' &&
       (!adjustment.unlawfullyAtLarge || adjustment.unlawfullyAtLarge.type !== 'RECALL')
     ) {
-      return { isRelevant: true, type: 'NON_RECALL_UNLAWFULLY_AT_LARGE' }
+      return { isRelevant: true, type: 'UNLAWFULLY_AT_LARGE', ualType: adjustment.unlawfullyAtLarge.type }
     }
     if (adjustment.adjustmentType !== 'UNLAWFULLY_AT_LARGE') {
       return { isRelevant: true, type: 'NON_UNLAWFULLY_AT_LARGE' }
