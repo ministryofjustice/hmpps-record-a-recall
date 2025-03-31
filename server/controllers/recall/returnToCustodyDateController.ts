@@ -115,15 +115,19 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
         const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
-        // Expand the if below to check for the conflicting adjustments of the types that we care about
+        // DOES RELEVANT ADJUSTMENT NEED TO BE AN ARRAY OF OBJECT, ATM THERES ONLY ONE, BUT MAY BE MORE?
         console.log('allConflicting array of object', allConflicting)
         const relevantAdjustment = allConflicting.find(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
 
         if (relevantAdjustment) {
           const { type } = this.isRelevantAdjustment(relevantAdjustment)
-          const { fromDate, toDate } = relevantAdjustment
-          console.log(`Relevant adjustment type ***********: ${type} and the fromDate ${fromDate} and toDate ${toDate}`)
+          const { fromDate, toDate, adjustmentType } = relevantAdjustment
+          console.log('RELEVANT ADJUSMTENT ************', relevantAdjustment)
+          console.log(
+            `Relevant adjustment type ***********: ${type} / ${adjustmentType} and the fromDate ${fromDate} and toDate ${toDate}`,
+          )
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
+          req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENT, relevantAdjustment)
         } else {
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
           // flag for multiple conflicting

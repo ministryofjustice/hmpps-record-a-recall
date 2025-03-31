@@ -84,6 +84,7 @@ export const sessionModelFields = {
   EXISTING_ADJUSTMENTS: 'existingAdjustments',
   INVALID_RECALL_TYPES: 'invalidRecallTypes',
   CONFLICTING_ADJUSTMENTS: 'conflictingAdjustments',
+  RELEVANT_ADJUSTMENT: 'relevantAdjustment',
   UAL_TO_CREATE: 'ualToCreate',
   UAL_TO_EDIT: 'ualToEdit',
   INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS: 'incompatibleTypesAndMultipleConflictingAdjustments',
@@ -179,6 +180,10 @@ export function hasMultipleConflicting(req: FormWizard.Request): boolean {
 
 export function getConflictingAdjustments(req: FormWizard.Request): ConflictingAdjustments {
   return get<ConflictingAdjustments>(req, sessionModelFields.CONFLICTING_ADJUSTMENTS)
+}
+
+export function getRelevantAdjustment(req: FormWizard.Request): AdjustmentDto {
+  return get<AdjustmentDto>(req, sessionModelFields.RELEVANT_ADJUSTMENT)
 }
 
 export function getUalToCreate(req: FormWizard.Request): UAL {

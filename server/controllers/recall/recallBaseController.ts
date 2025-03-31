@@ -3,6 +3,7 @@ import FormWizard from 'hmpo-form-wizard'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
 import getServiceUrls from '../../helpers/urlHelper'
 import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/formWizardHelper'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
@@ -32,6 +33,14 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
     const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
     const selectedRecallType = journeyData.recallType
+    const relevantAdjustment: AdjustmentDto = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENT)
+    console.log('____________________relevantAdjustment in base controller', relevantAdjustment)
+    const { adjustmentType, fromDate, toDate } = relevantAdjustment || {}
+
+    // locals?.. we need to save the relevantAdjustmetns somewhere
+    // access to journeyData.returnToCustodyDate, but thats not the same as arrest date,
+    // that is one day past end of adjustment date (toDate?), also its not teh adjustment toDate its the recall one
+    // Get the adjustment type, fromDate, toDate
 
     const urls = getServiceUrls(res.locals.nomisId)
     const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
@@ -56,6 +65,10 @@ export default class RecallBaseController extends PrisonerDetailsController {
       isEditRecall,
       action,
       selectedRecallType,
+      relevantAdjustment,
+      adjustmentType,
+      fromDate,
+      toDate,
     }
   }
 }
