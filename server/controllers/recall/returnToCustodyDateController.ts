@@ -42,14 +42,16 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     if (adjustment.adjustmentType === 'LAWFULLY_AT_LARGE') {
       return { isRelevant: true, type: 'LAWFULLY_AT_LARGE' }
     }
-    if (
-      adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE' &&
-      (!adjustment.unlawfullyAtLarge || adjustment.unlawfullyAtLarge.type !== 'RECALL')
-    ) {
-      return { isRelevant: true, type: 'UNLAWFULLY_AT_LARGE', ualType: adjustment.unlawfullyAtLarge.type }
-    }
-    if (adjustment.adjustmentType !== 'UNLAWFULLY_AT_LARGE') {
-      return { isRelevant: true, type: 'NON_UNLAWFULLY_AT_LARGE' }
+
+    if (adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE') {
+      const ualType = adjustment.unlawfullyAtLarge?.type
+
+      if (!ualType) {
+        return { isRelevant: true, type: 'UAL' }
+      }
+      if (ualType !== 'RECALL') {
+        return { isRelevant: true, type: 'UAL', ualType }
+      }
     }
 
     return { isRelevant: false }
