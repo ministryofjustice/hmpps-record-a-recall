@@ -7,7 +7,6 @@ import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
 import { calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
-  getConflictingAdjustments,
   getExistingAdjustments,
   getPrisoner,
   getRevocationDate,
@@ -36,6 +35,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
   }
 
   isRelevantAdjustment(adjustment: AdjustmentDto): { isRelevant: boolean; type?: string } {
+    console.log('adjustment object', adjustment)
     if (adjustment.adjustmentType === 'REMAND') {
       return { isRelevant: true, type: 'REMAND' }
     }
@@ -116,11 +116,13 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
         // Expand the if below to check for the conflicting adjustments of the types that we care about
+        console.log('allConflicting array of object', allConflicting)
         const relevantAdjustment = allConflicting.find(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
 
         if (relevantAdjustment) {
           const { type } = this.isRelevantAdjustment(relevantAdjustment)
-          // console.log(`Relevant adjustment type: ${type}`);
+          const { fromDate, toDate } = relevantAdjustment
+          console.log(`Relevant adjustment type ***********: ${type} and the fromDate ${fromDate} and toDate ${toDate}`)
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
         } else {
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
