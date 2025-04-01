@@ -117,7 +117,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
         const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
-        // DOES RELEVANT ADJUSTMENT NEED TO BE AN ARRAY OF OBJECT, ATM THERES ONLY ONE, BUT MAY BE MORE?
         console.log('allConflicting array of object', allConflicting)
         const relevantAdjustments = allConflicting.filter(
           adjustment => this.isRelevantAdjustment(adjustment).isRelevant,
