@@ -30,6 +30,11 @@
         <p>You have entered:</p>
         <p>A revocation date of <b>{{ revocationDate | fullMonthdate }}</b></p>
         <p>An arrest date of <b>{{ arrestDate | fullMonthdate }}</b></p>
+
+       {% if hasMultipleOverlappingUALTypeRecall %}
+          <p>There are multiple overlapping periods of recall UAL already recorded</p>
+        {% endif %}
+
         {% if relevantAdjustments %}
           <p>These dates overlap with:</p>
           <ul class="govuk-list govuk-list--bullet">

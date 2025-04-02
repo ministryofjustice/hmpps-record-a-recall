@@ -36,6 +36,9 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const relevantAdjustments: AdjustmentDto[] = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) || []
     const arrestDate: Date = journeyData.returnToCustodyDate
 
+    const hasMultipleOverlappingUALTypeRecall: boolean =
+      req.sessionModel.get(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) || false
+
     const urls = getServiceUrls(res.locals.nomisId)
     const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
     const cancelLink = `${journeyBaseLink}/confirm-cancel`
@@ -61,6 +64,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       selectedRecallType,
       relevantAdjustments, // Full array of objects
       arrestDate,
+      hasMultipleOverlappingUALTypeRecall,
     }
   }
 }
