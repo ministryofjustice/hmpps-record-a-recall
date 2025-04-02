@@ -8,7 +8,12 @@ import CheckPossibleController from '../../controllers/recall/checkPossibleContr
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
-import { getEligibleSentenceCount, isManualCaseSelection, isRecallTypeMismatch } from '../../helpers/formWizardHelper'
+import {
+  getEligibleSentenceCount,
+  isManualCaseSelection,
+  isRecallTypeMismatch,
+  hasMultipleConflicting,
+} from '../../helpers/formWizardHelper'
 
 const steps = {
   '/': {
@@ -36,6 +41,10 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
+        fn: (req: FormWizard.Request) => hasMultipleConflicting(req),
+        next: 'conflicting-adjustments-interrupt',
+      },
+      {
         fn: (req: FormWizard.Request) => isManualCaseSelection(req),
         next: 'select-cases',
       },
@@ -47,7 +56,7 @@ const steps = {
     ],
     template: 'base-question',
     controller: ReturnToCustodyDateController,
-    editable: true,
+    editable: false,
   },
   '/check-sentences': {
     next: 'recall-type',
@@ -72,6 +81,9 @@ const steps = {
     controller: RecallBaseController,
   },
   '/no-sentences-interrupt': {
+    controller: RecallBaseController,
+  },
+  '/conflicting-adjustments-interrupt': {
     controller: RecallBaseController,
   },
   '/check-your-answers': {

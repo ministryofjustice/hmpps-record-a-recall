@@ -33,6 +33,7 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
     eligibleSentenceCount: getEligibleSentenceCount(req),
     sentenceIds,
     isEdit: req.sessionModel.get<boolean>(sessionModelFields.IS_EDIT),
+    // hasMultipleOverlappingUALTypeRecall: hasMultipleUALTypeRecallConflicting(req)
   }
 }
 
@@ -51,6 +52,7 @@ export type RecallJourneyData = {
   eligibleSentenceCount: number
   sentenceIds?: string[]
   isEdit: boolean
+  // hasMultipleOverlappingUALTypeRecall: boolean
 }
 
 export const sessionModelFields = {
@@ -84,8 +86,12 @@ export const sessionModelFields = {
   EXISTING_ADJUSTMENTS: 'existingAdjustments',
   INVALID_RECALL_TYPES: 'invalidRecallTypes',
   CONFLICTING_ADJUSTMENTS: 'conflictingAdjustments',
+  RELEVANT_ADJUSTMENTS: 'relevantAdjustment',
   UAL_TO_CREATE: 'ualToCreate',
   UAL_TO_EDIT: 'ualToEdit',
+  INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS: 'incompatibleTypesAndMultipleConflictingAdjustments',
+  // incompatible (includes multiple) adjustment type of non recall ual
+  HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL: 'hasMultipleOverlappingUalTypeRecall',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -169,8 +175,22 @@ export function getExistingAdjustments(req: FormWizard.Request): AdjustmentDto[]
   return get<AdjustmentDto[]>(req, sessionModelFields.EXISTING_ADJUSTMENTS)
 }
 
+export function hasMultipleConflicting(req: FormWizard.Request): boolean {
+  return (
+    req.sessionModel.get<boolean>(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS) === true
+  )
+}
+
+export function hasMultipleUALTypeRecallConflicting(req: FormWizard.Request): boolean {
+  return req.sessionModel.get<boolean>(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) === true
+}
+
 export function getConflictingAdjustments(req: FormWizard.Request): ConflictingAdjustments {
   return get<ConflictingAdjustments>(req, sessionModelFields.CONFLICTING_ADJUSTMENTS)
+}
+
+export function getRelevantAdjustment(req: FormWizard.Request): AdjustmentDto {
+  return get<AdjustmentDto>(req, sessionModelFields.RELEVANT_ADJUSTMENTS)
 }
 
 export function getUalToCreate(req: FormWizard.Request): UAL {

@@ -67,7 +67,7 @@ export default class FormInitialStep extends FormWizard.Controller {
       required: `Enter a ${fieldName?.toLowerCase()}`,
       selectRequired: `Select ${fieldName?.toLowerCase()}`,
       mustBeEqualOrAfterRevDate: `${fieldName} must be equal to or after the revocation date`,
-      mustBeAfterEarliestSentenceDate: `${fieldName} must after the earliest sentence start date`,
+      mustBeAfterEarliestSentenceDate: `${fieldName} must be after the earliest sentence start date`,
       prisonerDetailsNotFound: `Prisoner details could not be found for the provided NOMIS ID`,
       conflictingAdjustment: `There is a conflicting adjustment for these dates`,
       cannotBeWithinAdjustmentPeriod: `${fieldName} must be outside existing adjustment window`,
