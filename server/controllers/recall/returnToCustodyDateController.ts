@@ -80,11 +80,13 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
 
     const overlap = existingAdjustments.filter((adj: AdjustmentDto) => {
-      const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
-      const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
-      const proposedEndsBeforeAdjEnd = isBefore(proposedUal.lastDay, adj.toDate)
+      // const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
+      // const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
+      // const proposedEndsBeforeAdjEnd = isBefore(proposedUal.lastDay, adj.toDate)
+      return isBefore(adj.fromDate, proposedUal.lastDay) &&
+      isAfter(adj.toDate, proposedUal.firstDay)
 
-      return (startsOnSameDay || proposedStartsBeforeAdjStart) && proposedEndsBeforeAdjEnd
+      ///return (startsOnSameDay || proposedStartsBeforeAdjStart) && proposedEndsBeforeAdjEnd
     })
 
     return { exact: exactMatches, within: existingWithinProposed, overlap }
@@ -111,20 +113,20 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const proposedUal = calculateUal(revocationDate, rtcDate)
       const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
       const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
+      const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
+
+      console.log('allConflicting array of object', allConflicting)
+      const relevantAdjustments = allConflicting.filter(
+        adjustment => this.isRelevantAdjustment(adjustment).isRelevant,
+      )
 
       if (proposedUal) {
         req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
-        const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
-
-        console.log('allConflicting array of object', allConflicting)
-        const relevantAdjustments = allConflicting.filter(
-          adjustment => this.isRelevantAdjustment(adjustment).isRelevant,
-        )
         if (relevantAdjustments.length > 0) {
           relevantAdjustments.forEach(adjustment => {
-            const { type } = this.isRelevantAdjustment(adjustment)
-            const { fromDate, toDate, adjustmentType } = adjustment
+            const {type} = this.isRelevantAdjustment(adjustment)
+            const {fromDate, toDate, adjustmentType} = adjustment
 
             console.log('RELEVANT ADJUSTMENT ************', adjustment)
             console.log(
@@ -140,39 +142,41 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         }
       }
 
-      if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
-        req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-        req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
-      } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
-        const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
+      if (relevantAdjustments.length == 0) {
+        if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
+          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
+          req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
+        } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
+          const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
 
-        const updatedUal: UAL = {
-          adjustmentId: existingAdjustment.id,
-          bookingId: existingAdjustment.bookingId,
-          firstDay: ual.firstDay,
-          lastDay: ual.lastDay,
-          nomisId: existingAdjustment.person,
+          const updatedUal: UAL = {
+            adjustmentId: existingAdjustment.id,
+            bookingId: existingAdjustment.bookingId,
+            firstDay: ual.firstDay,
+            lastDay: ual.lastDay,
+            nomisId: existingAdjustment.person,
+          }
+
+          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+          req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+        } else {
+          const existingAdj = _.first(conflAdjs.overlap)
+
+          const updatedUal: UAL = {
+            adjustmentId: existingAdj.id,
+            bookingId: existingAdj.bookingId,
+            firstDay: rtcDate,
+            lastDay: existingAdj.toDate,
+            nomisId: existingAdj.person,
+          }
+
+          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
+          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
         }
-
-        req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-        req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
       } else {
-        const existingAdj = _.first(conflAdjs.overlap)
-
-        const updatedUal: UAL = {
-          adjustmentId: existingAdj.id,
-          bookingId: existingAdj.bookingId,
-          firstDay: rtcDate,
-          lastDay: existingAdj.toDate,
-          nomisId: existingAdj.person,
-        }
-
-        req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-        req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+        req.sessionModel.unset(sessionModelFields.UAL)
+        req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
       }
-    } else {
-      req.sessionModel.unset(sessionModelFields.UAL)
-      req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
     }
     if (values.inPrisonAtRecall === 'true') {
       values.returnToCustodyDate = null

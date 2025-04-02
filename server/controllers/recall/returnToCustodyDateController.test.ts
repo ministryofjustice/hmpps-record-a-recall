@@ -115,7 +115,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
         expect(next).toHaveBeenCalled()
     })
 
-  //4 conflicting adjustments in allConflicting array of object
+  //4 conflicting adjustments in allConflicting array of object set conflicting_adjustments in session model
   it('four conflicting adjustments UAL adjusted', () => {
     const mockUal = {firstDay: '2018-10-02', lastDay: '2018-10-31'}
     // @ts-ignore
@@ -337,22 +337,17 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     returnToCustodyDateController.saveValues(req, res, next)
 
     expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.UAL_TO_CREATE,
-      expect.objectContaining({
-        firstDay: mockUal.firstDay,
-        lastDay: mockUal.lastDay,
-        nomisId: mockPrisonerDetails.nomisId,
-        bookingId: mockPrisonerDetails.bookingId,
-      }),
+      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+      expect.anything(),
     )
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.UAL_TO_EDIT)
+
     expect(next).toHaveBeenCalled()
   })
 
   // this is where it doesnt work well in the code, you input two dates in april 2018
   // and because there are adjustments in ove and nov in 2018 and it says they are
   // overlapping when they should not be, it should not show interrupt page but happy path
-  it.only('should show NO conflicting but shows the 2 in the mock', () => {
+  it('should show NO conflicting but shows the 2 in the mock', () => {
     const mockUal = {firstDay: '2018-04-04', lastDay: '2018-04-06'}
     // @ts-ignore
     const mockConflictingAdjustments = {exact: [], overlap: [], within: []}
@@ -394,38 +389,43 @@ describe('ReturnToCustodyDateController - saveValues', () => {
             effectiveDays: 207,
             source: "DPS"
         },
-        {  
-            id: 'e60f01cb-584d-48a7-bb44-3b720707fd54',  
-            bookingId: 1154003,  
-            person: 'G5437UX',  
-            adjustmentType: 'LAWFULLY_AT_LARGE',  
-            toDate: '2018-11-19',  
-            fromDate: '2018-11-11',  
-            days: 1,  
-            remand: null,  
-            additionalDaysAwarded: null,  
-            unlawfullyAtLarge: null,  
-            lawfullyAtLarge: { affectsDates: 'YES' },  
-            specialRemission: null,  
-            taggedBail: null,  
-            timeSpentInCustodyAbroad: null,  
-            timeSpentAsAnAppealApplicant: null,  
-            sentenceSequence: null,  
-            recallId: null,  
-            adjustmentTypeText: 'Lawfully at large',  
-            adjustmentArithmeticType: 'NONE',  
-            prisonName: 'Humber (HMP)',  
-            prisonId: 'HMI',  
-            lastUpdatedBy: 'JALVARES_ADM',  
-            status: 'ACTIVE',  
-            lastUpdatedDate: '2025-03-31T14:02:10.40516',  
-            createdDate: '2025-03-31T14:02:10.40516',  
-            effectiveDays: 1,  
-            source: 'DPS'  
+        {
+            id: 'e60f01cb-584d-48a7-bb44-3b720707fd54',
+            bookingId: 1154003,
+            person: 'G5437UX',
+            adjustmentType: 'LAWFULLY_AT_LARGE',
+            toDate: '2018-11-19',
+            fromDate: '2018-11-11',
+            days: 1,
+            remand: null,
+            additionalDaysAwarded: null,
+            unlawfullyAtLarge: null,
+            lawfullyAtLarge: { affectsDates: 'YES' },
+            specialRemission: null,
+            taggedBail: null,
+            timeSpentInCustodyAbroad: null,
+            timeSpentAsAnAppealApplicant: null,
+            sentenceSequence: null,
+            recallId: null,
+            adjustmentTypeText: 'Lawfully at large',
+            adjustmentArithmeticType: 'NONE',
+            prisonName: 'Humber (HMP)',
+            prisonId: 'HMI',
+            lastUpdatedBy: 'JALVARES_ADM',
+            status: 'ACTIVE',
+            lastUpdatedDate: '2025-03-31T14:02:10.40516',
+            createdDate: '2025-03-31T14:02:10.40516',
+            effectiveDays: 1,
+            source: 'DPS'
         }
     ])
 
     returnToCustodyDateController.saveValues(req, res, next)
+
+    expect(req.sessionModel.set).toHaveBeenCalledWith(
+      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+      false
+    )
 
     expect(req.sessionModel.set).toHaveBeenCalledWith(
       sessionModelFields.UAL_TO_CREATE,
@@ -436,7 +436,6 @@ describe('ReturnToCustodyDateController - saveValues', () => {
         bookingId: mockPrisonerDetails.bookingId,
       }),
     )
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.UAL_TO_EDIT)
     expect(next).toHaveBeenCalled()
   })
 
