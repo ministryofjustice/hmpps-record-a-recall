@@ -20,7 +20,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     super.validateFields(req, res, errors => {
       const { values } = req.form
       const revocationDate = getRevocationDate(req)
-      // const rtcDate = new Date(values.returnToCustodyDate as string)
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
@@ -80,13 +79,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
 
     const overlap = existingAdjustments.filter((adj: AdjustmentDto) => {
-      // const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
-      // const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
-      // const proposedEndsBeforeAdjEnd = isBefore(proposedUal.lastDay, adj.toDate)
       return isBefore(adj.fromDate, proposedUal.lastDay) &&
       isAfter(adj.toDate, proposedUal.firstDay)
-
-      ///return (startsOnSameDay || proposedStartsBeforeAdjStart) && proposedEndsBeforeAdjEnd
     })
 
     return { exact: exactMatches, within: existingWithinProposed, overlap }
@@ -101,7 +95,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
     const rtcDate = new Date(values.returnToCustodyDate as string)
     const ual = values.inPrisonAtRecall === 'false' ? calculateUal(journeyData.revocationDate, rtcDate) : null
-    // const conflAdj: ConflictingAdjustments = getConflictingAdjustments(req)
 
     if (ual) {
       const ualToSave: UAL = {
@@ -115,7 +108,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
       const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
-      console.log('allConflicting array of object', allConflicting)
       const relevantAdjustments = allConflicting.filter(
         adjustment => this.isRelevantAdjustment(adjustment).isRelevant,
       )
@@ -124,21 +116,10 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
         if (relevantAdjustments.length > 0) {
-          relevantAdjustments.forEach(adjustment => {
-            const {type} = this.isRelevantAdjustment(adjustment)
-            const {fromDate, toDate, adjustmentType} = adjustment
-
-            console.log('RELEVANT ADJUSTMENT ************', adjustment)
-            console.log(
-              `Relevant adjustment type ***********: ${type} / ${adjustmentType} and the fromDate ${fromDate} and toDate ${toDate}`,
-            )
-          })
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
           req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, relevantAdjustments)
         } else {
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
-          // flag for multiple conflicting
-          // validationErrors.returnToCustodyDate = this.formError('returnToCustodyDate', 'conflictingAdjustment')
         }
       }
 
