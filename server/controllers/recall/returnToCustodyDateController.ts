@@ -34,7 +34,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
   }
 
   isRelevantAdjustment(adjustment: AdjustmentDto): { isRelevant: boolean; type?: string; ualType?: string } {
-    console.log('adjustment object', adjustment)
     if (adjustment.adjustmentType === 'REMAND') {
       return { isRelevant: true, type: 'REMAND' }
     }
@@ -79,8 +78,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
 
     const overlap = existingAdjustments.filter((adj: AdjustmentDto) => {
-      return isBefore(adj.fromDate, proposedUal.lastDay) &&
-      isAfter(adj.toDate, proposedUal.firstDay)
+      return isBefore(adj.fromDate, proposedUal.lastDay) && isAfter(adj.toDate, proposedUal.firstDay)
     })
 
     return { exact: exactMatches, within: existingWithinProposed, overlap }
@@ -108,9 +106,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
       const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
-      const relevantAdjustments = allConflicting.filter(
-        adjustment => this.isRelevantAdjustment(adjustment).isRelevant,
-      )
+      const relevantAdjustments = allConflicting.filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
 
       if (proposedUal) {
         req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
