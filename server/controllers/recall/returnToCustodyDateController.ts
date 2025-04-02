@@ -123,10 +123,13 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         }
       }
 
-      if (relevantAdjustments.length == 0) {
+      if (relevantAdjustments.length === 0) {
         if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
           req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
           req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
+        } else if (Object.values(conflAdjs).some(arr => arr.length > 1)) {
+          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
+          // req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, relevantAdjustments)
         } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
           const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
 
