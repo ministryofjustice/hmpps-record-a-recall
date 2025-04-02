@@ -35,14 +35,6 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const selectedRecallType = journeyData.recallType
     const relevantAdjustments: AdjustmentDto[] = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) || []
     const arrestDate: Date = journeyData.returnToCustodyDate
-    console.log('____________________relevantAdjustment in base controller', relevantAdjustments)
-    // const { adjustmentType, fromDate, toDate, unlawfullyAtLarge } = relevantAdjustment || {}
-    const adjustmentsArray = relevantAdjustments.map(adj => [adj.adjustmentType, adj.fromDate, adj.toDate])
-
-    // locals?.. we need to save the relevantAdjustmetns somewhere
-    // access to journeyData.returnToCustodyDate, but thats not the same as arrest date,
-    // that is one day past end of adjustment date (toDate?), also its not teh adjustment toDate its the recall one
-    // Get the adjustment type, fromDate, toDate
 
     const urls = getServiceUrls(res.locals.nomisId)
     const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
@@ -68,7 +60,6 @@ export default class RecallBaseController extends PrisonerDetailsController {
       action,
       selectedRecallType,
       relevantAdjustments, // Full array of objects
-      adjustmentsArray, // Array of tuples: [adjustmentType, fromDate, toDate]
       arrestDate,
     }
   }
