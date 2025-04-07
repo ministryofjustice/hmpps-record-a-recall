@@ -35,9 +35,7 @@
           <p>There are multiple overlapping periods of recall UAL already recorded</p>
         {% endif %}
 
-        {# {% if relevantAdjustments > 0 %} #}
         {% if relevantAdjustments.length != 0 %}
-        {# {% if relevantAdjustments %} #}
           <p>These dates overlap with:</p>
           <ul class="govuk-list govuk-list--bullet">
             {% for adjustment in relevantAdjustments %}

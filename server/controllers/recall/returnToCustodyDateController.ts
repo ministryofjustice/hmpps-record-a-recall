@@ -110,46 +110,28 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
       const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
 
-      console.log('0---------------- allConflicting', allConflicting)
-
-      // const relevantAdjustments = allConflicting.filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
       const relevantAdjustments = allConflicting
         .filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
-        .filter(
-          (value, index, self) =>
-            index ===
-            self.findIndex(
-              t => t.id === value.id, // Filter out duplicates based on the `id`
-            ),
-        )
-
-      console.log('1---------------- relevantAdjustments', relevantAdjustments)
+        .filter((value, index, self) => index === self.findIndex(t => t.id === value.id))
 
       if (proposedUal) {
         req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
 
         if (relevantAdjustments.length > 0 && this.hasMultipleOverlappingUAL(conflAdjs)) {
-          console.log('HELLLOOOOOOOOOOOO, relevant adjustments', relevantAdjustments)
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
           req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, relevantAdjustments)
           req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
         } else if (relevantAdjustments.length > 0) {
-          console.log('(relevantAdjustments.length > 0')
-          // if (relevantAdjustments.length > 0) {
-          console.log('if relevant adjustments ')
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
           req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, relevantAdjustments)
         } else if (this.hasMultipleOverlappingUAL(conflAdjs)) {
-          console.log('this.hasMultipleOverlappingUAL(conflAdjs)')
           req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
           req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
         } else if (relevantAdjustments.length === 0) {
-          console.log('(relevantAdjustments.length === 0)')
           if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
             req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
             req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
           } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
-            console.log('(conflAdjs.exact.length === 1 || conflAdjs.within.length === 1)')
             const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
 
             const updatedUal: UAL = {
@@ -163,7 +145,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
             req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
           } else {
-            console.log('else-----')
             const existingAdj = _.first(conflAdjs.overlap)
 
             const updatedUal: UAL = {
@@ -180,47 +161,9 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
           req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
           req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
         }
-
-        // console.log('relevant adjustments', relevantAdjustments)
-        // if (relevantAdjustments.length === 0) {
-        //   if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
-        //     req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-        //     req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
-        //   } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
-        //     const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
-
-        //     const updatedUal: UAL = {
-        //       adjustmentId: existingAdjustment.id,
-        //       bookingId: existingAdjustment.bookingId,
-        //       firstDay: ual.firstDay,
-        //       lastDay: ual.lastDay,
-        //       nomisId: existingAdjustment.person,
-        //     }
-
-        //     req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-        //     req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
-        //   } else {
-        //     const existingAdj = _.first(conflAdjs.overlap)
-
-        //     const updatedUal: UAL = {
-        //       adjustmentId: existingAdj.id,
-        //       bookingId: existingAdj.bookingId,
-        //       firstDay: rtcDate,
-        //       lastDay: existingAdj.toDate,
-        //       nomisId: existingAdj.person,
-        //     }
-
-        //     req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-        //     req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-        //   }
-        // }
       } else {
         req.sessionModel.unset(sessionModelFields.UAL)
         req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
-
-        // req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
-        // req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, false)
-        // req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
       }
     }
     if (values.inPrisonAtRecall === 'true') {
