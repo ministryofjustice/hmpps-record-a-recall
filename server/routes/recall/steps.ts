@@ -42,11 +42,7 @@ const steps = {
     fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
     next: [
       {
-        fn: (req: FormWizard.Request) => hasMultipleConflicting(req),
-        next: 'conflicting-adjustments-interrupt',
-      },
-      {
-        fn: (req: FormWizard.Request) => hasMultipleUALTypeRecallConflicting(req),
+        fn: (req: FormWizard.Request) => hasMultipleUALTypeRecallConflicting(req) || hasMultipleConflicting(req),
         next: 'conflicting-adjustments-interrupt',
       },
       {

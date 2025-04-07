@@ -648,6 +648,138 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     //     sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
     //     true,
     //   )
+    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.CONFLICTING_ADJUSTMENTS, {
+      exact: [],
+      overlap: [
+        {
+          additionalDaysAwarded: null,
+          adjustmentArithmeticType: 'ADDITION',
+          adjustmentType: 'UNLAWFULLY_AT_LARGE',
+          adjustmentTypeText: 'UAL (Unlawfully at large)',
+          bookingId: 1154003,
+          createdDate: '2018-10-26T14:34:57.916685',
+          days: 207,
+          effectiveDays: 207,
+          fromDate: '2018-10-20',
+          id: 'ebf9db45-5780-4788-aa39-7c443d3e1fb1',
+          lastUpdatedBy: 'JALVARES_ADM',
+          lastUpdatedDate: '2018-03-25T14:34:57.916685',
+          lawfullyAtLarge: null,
+          person: 'G5437UX',
+          prisonId: 'HMI',
+          prisonName: 'Humber (HMP)',
+          recallId: null,
+          remand: null,
+          sentenceSequence: null,
+          source: 'DPS',
+          specialRemission: null,
+          status: 'ACTIVE',
+          taggedBail: null,
+          timeSpentAsAnAppealApplicant: null,
+          timeSpentInCustodyAbroad: null,
+          toDate: '2018-10-23',
+          unlawfullyAtLarge: {
+            type: 'RECALL',
+          },
+        },
+        {
+          additionalDaysAwarded: null,
+          adjustmentArithmeticType: 'ADDITION',
+          adjustmentType: 'UNLAWFULLY_AT_LARGE',
+          adjustmentTypeText: 'UAL (Unlawfully at large)',
+          bookingId: 1154003,
+          createdDate: '2025-03-24T13:46:49.698849',
+          days: 4,
+          effectiveDays: 4,
+          fromDate: '2018-10-20',
+          id: '6fa8c572-160d-414e-b7ba-5c3f1a868e41',
+          lastUpdatedBy: 'DBENTON',
+          lastUpdatedDate: '2025-03-24T13:46:49.698849',
+          lawfullyAtLarge: null,
+          person: 'G5437UX',
+          prisonId: 'HMI',
+          prisonName: 'Humber (HMP)',
+          recallId: null,
+          remand: null,
+          sentenceSequence: null,
+          source: 'DPS',
+          specialRemission: null,
+          status: 'ACTIVE',
+          taggedBail: null,
+          timeSpentAsAnAppealApplicant: null,
+          timeSpentInCustodyAbroad: null,
+          toDate: '2018-10-23',
+          unlawfullyAtLarge: {
+            type: 'RECALL',
+          },
+        },
+      ],
+      within: [
+        {
+          additionalDaysAwarded: null,
+          adjustmentArithmeticType: 'ADDITION',
+          adjustmentType: 'UNLAWFULLY_AT_LARGE',
+          adjustmentTypeText: 'UAL (Unlawfully at large)',
+          bookingId: 1154003,
+          createdDate: '2018-10-26T14:34:57.916685',
+          days: 207,
+          effectiveDays: 207,
+          fromDate: '2018-10-20',
+          id: 'ebf9db45-5780-4788-aa39-7c443d3e1fb1',
+          lastUpdatedBy: 'JALVARES_ADM',
+          lastUpdatedDate: '2018-03-25T14:34:57.916685',
+          lawfullyAtLarge: null,
+          person: 'G5437UX',
+          prisonId: 'HMI',
+          prisonName: 'Humber (HMP)',
+          recallId: null,
+          remand: null,
+          sentenceSequence: null,
+          source: 'DPS',
+          specialRemission: null,
+          status: 'ACTIVE',
+          taggedBail: null,
+          timeSpentAsAnAppealApplicant: null,
+          timeSpentInCustodyAbroad: null,
+          toDate: '2018-10-23',
+          unlawfullyAtLarge: {
+            type: 'RECALL',
+          },
+        },
+        {
+          additionalDaysAwarded: null,
+          adjustmentArithmeticType: 'ADDITION',
+          adjustmentType: 'UNLAWFULLY_AT_LARGE',
+          adjustmentTypeText: 'UAL (Unlawfully at large)',
+          bookingId: 1154003,
+          createdDate: '2025-03-24T13:46:49.698849',
+          days: 4,
+          effectiveDays: 4,
+          fromDate: '2018-10-20',
+          id: '6fa8c572-160d-414e-b7ba-5c3f1a868e41',
+          lastUpdatedBy: 'DBENTON',
+          lastUpdatedDate: '2025-03-24T13:46:49.698849',
+          lawfullyAtLarge: null,
+          person: 'G5437UX',
+          prisonId: 'HMI',
+          prisonName: 'Humber (HMP)',
+          recallId: null,
+          remand: null,
+          sentenceSequence: null,
+          source: 'DPS',
+          specialRemission: null,
+          status: 'ACTIVE',
+          taggedBail: null,
+          timeSpentAsAnAppealApplicant: null,
+          timeSpentInCustodyAbroad: null,
+          toDate: '2018-10-23',
+          unlawfullyAtLarge: {
+            type: 'RECALL',
+          },
+        },
+      ],
+    })
+
     expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
     expect(next).toHaveBeenCalled()
   })
@@ -791,6 +923,93 @@ describe('ReturnToCustodyDateController - saveValues', () => {
       sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
       true,
     )
+    expect(next).toHaveBeenCalled()
+  })
+
+  it('should show 2 conflicting adjustments of type UAL immigration detention and multiple overlapping UAL Recall adjustments line', () => {
+    const mockUal = { firstDay: '2018-03-22', lastDay: '2018-03-30' }
+    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
+    // @ts-expect-error
+    getJourneyDataFromRequest.mockReturnValue({
+      revocationDate: '2018-11-30',
+    })
+    // @ts-expect-error
+    calculateUal.mockReturnValue(mockUal)
+    // @ts-expect-error
+    getPrisoner.mockReturnValue(mockPrisonerDetails)
+    // @ts-expect-error
+    getRevocationDate.mockReturnValue('2018-10-02')
+    // @ts-expect-error
+    getExistingAdjustments.mockReturnValue([
+      {
+        id: 'a3e751e6-c926-49b7-a156-3fa83c88aa6f',
+        bookingId: 1154003,
+        person: 'G5437UX',
+        adjustmentType: 'UNLAWFULLY_AT_LARGE',
+        toDate: '2018-03-29',
+        fromDate: '2018-03-28',
+        days: 2,
+        remand: null,
+        additionalDaysAwarded: null,
+        unlawfullyAtLarge: { type: 'IMMIGRATION_DETENTION' },
+        lawfullyAtLarge: null,
+        specialRemission: null,
+        taggedBail: null,
+        timeSpentInCustodyAbroad: null,
+        timeSpentAsAnAppealApplicant: null,
+        sentenceSequence: null,
+        recallId: null,
+        adjustmentTypeText: 'UAL (Unlawfully at large)',
+        adjustmentArithmeticType: 'ADDITION',
+        prisonName: 'Humber (HMP)',
+        prisonId: 'HMI',
+        lastUpdatedBy: 'JALVARES_ADM',
+        status: 'ACTIVE',
+        lastUpdatedDate: '2025-04-01T14:02:18.884464',
+        createdDate: '2025-03-17T16:57:30.375104',
+        effectiveDays: 2,
+        source: 'DPS',
+      },
+      {
+        id: '6dd9c390-5f64-41f7-8380-0528a4bff1a5',
+        bookingId: 1154003,
+        person: 'G5437UX',
+        adjustmentType: 'UNLAWFULLY_AT_LARGE',
+        toDate: '2018-03-27',
+        fromDate: '2018-03-23',
+        days: 5,
+        remand: null,
+        additionalDaysAwarded: null,
+        unlawfullyAtLarge: { type: 'IMMIGRATION_DETENTION' },
+        lawfullyAtLarge: null,
+        specialRemission: null,
+        taggedBail: null,
+        timeSpentInCustodyAbroad: null,
+        timeSpentAsAnAppealApplicant: null,
+        sentenceSequence: null,
+        recallId: null,
+        adjustmentTypeText: 'UAL (Unlawfully at large)',
+        adjustmentArithmeticType: 'ADDITION',
+        prisonName: 'Humber (HMP)',
+        prisonId: 'HMI',
+        lastUpdatedBy: 'JALVARES_ADM',
+        status: 'ACTIVE',
+        lastUpdatedDate: '2025-04-07T11:03:32.120909',
+        createdDate: '2025-03-17T17:01:37.591945',
+        effectiveDays: 5,
+        source: 'DPS',
+      },
+    ])
+    returnToCustodyDateController.saveValues(req, res, next)
+
+    expect(req.sessionModel.set).toHaveBeenCalledWith(
+      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+      true,
+    )
+    // expect(req.sessionModel.set).toHaveBeenCalledWith(
+    //     sessionModelFields.CONFLICTING_ADJUSTMENTS,
+    //     { exact: [], overlap: [], within: [] }
+    //   );
     expect(next).toHaveBeenCalled()
   })
 })

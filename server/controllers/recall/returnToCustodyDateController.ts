@@ -112,7 +112,16 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
       console.log('0---------------- allConflicting', allConflicting)
 
-      const relevantAdjustments = allConflicting.filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
+      // const relevantAdjustments = allConflicting.filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
+      const relevantAdjustments = allConflicting
+        .filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
+        .filter(
+          (value, index, self) =>
+            index ===
+            self.findIndex(
+              t => t.id === value.id, // Filter out duplicates based on the `id`
+            ),
+        )
 
       console.log('1---------------- relevantAdjustments', relevantAdjustments)
 
