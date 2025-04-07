@@ -13,6 +13,7 @@ import {
   isManualCaseSelection,
   isRecallTypeMismatch,
   hasMultipleConflicting,
+  hasMultipleUALTypeRecallConflicting,
 } from '../../helpers/formWizardHelper'
 
 const steps = {
@@ -42,6 +43,10 @@ const steps = {
     next: [
       {
         fn: (req: FormWizard.Request) => hasMultipleConflicting(req),
+        next: 'conflicting-adjustments-interrupt',
+      },
+      {
+        fn: (req: FormWizard.Request) => hasMultipleUALTypeRecallConflicting(req),
         next: 'conflicting-adjustments-interrupt',
       },
       {

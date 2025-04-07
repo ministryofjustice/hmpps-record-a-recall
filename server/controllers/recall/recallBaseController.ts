@@ -38,6 +38,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
 
     const hasMultipleOverlappingUALTypeRecall: boolean =
       req.sessionModel.get(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) || false
+    console.log('hasMultiplecon', hasMultipleOverlappingUALTypeRecall)
 
     const urls = getServiceUrls(res.locals.nomisId)
     const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
