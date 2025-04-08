@@ -97,6 +97,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         && (isBefore(adjustment.fromDate, proposedUal.lastDay) && isAfter(adjustment.toDate, proposedUal.firstDay))
     })
 
+    console.log('conflictingRecallUALAdjustments', conflictingRecallUALAdjustments)
+
     if (conflictingRecallUALAdjustments.length > 0) {
       req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
     } else {
@@ -155,6 +157,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
       const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
       const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
+
+      console.log('allConflicting', allConflicting)
 
       const relevantAdjustments = allConflicting
         .filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)

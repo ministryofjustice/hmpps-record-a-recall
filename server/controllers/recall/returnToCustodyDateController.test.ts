@@ -124,6 +124,70 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
+  // FAILING TEST 
+  it('should handle one existing matching UAL type recall adjustment and merge it - happy path with no conflicting adjustments', () => {
+    const mockUal = { firstDay: '2018-10-20', lastDay: '2018-10-23' }
+    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
+
+    // @ts-expect-error
+    getJourneyDataFromRequest.mockReturnValue({
+      revocationDate: '2018-10-19',
+    })
+    // @ts-expect-error
+    calculateUal.mockReturnValue(mockUal)
+    // @ts-expect-error
+    getPrisoner.mockReturnValue(mockPrisonerDetails)
+    // @ts-expect-error
+    getRevocationDate.mockReturnValue('2023-09-30')
+    // @ts-expect-error
+    getExistingAdjustments.mockReturnValue([
+        {
+            id: 'ebf9db45-5780-4788-aa39-7c443d3e1fb1',
+            bookingId: 1154003,
+            person: 'G5437UX',
+            adjustmentType: 'UNLAWFULLY_AT_LARGE',
+            toDate: '2018-10-20',
+            fromDate: '2018-10-23',
+            days: 207,
+            remand: null,
+            additionalDaysAwarded: null,
+            unlawfullyAtLarge: { type: 'RECALL' },
+            lawfullyAtLarge: null,
+            specialRemission: null,
+            taggedBail: null,
+            timeSpentInCustodyAbroad: null,
+            timeSpentAsAnAppealApplicant: null,
+            sentenceSequence: null,
+            recallId: null,
+            adjustmentTypeText: 'UAL (Unlawfully at large)',
+            adjustmentArithmeticType: 'ADDITION',
+            prisonName: 'Humber (HMP)',
+            prisonId: 'HMI',
+            lastUpdatedBy: 'JALVARES_ADM',
+            status: 'ACTIVE',
+            lastUpdatedDate: '2025-03-18T14:34:57.916685',
+            createdDate: '2025-03-18T14:34:57.916685',
+            effectiveDays: 207,
+            source: 'DPS',
+          },
+    ])
+
+    returnToCustodyDateController.saveValues(req, res, next)
+
+    expect(req.sessionModel.set).toHaveBeenCalledWith(
+      sessionModelFields.UAL_TO_EDIT,
+      expect.objectContaining({
+        firstDay: mockUal.firstDay,
+        lastDay: mockUal.lastDay,
+        nomisId: mockPrisonerDetails.nomisId,
+        bookingId: mockPrisonerDetails.bookingId,
+      }),
+    )
+    // surely this should bed edit?
+    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.UAL_TO_EDIT)
+    expect(next).toHaveBeenCalled()
+  })
+
   it('should have four conflicting adjustments UAL  of type recall adjustments so not bulletpoints but interrupt page', () => {
     const mockUal = { firstDay: '2018-10-02', lastDay: '2018-10-31' }
     const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
