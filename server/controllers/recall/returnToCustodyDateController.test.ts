@@ -124,10 +124,10 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  // FAILING TEST 
+  // FAILING TEST
   it('should handle one existing matching UAL type recall adjustment and merge it - happy path with no conflicting adjustments', () => {
     const mockUal = { firstDay: '2018-10-20', lastDay: '2018-10-23' }
-    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
+    const mockPrisonerDetails = { bookingId: 1154003, nomisId: 'G5437UX' }
 
     // @ts-expect-error
     getJourneyDataFromRequest.mockReturnValue({
@@ -138,7 +138,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     // @ts-expect-error
     getPrisoner.mockReturnValue(mockPrisonerDetails)
     // @ts-expect-error
-    getRevocationDate.mockReturnValue('2023-09-30')
+    getRevocationDate.mockReturnValue('2018-10-19')
     // @ts-expect-error
     getExistingAdjustments.mockReturnValue([
         {
@@ -177,14 +177,14 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(req.sessionModel.set).toHaveBeenCalledWith(
       sessionModelFields.UAL_TO_EDIT,
       expect.objectContaining({
+        adjustmentId: "ebf9db45-5780-4788-aa39-7c443d3e1fb1",
         firstDay: mockUal.firstDay,
         lastDay: mockUal.lastDay,
         nomisId: mockPrisonerDetails.nomisId,
         bookingId: mockPrisonerDetails.bookingId,
       }),
     )
-    // surely this should bed edit?
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.UAL_TO_EDIT)
+
     expect(next).toHaveBeenCalled()
   })
 

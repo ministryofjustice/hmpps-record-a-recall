@@ -88,7 +88,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     return allConflicting.exact.length > 1 || allConflicting.overlap.length > 1 || allConflicting.within.length > 1
   }
 
-
   validateAgainstExistingRecallUalAdjustments(req: FormWizard.Request, proposedUal: UAL,
                                               existingAdjustments: AdjustmentDto[]) {
     //Is of type recall UAL and overlaps (has multliple overlapping periods of recall UAL, therefore none can be amended
@@ -96,10 +95,11 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       return this.isRelevantAdjustment(adjustment).isRelevant == false
         && (isBefore(adjustment.fromDate, proposedUal.lastDay) && isAfter(adjustment.toDate, proposedUal.firstDay))
     })
-
     console.log('conflictingRecallUALAdjustments', conflictingRecallUALAdjustments)
-
-    if (conflictingRecallUALAdjustments.length > 0) {
+    if (conflictingRecallUALAdjustments.length === 1) {
+      return true
+      // req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, proposedUal)
+    } else if (conflictingRecallUALAdjustments.length > 1) {
       req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
     } else {
       req.sessionModel.unset(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL)
@@ -115,7 +115,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const conflictingNonRecallUALAdjustments = existingAdjustments.filter(adjustment => {
       //Type is not recall UAL AND the time periods overlap with that of the proposed UAL
       return this.isRelevantAdjustment(adjustment).isRelevant
-      && (isBefore(adjustment.fromDate, proposedUal.lastDay) && isAfter(adjustment.toDate, proposedUal.firstDay))
+        && (isBefore(adjustment.fromDate, proposedUal.lastDay) && isAfter(adjustment.toDate, proposedUal.firstDay))
     })
 
     //Set flag to display interrupt screen journey
@@ -141,14 +141,15 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const proposedUal = calculateUal(revocationDate, rtcDate)
     const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
 
-    const hasNoConflicts = this.validateAgainstExistingRecallUalAdjustments(req, proposedUal, existingAdjustments)
-      && this.validateAgainstExistingNonRecallUalAdjustments(req, proposedUal, existingAdjustments)
+    const hasNoRecallUalConflicts = this.validateAgainstExistingRecallUalAdjustments(req, proposedUal, existingAdjustments)
+    const hasNoOtherAdjustmentConflicts = this.validateAgainstExistingNonRecallUalAdjustments(req, proposedUal, existingAdjustments)
 
-    if (!hasNoConflicts) {
+
+    if (!hasNoRecallUalConflicts || !hasNoOtherAdjustmentConflicts) {
       req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
     }
 
-    if (ual && hasNoConflicts) {
+    if (ual && (hasNoRecallUalConflicts && hasNoOtherAdjustmentConflicts)) {
       const ualToSave: UAL = {
         ...ual,
         nomisId,
