@@ -92,7 +92,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     returnToCustodyDateController = new ReturnToCustodyDateController({ route: '/rtc-date' })
   })
 
-  it('should handle UAL calculation and save relevant session data when out of prison at recall - happy path with no conflicting adjustments', () => {
+  it('Happy path (no existing conflicting adjustments: CREATE) should handle UAL calculation and save relevant session data when out of prison at recall', () => {
     const mockUal = { firstDay: '2023-10-01', lastDay: '2023-10-31' }
     const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
 
@@ -124,7 +124,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should handle one existing matching UAL type recall adjustment and merge it - happy path with no conflicting adjustments', () => {
+  it('Happy path (1 match/exact UAL type recall adjustment: EDIT) should handle one existing matching UAL type recall adjustment and merge it', () => {
     const mockUal = { firstDay: '2018-10-20', lastDay: '2018-10-23' }
     const mockPrisonerDetails = { bookingId: 1154003, nomisId: 'G5437UX' }
 
@@ -183,23 +183,23 @@ describe('ReturnToCustodyDateController - saveValues', () => {
         bookingId: mockPrisonerDetails.bookingId,
       }),
     )
-
+    expect(req.sessionModel.unset).toHaveBeenCalledWith(sessionModelFields.UAL_TO_CREATE)
     expect(next).toHaveBeenCalled()
   })
 
-  it('should have four conflicting adjustments UAL  of type recall adjustments so not bulletpoints but interrupt page', () => {
+  it('interrupt page + no bullet points (multiple conflicting UAL type recall adjustments)', () => {
     const mockUal = { firstDay: '2018-10-02', lastDay: '2018-10-31' }
-    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
+    const mockPrisonerDetails = { bookingId: 1154003, nomisId: 'G5437UX' }
     // @ts-expect-error
     getJourneyDataFromRequest.mockReturnValue({
-      revocationDate: '2018-10-02',
+      revocationDate: '2018-10-01',
     })
     // @ts-expect-error
     calculateUal.mockReturnValue(mockUal)
     // @ts-expect-error
     getPrisoner.mockReturnValue(mockPrisonerDetails)
     // @ts-expect-error
-    getRevocationDate.mockReturnValue('2018-10-02')
+    getRevocationDate.mockReturnValue('2018-10-01')
     // @ts-expect-error
     getExistingAdjustments.mockReturnValue([
       {
@@ -413,19 +413,19 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should show NO conflicting adjustments - April dates entered are between adjustments but there is no overlap', () => {
+  it('Happy path (no conflicting adjustments: CREATE) as dates entered are between adjustments and there is no overlap', () => {
     const mockUal = { firstDay: '2018-04-04', lastDay: '2018-04-06' }
-    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
+    const mockPrisonerDetails = { bookingId: 1154003, nomisId: 'A1234BC' }
     // @ts-expect-error
     getJourneyDataFromRequest.mockReturnValue({
-      revocationDate: '2018-04-04',
+      revocationDate: '2018-04-03',
     })
     // @ts-expect-error
     calculateUal.mockReturnValue(mockUal)
     // @ts-expect-error
     getPrisoner.mockReturnValue(mockPrisonerDetails)
     // @ts-expect-error
-    getRevocationDate.mockReturnValue('2018-04-04')
+    getRevocationDate.mockReturnValue('2018-04-03')
     // @ts-expect-error
     getExistingAdjustments.mockReturnValue([
       {
@@ -507,12 +507,12 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should have 1 conflicting adjustment of LAL  and one non-recall UAL therefore shows interrupt page', () => {
+  it('interrupt page with 2 bulletpoints: LAL +  and one non-recall UAL and NO overlapping UAL recall type adjustment(s)', () => {
     const mockUal = { firstDay: '2018-11-03', lastDay: '2018-11-18' }
-    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
+    const mockPrisonerDetails = { bookingId: 1154003, nomisId: 'G5437UX' }
     // @ts-expect-error
     getJourneyDataFromRequest.mockReturnValue({
-      revocationDate: '2018-11-03',
+      revocationDate: '2018-11-02',
     })
     // @ts-expect-error
     calculateUal.mockReturnValue(mockUal)
@@ -600,7 +600,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should have 1 conflicting adjustment of LAL AND (as there is more than 1 overlapping adjustment of UAL type recall) shows interrupt page', () => {
+  it('interrupt page with 1 bulletpoint: LAL + multiple overlapping UAL recall type adjustments', () => {
     const mockUal = { firstDay: '2018-04-02', lastDay: '2018-11-03' }
     const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
     // @ts-expect-error
@@ -714,149 +714,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should show 4 conflicting adjustments on interrupt page (3UAL + 1LAL) as they are between April 2018 and Apirl 2019', () => {
-    const mockUal = { firstDay: '2018-04-02', lastDay: '2019-04-18' }
-    const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
-    // @ts-expect-error
-    getJourneyDataFromRequest.mockReturnValue({
-      revocationDate: '2018-10-02',
-    })
-    // @ts-expect-error
-    calculateUal.mockReturnValue(mockUal)
-    // @ts-expect-error
-    getPrisoner.mockReturnValue(mockPrisonerDetails)
-    // @ts-expect-error
-    getRevocationDate.mockReturnValue('2018-10-02')
-    // @ts-expect-error
-    getExistingAdjustments.mockReturnValue([
-      {
-        id: 'bd9c5c4e-b457-4dff-8fbc-799e87385262',
-        bookingId: 1154003,
-        person: 'G5437UX',
-        adjustmentType: 'UNLAWFULLY_AT_LARGE',
-        toDate: '2018-11-01',
-        fromDate: '2018-10-24',
-        days: 9,
-        remand: null,
-        additionalDaysAwarded: null,
-        unlawfullyAtLarge: { type: 'RECALL' },
-        lawfullyAtLarge: null,
-        specialRemission: null,
-        taggedBail: null,
-        timeSpentInCustodyAbroad: null,
-        timeSpentAsAnAppealApplicant: null,
-        sentenceSequence: null,
-        recallId: '1a7940ba-c127-4037-be10-625d9408a749',
-        adjustmentTypeText: 'UAL (Unlawfully at large)',
-        adjustmentArithmeticType: 'ADDITION',
-        prisonName: 'Humber (HMP)',
-        prisonId: 'HMI',
-        lastUpdatedBy: 'DBENTON',
-        status: 'ACTIVE',
-        lastUpdatedDate: '2025-03-24T13:46:50.170667',
-        createdDate: '2025-03-24T10:49:56.527681',
-        effectiveDays: 9,
-        source: 'DPS',
-      },
-      {
-        id: '6fa8c572-160d-414e-b7ba-5c3f1a868e41',
-        bookingId: 1154003,
-        person: 'G5437UX',
-        adjustmentType: 'UNLAWFULLY_AT_LARGE',
-        toDate: '2018-10-23',
-        fromDate: '2018-10-20',
-        days: 4,
-        remand: null,
-        additionalDaysAwarded: null,
-        unlawfullyAtLarge: { type: 'SENTENCED_IN_ABSENCE' },
-        lawfullyAtLarge: null,
-        specialRemission: null,
-        taggedBail: null,
-        timeSpentInCustodyAbroad: null,
-        timeSpentAsAnAppealApplicant: null,
-        sentenceSequence: null,
-        recallId: null,
-        adjustmentTypeText: 'UAL (Unlawfully at large)',
-        adjustmentArithmeticType: 'ADDITION',
-        prisonName: 'Humber (HMP)',
-        prisonId: 'HMI',
-        lastUpdatedBy: 'DBENTON',
-        status: 'ACTIVE',
-        lastUpdatedDate: '2025-03-24T13:46:49.698849',
-        createdDate: '2025-04-01T11:31:45.71777',
-        effectiveDays: 4,
-        source: 'DPS',
-      },
-      {
-        id: 'ba8301b3-2590-4ad2-9b2c-d48df2dadd73',
-        bookingId: 1154003,
-        person: 'G5437UX',
-        adjustmentType: 'UNLAWFULLY_AT_LARGE',
-        toDate: '2018-10-26',
-        fromDate: '2018-10-25',
-        days: 2,
-        remand: null,
-        additionalDaysAwarded: null,
-        unlawfullyAtLarge: { type: 'RECALL' },
-        lawfullyAtLarge: null,
-        specialRemission: null,
-        taggedBail: null,
-        timeSpentInCustodyAbroad: null,
-        timeSpentAsAnAppealApplicant: null,
-        sentenceSequence: null,
-        recallId: null,
-        adjustmentTypeText: 'UAL (Unlawfully at large)',
-        adjustmentArithmeticType: 'ADDITION',
-        prisonName: 'Humber (HMP)',
-        prisonId: 'HMI',
-        lastUpdatedBy: 'DBENTON',
-        status: 'ACTIVE',
-        lastUpdatedDate: '2025-03-24T13:52:17.394095',
-        createdDate: '2025-03-24T13:52:17.394095',
-        effectiveDays: 2,
-        source: 'DPS',
-      },
-      {
-        id: 'e60f01cb-584d-48a7-bb44-3b720707fd54',
-        bookingId: 1154003,
-        person: 'G5437UX',
-        adjustmentType: 'LAWFULLY_AT_LARGE',
-        toDate: '2018-11-19',
-        fromDate: '2018-11-11',
-        days: 9,
-        remand: null,
-        additionalDaysAwarded: null,
-        unlawfullyAtLarge: null,
-        lawfullyAtLarge: { affectsDates: 'YES' },
-        specialRemission: null,
-        taggedBail: null,
-        timeSpentInCustodyAbroad: null,
-        timeSpentAsAnAppealApplicant: null,
-        sentenceSequence: null,
-        recallId: null,
-        adjustmentTypeText: 'Lawfully at large',
-        adjustmentArithmeticType: 'NONE',
-        prisonName: 'Humber (HMP)',
-        prisonId: 'HMI',
-        lastUpdatedBy: 'JALVARES_ADM',
-        status: 'ACTIVE',
-        lastUpdatedDate: '2025-04-01T14:04:27.322113',
-        createdDate: '2025-03-31T14:02:10.40516',
-        effectiveDays: 9,
-        source: 'DPS',
-      },
-    ])
-
-    returnToCustodyDateController.saveValues(req, res, next)
-
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      true,
-    )
-    expect(next).toHaveBeenCalled()
-  })
-
-  it('should show 2 conflicting adjustments of type UAL immigration detention and multiple overlapping UAL Recall adjustments line', () => {
+  it('interrupt page with 2 bulletpoints: adjustments of type UAL immigration detention + multiple overlapping UAL recall type adjustments', () => {
     const mockUal = { firstDay: '2018-03-22', lastDay: '2018-03-30' }
     const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
     // @ts-expect-error
@@ -943,7 +801,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should show interrupt page with LAL overlap and overlapping adjusments for UAL type recall', () => {
+  it('interrupt page with 2 bulletpoints: LAL + UAL non-recall type + multiple overlapping UAL recall type adjustments', () => {
     const mockUal = { firstDay: '2018-03-20', lastDay: '2018-12-01' }
     const mockPrisonerDetails = { bookingId: 'B1234', nomisId: 'A1234BC' }
     // @ts-expect-error
@@ -1045,6 +903,35 @@ describe('ReturnToCustodyDateController - saveValues', () => {
         effectiveDays: 9,
         source: 'DPS',
       },
+      {
+        id: '6fa8c572-160d-414e-b7ba-5c3f1a868d23',
+        bookingId: 1154003,
+        person: 'G5437UX',
+        adjustmentType: 'UNLAWFULLY_AT_LARGE',
+        toDate: '2018-06-23',
+        fromDate: '2018-06-20',
+        days: 4,
+        remand: null,
+        additionalDaysAwarded: null,
+        unlawfullyAtLarge: { type: 'SENTENCE_IN_ABSENCE' },
+        lawfullyAtLarge: null,
+        specialRemission: null,
+        taggedBail: null,
+        timeSpentInCustodyAbroad: null,
+        timeSpentAsAnAppealApplicant: null,
+        sentenceSequence: null,
+        recallId: null,
+        adjustmentTypeText: 'UAL (Unlawfully at large)',
+        adjustmentArithmeticType: 'ADDITION',
+        prisonName: 'Humber (HMP)',
+        prisonId: 'HMI',
+        lastUpdatedBy: 'DBENTON',
+        status: 'ACTIVE',
+        lastUpdatedDate: '2025-03-24T13:46:49.698849',
+        createdDate: '2025-04-01T11:31:45.71777',
+        effectiveDays: 4,
+        source: 'DPS',
+      },
     ])
 
     returnToCustodyDateController.saveValues(req, res, next)
@@ -1056,7 +943,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should show interrupt page with one REMAND overlap', () => {
+  it('interrupt page interrupt page with 1 bulletpoint: REMAND', () => {
     const mockUal = { firstDay: '2018-11-18', lastDay: '2018-11-22' }
     const mockPrisonerDetails = { bookingId: '1154003', nomisId: 'A1234BC' }
     // @ts-expect-error
