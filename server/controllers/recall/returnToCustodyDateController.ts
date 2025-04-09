@@ -84,16 +84,11 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     return { exact: exactMatches, within: existingWithinProposed, overlap }
   }
 
-  hasMultipleOverlappingUAL(allConflicting: ConflictingAdjustments): boolean {
-    return allConflicting.exact.length > 1 || allConflicting.overlap.length > 1 || allConflicting.within.length > 1
-  }
-
   validateAgainstExistingRecallUalAdjustments(
     req: FormWizard.Request,
     proposedUal: UAL,
     existingAdjustments: AdjustmentDto[],
   ) {
-    // Is of type recall UAL and overlaps (has multliple overlapping periods of recall UAL, therefore none can be amended
     const conflictingRecallUALAdjustments = existingAdjustments.filter(adjustment => {
       return (
         this.isRelevantAdjustment(adjustment).isRelevant === false &&
@@ -103,7 +98,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
     if (conflictingRecallUALAdjustments.length === 1) {
       return true
-      // req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, proposedUal)
     }
     if (conflictingRecallUALAdjustments.length > 1) {
       req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
@@ -119,9 +113,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     proposedUal: UAL,
     existingAdjustments: AdjustmentDto[],
   ) {
-    // Check for adjustments that are not of type recall UAL
     const conflictingNonRecallUALAdjustments = existingAdjustments.filter(adjustment => {
-      // Type is not recall UAL AND the time periods overlap with that of the proposed UAL
       return (
         this.isRelevantAdjustment(adjustment).isRelevant &&
         isBefore(adjustment.fromDate, proposedUal.lastDay) &&
@@ -129,7 +121,6 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       )
     })
 
-    // Set flag to display interrupt screen journey
     if (conflictingNonRecallUALAdjustments.length > 0) {
       req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, conflictingNonRecallUALAdjustments)
     } else {
