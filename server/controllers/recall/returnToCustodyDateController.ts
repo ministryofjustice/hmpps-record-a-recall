@@ -60,28 +60,30 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       return { exact: [], overlap: [], within: [] }
     }
 
-    const exactMatches = existingAdjustments.filter(
-      (adj: AdjustmentDto) => isEqual(adj.fromDate, proposedUal.firstDay) && isEqual(adj.toDate, proposedUal.lastDay),
-    )
+    return {
+      exact: this.getExactMatches(existingAdjustments, proposedUal),
+      within: this.getAdjustmentsWithinProposed(existingAdjustments, proposedUal),
+      overlap: this.getOverlappingAdjustments(existingAdjustments, proposedUal),
+    }
+  }
 
-    const existingWithinProposed = existingAdjustments.filter((adj: AdjustmentDto) => {
-      const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
-      const proposedEndsAfterAdjEnd = isAfter(proposedUal.lastDay, adj.toDate)
-      const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
-      const endsOnSameDay = isEqual(adj.toDate, proposedUal.lastDay)
+  private getExactMatches(adjustments: AdjustmentDto[], proposed: UAL): AdjustmentDto[] {
+    return adjustments.filter(adj => isEqual(adj.fromDate, proposed.firstDay) && isEqual(adj.toDate, proposed.lastDay))
+  }
 
-      return (
-        (startsOnSameDay && proposedEndsAfterAdjEnd) ||
-        (proposedStartsBeforeAdjStart && proposedEndsAfterAdjEnd) ||
-        (proposedStartsBeforeAdjStart && endsOnSameDay)
-      )
+  private getAdjustmentsWithinProposed(adjustments: AdjustmentDto[], proposed: UAL): AdjustmentDto[] {
+    return adjustments.filter(adj => {
+      const startsSame = isEqual(adj.fromDate, proposed.firstDay)
+      const endsSame = isEqual(adj.toDate, proposed.lastDay)
+      const startsAfter = isAfter(adj.fromDate, proposed.firstDay)
+      const endsBefore = isBefore(adj.toDate, proposed.lastDay)
+
+      return (startsSame && endsBefore) || (startsAfter && endsBefore) || (startsAfter && endsSame)
     })
+  }
 
-    const overlap = existingAdjustments.filter((adj: AdjustmentDto) => {
-      return isBefore(adj.fromDate, proposedUal.lastDay) && isAfter(adj.toDate, proposedUal.firstDay)
-    })
-
-    return { exact: exactMatches, within: existingWithinProposed, overlap }
+  private getOverlappingAdjustments(adjustments: AdjustmentDto[], proposed: UAL): AdjustmentDto[] {
+    return adjustments.filter(adj => isBefore(adj.fromDate, proposed.lastDay) && isAfter(adj.toDate, proposed.firstDay))
   }
 
   validateAgainstExistingRecallUalAdjustments(
