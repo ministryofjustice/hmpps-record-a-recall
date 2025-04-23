@@ -10,6 +10,10 @@
           {%  set panelText = "Recall " + action %}
           {{ govukPanel({
             titleText: panelText
+             attributes: {
+                "data-qa": "success-message"
+            }
+            {# may not always be successful #}
           }) }}
 
           <div class="govuk-!-margin-top-6">
