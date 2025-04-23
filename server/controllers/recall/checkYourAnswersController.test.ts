@@ -72,12 +72,22 @@ describe('CheckYourAnswersController - saveValues (edit path)', () => {
     // @ts-expect-error
     getJourneyDataFromRequest.mockReturnValue(mockJourneyData)
     // @ts-expect-error
-    getUalToEdit.mockReturnValue(mockUalToEdit)
+    getUalToEdit.mockReturnValue({ ...mockUalToEdit })
     // @ts-expect-error
     getUalToCreate.mockReturnValue(null)
     req.services.recallService.postRecall.mockResolvedValue(mockCreateResponse)
 
     await checkYourAnswersController.saveValues(req, res, next)
+
+    const updatedUalArg = req.services.adjustmentsService.updateUal.mock.calls[0][0]
+
+    expect(updatedUalArg).toEqual(
+      expect.objectContaining({
+        adjustmentId: 'adj-001',
+        nomisId: 'A1234BC',
+        recallId: 'abc-123',
+      }),
+    )
 
     expect(req.services.recallService.postRecall).toHaveBeenCalledWith(
       expect.objectContaining({
