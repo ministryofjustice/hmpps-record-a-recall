@@ -1,12 +1,72 @@
-import { SuperAgentRequest } from 'superagent'
+import {SuperAgentRequest} from 'superagent'
 import dayjs from 'dayjs'
-import { stubFor } from './wiremock'
+import {stubFor} from './wiremock'
 import {
   LatestCalculation,
   ValidationMessage,
 } from '../../server/@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default {
+  stubRecordARecallCRDS: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPattern: `/calculate-release-dates/calculation/record-a-recall/([A-Z0-9]*)`,
+      },
+      response: {
+        status: 200,
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
+        jsonBody: {
+          dates: {
+            conditionalReleaseDate: "2023-12-15",
+          },
+          calculationRequestId: 123456789,
+          bookingId: 12345678,
+          prisonerId: "ABC1234",
+          calculationStatus: "CONFIRMED",
+          calculationFragments: null,
+          effectiveSentenceLength: {
+            years: 5,
+            months: 3,
+            days: 12,
+            zero: false,
+            negative: false,
+            units: [
+              {
+                durationEstimated: true,
+                duration: {
+                  seconds: 158112000,
+                  zero: false,
+                  nano: 0,
+                  negative: false,
+                  positive: true
+                },
+                timeBased: true,
+                dateBased: false
+              }
+            ],
+            chronology: {
+              id: "SENTENCE-1",
+              calendarType: "ISO",
+              isoBased: true
+            }
+          },
+          calculationType: "CALCULATED",
+          approvedDates: {
+            homeDetentionCurfewEligibilityDate: "2023-11-15",
+            earliestReleaseDate: "2023-12-15"
+          },
+          calculationReference: "550e8400-e29b-41d4-a716-446655440000",
+          calculationReason: null,
+          otherReasonDescription: "Good behavior adjustment",
+          calculationDate: "2023-10-20",
+          historicalTusedSource: "NOMIS",
+          sdsEarlyReleaseAllocatedTranche: "TRANCHE_1",
+          sdsEarlyReleaseTranche: "TRANCHE_1"
+        },
+      },
+    })
+  },
   stubCalculatePreliminaryReleaseDates: (): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -15,7 +75,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           dates: {
             SLED: '2018-11-05',
@@ -38,7 +98,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           dates: {
             SLED: '2018-11-05',
@@ -63,7 +123,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           dates: {
             SLED: '2018-11-05',
@@ -88,7 +148,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           dates: {
             SLED: '2018-11-05',
@@ -111,7 +171,7 @@ export default {
       },
       response: {
         status: 412,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
       },
     })
   },
@@ -123,7 +183,7 @@ export default {
       },
       response: {
         status: 500,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
       },
     })
   },
@@ -135,7 +195,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           date: '2016-12-28',
           adjustedForWeekend: true,
@@ -152,7 +212,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           date: '2017-05-05',
           adjustedForWeekend: true,
@@ -165,15 +225,12 @@ export default {
     return stubFor({
       request: {
         method: 'POST',
-        urlPattern: `/calculate-release-dates/validation/A1234AB/full-validation`,
+        urlPattern: `/calculate-release-dates/validation/ABC1234/full-validation`,
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: {
-          type: 'VALID',
-          messages: [],
-        },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
+        jsonBody: [],
       },
     })
   },
@@ -185,7 +242,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           concurrentSentences: [
             {
@@ -310,7 +367,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           offenderNo: 'A1234AB',
           bookingId: '1234',
@@ -330,7 +387,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           sentenceCalculationUserInputs: [
             {
@@ -352,7 +409,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           sentenceAdjustments: [
             {
@@ -442,7 +499,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [
           {
             terms: [
@@ -457,7 +514,7 @@ export default {
             caseReference: 'ABC123',
             sentenceSequence: 1,
             sentenceStatus: 'A',
-            offence: { offenceEndDate: '2021-02-03', offenceCode: '123', offenceDescription: 'Doing a crime' },
+            offence: {offenceEndDate: '2021-02-03', offenceCode: '123', offenceDescription: 'Doing a crime'},
           },
           {
             terms: [
@@ -473,7 +530,7 @@ export default {
             consecutiveToSequence: 1,
             sentenceStatus: 'A',
             sentenceTypeDescription: 'SDS Standard Sentence',
-            offence: { offenceEndDate: '2021-02-05', offenceDescription: 'Doing a crime' },
+            offence: {offenceEndDate: '2021-02-05', offenceDescription: 'Doing a crime'},
           },
         ],
       },
@@ -487,7 +544,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           dates: {
             SLED: '2018-11-05',
@@ -507,7 +564,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [],
       },
     })
@@ -520,7 +577,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [],
       },
     })
@@ -533,7 +590,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [
           {
             type: 'UNSUPPORTED_SENTENCE',
@@ -542,6 +599,7 @@ export default {
       },
     })
   },
+
   stubGetAnalyzedSentenceAdjustments: (): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -550,7 +608,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           sentenceAdjustments: [
             {
@@ -640,7 +698,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [
           {
             terms: [
@@ -697,7 +755,7 @@ export default {
             consecutiveToSequence: 1,
             sentenceStatus: 'I',
             sentenceTypeDescription: 'SDS Standard Sentence',
-            offence: { offenceEndDate: '2021-02-05', offenceDescription: 'Doing a crime' },
+            offence: {offenceEndDate: '2021-02-05', offenceDescription: 'Doing a crime'},
           },
         ],
       },
@@ -711,7 +769,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [
           {
             id: 1,
@@ -735,7 +793,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [
           {
             offenderNo: 'A1234AB',
@@ -761,18 +819,18 @@ export default {
       reason: 'Transfer',
       establishment: 'Kirkham (HMP)',
       dates: [
-        { date: '2018-11-05', type: 'SLED', description: 'Sentence and licence expiry date', hints: [] },
+        {date: '2018-11-05', type: 'SLED', description: 'Sentence and licence expiry date', hints: []},
         {
           date: dayjs().add(7, 'day').format('YYYY-MM-DD'),
           type: 'CRD',
           description: 'Conditional release date',
-          hints: [{ text: 'Friday, 05 May 2017 when adjusted to a working day' }],
+          hints: [{text: 'Friday, 05 May 2017 when adjusted to a working day'}],
         },
         {
           date: dayjs().add(3, 'day').format('YYYY-MM-DD'),
           type: 'HDCED',
           description: 'Home detention curfew eligibility date',
-          hints: [{ text: 'Wednesday, 28 December 2016 when adjusted to a working day' }],
+          hints: [{text: 'Wednesday, 28 December 2016 when adjusted to a working day'}],
         },
       ],
     }
@@ -783,7 +841,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: latestCalculation,
       },
     })
@@ -796,7 +854,7 @@ export default {
       },
       response: {
         status: 404,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
       },
     })
   },
@@ -808,7 +866,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [],
       },
     })
@@ -821,31 +879,31 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [
-          { type: 'CRD', description: 'Conditional release date' },
-          { type: 'LED', description: 'Licence expiry date' },
-          { type: 'SED', description: 'Sentence expiry date' },
-          { type: 'NPD', description: 'Non-parole date' },
-          { type: 'ARD', description: 'Automatic release date' },
-          { type: 'TUSED', description: 'Top up supervision expiry date' },
-          { type: 'PED', description: 'Parole eligibility date' },
-          { type: 'SLED', description: 'Sentence and licence expiry date' },
-          { type: 'HDCED', description: 'Home detention curfew eligibility date' },
-          { type: 'NCRD', description: 'Notional conditional release date' },
-          { type: 'ETD', description: 'Early transfer date' },
-          { type: 'MTD', description: 'Mid transfer date' },
-          { type: 'LTD', description: 'Late transfer date' },
-          { type: 'DPRRD', description: 'Detention and training order post recall release date' },
-          { type: 'PRRD', description: 'Post recall release date' },
-          { type: 'ESED', description: 'Effective sentence end date' },
-          { type: 'ERSED', description: 'Early removal scheme eligibility date' },
-          { type: 'TERSED', description: 'Tariff-expired removal scheme eligibility date' },
-          { type: 'APD', description: 'Approved parole date' },
-          { type: 'HDCAD', description: 'Home detention curfew approved date' },
-          { type: 'None', description: 'None of the above dates apply' },
-          { type: 'Tariff', description: 'known as the Tariff expiry date' },
-          { type: 'ROTL', description: 'Release on temporary licence' },
+          {type: 'CRD', description: 'Conditional release date'},
+          {type: 'LED', description: 'Licence expiry date'},
+          {type: 'SED', description: 'Sentence expiry date'},
+          {type: 'NPD', description: 'Non-parole date'},
+          {type: 'ARD', description: 'Automatic release date'},
+          {type: 'TUSED', description: 'Top up supervision expiry date'},
+          {type: 'PED', description: 'Parole eligibility date'},
+          {type: 'SLED', description: 'Sentence and licence expiry date'},
+          {type: 'HDCED', description: 'Home detention curfew eligibility date'},
+          {type: 'NCRD', description: 'Notional conditional release date'},
+          {type: 'ETD', description: 'Early transfer date'},
+          {type: 'MTD', description: 'Mid transfer date'},
+          {type: 'LTD', description: 'Late transfer date'},
+          {type: 'DPRRD', description: 'Detention and training order post recall release date'},
+          {type: 'PRRD', description: 'Post recall release date'},
+          {type: 'ESED', description: 'Effective sentence end date'},
+          {type: 'ERSED', description: 'Early removal scheme eligibility date'},
+          {type: 'TERSED', description: 'Tariff-expired removal scheme eligibility date'},
+          {type: 'APD', description: 'Approved parole date'},
+          {type: 'HDCAD', description: 'Home detention curfew approved date'},
+          {type: 'None', description: 'None of the above dates apply'},
+          {type: 'Tariff', description: 'known as the Tariff expiry date'},
+          {type: 'ROTL', description: 'Release on temporary licence'},
         ],
       },
     })
@@ -858,7 +916,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: [],
       },
     })
@@ -871,7 +929,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: false,
       },
     })
@@ -884,7 +942,7 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: false,
       },
     })
@@ -897,10 +955,10 @@ export default {
       },
       response: {
         status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
         jsonBody: {
           calculationRequestId: 123,
-          enteredDates: { SED: '2026-06-01', CRD: '2027-09-03', MTD: '2028-03-09' },
+          enteredDates: {SED: '2026-06-01', CRD: '2027-09-03', MTD: '2028-03-09'},
         },
       },
     })

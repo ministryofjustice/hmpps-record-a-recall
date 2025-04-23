@@ -4,6 +4,8 @@ import auth from './integration_tests/mockApis/auth'
 import manageUsers from './integration_tests/mockApis/manageUsersApi'
 import tokenVerification from './integration_tests/mockApis/tokenVerification'
 import prisonerSearch from './integration_tests/mockApis/prisonerSearchApi'
+import remandAndSentencingApi from "./integration_tests/mockApis/remandAndSentencingApi"
+import calculateReleaseDatesApi from "./integration_tests/mockApis/calculateReleaseDatesApi"
 
 export default defineConfig({
   chromeWebSecurity: false,
@@ -23,11 +25,14 @@ export default defineConfig({
         ...manageUsers,
         ...tokenVerification,
         ...prisonerSearch,
+        ...remandAndSentencingApi,
+        ...calculateReleaseDatesApi
       })
     },
     baseUrl: 'http://localhost:3007',
     excludeSpecPattern: '**/!(*.cy).ts',
     specPattern: 'integration_tests/e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'integration_tests/support/index.ts',
+    testIsolation: false,
   },
 })

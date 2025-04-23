@@ -2,9 +2,6 @@ import dayjs from 'dayjs'
 import Page, { PageElement } from './page'
 
 export default class FormPage extends Page {
-  constructor(title: string) {
-    super(title)
-  }
 
   public clearToAndFromDateFields = (): void => {
     cy.get('[name=from-day]').clear()
