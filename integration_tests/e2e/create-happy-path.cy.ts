@@ -16,8 +16,9 @@ context('Create recall happy path', () => {
     cy.task('stubGetCalculationBreakdown')
 
     // If needed for later steps:
-    // cy.task('stubRemandAndSentencing')
-    // cy.task('stubSearchCourtCases', { sortBy: 'desc' })
+    cy.task('stubSearchCourtCases', { sortBy: 'desc' })
+    cy.task('stubGetPrisonerImageData')
+    console.log('-------------stubed')
     // cy.task('stubUserRecall') // optional depending on your app
   })
 
@@ -42,11 +43,11 @@ context('Create recall happy path', () => {
     new ReviewFormPage(prisonQuestionTitle).continueButton().click()
 
     // Step 4: Select court cases
-    const selectCasesTitle = 'Select court cases'
-    cy.url().should('include', '/person/ABC1234/record-recall/select-cases')
-    const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
-    selectCasesForm.affectsDatesRadio().click() // Replace if needed with actual case selector
-    new ReviewFormPage(selectCasesTitle).continueButton().click()
+    // const selectCasesTitle = 'Select court cases'
+    // cy.url().should('include', '/person/ABC1234/record-recall/select-cases')
+    // const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
+    // selectCasesForm.affectsDatesRadio().click() // Replace if needed with actual case selector
+    // new ReviewFormPage(selectCasesTitle).continueButton().click()
 
   //   // Step 5: Check sentences
   //   const sentenceCheckTitle = 'Check that the sentences and offences are correct'

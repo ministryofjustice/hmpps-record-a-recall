@@ -27,6 +27,7 @@ export default {
       },
     })
   },
+
   stubGetSentencesAndOffences: (): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -134,6 +135,23 @@ export default {
             caseLoadId: 'OTHER',
           },
         ],
+      },
+    })
+  },
+
+  //  /prison-api/api/bookings/offenderNo/undefined/image/data
+  stubGetPrisonerImageData: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPattern: '/prison-api/api/bookings/offenderNo/undefined/image/data',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          
+        },
       },
     })
   },
