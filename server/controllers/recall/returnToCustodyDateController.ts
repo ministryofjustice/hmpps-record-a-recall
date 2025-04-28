@@ -60,28 +60,30 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       return { exact: [], overlap: [], within: [] }
     }
 
-    const exactMatches = existingAdjustments.filter(
-      (adj: AdjustmentDto) => isEqual(adj.fromDate, proposedUal.firstDay) && isEqual(adj.toDate, proposedUal.lastDay),
-    )
+    return {
+      exact: this.getExactMatches(existingAdjustments, proposedUal),
+      within: this.getAdjustmentsWithinProposed(existingAdjustments, proposedUal),
+      overlap: this.getOverlappingAdjustments(existingAdjustments, proposedUal),
+    }
+  }
 
-    const existingWithinProposed = existingAdjustments.filter((adj: AdjustmentDto) => {
-      const startsOnSameDay = isEqual(adj.fromDate, proposedUal.firstDay)
-      const proposedEndsAfterAdjEnd = isAfter(proposedUal.lastDay, adj.toDate)
-      const proposedStartsBeforeAdjStart = isBefore(proposedUal.firstDay, adj.fromDate)
-      const endsOnSameDay = isEqual(adj.toDate, proposedUal.lastDay)
+  private getExactMatches(adjustments: AdjustmentDto[], proposed: UAL): AdjustmentDto[] {
+    return adjustments.filter(adj => isEqual(adj.fromDate, proposed.firstDay) && isEqual(adj.toDate, proposed.lastDay))
+  }
 
-      return (
-        (startsOnSameDay && proposedEndsAfterAdjEnd) ||
-        (proposedStartsBeforeAdjStart && proposedEndsAfterAdjEnd) ||
-        (proposedStartsBeforeAdjStart && endsOnSameDay)
-      )
+  private getAdjustmentsWithinProposed(adjustments: AdjustmentDto[], proposed: UAL): AdjustmentDto[] {
+    return adjustments.filter(adj => {
+      const startsSame = isEqual(adj.fromDate, proposed.firstDay)
+      const endsSame = isEqual(adj.toDate, proposed.lastDay)
+      const startsAfter = isAfter(adj.fromDate, proposed.firstDay)
+      const endsBefore = isBefore(adj.toDate, proposed.lastDay)
+
+      return (startsSame && endsBefore) || (startsAfter && endsBefore) || (startsAfter && endsSame)
     })
+  }
 
-    const overlap = existingAdjustments.filter((adj: AdjustmentDto) => {
-      return isBefore(adj.fromDate, proposedUal.lastDay) && isAfter(adj.toDate, proposedUal.firstDay)
-    })
-
-    return { exact: exactMatches, within: existingWithinProposed, overlap }
+  private getOverlappingAdjustments(adjustments: AdjustmentDto[], proposed: UAL): AdjustmentDto[] {
+    return adjustments.filter(adj => isBefore(adj.fromDate, proposed.lastDay) && isAfter(adj.toDate, proposed.firstDay))
   }
 
   validateAgainstExistingRecallUalAdjustments(
@@ -138,9 +140,10 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const revocationDate = getRevocationDate(req)
 
     const rtcDate = new Date(values.returnToCustodyDate as string)
-    const ual = values.inPrisonAtRecall === 'false' ? calculateUal(journeyData.revocationDate, rtcDate) : null
-
+    const isInPrisonAtRecall = values.inPrisonAtRecall === 'true'
+    const ual = !isInPrisonAtRecall ? calculateUal(journeyData.revocationDate, rtcDate) : null
     const proposedUal = calculateUal(revocationDate, rtcDate)
+
     const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
 
     const hasNoRecallUalConflicts = this.validateAgainstExistingRecallUalAdjustments(
@@ -148,75 +151,77 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       proposedUal,
       existingAdjustments,
     )
+
     const hasNoOtherAdjustmentConflicts = this.validateAgainstExistingNonRecallUalAdjustments(
       req,
       proposedUal,
       existingAdjustments,
     )
 
-    if (!hasNoRecallUalConflicts || !hasNoOtherAdjustmentConflicts) {
-      req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, true)
-    }
+    const hasConflicts = !hasNoRecallUalConflicts || !hasNoOtherAdjustmentConflicts
 
-    if (ual && hasNoRecallUalConflicts && hasNoOtherAdjustmentConflicts) {
+    req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, hasConflicts)
+
+    if (ual && !hasConflicts) {
       const ualToSave: UAL = {
         ...ual,
         nomisId,
         bookingId: prisonerDetails.bookingId,
       }
 
-      const conflAdjs: ConflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
-      const allConflicting = [...conflAdjs.exact, ...conflAdjs.overlap, ...conflAdjs.within]
+      const conflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
+      const allConflicting = [
+        ...conflictingAdjustments.exact,
+        ...conflictingAdjustments.overlap,
+        ...conflictingAdjustments.within,
+      ]
 
       const relevantAdjustments = allConflicting
-        .filter(adjustment => this.isRelevantAdjustment(adjustment).isRelevant)
-        .filter((value, index, self) => index === self.findIndex(t => t.id === value.id))
+        .filter(adj => this.isRelevantAdjustment(adj).isRelevant)
+        .filter((adj, index, self) => index === self.findIndex(t => t.id === adj.id))
 
-      if (proposedUal) {
-        req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflAdjs)
+      req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflictingAdjustments)
 
-        if (relevantAdjustments.length === 0) {
-          if (Object.values(conflAdjs).every(arr => arr.length === 0)) {
-            req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-            req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
-          } else if (conflAdjs.exact.length === 1 || conflAdjs.within.length === 1) {
-            const existingAdjustment = _.first([...conflAdjs.exact, ...conflAdjs.within])
-
-            const updatedUal: UAL = {
-              adjustmentId: existingAdjustment.id,
-              bookingId: existingAdjustment.bookingId,
-              firstDay: ual.firstDay,
-              lastDay: ual.lastDay,
-              nomisId: existingAdjustment.person,
-            }
-
-            req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-            req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
-          } else {
-            const existingAdj = _.first(conflAdjs.overlap)
-
-            const updatedUal: UAL = {
-              adjustmentId: existingAdj.id,
-              bookingId: existingAdj.bookingId,
-              firstDay: rtcDate,
-              lastDay: existingAdj.toDate,
-              nomisId: existingAdj.person,
-            }
-
-            req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-            req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+      if (relevantAdjustments.length === 0) {
+        if (Object.values(conflictingAdjustments).every(arr => arr.length === 0)) {
+          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
+          req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
+        } else if (conflictingAdjustments.exact.length === 1 || conflictingAdjustments.within.length === 1) {
+          const existingAdjustment = _.first([...conflictingAdjustments.exact, ...conflictingAdjustments.within])
+          const updatedUal: UAL = {
+            adjustmentId: existingAdjustment.id,
+            bookingId: existingAdjustment.bookingId,
+            firstDay: ual.firstDay,
+            lastDay: ual.lastDay,
+            nomisId: existingAdjustment.person,
           }
-          req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
-          req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
+          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+          req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+        } else {
+          const existingAdj = _.first(conflictingAdjustments.overlap)
+          const updatedUal: UAL = {
+            adjustmentId: existingAdj.id,
+            bookingId: existingAdj.bookingId,
+            firstDay: rtcDate,
+            lastDay: existingAdj.toDate,
+            nomisId: existingAdj.person,
+          }
+          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
+          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
         }
-      } else {
-        req.sessionModel.unset(sessionModelFields.UAL)
-        req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+
+        req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
+        req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
       }
+    } else if (!ual) {
+      req.sessionModel.unset(sessionModelFields.UAL)
+      req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
     }
-    if (values.inPrisonAtRecall === 'true') {
+
+    if (isInPrisonAtRecall) {
       values.returnToCustodyDate = null
     }
+
     return super.saveValues(req, res, next)
   }
 }
