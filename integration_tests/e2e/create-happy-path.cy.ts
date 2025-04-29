@@ -48,21 +48,21 @@ context('Create recall happy path', () => {
     const selectCasesTitle = 'Select court cases'
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
     const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
-    selectCasesForm.affectsDatesRadio().click() // Replace if needed with actual case selector
+    selectCasesForm.selectFirstCourtCaseCheckbox() 
     new ReviewFormPage(selectCasesTitle).continueButton().click()
 
-  //   // Step 5: Check sentences
-  //   const sentenceCheckTitle = 'Check that the sentences and offences are correct'
-  //   cy.url().should('include', '/person/ABC1234/record-recall/check-sentences')
-  //   const sentenceForm = FormPage.verifyOnPage<FormPage>(FormPage, sentenceCheckTitle)
-  //   new ReviewFormPage(sentenceCheckTitle).confirmAndContinueButton().click()
+    // Step 5: Check sentences
+    const sentenceCheckTitle = 'Check that the sentences and offences are correct'
+    cy.url().should('include', '/person/A1234AB/record-recall/check-sentences')
+    const sentenceForm = FormPage.verifyOnPage<FormPage>(FormPage, sentenceCheckTitle)
+    new ReviewFormPage(sentenceCheckTitle).confirmAndContinueButton().click()
 
   //   // Step 6: Select recall type
-  //   const recallTypeTitle = 'Select the type of recall'
-  //   cy.url().should('include', '/person/ABC1234/record-recall/recall-type')
-  //   const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
-  //   recallTypeForm.recallTypeRadio().click()
-  //   new ReviewFormPage(recallTypeTitle).continueButton().click()
+    const recallTypeTitle = 'Select the type of recall'
+    cy.url().should('include', '/person/A1234AB/record-recall/recall-type')
+    const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
+    recallTypeForm.recallTypeRadio().click()
+    new ReviewFormPage(recallTypeTitle).continueButton().click()
 
   //   // Step 7: Check your answers
   //   const checkAnswersTitle = 'Check your answers'
