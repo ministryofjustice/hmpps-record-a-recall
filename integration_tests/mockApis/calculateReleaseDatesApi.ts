@@ -22,7 +22,7 @@ export default {
           },
           calculationRequestId: 123456789,
           bookingId: 12345678,
-          prisonerId: "ABC1234",
+          prisonerId: "A1234AB",
           calculationStatus: "CONFIRMED",
           calculationFragments: null,
           effectiveSentenceLength: {
@@ -225,7 +225,7 @@ export default {
     return stubFor({
       request: {
         method: 'POST',
-        urlPattern: `/calculate-release-dates/validation/ABC1234/full-validation`,
+        urlPattern: `/calculate-release-dates/validation/A1234AB/full-validation`,
       },
       response: {
         status: 200,

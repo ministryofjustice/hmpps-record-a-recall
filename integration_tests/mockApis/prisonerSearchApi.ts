@@ -6,14 +6,14 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/prison-search-api/prisoner/ABC1234',
+        urlPattern: '/prison-search-api/prisoner/A1234AB',
       },
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         jsonBody: [
           {
-            prisonerNumber: 'ABC1234',
+            prisonerNumber: 'A1234AB',
             pncNumber: '12/394773H',
             pncNumberCanonicalShort: '12/394773H',
             pncNumberCanonicalLong: '2012/394773H',

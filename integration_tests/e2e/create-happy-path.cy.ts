@@ -13,7 +13,8 @@ context('Create recall happy path', () => {
     cy.task('stubValidate')
     cy.task('stubRecordARecallCRDS')
     cy.task('stubSentencesAndOffences')
-    cy.task('stubGetCalculationBreakdown')
+    cy.task('stubGetCalculationBreakdown')
+    cy.task('stubGetCourtsByIds')
 
     // If needed for later steps:
     cy.task('stubSearchCourtCases', { sortBy: 'desc' })
@@ -27,9 +28,9 @@ context('Create recall happy path', () => {
     cy.signIn()
 
     // Step 1: Go to person and start recall
-    const personPage = PersonHome.goTo('ABC1234')
+    const personPage = PersonHome.goTo('A1234AB')
     personPage.createNewRecallButton().click()
-    cy.url().should('include', '/person/ABC1234/record-recall/revocation-date')
+    cy.url().should('include', '/person/A1234AB/record-recall/revocation-date')
 
     // Step 2: Revocation date
     const revocationPage = RevocationDatePage.verifyOnPage<RevocationDatePage>(RevocationDatePage, 'Enter the date of revocation')
@@ -38,17 +39,17 @@ context('Create recall happy path', () => {
 
     // Step 3: Was this person in prison?
     const prisonQuestionTitle = 'Was this person in prison when the recall was made?'
-    cy.url().should('include', '/person/ABC1234/record-recall/rtc-date')
+    cy.url().should('include', '/person/A1234AB/record-recall/rtc-date')
     const prisonForm = formPage.verifyOnPage<formPage>(formPage, prisonQuestionTitle)
     prisonForm.affectsDatesRadio().click()
     new ReviewFormPage(prisonQuestionTitle).continueButton().click()
 
     // Step 4: Select court cases
-    // const selectCasesTitle = 'Select court cases'
-    // cy.url().should('include', '/person/ABC1234/record-recall/select-cases')
-    // const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
-    // selectCasesForm.affectsDatesRadio().click() // Replace if needed with actual case selector
-    // new ReviewFormPage(selectCasesTitle).continueButton().click()
+    const selectCasesTitle = 'Select court cases'
+    cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
+    const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
+    selectCasesForm.affectsDatesRadio().click() // Replace if needed with actual case selector
+    new ReviewFormPage(selectCasesTitle).continueButton().click()
 
   //   // Step 5: Check sentences
   //   const sentenceCheckTitle = 'Check that the sentences and offences are correct'
