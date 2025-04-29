@@ -3,6 +3,10 @@ import { resetStubs } from './integration_tests/mockApis/wiremock'
 import auth from './integration_tests/mockApis/auth'
 import manageUsers from './integration_tests/mockApis/manageUsersApi'
 import tokenVerification from './integration_tests/mockApis/tokenVerification'
+import prisonerSearch from './integration_tests/mockApis/prisonerSearchApi'
+import remandAndSentencingApi from './integration_tests/mockApis/remandAndSentencingApi'
+import calculateReleaseDatesApi from './integration_tests/mockApis/calculateReleaseDatesApi'
+import courtRegister from './integration_tests/mockApis/courtRegisterApi'
 
 export default defineConfig({
   chromeWebSecurity: false,
@@ -21,6 +25,10 @@ export default defineConfig({
         ...auth,
         ...manageUsers,
         ...tokenVerification,
+        ...prisonerSearch,
+        ...remandAndSentencingApi,
+        ...calculateReleaseDatesApi,
+        ...courtRegister,
       })
     },
     baseUrl: 'http://localhost:3007',
