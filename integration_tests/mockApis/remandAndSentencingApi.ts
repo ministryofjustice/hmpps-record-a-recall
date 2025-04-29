@@ -507,5 +507,20 @@ export default {
       }
     }
     )
+  },
+  stubRecallRecorded: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPath: '/remand-and-sentencing-api/recall',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          recallUuid: 'ABC',
+        },
+      },
+    })
   }
 }

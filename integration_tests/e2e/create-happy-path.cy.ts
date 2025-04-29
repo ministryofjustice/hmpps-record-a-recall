@@ -15,14 +15,9 @@ context('Create recall happy path', () => {
     cy.task('stubSentencesAndOffences')
     cy.task('stubGetCalculationBreakdown')
     cy.task('stubGetCourtsByIds')
-
-    // If needed for later steps:
     cy.task('stubSearchCourtCases', { sortBy: 'desc' })
     cy.task('stubRecallPerson', {sortBy: 'desc' })
-    // cy.task('stubGetPrisonerImageData')
-    // cy.task('stubGetPrisonerDetails')
-    console.log('-------------stubbed')
-    // cy.task('stubUserRecall') // optional depending on your app
+    cy.task('stubRecallRecorded')
   })
 
   it('should complete the full recall creation journey', () => {
@@ -67,12 +62,12 @@ context('Create recall happy path', () => {
 
    // Step 7: Check your answers
     const checkAnswersTitle = 'Check your answers'
-    cy.url().should('include', '/person/A1234AB/record-recall/check-your-answers') // broke here
+    cy.url().should('include', '/person/A1234AB/record-recall/check-your-answers') 
     const checkAnswersForm = FormPage.verifyOnPage<FormPage>(FormPage, checkAnswersTitle)
     new ReviewFormPage(checkAnswersTitle).confirmRecallBtn().click()
 
-  //   // Final Step: Confirmation
-    cy.url().should('include', '/person/A1234AB/record-recall/recall-recorded')
+    // Final Step: Confirmation
+    cy.url().should('include', '/person/A1234AB/record-recall/recall-recorded') 
     const confirmationForm = FormPage.verifyOnPage<FormPage>(FormPage, 'What you can do next')
     confirmationForm.successMessage().contains('Recall recorded')
    })
