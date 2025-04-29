@@ -28,7 +28,6 @@ export default defineConfig({
         ...prisonerSearch,
         ...remandAndSentencingApi,
         ...calculateReleaseDatesApi,
-        ...prisonApi
       })
     },
     baseUrl: 'http://localhost:3007',

@@ -17,8 +17,9 @@ context('Create recall happy path', () => {
 
     // If needed for later steps:
     cy.task('stubSearchCourtCases', { sortBy: 'desc' })
-    cy.task('stubGetPrisonerImageData')
-    console.log('-------------stubed')
+    // cy.task('stubGetPrisonerImageData')
+    // cy.task('stubGetPrisonerDetails')
+    console.log('-------------stubbed')
     // cy.task('stubUserRecall') // optional depending on your app
   })
 

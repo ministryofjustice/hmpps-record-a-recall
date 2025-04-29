@@ -139,20 +139,20 @@ export default {
     })
   },
 
-  //  /prison-api/api/bookings/offenderNo/undefined/image/data
-  stubGetPrisonerImageData: (): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'GET',
-        urlPattern: '/prison-api/api/bookings/offenderNo/undefined/image/data',
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: {
-          
-        },
-      },
-    })
-  },
+  // stubGetPrisonerImageData: (): SuperAgentRequest => {
+  //   return stubFor({
+  //     request: {
+  //       method: 'GET',
+  //       urlPathPattern: '/prison-api/api/bookings/offenderNo/.*/image/data',
+  //     },
+  //     response: {
+  //       status: 200,
+  //       body: '', // or base64-encoded image data if needed
+  //       headers: {
+  //         'Content-Type': 'image/jpeg',
+  //       },
+  //     },
+  //   })
+  // },
+  
 }
