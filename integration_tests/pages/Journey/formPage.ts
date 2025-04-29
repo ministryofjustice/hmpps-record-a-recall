@@ -1,7 +1,7 @@
-import FormPage from '../form'
+import BaseFormPage from '../form'
 import { PageElement } from '../page'
 
-export default class formPage extends FormPage {
+export default class formPage extends BaseFormPage {
   constructor(title: string) {
     super(title)
   }

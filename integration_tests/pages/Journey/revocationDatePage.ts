@@ -1,6 +1,5 @@
-import FormPage from '../form'
-import dayjs from "dayjs";
-import ReviewFormPage from "./reviewFormPage";
+import dayjs from 'dayjs'
+import ReviewFormPage from './reviewFormPage'
 
 export default class RevocationDatePage extends ReviewFormPage {
   constructor(title: string) {
@@ -16,5 +15,4 @@ export default class RevocationDatePage extends ReviewFormPage {
     cy.get('[name=revocationDate-month]').type(months)
     cy.get('[name=revocationDate-year]').type(years)
   }
-
 }

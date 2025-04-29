@@ -120,39 +120,4 @@ export default {
       },
     })
   },
-
-  stubGetUserOtherCaseloads: (): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'GET',
-        urlPattern: '/prison-api/api/users/me/caseLoads',
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: [
-          {
-            caseLoadId: 'OTHER',
-          },
-        ],
-      },
-    })
-  },
-
-  // stubGetPrisonerImageData: (): SuperAgentRequest => {
-  //   return stubFor({
-  //     request: {
-  //       method: 'GET',
-  //       urlPathPattern: '/prison-api/api/bookings/offenderNo/.*/image/data',
-  //     },
-  //     response: {
-  //       status: 200,
-  //       body: '', // or base64-encoded image data if needed
-  //       headers: {
-  //         'Content-Type': 'image/jpeg',
-  //       },
-  //     },
-  //   })
-  // },
-  
 }
