@@ -166,8 +166,8 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/courts/id/multiple?courtIds=.*',
-      },
+        urlPathPattern: '//courts/id/multiple.*', 
+      },  
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
