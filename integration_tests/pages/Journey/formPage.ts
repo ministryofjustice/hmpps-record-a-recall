@@ -8,7 +8,7 @@ export default class formPage extends FormPage {
 
   public affectsDatesRadio = (): PageElement => cy.get('[value=true]')
 
-  public recallTypeRadio = (): PageElement => cy.get('[value="FTR_14"]')
+  public recallTypeRadio = (): PageElement => cy.get('[value="LR"]')
 
   public successMessage = (): PageElement => cy.get('[data-qa=success-message]')
 
