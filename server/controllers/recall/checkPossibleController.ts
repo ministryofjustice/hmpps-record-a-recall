@@ -27,7 +27,10 @@ export default class CheckPossibleController extends RecallBaseController {
               this.getSentences(req, res),
               this.getCalculationBreakdown(req, res),
             ])
-            res.locals.sentences = sentences
+            console
+            const dpsSentenceSequenceIds = this.getNomisToDpsMapping(sentences.map(sentence => sentence.sentenceSequence), sentences[0].bookingId) // get sequence numbers
+            const rasSentences = res.getSentenceInfo(dpsSentenceSequenceIds)
+            res.locals.sentences = rasSentences
             res.locals.breakdown = breakdown
           })
           .catch(error => {
