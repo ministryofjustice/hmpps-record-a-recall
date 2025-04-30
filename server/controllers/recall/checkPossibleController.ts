@@ -8,6 +8,8 @@ import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelp
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import NomisMappingServiceApiClient from "../../api/nomisMappingServiceApiClient";
+import {NomisDpsSentenceMapping, NomisSentenceId} from "../../@types/nomisMappingApi/nomisMappingApiTypes";
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -28,13 +30,14 @@ export default class CheckPossibleController extends RecallBaseController {
               this.getCalculationBreakdown(req, res),
             ])
 
-            const sentenceSequence = sentences.map(sentence => sentence.sentenceSequence)
+            const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
             const firstBookingId = sentences[0].bookingId
 
-            console.log('sentenceSequence', sentenceSequence)
+            console.log('sentenceSequence', sentenceSequenceNumbers)
             console.log('firstBookingId', firstBookingId)
 
-            // const dpsSentenceSequenceIds = this.getNomisToDpsMapping(sentenceSequence, firstBookingId) // get sequence numbers
+            const dpsSentenceSequenceIds = this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
+            console.log('dpsSentenceSequenceIds', dpsSentenceSequenceIds)
             // const rasSentences = ras.getSentenceInfo(dpsSentenceSequenceIds)
             // res.locals.sentences = rasSentences
             res.locals.breakdown = breakdown
@@ -93,5 +96,15 @@ export default class CheckPossibleController extends RecallBaseController {
   getSentences(req: FormWizard.Request, res: Response) {
     const { calcReqId, username } = res.locals
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
+  }
+
+  async getNomisToDpsMapping(req: FormWizard.Request, sentenceSequenceNumbers: number[], firstBookingId: number): Promise<NomisDpsSentenceMapping[]> {
+
+    const nomisSentenceInformation = sentenceSequenceNumbers.map(sentence => ({
+      nomisSentenceSequence: sentence,
+      nomisBookingId: firstBookingId,
+    }))
+
+    return req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)
   }
 }
