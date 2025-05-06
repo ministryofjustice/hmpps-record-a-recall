@@ -10,10 +10,10 @@ export default class NomisMappingServiceApiClient {
   }
 
   async postNomisToDpsMappingLookup(mappings: NomisSentenceId[]): Promise<NomisDpsSentenceMapping[]> {
+    console.log('nomisMappingServiceApiClient, postNomisToDpsMappingLookup')
     return this.restClient.post({
       path: `/api/sentences/nomis`,
       data: mappings,
     }) as Promise<NomisDpsSentenceMapping[]>
   }
-
 }

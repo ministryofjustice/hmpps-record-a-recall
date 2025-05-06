@@ -8,7 +8,9 @@ export interface NomisSentenceId {
 }
 
 export interface NomisDpsSentenceMapping {
-  nomisBookingId: number
-  nomisSentenceSequence: number
+  nomisSentenceId: {
+    nomisSentenceSequence: number
+    nomisBookingId: number
+  }
   dpsSentenceId: string
 }
