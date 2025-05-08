@@ -3,6 +3,7 @@ import FormWizard from 'hmpo-form-wizard'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
 import getServiceUrls from '../../helpers/urlHelper'
 import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/formWizardHelper'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
@@ -32,6 +33,11 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
     const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
     const selectedRecallType = journeyData.recallType
+    const relevantAdjustments: AdjustmentDto[] = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) || []
+    const arrestDate: Date = journeyData.returnToCustodyDate
+
+    const hasMultipleOverlappingUALTypeRecall: boolean =
+      req.sessionModel.get(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) || false
 
     const urls = getServiceUrls(res.locals.nomisId)
     const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
@@ -56,6 +62,9 @@ export default class RecallBaseController extends PrisonerDetailsController {
       isEditRecall,
       action,
       selectedRecallType,
+      relevantAdjustments, // Full array of objects
+      arrestDate,
+      hasMultipleOverlappingUALTypeRecall,
     }
   }
 }

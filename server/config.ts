@@ -125,8 +125,8 @@ export default {
     remandAndSentencingApi: {
       url: get('REMAND_AND_SENTENCING_API_URL', 'http://127.0.0.1:8087', requiredInProduction),
       timeout: {
-        response: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 10000)),
-        deadline: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 10000)),
+        response: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 1200000)),
+        deadline: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 1200000)),
       },
       agent: new AgentConfig(),
     },

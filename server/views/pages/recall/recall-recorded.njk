@@ -9,7 +9,11 @@
         <div class='govuk-grid-column-two-thirds'>
           {%  set panelText = "Recall " + action %}
           {{ govukPanel({
-            titleText: panelText
+            titleText: panelText,
+             attributes: {
+                "data-qa": "success-message"
+            }
+         
           }) }}
 
           <div class="govuk-!-margin-top-6">
