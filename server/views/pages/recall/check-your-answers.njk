@@ -44,7 +44,10 @@
                         text: "Confirm recall",
                         classes: options.buttonClasses,
                         preventDoubleClick: true,
-                        type: "submit"
+                        type: "submit",
+                        attributes: {
+                              "data-qa": "confirm-recall-btn"
+                          }
                     }) }}
                 {% endblock %}
                 {% block cancel %}

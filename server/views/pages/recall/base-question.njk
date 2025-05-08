@@ -68,7 +68,10 @@
                                     text: "Continue",
                                     classes: options.buttonClasses,
                                     preventDoubleClick: true,
-                                    type: "submit"
+                                    type: "submit",
+                                     attributes: {
+                                        "data-qa": "continue-btn"
+                                    }
                                 }) }}
                             {% endblock %}
                             {%  if not hideCancel %}

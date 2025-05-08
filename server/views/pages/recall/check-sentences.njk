@@ -85,7 +85,10 @@
                                   text: "Confirm and continue",
                                   classes: options.buttonClasses,
                                   preventDoubleClick: true,
-                                  type: "submit"
+                                  type: "submit",
+                                  attributes: {
+                                    "data-qa": "confirm-and-continue-btn"
+                                }
                               }) }}
                           {% endblock %}
 
