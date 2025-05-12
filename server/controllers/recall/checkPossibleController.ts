@@ -40,6 +40,7 @@ export default class CheckPossibleController extends RecallBaseController {
             console.log('dpsSentenceSequenceIds', dpsSentenceSequenceIds)
             // const rasSentences = ras.getSentenceInfo(dpsSentenceSequenceIds)
             // res.locals.sentences = rasSentences
+            res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
             res.locals.breakdown = breakdown
           })
           .catch(error => {
@@ -75,6 +76,8 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
+    req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpSentenceIds)
+
 
     return { ...locals }
   }

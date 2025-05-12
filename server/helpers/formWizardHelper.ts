@@ -11,6 +11,7 @@ import {
 import { RecallEligibility } from '../@types/recallEligibility'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import { AdjustmentDto, ConflictingAdjustments } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { DpsSentenceIds, NomisDpsSentenceMapping } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
@@ -92,6 +93,7 @@ export const sessionModelFields = {
   INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS: 'incompatibleTypesAndMultipleConflictingAdjustments',
   // incompatible (includes multiple) adjustment type of non recall ual
   HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL: 'hasMultipleOverlappingUalTypeRecall',
+  DPS_SENTENCE_IDS: 'dpsSentenceIds',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -173,6 +175,10 @@ export function getPrisoner(req: FormWizard.Request): PrisonerSearchApiPrisoner 
 
 export function getExistingAdjustments(req: FormWizard.Request): AdjustmentDto[] {
   return get<AdjustmentDto[]>(req, sessionModelFields.EXISTING_ADJUSTMENTS)
+}
+
+export function getDpsSentenceId(req: FormWizard.Request): DpsSentenceIds {
+  return get<DpsSentenceIds>(req, sessionModelFields.DPS_SENTENCE_IDS)
 }
 
 export function hasMultipleConflicting(req: FormWizard.Request): boolean {

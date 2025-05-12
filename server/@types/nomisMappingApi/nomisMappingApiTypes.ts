@@ -23,3 +23,6 @@ export interface NomisDpsInfo {
     mappingType: 'DPS_CREATED'
     whenCreated: Date
 }
+
+export type DpsSentenceIds = string[]
+
