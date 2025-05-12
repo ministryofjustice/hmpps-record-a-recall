@@ -76,7 +76,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
-    req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpSentenceIds)
+    req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
 
 
     return { ...locals }
