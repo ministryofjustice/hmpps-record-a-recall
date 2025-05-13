@@ -9,6 +9,7 @@ import { SentenceDetail, SentenceDetailExtended } from '../@types/refData'
 import logger from '../../logger'
 import { RecallEligibility } from '../@types/recallEligibility'
 import { SummaryListRow } from '../@types/govuk'
+import {SentenceWithDpsUuid} from "models";
 
 const FIXED_AND_STANDARD_CRITERIA = [
   ['ADIMP', '2003'],
@@ -228,7 +229,7 @@ export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtend
 }
 
 export function groupSentencesByCaseRefAndCourt(
-  sentences: SentenceAndOffenceWithReleaseArrangements[],
+  sentences: SentenceWithDpsUuid[],
 ): Record<string, SentenceAndOffenceWithReleaseArrangements[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return sentences.reduce((result: any, currentValue: any) => {

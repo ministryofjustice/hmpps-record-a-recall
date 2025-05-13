@@ -1,15 +1,14 @@
 import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
+import {NextFunction, Response} from 'express'
 
-import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {ValidationMessage} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import {getRecallRoute, sessionModelFields} from '../../helpers/formWizardHelper'
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
-import { eligibilityReasons } from '../../@types/recallEligibility'
-import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import NomisMappingServiceApiClient from "../../api/nomisMappingServiceApiClient";
-import {NomisDpsSentenceMapping, NomisSentenceId} from "../../@types/nomisMappingApi/nomisMappingApiTypes";
+import {eligibilityReasons} from '../../@types/recallEligibility'
+import {AdjustmentDto} from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import {NomisDpsSentenceMapping} from "../../@types/nomisMappingApi/nomisMappingApiTypes";
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -41,6 +40,11 @@ export default class CheckPossibleController extends RecallBaseController {
             // const rasSentences = ras.getSentenceInfo(dpsSentenceSequenceIds)
             // res.locals.sentences = rasSentences
             res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
+            res.locals.sentences = sentences.map(sentence => ({
+              ...sentence,
+              dpsSentenceUuid: dpsSentenceSequenceIds.find(mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence)?.dpsSentenceId,
+            }));
+
             res.locals.breakdown = breakdown
           })
           .catch(error => {
