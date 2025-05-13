@@ -1,9 +1,9 @@
 declare module 'models' {
   import { RecallType } from '../recallTypes'
   import {
-  CalculatedReleaseDates,
-    SentenceAndOffenceWithReleaseArrangements
-} from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+    CalculatedReleaseDates,
+    SentenceAndOffenceWithReleaseArrangements,
+  } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
   export interface Recall {
     recallId: string
@@ -59,7 +59,7 @@ declare module 'models' {
   }
 
   export type SentenceWithDpsUuid = SentenceAndOffenceWithReleaseArrangements & {
-    /** Format: UUID **/
+    /** Format: UUID * */
     dpsSentenceUuid: string
   }
 

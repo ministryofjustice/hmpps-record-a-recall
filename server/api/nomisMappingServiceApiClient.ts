@@ -22,21 +22,23 @@ export default class NomisMappingServiceApiClient {
   // based on getting dpsSentenceId from above
   async getDpsSentencesFromNomisMappings(mappings: NomisSentenceId[]): Promise<NomisDpsInfo[]> {
     const sentenceMappings = await this.postNomisToDpsMappingLookup(mappings)
-  
-    const requests = sentenceMappings.map(({ dpsSentenceId }) =>
-      this.restClient.get({
-        path: `/mapping/court-sentencing/sentences/dps-sentence-id/${dpsSentenceId}`, 
-      }) as Promise<NomisDpsInfo>
+
+    const requests = sentenceMappings.map(
+      ({ dpsSentenceId }) =>
+        this.restClient.get({
+          path: `/mapping/court-sentencing/sentences/dps-sentence-id/${dpsSentenceId}`,
+        }) as Promise<NomisDpsInfo>,
     )
     return Promise.all(requests)
   }
-  
-// can get same info without using the post above
+
+  // can get same info without using the post above
   async getNomisToDpsMappingLookup(mappings: NomisSentenceId[]): Promise<NomisDpsInfo[]> {
-    const requests = mappings.map(({nomisBookingId, nomisSentenceSequence}) => 
-      this.restClient.get({
-        path: `/mapping/court-sentencings/sentences/nomis-booking-id/${nomisBookingId}/nomis-sentence-sequence/${nomisSentenceSequence}`
-      }) as Promise<NomisDpsInfo>
+    const requests = mappings.map(
+      ({ nomisBookingId, nomisSentenceSequence }) =>
+        this.restClient.get({
+          path: `/mapping/court-sentencings/sentences/nomis-booking-id/${nomisBookingId}/nomis-sentence-sequence/${nomisSentenceSequence}`,
+        }) as Promise<NomisDpsInfo>,
     )
     return Promise.all(requests)
   }

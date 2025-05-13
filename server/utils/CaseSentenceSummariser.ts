@@ -1,13 +1,12 @@
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
-import {CourtCase, SentenceWithDpsUuid, Term} from 'models'
+import { CourtCase, SentenceWithDpsUuid, Term } from 'models'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
   ConsecutiveSentencePart,
   Offence,
-  SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import toSummaryListRow from '../helpers/componentHelper'
 import { format8DigitDate } from '../formatters/formatDate'

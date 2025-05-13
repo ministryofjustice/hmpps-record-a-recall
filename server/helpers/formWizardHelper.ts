@@ -1,17 +1,16 @@
 import FormWizard from 'hmpo-form-wizard'
 // eslint-disable-next-line import/no-unresolved
-import {CourtCase, Recall, SentenceWithDpsUuid, UAL} from 'models'
+import { CourtCase, Recall, SentenceWithDpsUuid, UAL } from 'models'
 import { getRecallType, RecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import {
   CalculatedReleaseDates,
   CalculationBreakdown,
-  SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallEligibility } from '../@types/recallEligibility'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import { AdjustmentDto, ConflictingAdjustments } from '../@types/adjustmentsApi/adjustmentsApiTypes'
-import { DpsSentenceIds, NomisDpsSentenceMapping } from '../@types/nomisMappingApi/nomisMappingApiTypes'
+import { DpsSentenceIds } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)

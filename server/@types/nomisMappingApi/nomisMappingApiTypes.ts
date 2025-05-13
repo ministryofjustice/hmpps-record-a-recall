@@ -16,13 +16,12 @@ export interface NomisDpsSentenceMapping {
 }
 
 export interface NomisDpsInfo {
-    nomisBookingId: number
-    nomisSentenceSequence: number
-    dpsSentenceId: number
-    label: string
-    mappingType: 'DPS_CREATED'
-    whenCreated: Date
+  nomisBookingId: number
+  nomisSentenceSequence: number
+  dpsSentenceId: number
+  label: string
+  mappingType: 'DPS_CREATED'
+  whenCreated: Date
 }
 
 export type DpsSentenceIds = string[]
-

@@ -11,8 +11,7 @@ import CourtService from './CourtService'
 import AdjustmentsService from './adjustmentsService'
 import ManageUsersService from './manageUsersService'
 import PrisonService from './PrisonService'
-import NomisMappingServiceApiClient from "../api/nomisMappingServiceApiClient";
-import NomisToDpsMappingService from "./NomisToDpsMappingService";
+import NomisToDpsMappingService from './NomisToDpsMappingService'
 
 export const services = () => {
   const { applicationInfo, hmppsAuditClient, hmppsAuthClient, feComponentsClient, manageUsersApiClient } = dataAccess()

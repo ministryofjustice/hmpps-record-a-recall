@@ -1,14 +1,14 @@
 import FormWizard from 'hmpo-form-wizard'
-import {NextFunction, Response} from 'express'
+import { NextFunction, Response } from 'express'
 
-import {ValidationMessage} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import {getRecallRoute, sessionModelFields} from '../../helpers/formWizardHelper'
+import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
-import {eligibilityReasons} from '../../@types/recallEligibility'
-import {AdjustmentDto} from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import {NomisDpsSentenceMapping} from "../../@types/nomisMappingApi/nomisMappingApiTypes";
+import { eligibilityReasons } from '../../@types/recallEligibility'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { NomisDpsSentenceMapping } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -42,8 +42,10 @@ export default class CheckPossibleController extends RecallBaseController {
             res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
             res.locals.sentences = sentences.map(sentence => ({
               ...sentence,
-              dpsSentenceUuid: dpsSentenceSequenceIds.find(mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence)?.dpsSentenceId,
-            }));
+              dpsSentenceUuid: dpsSentenceSequenceIds.find(
+                mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
+              )?.dpsSentenceId,
+            }))
 
             res.locals.breakdown = breakdown
           })
@@ -82,7 +84,6 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
     req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
 
-
     return { ...locals }
   }
 
@@ -105,13 +106,16 @@ export default class CheckPossibleController extends RecallBaseController {
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
   }
 
-  async getNomisToDpsMapping(req: FormWizard.Request, sentenceSequenceNumbers: number[], firstBookingId: number): Promise<NomisDpsSentenceMapping[]> {
-
+  async getNomisToDpsMapping(
+    req: FormWizard.Request,
+    sentenceSequenceNumbers: number[],
+    firstBookingId: number,
+  ): Promise<NomisDpsSentenceMapping[]> {
     const nomisSentenceInformation = sentenceSequenceNumbers.map(sentence => ({
       nomisSentenceSequence: sentence,
       nomisBookingId: firstBookingId,
     }))
 
-    return await req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)
+    return req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)
   }
 }

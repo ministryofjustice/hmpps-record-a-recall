@@ -1,6 +1,6 @@
-import {HmppsAuthClient} from '../data'
-import NomisMappingServiceApiClient from "../api/nomisMappingServiceApiClient";
-import {NomisDpsSentenceMapping, NomisSentenceId} from "../@types/nomisMappingApi/nomisMappingApiTypes";
+import { HmppsAuthClient } from '../data'
+import NomisMappingServiceApiClient from '../api/nomisMappingServiceApiClient'
+import { NomisDpsSentenceMapping, NomisSentenceId } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default class NomisToDpsMappingService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
