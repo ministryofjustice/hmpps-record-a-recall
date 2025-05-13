@@ -1,4 +1,4 @@
-import { SentenceWithDpsUuid } from 'models'
+import type { SentenceWithDpsUuid } from 'models'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,

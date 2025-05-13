@@ -1,4 +1,4 @@
-import NomisToDpsMappingService from './nomisToDpsMappingService'
+import NomisToDpsMappingService from './NomisToDpsMappingService'
 import { HmppsAuthClient } from '../data'
 import NomisMappingServiceApiClient from '../api/nomisMappingServiceApiClient'
 import { NomisSentenceId, NomisDpsSentenceMapping } from '../@types/nomisMappingApi/nomisMappingApiTypes'

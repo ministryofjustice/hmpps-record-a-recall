@@ -32,13 +32,7 @@ export default class CheckPossibleController extends RecallBaseController {
             const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
             const firstBookingId = sentences[0].bookingId
 
-            console.log('sentenceSequence', sentenceSequenceNumbers)
-            console.log('firstBookingId', firstBookingId)
-
             const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
-            console.log('dpsSentenceSequenceIds', dpsSentenceSequenceIds)
-            // const rasSentences = ras.getSentenceInfo(dpsSentenceSequenceIds)
-            // res.locals.sentences = rasSentences
             res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
             res.locals.sentences = sentences.map(sentence => ({
               ...sentence,
