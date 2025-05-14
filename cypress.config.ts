@@ -7,6 +7,7 @@ import prisonerSearch from './integration_tests/mockApis/prisonerSearchApi'
 import remandAndSentencingApi from './integration_tests/mockApis/remandAndSentencingApi'
 import calculateReleaseDatesApi from './integration_tests/mockApis/calculateReleaseDatesApi'
 import courtRegister from './integration_tests/mockApis/courtRegisterApi'
+import nomisMapping from './integration_tests/mockApis/nomisMappingApi'
 
 export default defineConfig({
   chromeWebSecurity: false,
@@ -29,6 +30,7 @@ export default defineConfig({
         ...remandAndSentencingApi,
         ...calculateReleaseDatesApi,
         ...courtRegister,
+        ...nomisMapping,
       })
     },
     baseUrl: 'http://localhost:3007',

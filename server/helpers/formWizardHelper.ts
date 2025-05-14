@@ -161,8 +161,6 @@ export function getBreakdown(req: FormWizard.Request): CalculationBreakdown {
 }
 
 export function getCrdsSentences(req: FormWizard.Request): SentenceWithDpsUuid[] {
-  console.log('---1.5------', req.url)
-
   return get<SentenceWithDpsUuid[]>(req, sessionModelFields.SENTENCES)
 }
 

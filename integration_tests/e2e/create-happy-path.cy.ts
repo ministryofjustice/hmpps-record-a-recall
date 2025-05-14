@@ -17,7 +17,7 @@ context('Create recall happy path', () => {
     cy.task('stubSearchCourtCases', { sortBy: 'desc' })
     cy.task('stubRecallPerson', { sortBy: 'desc' })
     cy.task('stubRecallRecorded')
-    cy.task('stubNew')
+    cy.task('stubNomisMapping')
   })
 
   it('should complete the full recall creation journey', () => {

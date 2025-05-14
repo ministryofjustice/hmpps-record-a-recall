@@ -20,13 +20,9 @@ export default class RevocationDateController extends RecallBaseController {
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form
-      console.log('---1.1------')
       const sentences = getCrdsSentences(req)
 
-      console.log('---1.2------', sentences)
-
       const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
-      console.log('---1.3------')
 
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}

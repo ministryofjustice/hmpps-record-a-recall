@@ -516,7 +516,7 @@ export default {
         jsonBody: [
           // myRep,
           {
-            dpsSentenceUuid: '123',
+            // dpsSentenceUuid: '123',
             recallUuid: 'ABC',
             prisonerId: 'A1234AB',
             revocationDate: '2018-03-03T00:00:00.000Z',
@@ -529,21 +529,6 @@ export default {
             courtCaseIds: [],
           },
         ],
-      },
-    })
-  },
-  stubNew: (): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'POST',
-        urlPath: '/api/sentences/nomis',
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: {
-          test: 'something',
-        },
       },
     })
   },
