@@ -5,6 +5,7 @@ import {
   ApiCourtCasePage,
   CreateRecall,
   CreateRecallResponse,
+  ApiSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
@@ -49,5 +50,14 @@ export default class RemandAndSentencingApiClient {
       path: `/court-case/search`,
       query: { prisonerId, sort: 'latestCourtAppearance_appearanceDate,desc', size: 20, page },
     }) as Promise<ApiCourtCasePage>
+  }
+
+  async getSentenceDetails(sentenceUuid: string): Promise<ApiSentence> {
+    return this.restClient.get({
+      query: {
+        sentenceUuid,
+      },
+      path: `/sentence/${sentenceUuid}`,
+    }) as Promise<ApiSentence>
   }
 }
