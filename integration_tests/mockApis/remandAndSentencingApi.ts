@@ -471,7 +471,7 @@ export default {
       },
     })
   },
-  stubRecallPerson: ({ sortBy = 'desc' }: { sortBy: string }): SuperAgentRequest => {
+  stubRecallPerson: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
