@@ -1,6 +1,6 @@
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
-import { NomisDpsSentenceMapping, NomisSentenceId, NomisDpsInfo } from '../@types/nomisMappingApi/nomisMappingApiTypes'
+import { NomisDpsSentenceMapping, NomisSentenceId } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default class NomisMappingServiceApiClient {
   restClient: RestClient

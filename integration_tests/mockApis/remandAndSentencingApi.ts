@@ -1,5 +1,4 @@
 import { SuperAgentRequest } from 'superagent'
-// import type { SentenceWithDpsUuid } from 'models'
 import { stubFor } from './wiremock'
 
 export default {
@@ -473,50 +472,17 @@ export default {
     })
   },
   stubRecallPerson: ({ sortBy = 'desc' }: { sortBy: string }): SuperAgentRequest => {
-    // const myRep: SentenceWithDpsUuid = {}
-
-    //   override val bookingId: Long,
-    // override val sentenceSequence: Int,
-    // override val lineSequence: Int,
-    // override val caseSequence: Int,
-    // override val consecutiveToSequence: Int?,
-    // override val sentenceStatus: String,
-    // override val sentenceCategory: String,
-    // override val sentenceCalculationType: String,
-    // override val sentenceTypeDescription: String,
-    // override val sentenceDate: LocalDate,
-    // override val terms: List<SentenceTerms>,
-    // override val offence: OffenderOffence,
-    // override val caseReference: String?,
-    // override val courtDescription: String?,
-    // override val fineAmount: BigDecimal?,
-    // val isSDSPlus: Boolean,
-    // val isSDSPlusEligibleSentenceTypeLengthAndOffence: Boolean,
-    // val isSDSPlusOffenceInPeriod: Boolean,
-    // val hasAnSDSEarlyReleaseExclusion: SDSEarlyReleaseExclusionType,
-    // dpsSentenceUuid: string
-
     return stubFor({
       request: {
         method: 'GET',
         urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
-        // queryParameters: {
-        //   prisonerId: {
-        //     equalTo: 'A1234AB',
-        //   },
-        //   sort: {
-        //     equalTo: `latestCourtAppearance_appearanceDate,${sortBy}`,
-        //   },
-        // },
       },
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
 
         jsonBody: [
-          // myRep,
           {
-            // dpsSentenceUuid: '123',
             recallUuid: 'ABC',
             prisonerId: 'A1234AB',
             revocationDate: '2018-03-03T00:00:00.000Z',
