@@ -471,23 +471,16 @@ export default {
       },
     })
   },
-  stubRecallPerson: ({ sortBy = 'desc' }: { sortBy: string }): SuperAgentRequest => {
+  stubRecallPerson: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
         urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
-        queryParameters: {
-          prisonerId: {
-            equalTo: 'A1234AB',
-          },
-          sort: {
-            equalTo: `latestCourtAppearance_appearanceDate,${sortBy}`,
-          },
-        },
       },
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+
         jsonBody: [
           {
             recallUuid: 'ABC',

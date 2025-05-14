@@ -8,6 +8,7 @@ import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelp
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { NomisDpsSentenceMapping } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -27,7 +28,21 @@ export default class CheckPossibleController extends RecallBaseController {
               this.getSentences(req, res),
               this.getCalculationBreakdown(req, res),
             ])
-            res.locals.sentences = sentences
+
+            const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
+            const firstBookingId = sentences[0].bookingId
+
+            const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
+
+            res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
+
+            res.locals.sentences = sentences.map(sentence => ({
+              ...sentence,
+              dpsSentenceUuid: dpsSentenceSequenceIds.find(
+                mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
+              )?.dpsSentenceId,
+            }))
+
             res.locals.breakdown = breakdown
           })
           .catch(error => {
@@ -63,6 +78,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
+    req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
 
     return { ...locals }
   }
@@ -84,5 +100,18 @@ export default class CheckPossibleController extends RecallBaseController {
   getSentences(req: FormWizard.Request, res: Response) {
     const { calcReqId, username } = res.locals
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
+  }
+
+  async getNomisToDpsMapping(
+    req: FormWizard.Request,
+    sentenceSequenceNumbers: number[],
+    firstBookingId: number,
+  ): Promise<NomisDpsSentenceMapping[]> {
+    const nomisSentenceInformation = sentenceSequenceNumbers.map(sentence => ({
+      nomisSentenceSequence: sentence,
+      nomisBookingId: firstBookingId,
+    }))
+
+    return req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)
   }
 }

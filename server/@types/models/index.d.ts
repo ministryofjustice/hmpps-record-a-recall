@@ -1,6 +1,9 @@
 declare module 'models' {
   import { RecallType } from '../recallTypes'
-  import { CalculatedReleaseDates } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+  import {
+    CalculatedReleaseDates,
+    SentenceAndOffenceWithReleaseArrangements,
+  } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
   export interface Recall {
     recallId: string
@@ -53,6 +56,11 @@ declare module 'models' {
     offenceDate?: string
     offenceCode: string
     offenceDescription?: string
+  }
+
+  export type SentenceWithDpsUuid = SentenceAndOffenceWithReleaseArrangements & {
+    /** Format: UUID * */
+    dpsSentenceUuid: string
   }
 
   export interface Term {

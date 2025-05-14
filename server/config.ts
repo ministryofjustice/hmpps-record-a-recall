@@ -171,6 +171,14 @@ export default {
       },
       agent: new AgentConfig(Number(get('ADJUSTMENTS_API_TIMEOUT_RESPONSE', 10000))),
     },
+    nomisMappingServiceApi: {
+      url: get('NOMIS_MAPPING_SERVICE_URL', 'http://localhost:8083', requiredInProduction),
+      timeout: {
+        response: Number(get('NOMIS_MAPPING_SERVICE_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('NOMIS_MAPPING_SERVICE__API_TIMEOUT_DEADLINE', 10000)),
+      },
+      agent: new AgentConfig(Number(get('NOMIS_MAPPING_SERVICE__API_TIMEOUT_RESPONSE', 10000))),
+    },
   },
   sqs: {
     audit: auditConfig(),

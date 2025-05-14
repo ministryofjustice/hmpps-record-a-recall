@@ -1,3 +1,4 @@
+import type { SentenceWithDpsUuid } from 'models'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
@@ -228,7 +229,7 @@ export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtend
 }
 
 export function groupSentencesByCaseRefAndCourt(
-  sentences: SentenceAndOffenceWithReleaseArrangements[],
+  sentences: SentenceWithDpsUuid[],
 ): Record<string, SentenceAndOffenceWithReleaseArrangements[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return sentences.reduce((result: any, currentValue: any) => {

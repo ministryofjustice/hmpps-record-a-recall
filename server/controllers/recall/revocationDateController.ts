@@ -23,6 +23,7 @@ export default class RevocationDateController extends RecallBaseController {
       const sentences = getCrdsSentences(req)
 
       const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
+
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       const validationErrors: any = {}
 

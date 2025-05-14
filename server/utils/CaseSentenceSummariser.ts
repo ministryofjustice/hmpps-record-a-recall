@@ -1,13 +1,12 @@
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase, Term } from 'models'
+import { CourtCase, SentenceWithDpsUuid, Term } from 'models'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
   ConsecutiveSentencePart,
   Offence,
-  SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import toSummaryListRow from '../helpers/componentHelper'
 import { format8DigitDate } from '../formatters/formatDate'
@@ -20,7 +19,7 @@ import {
 import getIndividualEligibility, { determineEligibilityOnRasSentenceType } from './RecallEligiblityCalculator'
 
 export default function summariseSentencesGroups(
-  groupedSentences: Record<string, SentenceAndOffenceWithReleaseArrangements[]>,
+  groupedSentences: Record<string, SentenceWithDpsUuid[]>,
   breakdown: CalculationBreakdown,
   revocationDate: Date,
 ): SummarisedSentenceGroup[] {
@@ -37,7 +36,7 @@ export default function summariseSentencesGroups(
     }
 
     summarisedGroup.caseRefAndCourt = caseRef
-    groupsSentences.forEach((sentence: SentenceAndOffenceWithReleaseArrangements) => {
+    groupsSentences.forEach((sentence: SentenceWithDpsUuid) => {
       const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(sentence, breakdown)
       const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
       const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdown)
@@ -97,6 +96,7 @@ export default function summariseSentencesGroups(
       ])
 
       const thisSummarisedSentence: SummarisedSentence = {
+        sentenceId: sentence.dpsSentenceUuid,
         recallEligibility,
         summary,
         offenceCode: sentence.offence.offenceCode,
