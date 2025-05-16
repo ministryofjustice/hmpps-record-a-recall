@@ -1,0 +1,57 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% block content %}
+  <a href="/person/{{ nomisId }}#recalls" class="govuk-back-link">Back</a>
+  <h1 class="govuk-heading-l">Are you sure you want to delete the recall?</h1>
+
+  <div class="govuk-summary-card govuk-!-margin-bottom-6">
+    <div class="govuk-summary-card__title-wrapper">
+      <h2 class="govuk-summary-card__title">Recorded on {{ recall.revocationDate | date }} at {{ recall.locationName or recall.location }}</h2>
+    </div>
+    <div class="govuk-summary-card__content" id="recall-summary">
+      <div class="govuk-grid-row govuk-!-padding-bottom-2 govuk-!-margin-top-2">
+        <div class="govuk-grid-column-one-half">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Recall type</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.recallType.description }}</p>
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Date of revocation</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.revocationDate | date }}</p>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Arrest date</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'Not entered' }}</p>
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.ualString if recall.ualString else 'None recorded' }}</p>
+        </div>
+      </div>
+      <div class="govuk-!-margin-top-2">
+        <a href="{{ recall.ualDetailsUrl }}">View UAL details</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="govuk-inset-text">
+    Deleting this recall will delete the <strong>{{ recall.ualString }}</strong> of associated UAL. To delete tagged bail or remand time, go to the adjustments service.
+  </div>
+
+  <form method="post" action="/person/{{ nomisId }}/recall/{{ recall.recallId }}/delete">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}"> 
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <span class="govuk-fieldset__heading">Are you sure?</span>
+        </legend>
+        <div class="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="delete-yes" name="confirmDelete" type="radio" value="yes">
+            <label class="govuk-label govuk-radios__label" for="delete-yes">Yes, delete the recall</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="delete-no" name="confirmDelete" type="radio" value="no">
+            <label class="govuk-label govuk-radios__label" for="delete-no">No, go back to recalls</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">Confirm</button>
+  </form>
+{% endblock %}
