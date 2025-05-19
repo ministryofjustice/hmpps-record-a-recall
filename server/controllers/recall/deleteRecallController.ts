@@ -2,11 +2,12 @@ import { Request, Response } from 'express'
 
 export async function getDeleteRecallConfirmation(req: Request, res: Response) {
   const { nomisId, recallId } = req.params
-  // Fetch recall details for summary display
   const recall = await req.services.recallService.getRecall(recallId, req.user?.username)
+  const prisoner = await req.services.prisonerService.getPrisonerDetails(nomisId, req.user?.username)
   res.render('pages/recall/delete-confirmation.njk', {
     nomisId,
     recall,
+    prisoner,
   })
 }
 
