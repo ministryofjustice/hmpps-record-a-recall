@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-// eslint-disable-next-line import/no-unresolved
+
 import { Recall } from 'models'
 import logger from '../../../logger'
 import PrisonerService from '../../services/prisonerService'
