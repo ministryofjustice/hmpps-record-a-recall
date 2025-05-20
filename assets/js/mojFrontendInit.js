@@ -1,1 +1,3 @@
-window.MOJFrontend.initAll()
+if (window.MOJFrontend) {
+  window.MOJFrontend.initAll()
+}
