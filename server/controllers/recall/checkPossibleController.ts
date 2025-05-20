@@ -1,20 +1,23 @@
 import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
+import {NextFunction, Response} from 'express'
 
-import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {ValidationMessage} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import {getCourtCaseOptions, getRecallRoute, sessionModelFields} from '../../helpers/formWizardHelper'
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
-import { eligibilityReasons } from '../../@types/recallEligibility'
-import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import { NomisDpsSentenceMapping } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
+import {eligibilityReasons} from '../../@types/recallEligibility'
+import {AdjustmentDto} from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import {NomisDpsSentenceMapping} from '../../@types/nomisMappingApi/nomisMappingApiTypes'
+import {Sentence} from "models";
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    const { nomisId, username } = res.locals
+    const {nomisId, username} = res.locals
     try {
       const errors: ValidationMessage[] = await req.services.calculationService.performCrdsValidation(nomisId, username)
+      console.log('---------- CRDS Validation Response ----------')
+      console.log(errors)
       res.locals.validationResponse = errors
       const recallEligibility = determineRecallEligibilityFromValidation(errors)
       res.locals.recallEligibility = recallEligibility
@@ -24,11 +27,20 @@ export default class CheckPossibleController extends RecallBaseController {
             res.locals.temporaryCalculation = newCalc
             res.locals.calcReqId = newCalc.calculationRequestId
             logger.debug(newCalc.dates)
+
+            const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
+            console.log('---------- RAS Cases ----------')
+            console.log(cases)
+            //Save cases to the session so that we don't need to retrieve them again
+            const sentencesFromRasCases = cases.filter(caseItem => caseItem.status === 'ACTIVE').flatMap(caseItem => caseItem.sentences || []);
+
+            console.log('---------- RAS Case Sentences ----------')
+            console.log(sentencesFromRasCases)
+
             const [sentences, breakdown] = await Promise.all([
               this.getSentences(req, res),
               this.getCalculationBreakdown(req, res),
             ])
-
             const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
             const firstBookingId = sentences[0].bookingId
 
@@ -36,11 +48,13 @@ export default class CheckPossibleController extends RecallBaseController {
 
             res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
-            res.locals.sentences = sentences.map(sentence => ({
+            const matchedRaSSentences = sentencesFromRasCases.filter(sentence => dpsSentenceSequenceIds.some(mapping => mapping.dpsSentenceId === sentence.sentenceUuid))
+            console.log('---------- Matched RAS Case Sentences ----------')
+            console.log(matchedRaSSentences)
+
+            res.locals.sentences = sentencesFromRasCases.map(sentence => ({
               ...sentence,
-              dpsSentenceUuid: dpsSentenceSequenceIds.find(
-                mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
-              )?.dpsSentenceId,
+              dpsSentenceUuid: sentence.sentenceUuid,
             }))
 
             res.locals.breakdown = breakdown
@@ -80,7 +94,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
     req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
 
-    return { ...locals }
+    return {...locals}
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
@@ -88,17 +102,17 @@ export default class CheckPossibleController extends RecallBaseController {
   }
 
   getTemporaryCalculation(req: FormWizard.Request, res: Response) {
-    const { nomisId, username } = res.locals
+    const {nomisId, username} = res.locals
     return req.services.calculationService.calculateTemporaryDates(nomisId, username)
   }
 
   getCalculationBreakdown(req: FormWizard.Request, res: Response) {
-    const { calcReqId, username } = res.locals
+    const {calcReqId, username} = res.locals
     return req.services.calculationService.getCalculationBreakdown(calcReqId, username)
   }
 
   getSentences(req: FormWizard.Request, res: Response) {
-    const { calcReqId, username } = res.locals
+    const {calcReqId, username} = res.locals
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
   }
 
