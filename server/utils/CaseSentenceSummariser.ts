@@ -174,13 +174,20 @@ function getDate(
   return null
 }
 
-export function summariseRasCases(courtsCases: CourtCase[]): SummarisedSentenceGroup[] {
+export function summariseRasCases(
+  courtsCases: CourtCase[],
+  prisonApiSentences: SentenceWithDpsUuid[],
+  breakdown?: CalculationBreakdown,
+): SummarisedSentenceGroup[] {
   const summarisedCases: SummarisedSentenceGroup[] = []
-  courtsCases.forEach(c => summarisedCases.push(summariseCase(c)))
+  courtsCases.forEach(c => summarisedCases.push(summariseCase(c, prisonApiSentences, breakdown)))
   return summarisedCases
 }
-
-function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
+function summariseCase(
+  courtCase: CourtCase,
+  prisonApiSentences: SentenceWithDpsUuid[],
+  breakdown?: CalculationBreakdown,
+): SummarisedSentenceGroup {
   const summarisedGroup: SummarisedSentenceGroup = {
     caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
     ineligibleSentences: [],
@@ -191,6 +198,31 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
 
   courtCase.sentences.forEach(s => {
     summarisedGroup.hasEligibleSentences = true
+
+    const prisonApiSentence = prisonApiSentences.find(it => it.dpsSentenceId === s.sentenceUuid)
+    const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(prisonApiSentence, breakdown)
+    const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
+    const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(prisonApiSentence, breakdown)
+    const forthConsConc = forthwithConsecutiveConcurrent(concurrentSentenceBreakdown, consecutiveSentencePartBreakdown)
+
+    const unadjustedSled = getDate(
+      concurrentSentenceBreakdown,
+      consecutiveSentenceBreakdown,
+      consecutiveSentencePartBreakdown,
+      'SLED',
+    )?.unadjusted
+
+    const unadjustedLed = getDate(
+      concurrentSentenceBreakdown,
+      consecutiveSentenceBreakdown,
+      consecutiveSentencePartBreakdown,
+      'LED',
+    )?.unadjusted
+
+    const sentenceLengthDays =
+      concurrentSentenceBreakdown?.sentenceLengthDays || consecutiveSentencePartBreakdown?.sentenceLengthDays
+    const aggregateSentenceLengthDays = consecutiveSentenceBreakdown?.sentenceLengthDays
+
     const recallEligibility = determineEligibilityOnRasSentenceType(s)
     const summary = compact([
       toSummaryListRow('Committed on', s.offenceDate),
@@ -199,13 +231,13 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
       toSummaryListRow('Custodial term', stringifyTerm(s.custodialTerm)),
       toSummaryListRow('Licence period', stringifyTerm(s.licenceTerm)),
       toSummaryListRow('Consecutive or concurrent', s.sentenceServeType),
-      // TODO We don't have the following for RaS sentences
-      //       // toSummaryListRow('Unadjusted SLED', unadjustedSled),
-      //       // toSummaryListRow('Unadjusted LED', unadjustedLed),
-      //       // toSummaryListRow(
-      //       //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-      //       //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-      //       // ),
+      toSummaryListRow('Consecutive or concurrent', forthConsConc),
+      toSummaryListRow('Unadjusted SLED', unadjustedSled),
+      toSummaryListRow('Unadjusted LED', unadjustedLed),
+      toSummaryListRow(
+        consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
+        consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
+      ),
       toSummaryListRow('Recall Options', recallEligibility.code),
       toSummaryListRow('Recall Options reason', recallEligibility.description),
     ])
