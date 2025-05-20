@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+
 import { Recall, UAL } from 'models'
 import { getDeleteRecallConfirmation, postDeleteRecallConfirmation } from './deleteRecallController'
 import { PrisonerSearchApiPrisoner as Prisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
