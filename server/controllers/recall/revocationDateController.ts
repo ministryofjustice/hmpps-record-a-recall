@@ -1,11 +1,15 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { isBefore, isAfter, min, isEqual } from 'date-fns'
+import { isBefore, isEqual, isAfter, min } from 'date-fns'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
-import { getCrdsSentences, getExistingAdjustments, getRecallRoute } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, {
+  getCrdsSentences,
+  getExistingAdjustments,
+  getRecallRoute,
+} from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RevocationDateController extends RecallBaseController {
@@ -18,24 +22,38 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
-    super.validateFields(req, res, errors => {
+    super.validateFields(req, res, errorsParam => {
+      const validationErrors = { ...(errorsParam || {}) } as Record<string, FormWizard.Controller.Error>
       const { values } = req.form
       const sentences = getCrdsSentences(req)
 
       const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
 
-      /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-      const validationErrors: any = {}
-
       if (isBefore(values.revocationDate as string, earliestSentenceDate)) {
         validationErrors.revocationDate = this.formError('revocationDate', 'mustBeAfterEarliestSentenceDate')
       }
 
-      const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+      const journeyData = getJourneyDataFromRequest(req)
+      const isEditRecall = journeyData.isEdit
+      const currentRecallId = journeyData.storedRecall?.recallId
+
+      const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+
+      const adjustmentsToConsider = allExistingAdjustments.filter((adjustment: AdjustmentDto) => {
+        if (
+          isEditRecall &&
+          currentRecallId &&
+          adjustment.recallId === currentRecallId &&
+          adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE'
+        ) {
+          return false // Ignore this adjustment
+        }
+        return true // Include all other adjustments
+      })
 
       const revocationDate = new Date(values.revocationDate as string)
 
-      const isWithinAdjustment = existingAdjustments.some(adjustment => {
+      const isWithinAdjustment = adjustmentsToConsider.some((adjustment: AdjustmentDto) => {
         if (!adjustment.fromDate || !adjustment.toDate) return false
 
         return (
@@ -48,7 +66,7 @@ export default class RevocationDateController extends RecallBaseController {
         validationErrors.revocationDate = this.formError('revocationDate', 'cannotBeWithinAdjustmentPeriod')
       }
 
-      callback({ ...errors, ...validationErrors })
+      callback(validationErrors)
     })
   }
 
