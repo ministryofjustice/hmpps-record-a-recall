@@ -6,9 +6,11 @@ import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
 import getJourneyDataFromRequest, {
+  getAdjustmentsToConsiderForValidation,
   getCrdsSentences,
   getExistingAdjustments,
   getRecallRoute,
+  RecallJourneyData,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
@@ -33,23 +35,9 @@ export default class RevocationDateController extends RecallBaseController {
         validationErrors.revocationDate = this.formError('revocationDate', 'mustBeAfterEarliestSentenceDate')
       }
 
-      const journeyData = getJourneyDataFromRequest(req)
-      const isEditRecall = journeyData.isEdit
-      const currentRecallId = journeyData.storedRecall?.recallId
-
+      const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
-
-      const adjustmentsToConsider = allExistingAdjustments.filter((adjustment: AdjustmentDto) => {
-        if (
-          isEditRecall &&
-          currentRecallId &&
-          adjustment.recallId === currentRecallId &&
-          adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE'
-        ) {
-          return false // Ignore this adjustment
-        }
-        return true // Include all other adjustments
-      })
+      const adjustmentsToConsider = getAdjustmentsToConsiderForValidation(journeyData, allExistingAdjustments)
 
       const revocationDate = new Date(values.revocationDate as string)
 

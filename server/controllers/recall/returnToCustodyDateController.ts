@@ -7,6 +7,7 @@ import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
 import { calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
+  getAdjustmentsToConsiderForValidation,
   getExistingAdjustments,
   getPrisoner,
   getRevocationDate,
@@ -146,19 +147,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
     const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
 
-    const isEditRecall = journeyData.isEdit
-    const currentRecallId = journeyData.storedRecall?.recallId
-    const adjustmentsToConsider = allExistingAdjustments.filter((adjustment: AdjustmentDto) => {
-      if (
-        isEditRecall &&
-        currentRecallId &&
-        adjustment.recallId === currentRecallId &&
-        adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE'
-      ) {
-        return false // Ignore this adjustment
-      }
-      return true // Include all other adjustments
-    })
+    const adjustmentsToConsider = getAdjustmentsToConsiderForValidation(journeyData, allExistingAdjustments)
 
     const hasNoRecallUalConflicts = this.validateAgainstExistingRecallUalAdjustments(
       req,
