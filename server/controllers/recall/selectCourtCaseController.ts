@@ -7,8 +7,10 @@ import RecallBaseController from './recallBaseController'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
 import {
+  getBreakdown,
   getCourtCaseOptions,
   getCourtCases,
+  getCrdsSentences,
   getRevocationDate,
   sessionModelFields,
 } from '../../helpers/formWizardHelper'
@@ -46,7 +48,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     const selectedCases = getCourtCases(req)
     const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) => selectedCases.includes(detail.caseId))
-    const summarisedSentencesGroups = summariseRasCases(caseDetails)
+    const sentences = getCrdsSentences(req)
+    const breakdown = getBreakdown(req)
+    const summarisedSentencesGroups = summariseRasCases(caseDetails, sentences, breakdown)
     const revocationDate = getRevocationDate(req)
 
     const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
