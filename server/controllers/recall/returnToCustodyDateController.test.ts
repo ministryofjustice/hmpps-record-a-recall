@@ -11,11 +11,11 @@ import getJourneyDataFromRequest, {
 } from '../../helpers/formWizardHelper'
 
 jest.mock('../../helpers/formWizardHelper', () => {
-  const actualFormWizardHelper = jest.requireActual('../../helpers/formWizardHelper')
-  const mockGetJourneyDataFromRequest = jest.fn((...args: any[]) => actualFormWizardHelper.default(...args))
+  const formWizardHelper = jest.requireActual('../../helpers/formWizardHelper')
+  const mockGetJourneyDataFromRequest = jest.fn((...args: any[]) => formWizardHelper.default(...args))
 
   return {
-    ...actualFormWizardHelper,
+    ...formWizardHelper,
     __esModule: true,
     default: mockGetJourneyDataFromRequest,
     getPrisoner: jest.fn(),
