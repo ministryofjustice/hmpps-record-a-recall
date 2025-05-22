@@ -2,7 +2,6 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import { isBefore, isAfter, isEqual } from 'date-fns'
 import _ from 'lodash'
-// eslint-disable-next-line import/no-unresolved
 import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
 import { calculateUal } from '../../utils/utils'
