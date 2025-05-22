@@ -8,7 +8,6 @@ import getJourneyDataFromRequest, {
   getRevocationDate,
   getPrisoner,
   getExistingAdjustments,
-  getAdjustmentsToConsiderForValidation, // Import the function itself for mocking
 } from '../../helpers/formWizardHelper'
 
 jest.mock('../../helpers/formWizardHelper', () => {

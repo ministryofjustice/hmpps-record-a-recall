@@ -72,7 +72,6 @@ describe('RevocationDateController', () => {
           ? ({
               recallId: currentRecallIdVal,
               createdAt: '2023-01-01T00:00:00.000Z',
-              // Ensure all Recall fields are appropriately mocked or explicitly undefined if not used by the controller logic
               revocationDate: new Date('2023-01-01'),
               returnToCustodyDate: new Date('2023-01-10'),
               recallType: { code: 'LR', description: 'Standard', fixedTerm: false },
@@ -142,7 +141,6 @@ describe('RevocationDateController', () => {
     })
 
     it('should fail if revocation date is before earliest valid sentence date', done => {
-      // Renamed test
       const earliestSentenceTestSetupDate = new Date()
       earliestSentenceTestSetupDate.setDate(earliestSentenceTestSetupDate.getDate() + 2) // "Day after tomorrow"
       const earliestSentenceDateForTest = earliestSentenceTestSetupDate.toISOString().split('T')[0]
