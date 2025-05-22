@@ -67,7 +67,15 @@ context('Sign In', () => {
     cy.request('/').its('body').should('contain', 'Sign in')
 
     cy.task('stubVerifyToken', true)
-    cy.task('stubSignIn', { name: 'bobby brown' })
+    cy.task('stubSignIn', {
+      name: 'bobby brown',
+      roles: [
+        'ROLE_REMAND_AND_SENTENCING',
+        'ROLE_RELEASE_DATES_CALCULATOR',
+        'ROLE_ADJUSTMENTS_MAINTAINER',
+        'ROLE_RECALL_MAINTAINER',
+      ],
+    })
 
     cy.signIn()
 
