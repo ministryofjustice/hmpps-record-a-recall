@@ -11,7 +11,8 @@ import PrisonerService from '../../services/prisonerService'
 
 interface DeleteRecallTestRequest {
   params: { nomisId: string; recallId: string }
-  body: { confirmDelete?: string }
+  query: { from?: string }
+  body: { confirmDelete?: string; fromPage?: string }
   user: HmppsUser
   services: {
     recallService: RecallService
@@ -117,13 +118,14 @@ describe('deleteRecallController', () => {
     req = {
       params: { nomisId, recallId },
       body: {},
+      query: {},
       user,
       services: {
         recallService: mockRecallService,
         prisonerService: mockPrisonerService,
       },
       flash: jest.fn(),
-    }
+    } as unknown as DeleteRecallTestRequest
     res = {
       render: jest.fn(),
       redirect: jest.fn(),
@@ -136,6 +138,7 @@ describe('deleteRecallController', () => {
       ;(mockRecallService.getRecall as jest.Mock).mockResolvedValue(mockApiRecall)
       ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue(mockApiPrisoner)
 
+      req.query.from = 'overview'
       await getDeleteRecallConfirmation(req as unknown as Request, res as Response)
 
       expect(mockRecallService.getRecall).toHaveBeenCalledWith(recallId, user.username)
@@ -144,6 +147,8 @@ describe('deleteRecallController', () => {
         nomisId,
         recall: mockApiRecall,
         prisoner: mockApiPrisoner,
+        fromPage: 'overview',
+        backLink: `/person/${nomisId}`,
       })
     })
 
@@ -164,34 +169,47 @@ describe('deleteRecallController', () => {
   describe('postDeleteRecallConfirmation', () => {
     it('should delete recall and redirect with success flash if "yes" is confirmed', async () => {
       req.body.confirmDelete = 'yes'
+      req.body.fromPage = 'overview'
       ;(mockRecallService.deleteRecall as jest.Mock).mockResolvedValue(undefined)
 
       await postDeleteRecallConfirmation(req as unknown as Request, res as Response)
 
       expect(mockRecallService.deleteRecall).toHaveBeenCalledWith(recallId, user.username)
-      expect(req.flash).toHaveBeenCalledWith('success', {
-        title: 'Recall deleted',
-        content: 'The recall has been deleted.',
-      })
-      expect(res.redirect).toHaveBeenCalledWith(`/person/${nomisId}#recalls`)
+      expect(req.flash).not.toHaveBeenCalled()
+      expect(res.redirect).toHaveBeenCalledWith(`/person/${nomisId}`)
     })
 
     it('should redirect without deleting if "no" is confirmed', async () => {
       req.body.confirmDelete = 'no'
+      req.body.fromPage = 'overview'
 
       await postDeleteRecallConfirmation(req as unknown as Request, res as Response)
 
       expect(mockRecallService.deleteRecall).not.toHaveBeenCalled()
       expect(req.flash).not.toHaveBeenCalled()
-      expect(res.redirect).toHaveBeenCalledWith(`/person/${nomisId}#recalls`)
+      expect(res.redirect).toHaveBeenCalledWith(`/person/${nomisId}`)
     })
 
     it('should redirect without deleting if confirmation is missing', async () => {
+      req.body.fromPage = 'overview'
+      ;(mockRecallService.getRecall as jest.Mock).mockResolvedValue(mockApiRecall)
+      ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue(mockApiPrisoner)
+
       await postDeleteRecallConfirmation(req as unknown as Request, res as Response)
 
       expect(mockRecallService.deleteRecall).not.toHaveBeenCalled()
       expect(req.flash).not.toHaveBeenCalled()
-      expect(res.redirect).toHaveBeenCalledWith(`/person/${nomisId}#recalls`)
+      expect(res.render).toHaveBeenCalledWith('pages/recall/delete-confirmation.njk', {
+        nomisId,
+        recall: mockApiRecall,
+        prisoner: mockApiPrisoner,
+        errors: [
+          { text: 'Select if you are sure you want to delete the recall', href: '#delete-yes', name: 'confirmDelete' },
+        ],
+        fromPage: 'overview',
+        backLink: `/person/${nomisId}`,
+      })
+      expect(res.redirect).not.toHaveBeenCalled()
     })
 
     it('should handle error if deleteRecall fails', async () => {

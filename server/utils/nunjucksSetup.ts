@@ -77,4 +77,24 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('datetime', (date, format = 'YYYY-MM-DD HH:mm:ss') => dayjs(date).format(format))
   njkEnv.addFilter('sentenceDate', (date, format = 'dddd, DD MMMM YYYY') => dayjs(date).format(format))
   njkEnv.addFilter('formatLengths', formatLengths)
+
+  // Filter to pluralize a word based on a count. Adds 's' if count is not 1.
+  function pluralize(count: number): string {
+    return count === 1 ? '' : 's'
+  }
+  njkEnv.addFilter('pluralize', pluralize)
+
+  // Filter to find a specific error message from an array of errors
+  interface ErrorObject {
+    name?: string
+    text: string
+    href?: string
+  }
+  function findError(errorsArray: ErrorObject[] | undefined, fieldName: string): ErrorObject | undefined {
+    if (!errorsArray) {
+      return undefined
+    }
+    return errorsArray.find(error => error.name === fieldName)
+  }
+  njkEnv.addFilter('findError', findError)
 }
