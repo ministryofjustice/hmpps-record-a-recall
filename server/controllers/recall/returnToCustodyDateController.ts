@@ -2,11 +2,11 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import { isBefore, isAfter, isEqual } from 'date-fns'
 import _ from 'lodash'
-
 import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
 import { calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
+  getAdjustmentsToConsiderForValidation,
   getExistingAdjustments,
   getPrisoner,
   getRevocationDate,
@@ -144,18 +144,20 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     const ual = !isInPrisonAtRecall ? calculateUal(journeyData.revocationDate, rtcDate) : null
     const proposedUal = calculateUal(revocationDate, rtcDate)
 
-    const existingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+    const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+
+    const adjustmentsToConsider = getAdjustmentsToConsiderForValidation(journeyData, allExistingAdjustments)
 
     const hasNoRecallUalConflicts = this.validateAgainstExistingRecallUalAdjustments(
       req,
       proposedUal,
-      existingAdjustments,
+      adjustmentsToConsider,
     )
 
     const hasNoOtherAdjustmentConflicts = this.validateAgainstExistingNonRecallUalAdjustments(
       req,
       proposedUal,
-      existingAdjustments,
+      adjustmentsToConsider,
     )
 
     const hasConflicts = !hasNoRecallUalConflicts || !hasNoOtherAdjustmentConflicts
@@ -169,7 +171,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         bookingId: prisonerDetails.bookingId,
       }
 
-      const conflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, existingAdjustments)
+      const conflictingAdjustments = this.identifyConflictingAdjustments(proposedUal, adjustmentsToConsider)
       const allConflicting = [
         ...conflictingAdjustments.exact,
         ...conflictingAdjustments.overlap,
