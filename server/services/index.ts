@@ -18,7 +18,8 @@ export const services = () => {
 
   const auditService = new AuditService(hmppsAuditClient)
   const prisonerService = new PrisonerService(hmppsAuthClient)
-  const recallService = new RecallService(hmppsAuthClient)
+  const adjustmentsService = new AdjustmentsService(hmppsAuthClient)
+  const recallService = new RecallService(hmppsAuthClient, adjustmentsService)
   const calculationService = new CalculationService(hmppsAuthClient)
   const feComponentsService = new FeComponentsService(feComponentsClient)
   const bulkCalculationService = new BulkCalculationService(calculationService)
@@ -26,7 +27,6 @@ export const services = () => {
   const courtCaseService = new CourtCaseService(hmppsAuthClient)
   const courtService = new CourtService(hmppsAuthClient)
   const prisonService = new PrisonService(hmppsAuthClient)
-  const adjustmentsService = new AdjustmentsService(hmppsAuthClient)
   const manageUsersService = new ManageUsersService(manageUsersApiClient)
   const nomisMappingService = new NomisToDpsMappingService(hmppsAuthClient)
 

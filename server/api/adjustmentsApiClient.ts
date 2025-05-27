@@ -23,12 +23,19 @@ export default class AdjustmentsApiClient {
     }) as Promise<CreateResponse>
   }
 
-  async getAdjustments(person: string): Promise<AdjustmentDto[]> {
+  async getAdjustments(person: string, recallUuid?: string): Promise<AdjustmentDto[]> {
     return this.restClient.get({
       query: {
         person,
+        recallId: recallUuid,
       },
       path: `/adjustments`,
     }) as Promise<AdjustmentDto[]>
+  }
+
+  async deleteAdjustment(adjustmentId: string): Promise<void> {
+    await this.restClient.delete({
+      path: `/adjustments/${adjustmentId}`,
+    })
   }
 }
