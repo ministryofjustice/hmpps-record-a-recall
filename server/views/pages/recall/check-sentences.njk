@@ -155,59 +155,31 @@
             </div>
         </div>
     </div> #}
-                
-                {{ offenceCard({
-                    offenceCode: 'OFFENCECODE',
-                    offenceName: 'An Offence Name',
-                    offenceStartDate: '27 06 2024',
-                    offenceEndDate: '27 08 2024',
-                    outcome: 'Imprisonment',
-                    outcomeUpdated: true,
-                    countNumber: '1',
-                    convictionDate: '12 09 2024',
-                    terrorRelated: true,
-                    isSentenced: true,
-                    periodLengths: [
-                        {
-                            description: 'Sentence length',
-                            years: '1',
-                            months: '2',
-                            weeks: '3',
-                            days: '4',
-                            periodOrder: ['years', 'months', 'weeks', 'days']
-                        },
-                        {
-                            description: 'Licence period',
-                            years: '5',
-                            months: '6',
-                            periodOrder: ['years', 'months']
-                        }
-                    ],
-                    sentenceServeType: 'CONSECUTIVE',
-                    consecutiveTo: '3',
-                    sentenceType: 'SDS (Standard Determinate Sentence)',
-                    fineAmount: '17000',
-                    detailsClasses: 'govuk-!-padding-4',
-                    actions: {
-                        items: [
-                        {
-                            text: 'Edit',
-                            href: '/edit'
-                        },
-                        {
-                            text: 'Delete',
-                            href: '/delete'
-                        }
-                        ]
-                    },
-                    listItems: {
-                        classes: 'govuk-!-margin-top-4',
-                        items: [
-                            {
-                                html: '<a href="/update-outcome">Update outcome</a>'
-                            }
-                        ]
+        {{ offenceCard({
+            offenceCode: 'OFFENCECODE',
+            offenceName: 'An Offence Name',
+            offenceStartDate: '27 06 2024',
+            offenceEndDate: '27 08 2024',
+            outcome: 'Imprisonment',
+            outcomeUpdated: true,
+            countNumber: '1',
+            convictionDate: '12 09 2024',
+            terrorRelated: false,
+            isSentenced: true,
+            sentenceServeType: 'CONSECUTIVE',
+            consecutiveTo: '3',
+            sentenceType: 'SDS (Standard Determinate Sentence)',
+            detailsClasses: 'govuk-!-padding-4',
+            hideOutcome: true,
+            listItems: {
+                classes: 'govuk-!-margin-top-4',
+                items: [
+                    {
+                        html: '<a href="/update-outcome">Update outcome</a>'
                     }
-                }) }}
+                ]
+            }
+        }) }}
+
 {% endmacro %}
 
