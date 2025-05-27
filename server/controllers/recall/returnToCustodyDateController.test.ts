@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { jest } from '@jest/globals'
 import ReturnToCustodyDateController from './returnToCustodyDateController'
 import { calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
@@ -11,50 +10,19 @@ import getJourneyDataFromRequest, {
   getExistingAdjustments,
 } from '../../helpers/formWizardHelper'
 
-jest.mock('../../helpers/formWizardHelper', () => ({
-  __esModule: true,
-  default: jest.fn(),
-  getPrisoner: jest.fn(),
-  getRevocationDate: jest.fn(),
-  getExistingAdjustments: jest.fn(),
-  sessionModelFields: {
-    ENTRYPOINT: 'entrypoint',
-    CRDS_ERRORS: 'crdsValidationErrors',
-    HAPPY_PATH_FAIL_REASONS: 'autoRecallFailErrors',
-    PRISONER: 'prisoner',
-    UAL: 'UAL',
-    RECALL_ID: 'recallId',
-    STORED_RECALL: 'storedRecall',
-    STANDARD_ONLY: 'standardOnlyRecall',
-    RECALL_TYPE: 'recallType',
-    MANUAL_CASE_SELECTION: 'manualCaseSelection',
-    COURT_CASE_OPTIONS: 'CourtCaseOptions',
-    COURT_CASES: 'courtCases',
-    IN_PRISON_AT_RECALL: 'inPrisonAtRecall',
-    RTC_DATE: 'returnToCustodyDate',
-    REVOCATION_DATE: 'revocationDate',
-    ELIGIBLE_SENTENCE_COUNT: 'eligibleSentenceCount',
-    SUMMARISED_SENTENCES: 'summarisedSentenceGroups',
-    IS_EDIT: 'isEdit',
-    RETURN_TO: 'returnTo',
-    JOURNEY_COMPLETE: 'journeyComplete',
-    SENTENCES: 'sentences',
-    TEMP_CALC: 'temporaryCalculation',
-    BREAKDOWN: 'breakdown',
-    GROUPED_SENTENCES: 'groupedSentences',
-    CASES_WITH_ELIGIBLE_SENTENCES: 'casesWithEligibleSentences',
-    RECALL_ELIGIBILITY: 'recallEligibility',
-    RECALL_TYPE_MISMATCH: 'recallTypeMismatch',
-    EXISTING_ADJUSTMENTS: 'existingAdjustments',
-    INVALID_RECALL_TYPES: 'invalidRecallTypes',
-    CONFLICTING_ADJUSTMENTS: 'conflictingAdjustments',
-    RELEVANT_ADJUSTMENT: 'relevantAdjustment',
-    UAL_TO_CREATE: 'ualToCreate',
-    UAL_TO_EDIT: 'ualToEdit',
-    INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS: 'incompatibleTypesAndMultipleConflictingAdjustments',
-    HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL: 'hasMultipleOverlappingUalTypeRecall',
-  },
-}))
+jest.mock('../../helpers/formWizardHelper', () => {
+  const formWizardHelper = jest.requireActual('../../helpers/formWizardHelper')
+  const mockGetJourneyDataFromRequest = jest.fn((...args: any[]) => formWizardHelper.default(...args))
+
+  return {
+    ...formWizardHelper,
+    __esModule: true,
+    default: mockGetJourneyDataFromRequest,
+    getPrisoner: jest.fn(),
+    getRevocationDate: jest.fn(),
+    getExistingAdjustments: jest.fn(),
+  }
+})
 
 jest.mock('../../utils/utils', () => ({
   calculateUal: jest.fn(),

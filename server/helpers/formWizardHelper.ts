@@ -176,6 +176,30 @@ export function getExistingAdjustments(req: FormWizard.Request): AdjustmentDto[]
   return get<AdjustmentDto[]>(req, sessionModelFields.EXISTING_ADJUSTMENTS)
 }
 
+export function getAdjustmentsToConsiderForValidation(
+  journeyData: RecallJourneyData,
+  allExistingAdjustments: AdjustmentDto[],
+): AdjustmentDto[] {
+  const { isEdit, storedRecall } = journeyData
+  const currentRecallId = storedRecall?.recallId
+
+  if (!allExistingAdjustments) {
+    return []
+  }
+
+  return allExistingAdjustments.filter((adjustment: AdjustmentDto) => {
+    if (
+      isEdit &&
+      currentRecallId &&
+      adjustment.recallId === currentRecallId &&
+      adjustment.adjustmentType === 'UNLAWFULLY_AT_LARGE'
+    ) {
+      return false // Ignore UAL linked to the current recall being edited
+    }
+    return true // Include all other adjustments
+  })
+}
+
 export function getDpsSentenceId(req: FormWizard.Request): DpsSentenceIds {
   return get<DpsSentenceIds>(req, sessionModelFields.DPS_SENTENCE_IDS)
 }

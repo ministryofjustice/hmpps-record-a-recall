@@ -30,6 +30,10 @@ export default class RecallService {
     return allApiRecalls.map((apiRecall: ApiRecall): Recall => this.fromApiRecall(apiRecall))
   }
 
+  async deleteRecall(recallId: string, username: string): Promise<void> {
+    await (await this.getApiClient(username)).deleteRecall(recallId)
+  }
+
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {
     return new RemandAndSentencingApiClient(await this.getSystemClientToken(username))
   }

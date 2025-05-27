@@ -50,4 +50,10 @@ export default class RemandAndSentencingApiClient {
       query: { prisonerId, sort: 'latestCourtAppearance_appearanceDate,desc', size: 20, page },
     }) as Promise<ApiCourtCasePage>
   }
+
+  async deleteRecall(recallId: string): Promise<void> {
+    await this.restClient.delete({
+      path: `/recall/${recallId}`,
+    })
+  }
 }

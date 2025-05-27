@@ -46,6 +46,21 @@ export default async (req: Request, res: Response) => {
     }
     // Nothing to do.
 
+    // Find the latest recall by createdAt date
+    let latestRecallId: string | undefined
+    if (recalls && recalls.length > 0) {
+      const latestRecall = recalls.reduce((latest, current) => {
+        if (
+          !latest ||
+          (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
+        ) {
+          return current
+        }
+        return latest
+      }, null)
+      latestRecallId = latestRecall?.recallId
+    }
+
     return res.render('pages/person/home', {
       nomisId,
       prisoner,
@@ -54,6 +69,7 @@ export default async (req: Request, res: Response) => {
       urls,
       serviceDefinitions,
       errorMessage: error?.length ? error[0] : null,
+      latestRecallId,
     })
   }
   req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)
