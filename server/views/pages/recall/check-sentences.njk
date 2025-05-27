@@ -8,6 +8,8 @@
 {% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+
 
 {% set errors = validationErrors[0].text %}
 
@@ -139,7 +141,7 @@
 {% endmacro %}
 
 {% macro sentenceCard(sentence) %}
-    <div class="offence-card sentence-card">
+    {# <div class="offence-card sentence-card">
         <div class="govuk-width-container">
             <div class="offence-card-offence-details">
                 <h4 class="govuk-heading-s">{{ sentence.offenceCode }} - {{ sentence.offenceDescription }}</h4>
@@ -152,6 +154,60 @@
 
             </div>
         </div>
-    </div>
+    </div> #}
+                
+                {{ offenceCard({
+                    offenceCode: 'OFFENCECODE',
+                    offenceName: 'An Offence Name',
+                    offenceStartDate: '27 06 2024',
+                    offenceEndDate: '27 08 2024',
+                    outcome: 'Imprisonment',
+                    outcomeUpdated: true,
+                    countNumber: '1',
+                    convictionDate: '12 09 2024',
+                    terrorRelated: true,
+                    isSentenced: true,
+                    periodLengths: [
+                        {
+                            description: 'Sentence length',
+                            years: '1',
+                            months: '2',
+                            weeks: '3',
+                            days: '4',
+                            periodOrder: ['years', 'months', 'weeks', 'days']
+                        },
+                        {
+                            description: 'Licence period',
+                            years: '5',
+                            months: '6',
+                            periodOrder: ['years', 'months']
+                        }
+                    ],
+                    sentenceServeType: 'CONSECUTIVE',
+                    consecutiveTo: '3',
+                    sentenceType: 'SDS (Standard Determinate Sentence)',
+                    fineAmount: '17000',
+                    detailsClasses: 'govuk-!-padding-4',
+                    actions: {
+                        items: [
+                        {
+                            text: 'Edit',
+                            href: '/edit'
+                        },
+                        {
+                            text: 'Delete',
+                            href: '/delete'
+                        }
+                        ]
+                    },
+                    listItems: {
+                        classes: 'govuk-!-margin-top-4',
+                        items: [
+                            {
+                                html: '<a href="/update-outcome">Update outcome</a>'
+                            }
+                        ]
+                    }
+                }) }}
 {% endmacro %}
 
