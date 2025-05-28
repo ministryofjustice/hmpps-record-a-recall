@@ -1,4 +1,5 @@
 import { parse, startOfToday, isEqual, isBefore } from 'date-fns'
+import logger from '../../logger'
 
 export default function dateTodayOrInPast(value: string): boolean {
   if (value === '') {
@@ -15,7 +16,8 @@ export default function dateTodayOrInPast(value: string): boolean {
     const today = startOfToday()
 
     return isEqual(inputDate, today) || isBefore(inputDate, today)
-  } catch (_e) {
+  } catch (e) {
+    logger.error(e)
     return false
   }
 }
