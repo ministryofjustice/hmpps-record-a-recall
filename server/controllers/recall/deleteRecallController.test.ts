@@ -174,7 +174,7 @@ describe('deleteRecallController', () => {
 
       await postDeleteRecallConfirmation(req as unknown as Request, res as Response)
 
-      expect(mockRecallService.deleteRecall).toHaveBeenCalledWith(recallId, user.username)
+      expect(mockRecallService.deleteRecall).toHaveBeenCalledWith(nomisId, recallId, user.username)
       expect(req.flash).not.toHaveBeenCalled()
       expect(res.redirect).toHaveBeenCalledWith(`/person/${nomisId}`)
     })

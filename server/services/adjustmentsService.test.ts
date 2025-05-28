@@ -18,6 +18,11 @@ describe('Adjustments Service', () => {
     adjustmentsService = new AdjustmentsService(hmppsAuthClient)
   })
 
+  afterEach(() => {
+    nock.cleanAll()
+    jest.clearAllMocks()
+  })
+
   describe('post adjustments', () => {
     it('Should construct post request correctly when creating an adjustment', async () => {
       const username = 'A1234BC'
@@ -115,5 +120,53 @@ describe('Adjustments Service', () => {
 
     const adjustment = await adjustmentsService.updateUal(ual, username, adjustmentId)
     expect(adjustment.adjustmentIds).toEqual(['123'])
+  })
+
+  describe('deleteAdjustment', () => {
+    const username = 'USER1'
+    const adjustmentId = 'adjustment-uuid-123'
+    const token = 'mocked-system-token'
+
+    it('should call adjustments API DELETE endpoint with correct path and token', async () => {
+      hmppsAuthClient.getSystemClientToken.mockResolvedValue(token)
+      fakeAdjustmentsApi
+        .delete(`/adjustments/${adjustmentId}`)
+        .matchHeader('authorization', `Bearer ${token}`)
+        .reply(204)
+
+      await adjustmentsService.deleteAdjustment(adjustmentId, username)
+
+      expect(fakeAdjustmentsApi.isDone()).toBe(true)
+      expect(hmppsAuthClient.getSystemClientToken).toHaveBeenCalledWith(username)
+    })
+
+    it('should resolve when API call is successful', async () => {
+      hmppsAuthClient.getSystemClientToken.mockResolvedValue(token)
+      fakeAdjustmentsApi
+        .delete(`/adjustments/${adjustmentId}`)
+        .matchHeader('authorization', `Bearer ${token}`)
+        .reply(204)
+
+      await expect(adjustmentsService.deleteAdjustment(adjustmentId, username)).resolves.toBeUndefined()
+    })
+
+    it('should reject if API call fails', async () => {
+      hmppsAuthClient.getSystemClientToken.mockResolvedValue(token)
+      fakeAdjustmentsApi
+        .delete(`/adjustments/${adjustmentId}`)
+        .matchHeader('authorization', `Bearer ${token}`)
+        .reply(500, { message: 'Internal Server Error' })
+        .persist()
+
+      await expect(adjustmentsService.deleteAdjustment(adjustmentId, username)).rejects.toThrow('Internal Server Error')
+    })
+
+    it('should reject if getting system client token fails', async () => {
+      const authError = new Error('Auth error')
+      hmppsAuthClient.getSystemClientToken.mockRejectedValue(authError)
+
+      await expect(adjustmentsService.deleteAdjustment(adjustmentId, username)).rejects.toThrow(authError)
+      expect(fakeAdjustmentsApi.pendingMocks()).toEqual([])
+    })
   })
 })

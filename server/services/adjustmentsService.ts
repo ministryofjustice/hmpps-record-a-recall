@@ -38,8 +38,12 @@ export default class AdjustmentsService {
     return (await this.getApiClient(username)).updateAdjustment(adjustmentId, adjustmentToUpdate)
   }
 
-  async searchUal(nomisId: string, username: string): Promise<AdjustmentDto[]> {
-    return (await this.getApiClient(username)).getAdjustments(nomisId)
+  async searchUal(nomisId: string, username: string, recallUuid?: string): Promise<AdjustmentDto[]> {
+    return (await this.getApiClient(username)).getAdjustments(nomisId, recallUuid)
+  }
+
+  async deleteAdjustment(adjustmentId: string, username: string): Promise<void> {
+    return (await this.getApiClient(username)).deleteAdjustment(adjustmentId)
   }
 
   private async getApiClient(username: string): Promise<AdjustmentsApiClient> {
