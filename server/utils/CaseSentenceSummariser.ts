@@ -175,12 +175,12 @@ function getDate(
 }
 
 export function summariseRasCases(
-  courtsCases: CourtCase[],
+  courtCases: CourtCase[],
   prisonApiSentences: SentenceWithDpsUuid[],
   breakdown?: CalculationBreakdown,
 ): SummarisedSentenceGroup[] {
   const summarisedCases: SummarisedSentenceGroup[] = []
-  courtsCases.forEach(c => summarisedCases.push(summariseCase(c, prisonApiSentences, breakdown)))
+  courtCases.forEach(c => summarisedCases.push(summariseCase(c, prisonApiSentences, breakdown)))
   return summarisedCases
 }
 function summariseCase(
@@ -199,7 +199,7 @@ function summariseCase(
   courtCase.sentences.forEach(s => {
     summarisedGroup.hasEligibleSentences = true
 
-    const prisonApiSentence = prisonApiSentences.find(it => it.dpsSentenceId === s.sentenceUuid)
+    const prisonApiSentence = prisonApiSentences.find(it => it.dpsSentenceUuid === s.sentenceUuid)
     const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(prisonApiSentence, breakdown)
     const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
     const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(prisonApiSentence, breakdown)

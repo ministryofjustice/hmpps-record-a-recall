@@ -20,6 +20,7 @@ export default class CheckSentencesController extends RecallBaseController {
     const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
 
     const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
+    // const sentencesToDisplay = getS
 
     res.locals.latestSled = calculation.dates.SLED
     res.locals.manualJourney = manualJourney

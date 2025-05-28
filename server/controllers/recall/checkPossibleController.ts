@@ -33,13 +33,14 @@ export default class CheckPossibleController extends RecallBaseController {
             console.log(cases)
 
             const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE');
+            res.locals.courtCases = activeCases;
             const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || []);
 
             console.log('---------- RAS Case Sentences ----------')
             console.log(sentencesFromRasCases)
 
             const [sentences, breakdown] = await Promise.all([
-              this.getSentences(req, res),
+              this.getCrdsSentences(req, res),
               this.getCalculationBreakdown(req, res),
             ])
             const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
@@ -57,9 +58,16 @@ export default class CheckPossibleController extends RecallBaseController {
 
             console.log('---------- sentences from Ras Cases ----------', sentencesFromRasCases)
 
-            res.locals.sentences = matchedRaSSentences.map(sentence => ({
+            res.locals.rasSentences = matchedRaSSentences.map(sentence => ({
               ...sentence,
               dpsSentenceUuid: sentence.sentenceUuid,
+            }))
+
+            res.locals.crdsSentences = sentences.map(sentence => ({
+              ...sentence,
+              dpsSentenceUuid: dpsSentenceSequenceIds.find(
+                mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
+              )?.dpsSentenceId,
             }))
 
             res.locals.breakdown = breakdown
@@ -93,7 +101,9 @@ export default class CheckPossibleController extends RecallBaseController {
     } else if (getRecallRoute(req) === 'MANUAL') {
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
     }
-    req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.sentences)
+    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, res.locals.courtCases)
+    req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.crdsSentences)
+    req.sessionModel.set(sessionModelFields.RAS_SENTENCES, res.locals.rasSentences)
     req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
@@ -116,7 +126,7 @@ export default class CheckPossibleController extends RecallBaseController {
     return req.services.calculationService.getCalculationBreakdown(calcReqId, username)
   }
 
-  getSentences(req: FormWizard.Request, res: Response) {
+  getCrdsSentences(req: FormWizard.Request, res: Response) {
     const { calcReqId, username } = res.locals
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
   }
