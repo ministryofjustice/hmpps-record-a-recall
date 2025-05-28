@@ -7,7 +7,7 @@ describe('dateTodayOrInPast', () => {
     date.setHours(0)
     date.setMinutes(0)
     date.setDate(date.getDate() + 1)
-    expect(dateTodayOrInPast(formatISO(date))).toEqual(false)
+    expect(dateTodayOrInPast(formatISO(date, { representation: 'date' }))).toEqual(false)
   })
 
   it("allows today's date", () => {
@@ -16,7 +16,7 @@ describe('dateTodayOrInPast', () => {
     date.setMinutes(0)
     date.setSeconds(0)
     date.setDate(date.getDate())
-    expect(dateTodayOrInPast(formatISO(date))).toEqual(true)
+    expect(dateTodayOrInPast(formatISO(date, { representation: 'date' }))).toEqual(true)
   })
 
   it('allows past dates', () => {
@@ -24,6 +24,6 @@ describe('dateTodayOrInPast', () => {
     date.setHours(0)
     date.setMinutes(0)
     date.setDate(date.getDate() - 1)
-    expect(dateTodayOrInPast(formatISO(date))).toEqual(true)
+    expect(dateTodayOrInPast(formatISO(date, { representation: 'date' }))).toEqual(true)
   })
 })
