@@ -141,27 +141,13 @@
 {% endmacro %}
 
 {% macro sentenceCard(sentence) %}
-    {# <div class="offence-card sentence-card">
-        <div class="govuk-width-container">
-            <div class="offence-card-offence-details">
-                <h4 class="govuk-heading-s">{{ sentence.offenceCode }} - {{ sentence.offenceDescription }}</h4>
-
-                {{ govukSummaryList({
-                    rows: sentence.summary,
-                    classes: "govuk-summary-list--no-border"
-                }) }}
-
-
-            </div>
-        </div>
-    </div> #}
         {{ offenceCard({
             offenceCode: 'OFFENCECODE',
             offenceName: 'An Offence Name',
             offenceStartDate: '27 06 2024',
             offenceEndDate: '27 08 2024',
             outcome: 'Imprisonment',
-            outcomeUpdated: true,
+            outcomeUpdated: false,
             hideOutcome: true,
             countNumber: '1',
             convictionDate: '12 09 2024',
@@ -180,15 +166,7 @@
             sentenceServeType: 'CONSECUTIVE',
             consecutiveTo: '3',
             sentenceType: 'SDS (Standard Determinate Sentence)',
-            detailsClasses: 'govuk-!-padding-4',
-            listItems: {
-                classes: 'govuk-!-margin-top-4',
-                items: [
-                    {
-                        html: '<a href="/update-outcome">Update outcome</a>'
-                    }
-                ]
-            }
+            detailsClasses: 'govuk-!-padding-4'
         }) }}
 
 {% endmacro %}
