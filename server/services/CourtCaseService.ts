@@ -46,12 +46,12 @@ export default class CourtCaseService {
       sentenced: apiCase.latestAppearance?.warrantType === 'SENTENCING' || false,
       sentences:
         apiCase.latestAppearance?.warrantType === 'SENTENCING'
-          ? apiCase.latestAppearance.charges.map((c: ApiCharge) => this.sentenceFromApiCharge(c))
+          ? apiCase.latestAppearance.charges.map((c: ApiCharge) => this.sentenceFromApiCharge(c, apiCase))
           : [],
     }
   }
 
-  sentenceFromApiCharge(apiCharge: ApiCharge): Sentence {
+  sentenceFromApiCharge(apiCharge: ApiCharge, apiCase: ApiCourtCase): Sentence {
     const apiSentence = apiCharge.sentence
 
     return {
@@ -66,6 +66,7 @@ export default class CourtCaseService {
       offenceCode: apiCharge.offenceCode,
       // TODO decorate with proper description
       offenceDescription: apiCharge.offenceCode,
+      courtDescription: apiCase.latestAppearance.courtCode
     }
   }
 }

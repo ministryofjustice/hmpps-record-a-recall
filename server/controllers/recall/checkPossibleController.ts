@@ -10,7 +10,6 @@ import determineRecallEligibilityFromValidation from '../../utils/crdsValidation
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
-// import {Sentence} from "models";
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -32,10 +31,9 @@ export default class CheckPossibleController extends RecallBaseController {
             const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
             console.log('---------- RAS Cases ----------')
             console.log(cases)
-            // Save cases to the session so that we don't need to retrieve them again
-            const sentencesFromRasCases = cases
-              .filter(caseItem => caseItem.status === 'ACTIVE')
-              .flatMap(caseItem => caseItem.sentences || [])
+
+            const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE');
+            const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || []);
 
             console.log('---------- RAS Case Sentences ----------')
             console.log(sentencesFromRasCases)

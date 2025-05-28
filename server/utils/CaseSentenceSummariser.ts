@@ -74,7 +74,7 @@ export default function summariseSentencesGroups(
       )?.unadjusted
 
       const summary = compact([
-        toSummaryListRow('Committed on', stringifyOffenceDate(offence)),
+        toSummaryListRow('Committed on', sentence.offenceDate),
         toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
         toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
         toSummaryListRow('Custodial term', getCustodialTerm(sentence.terms)),
@@ -99,7 +99,7 @@ export default function summariseSentencesGroups(
         sentenceId: sentence.dpsSentenceUuid,
         recallEligibility,
         summary,
-        offenceCode: sentence.offence.offenceCode,
+        offenceCode: sentence.offenceCode,
         offenceDescription: sentence.offence.offenceDescription,
         unadjustedSled: unadjustedSled || unadjustedLed,
         sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
@@ -200,12 +200,12 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
       toSummaryListRow('Licence period', stringifyTerm(s.licenceTerm)),
       toSummaryListRow('Consecutive or concurrent', s.sentenceServeType),
       // TODO We don't have the following for RaS sentences
-      // toSummaryListRow('Unadjusted SLED', unadjustedSled),
-      // toSummaryListRow('Unadjusted LED', unadjustedLed),
-      // toSummaryListRow(
-      //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-      //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-      // ),
+      //       // toSummaryListRow('Unadjusted SLED', unadjustedSled),
+      //       // toSummaryListRow('Unadjusted LED', unadjustedLed),
+      //       // toSummaryListRow(
+      //       //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
+      //       //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
+      //       // ),
       toSummaryListRow('Recall Options', recallEligibility.code),
       toSummaryListRow('Recall Options reason', recallEligibility.description),
     ])
