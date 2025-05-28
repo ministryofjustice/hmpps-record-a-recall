@@ -1,6 +1,7 @@
 import type { Recall } from 'models'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
+import AdjustmentsService from './adjustmentsService'
 import {
   ApiRecall,
   CreateRecall,
@@ -8,9 +9,13 @@ import {
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { calculateUal } from '../utils/utils'
 import { getRecallType } from '../@types/recallTypes'
+import logger from '../../logger'
 
 export default class RecallService {
-  constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
+  constructor(
+    private readonly hmppsAuthClient: HmppsAuthClient,
+    private readonly adjustmentsService: AdjustmentsService,
+  ) {}
 
   async postRecall(recall: CreateRecall, username: string): Promise<CreateRecallResponse> {
     return (await this.getApiClient(username)).postRecall(recall)
@@ -30,8 +35,40 @@ export default class RecallService {
     return allApiRecalls.map((apiRecall: ApiRecall): Recall => this.fromApiRecall(apiRecall))
   }
 
-  async deleteRecall(recallId: string, username: string): Promise<void> {
+  async deleteRecall(nomisId: string, recallId: string, username: string): Promise<void> {
     await (await this.getApiClient(username)).deleteRecall(recallId)
+
+    // Find and delete any UAL adjustments associated with the recall
+    try {
+      const ualAdjustments = await this.adjustmentsService.searchUal(nomisId, username, recallId)
+
+      if (ualAdjustments && ualAdjustments.length > 0) {
+        logger.info(
+          `Found ${ualAdjustments.length} UAL adjustment(s) for recall ${recallId} (person ${nomisId}). Attempting deletion.`,
+        )
+        for (const ualAdjustment of ualAdjustments) {
+          try {
+            if (ualAdjustment.id) {
+              // eslint-disable-next-line no-await-in-loop
+              await this.adjustmentsService.deleteAdjustment(ualAdjustment.id, username)
+              logger.info(`Successfully deleted UAL adjustment ${ualAdjustment.id} for recall ${recallId}.`)
+            } else {
+              logger.warn(`UAL adjustment for recall ${recallId} is missing an ID, cannot delete.`)
+            }
+          } catch (deleteError) {
+            logger.error(
+              `Failed to delete UAL adjustment ${ualAdjustment.id} for recall ${recallId} (person ${nomisId}):`,
+              deleteError,
+            )
+            // try to delete other adjustments
+          }
+        }
+      } else {
+        logger.info(`No UAL adjustments found for recall ${recallId} (person ${nomisId}).`)
+      }
+    } catch (error) {
+      logger.error(error)
+    }
   }
 
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {

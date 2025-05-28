@@ -51,7 +51,7 @@ export async function postDeleteRecallConfirmation(req: Request, res: Response) 
   }
 
   if (confirmDelete === 'yes') {
-    await req.services.recallService.deleteRecall(recallId, req.user?.username)
+    await req.services.recallService.deleteRecall(nomisId, recallId, req.user?.username)
     return res.redirect(redirectUrl)
   }
 
