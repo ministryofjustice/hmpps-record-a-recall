@@ -56,6 +56,7 @@ declare module 'models' {
     offenceDate?: string
     offenceCode: string
     offenceDescription?: string
+    courtDescription?: string
   }
 
   export type SentenceWithDpsUuid = SentenceAndOffenceWithReleaseArrangements & {

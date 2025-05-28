@@ -6,13 +6,17 @@ import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
 import getJourneyDataFromRequest, {
-  getAdjustmentsToConsiderForValidation,
+  getAdjustmentsToConsiderForValidation, getBreakdown, getCourtCaseOptions, getCourtCases,
   getCrdsSentences,
   getExistingAdjustments,
-  getRecallRoute,
-  RecallJourneyData,
+  getRecallRoute, getRevocationDate,
+  RecallJourneyData, sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import {CourtCase} from "models";
+import {summariseRasCases} from "../../utils/CaseSentenceSummariser";
+import {determineInvalidRecallTypes} from "../../utils/RecallEligiblityCalculator";
+import {SummarisedSentenceGroup} from "../../utils/sentenceUtils";
 
 export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -59,9 +63,29 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    if (getRecallRoute(req) !== 'MANUAL') {
-      revocationDateCrdsDataComparison(req)
-    }
+    // if (getRecallRoute(req) !== 'MANUAL') {
+    //   revocationDateCrdsDataComparison(req)
+    // }
+    const caseDetails = getCourtCaseOptions(req).filter((c: CourtCase) => c.status !== 'DRAFT').filter((c: CourtCase) => c.sentenced)
+    console.log('------- Court Cases from Session: -------')
+    console.log(caseDetails)
+    const crdsSentences = getCrdsSentences(req)
+    const breakdown = getBreakdown(req)
+    const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown)
+    const revocationDate = getRevocationDate(req)
+
+    const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+
+    req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
+    res.locals.summarisedSentencesGroups = summarisedSentencesGroups
+    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
+    res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
+    const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
+      g.eligibleSentences.flatMap(s => s.sentenceId),
+    ).length
+    req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
+    res.locals.casesWithEligibleSentences = sentenceCount
+    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
     return super.successHandler(req, res, next)
   }
 }
