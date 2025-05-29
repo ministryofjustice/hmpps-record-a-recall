@@ -1,0 +1,46 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+
+{% block pageTitle %}
+  Select all the cases that are relevant to this recall - {{ super() }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a href="{{ journeyBaseLink }}/rtc-date" class="govuk-back-link">Back</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <form method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+        <div class="app-intercept-banner">
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds-from-desktop">
+          <h1 class="govuk-heading-l govuk-!-margin-top-0 govuk-!-margin-bottom-3">Select all the cases that are relevant to this recall</h1>
+          <p class="govuk-body">This service cannot determine which sentences are eligible for recall.</p>
+          <p class="govuk-body">To make sure the recall is recorded correctly, you must select all cases with sentences that were active when this person's licence was revoked.</p>
+          
+          <!-- TODO: Style buttons for white background / blue text if required -->
+          {{ govukButton({
+            text: "Continue",
+            name: "continue",
+            preventDoubleClick: true,
+            classes: "govuk-button--inverse"
+          }) }}
+          {{ govukButton({
+            text: "Cancel recall",
+            name: "cancel",
+            classes: "govuk-button--secondary govuk-button--inverse govuk-!-margin-left-1",
+            preventDoubleClick: true
+          }) }}
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
