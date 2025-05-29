@@ -1,0 +1,128 @@
+{% extends "../../partials/layout.njk" %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% set pageTitle = "Confirm if this case is relevant to the recall (case " + (currentCaseIndex + 1) + " of " + totalCases + ")" %}
+{% set pageId = "select-court-case-details" %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - {{ serviceName }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLinkUrl
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.list | length %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: errors.list
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Court
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ currentCase.courtName | default("Not available") }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Case number
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ currentCase.caseNumber | default("Not available") }}
+          </dd>
+        </div>
+        {% for sentence in currentCase.sentences %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Sentence description
+            </dt>
+            <dd class="govuk-summary-list__value">
+              {{ sentence.description | default("Not available") }}
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Conviction date
+            </dt>
+            <dd class="govuk-summary-list__value">
+              {{ sentence.convictionDate | date('d MMM yyyy') | default("Not available") }}
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Sentence length
+            </dt>
+            <dd class="govuk-summary-list__value">
+              {{ sentence.length + " " + sentence.lengthUnits if sentence.length and sentence.lengthUnits else "Not available" }}
+            </dd>
+          </div>
+          {% for offence in sentence.offences %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Main offence
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ offence.description | default("Not available") }} ({{ offence.offenceCode | default("N/A") }})
+              </dd>
+            </div>
+          {% endfor %}
+          {% if not loop.last %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key"></dt>
+              <dd class="govuk-summary-list__value"><hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"></dd>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </dl>
+
+      <form method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+        
+        {{ govukRadios({
+          name: "activeSentenceChoice",
+          fieldset: {
+            legend: {
+              text: "Did this case have an active sentence at the point of recall?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "YES",
+              text: "Yes",
+              checked: formResponses.activeSentenceChoice == "YES"
+            },
+            {
+              value: "NO",
+              text: "No",
+              checked: formResponses.activeSentenceChoice == "NO"
+            }
+          ],
+          errorMessage: errors.activeSentenceChoice
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

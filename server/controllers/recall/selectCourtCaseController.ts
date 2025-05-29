@@ -4,64 +4,144 @@ import { NextFunction, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
-import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
-import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
-import {
-  getCourtCaseOptions,
-  getCourtCases,
-  getRevocationDate,
-  sessionModelFields,
-} from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
-import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
 
 export default class SelectCourtCaseController extends RecallBaseController {
   middlewareSetup() {
     super.middlewareSetup()
-    this.use(this.setCourtCaseItems)
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    req.form.options.fields.courtCases.items = this.toCheckboxItems(getCourtCaseOptions(req))
-    const selectedCourtCases = getCourtCases(req)
-    req.form.options.fields.courtCases.values = selectedCourtCases || []
-    return super.locals(req, res)
+  private sortCourtCasesByMostRecentConviction(cases: CourtCase[]): CourtCase[] {
+    return cases.sort((a, b) => {
+      const getMostRecentConvictionDate = (courtCase: CourtCase): Date | null => {
+        if (!courtCase.sentences || courtCase.sentences.length === 0) {
+          return null
+        }
+        const convictionDates = courtCase.sentences
+          .map(s => (s.convictionDate ? new Date(s.convictionDate) : null))
+          .filter(date => date !== null) as Date[]
+        if (convictionDates.length === 0) return null
+        return new Date(
+          Math.max.apply(
+            null,
+            convictionDates.map(d => d.getTime()),
+          ),
+        )
+      }
+
+      const dateA = getMostRecentConvictionDate(a)
+      const dateB = getMostRecentConvictionDate(b)
+
+      if (dateA && dateB) {
+        return dateB.getTime() - dateA.getTime()
+      }
+      if (dateA) return -1
+      if (dateB) return 1
+      return 0
+    })
   }
 
-  async setCourtCaseItems(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const caseOptions = await getCourtCaseOptionsFromRas(req, res)
-    req.form.options.fields.courtCases.items = this.toCheckboxItems(caseOptions)
-    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, caseOptions)
+  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      let reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[] | undefined
+      let currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number | undefined
+      let manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as
+        | (string | undefined)[]
+        | undefined
 
-    return next()
+      if (!reviewableCases) {
+        const allCases = await getCourtCaseOptionsFromRas(req, res)
+        reviewableCases = this.sortCourtCasesByMostRecentConviction(allCases)
+        currentCaseIndex = 0
+        manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
+
+        req.sessionModel.set(sessionModelFields.REVIEWABLE_COURT_CASES, reviewableCases)
+        req.sessionModel.set(sessionModelFields.CURRENT_CASE_INDEX, currentCaseIndex)
+        req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
+      }
+
+      if (currentCaseIndex === undefined || !reviewableCases || currentCaseIndex >= reviewableCases.length) {
+        res.redirect(`${req.baseUrl}/check-sentences`)
+        return
+      }
+
+      const currentCase = reviewableCases[currentCaseIndex]
+      const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
+
+      res.locals.currentCase = currentCase
+      res.locals.currentCaseIndex = currentCaseIndex
+      res.locals.totalCases = reviewableCases.length
+      res.locals.previousDecision = previousDecision
+      res.locals.backLinkUrl = `${req.baseUrl}/manual-recall-intercept`
+
+      super.get(req, res, next)
+      // eslint-disable-next-line no-useless-return
+      return
+    } catch (err) {
+      next(err)
+      // eslint-disable-next-line no-useless-return
+      return
+    }
   }
 
-  toCheckboxItems(courtCases: CourtCase[]) {
-    return courtCases.map((c: CourtCase) => ({
-      text: `Case ${c.reference ?? 'held'} at ${c.locationName || c.location} on ${c.date}`,
-      value: c.caseId,
-    }))
+  async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+    super.post(req, res, next)
   }
 
-  successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const selectedCases = getCourtCases(req)
-    const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) => selectedCases.includes(detail.caseId))
-    const summarisedSentencesGroups = summariseRasCases(caseDetails)
-    const revocationDate = getRevocationDate(req)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async saveValues(req: FormWizard.Request, res: Response, callback: (err?: any) => void): Promise<void> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      super.saveValues(req, res, (err?: any) => {
+        if (err) {
+          callback(err)
+          return
+        }
 
-    const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+        const activeSentenceChoice = req.form.values.activeSentenceChoice as string | undefined
+        const reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[]
+        const currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number
+        const manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as (
+          | string
+          | undefined
+        )[]
 
-    req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
-    res.locals.summarisedSentencesGroups = summarisedSentencesGroups
-    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
-    res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
-    const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
-      g.eligibleSentences.flatMap(s => s.sentenceId),
-    ).length
-    req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
-    res.locals.casesWithEligibleSentences = sentenceCount
-    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+        if (!reviewableCases || typeof currentCaseIndex !== 'number' || !manualRecallDecisions) {
+          callback(new Error('Session not properly initialized for case review in saveValues.'))
+          return
+        }
 
-    return super.successHandler(req, res, next)
+        if (activeSentenceChoice) {
+          // activeSentenceChoice is narrowed to string here
+          manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
+          req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
+        }
+
+        const nextCaseIndex = currentCaseIndex + 1
+        req.sessionModel.set(sessionModelFields.CURRENT_CASE_INDEX, nextCaseIndex)
+
+        callback()
+      })
+    } catch (ex) {
+      callback(ex)
+    }
+  }
+
+  successHandler(req: FormWizard.Request, res: Response, next: NextFunction): void {
+    const reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[]
+    const currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number
+
+    if (reviewableCases && typeof currentCaseIndex === 'number' && currentCaseIndex < reviewableCases.length) {
+      req.session.save(err => {
+        if (err) {
+          next(err)
+          return
+        }
+        res.redirect(req.originalUrl)
+      })
+    } else {
+      super.successHandler(req, res, next)
+    }
   }
 }
