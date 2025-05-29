@@ -8,6 +8,7 @@ import CheckPossibleController from '../../controllers/recall/checkPossibleContr
 import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
+import ManualRecallInterceptController from '../../controllers/recall/ManualRecallInterceptController'
 import {
   getEligibleSentenceCount,
   isManualCaseSelection,
@@ -47,7 +48,7 @@ const steps = {
       },
       {
         fn: (req: FormWizard.Request) => isManualCaseSelection(req),
-        next: 'select-cases',
+        next: 'manual-recall-intercept',
       },
       {
         fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0,
@@ -90,6 +91,11 @@ const steps = {
   '/check-your-answers': {
     controller: CheckYourAnswersController,
     next: 'recall-recorded',
+  },
+  '/manual-recall-intercept': {
+    controller: ManualRecallInterceptController,
+    noPost: false,
+    checkJourney: true,
   },
   '/recall-recorded': {
     controller: RecallBaseController,
