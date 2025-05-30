@@ -4,7 +4,7 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
-{% set pageTitle = "Confirm if this case is relevant to the recall (case " + (currentCaseIndex + 1) + " of " + totalCases + ")" %}
+{% set pageTitle = "Select all cases that had an active sentence" %}
 {% set pageId = "select-court-case-details" %}
 
 {% block pageTitle %}
@@ -28,32 +28,31 @@
         }) }}
       {% endif %}
 
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <h1 class="govuk-heading-l">
+        <span class="govuk-caption-l">Record a recall</span>
+        {{ pageTitle }}
+      </h1>
+      <p class="govuk-body">Relevant cases are those with sentences that were active when this person's licence was revoked.</p>
+      <p class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-7">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
 
-      <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Court
-          </dt>
-          <dd class="govuk-summary-list__value">
-            {{ currentCase.courtName | default("Not available") }}
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Case number
-          </dt>
-          <dd class="govuk-summary-list__value">
-            {{ currentCase.caseNumber | default("Not available") }}
-          </dd>
-        </div>
-        {% for sentence in currentCase.sentences %}
+      {# Case Header Block #}
+      <div class="app-summary-card app-summary-card--purple-border govuk-!-margin-bottom-7">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ currentCase.caseNumber | default("N/A") }} at {{ currentCase.courtName | default("N/A") }}</h2>
+        <dl class="govuk-summary-list govuk-summary-list--no-border">
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">
-              Sentence description
+              Case references
             </dt>
             <dd class="govuk-summary-list__value">
-              {{ sentence.description | default("Not available") }}
+              {{ currentCase.caseReferences | default("Not available") }}
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Overall sentence length
+            </dt>
+            <dd class="govuk-summary-list__value">
+              {{ currentCase.overallSentenceLength | default("Not available") }}
             </dd>
           </div>
           <div class="govuk-summary-list__row">
@@ -61,35 +60,91 @@
               Conviction date
             </dt>
             <dd class="govuk-summary-list__value">
-              {{ sentence.convictionDate | date('d MMM yyyy') | default("Not available") }}
+              {{ currentCase.overallConvictionDate | date('DD/MM/YYYY') | default("Not available") }}
             </dd>
           </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-              Sentence length
-            </dt>
-            <dd class="govuk-summary-list__value">
-              {{ sentence.length + " " + sentence.lengthUnits if sentence.length and sentence.lengthUnits else "Not available" }}
-            </dd>
-          </div>
-          {% for offence in sentence.offences %}
+        </dl>
+      </div>
+
+      {# Offences Section #}
+      {% if currentCase.offences and currentCase.offences | length > 0 %}
+        <h3 class="govuk-heading-m govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.offences | length }})</h3>
+        {% for offence in currentCase.offences %}
+        <div class="app-summary-card app-summary-card--purple-border govuk-!-margin-bottom-5">
+          <h4 class="govuk-heading-s govuk-!-margin-bottom-2">Count {{ loop.index }}</h4>
+          <p class="govuk-body govuk-!-font-weight-bold">{{ offence.offenceCode | default("N/A") }} - {{ offence.description | default("Not available") }}</p>
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
-                Main offence
+                Committed on
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.description | default("Not available") }} ({{ offence.offenceCode | default("N/A") }})
+                {{ offence.committedOnDate | date('DD/MM/YYYY') | default("Not available") }}
               </dd>
             </div>
-          {% endfor %}
-          {% if not loop.last %}
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key"></dt>
-              <dd class="govuk-summary-list__value"><hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"></dd>
+              <dt class="govuk-summary-list__key">
+                Conviction date
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ offence.convictionDate | date('DD/MM/YYYY') | default("Not available") }}
+              </dd>
             </div>
-          {% endif %}
+            {% if offence.sentenceType %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Sentence type
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ offence.sentenceType | default("Not available") }}
+              </dd>
+            </div>
+            {% endif %}
+            {% if offence.sentenceLength %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Sentence length
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ offence.sentenceLength | default("Not available") }}
+              </dd>
+            </div>
+            {% endif %}
+            {% if offence.consecutiveOrConcurrent %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Consecutive or concurrent
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ offence.consecutiveOrConcurrent | default("Not available") }}
+              </dd>
+            </div>
+            {% endif %}
+            {% if offence.outcome %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Outcome
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ offence.outcome | default("Not available") }}
+              </dd>
+            </div>
+            {% endif %}
+            {% if offence.fineAmount %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Fine amount
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ "£" + (offence.fineAmount / 100) if offence.fineAmount else "Not available" }} {# Example: assumes fineAmount is in pence #}
+              </dd>
+            </div>
+            {% endif %}
+          </dl>
+        </div>
         {% endfor %}
-      </dl>
+      {% endif %}
+      {# Note: The closing </dl> from the original TargetContent is intentionally omitted here as the new structure is different #}
 
       <form method="post" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
