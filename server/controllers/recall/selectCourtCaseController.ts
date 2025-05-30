@@ -2,7 +2,8 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase } from 'models'
+import { CourtCase, Sentence, Term } from 'models'
+import { formatTerm, formatSentenceServeType } from '../../utils/formattingUtils'
 import RecallBaseController from './recallBaseController'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
@@ -66,7 +67,23 @@ export default class SelectCourtCaseController extends RecallBaseController {
         return
       }
 
-      const currentCase = reviewableCases[currentCaseIndex]
+      const originalCase = reviewableCases[currentCaseIndex]
+
+      // Create a mutable copy for view model enhancements
+      const currentCase: CourtCase & {
+        sentences?: (Sentence & { formattedSentenceLength?: string; formattedConsecutiveOrConcurrent?: string })[]
+      } = JSON.parse(JSON.stringify(originalCase))
+
+      if (currentCase.sentences) {
+        currentCase.sentences = currentCase.sentences.map(sentence => ({
+          ...sentence,
+          formattedSentenceLength: formatTerm(sentence.custodialTerm as Term | undefined), // Cast needed if custodialTerm might be missing from some Sentence types in practice
+          formattedConsecutiveOrConcurrent: formatSentenceServeType(
+            sentence.sentenceServeType,
+            sentence.consecutiveToChargeNumber,
+          ),
+        }))
+      }
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
       res.locals.currentCase = currentCase
@@ -113,7 +130,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
         }
 
         if (activeSentenceChoice) {
-          // activeSentenceChoice is narrowed to string here
           manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
           req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
         }

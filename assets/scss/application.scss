@@ -72,6 +72,10 @@ $govuk-page-width: $moj-page-width;
     border-left: 5px solid govuk-colour("purple");
   }
 
+  &--shaded {
+    background-color: govuk-colour("light-grey");
+  }
+
   .govuk-summary-list.govuk-summary-list--no-border {
     .govuk-summary-list__row {
       border-bottom: none;
