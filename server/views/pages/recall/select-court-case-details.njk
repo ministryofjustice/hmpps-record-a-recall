@@ -69,7 +69,7 @@
         {% if currentCase.sentences and currentCase.sentences.length > 0 %}
           <h3 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-4 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
           {% for sentence in currentCase.sentences %}
-          <div class="app-summary-card app-summary-card--purple-border app-summary-card--shaded govuk-!-margin-bottom-5">
+          <div class="app-summary-card app-summary-card--purple-border app-summary-card--with-shadow app-summary-card--shaded govuk-!-margin-bottom-5">
             <p class="govuk-body-s govuk-!-margin-bottom-1">Count {{ loop.index }}</p>
             <h4 class="govuk-heading-m govuk-!-margin-bottom-2">{{ sentence.offenceCode | default("Not available") }} - {{ sentence.offenceDescription | default("Not available") }}</h4>
             <dl class="govuk-summary-list govuk-summary-list--no-border">
