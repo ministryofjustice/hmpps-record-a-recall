@@ -3,7 +3,12 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Sentence, Term } from 'models'
-import { formatTerm, formatSentenceServeType } from '../../utils/formattingUtils'
+import {
+  formatTerm,
+  formatSentenceServeType,
+  formatDateStringToDDMMYYYY,
+  calculateOverallSentenceLength,
+} from '../../utils/formattingUtils'
 import RecallBaseController from './recallBaseController'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
@@ -69,19 +74,37 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
       const originalCase = reviewableCases[currentCaseIndex]
 
-      // Create a mutable copy for view model enhancements
+      // Create a mutable copy for the view
       const currentCase: CourtCase & {
-        sentences?: (Sentence & { formattedSentenceLength?: string; formattedConsecutiveOrConcurrent?: string })[]
+        caseReferences?: string
+        courtName?: string
+        formattedOverallSentenceLength?: string
+        formattedOverallConvictionDate?: string
+        sentences?: (Sentence & {
+          formattedSentenceLength?: string
+          formattedConsecutiveOrConcurrent?: string
+          formattedOffenceDate?: string
+          formattedConvictionDate?: string
+        })[]
       } = JSON.parse(JSON.stringify(originalCase))
+
+      currentCase.caseReferences = originalCase.reference ? originalCase.reference : 'N/A'
+      currentCase.courtName = originalCase.locationName
+      const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
+      currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
+
+      currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
 
       if (currentCase.sentences) {
         currentCase.sentences = currentCase.sentences.map(sentence => ({
           ...sentence,
-          formattedSentenceLength: formatTerm(sentence.custodialTerm as Term | undefined), // Cast needed if custodialTerm might be missing from some Sentence types in practice
+          formattedSentenceLength: formatTerm(sentence.custodialTerm as Term | undefined),
           formattedConsecutiveOrConcurrent: formatSentenceServeType(
             sentence.sentenceServeType,
             sentence.consecutiveToChargeNumber,
           ),
+          formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
+          formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
         }))
       }
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
