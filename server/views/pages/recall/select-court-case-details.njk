@@ -38,28 +38,28 @@
       {# Case Header Block #}
       <div class="app-summary-card app-summary-card--purple-border govuk-!-margin-bottom-7">
         <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ currentCase.caseNumber | default("N/A") }} at {{ currentCase.courtName | default("N/A") }}</h2>
-        <dl class="govuk-summary-list govuk-summary-list--no-border">
+        <dl class="govuk-summary-list">
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
+            <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
               Case references
             </dt>
-            <dd class="govuk-summary-list__value">
+            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
               {{ currentCase.caseReferences | default("Not available") }}
             </dd>
           </div>
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
+            <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
               Overall sentence length
             </dt>
-            <dd class="govuk-summary-list__value">
+            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
               {{ currentCase.overallSentenceLength | default("Not available") }}
             </dd>
           </div>
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
+            <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
               Conviction date
             </dt>
-            <dd class="govuk-summary-list__value">
+            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
               {{ currentCase.overallConvictionDate | date('DD/MM/YYYY') | default("Not available") }}
             </dd>
           </div>
@@ -67,72 +67,72 @@
       </div>
 
       {# Offences Section #}
-      {% if currentCase.offences and currentCase.offences | length > 0 %}
-        <h3 class="govuk-heading-m govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.offences | length }})</h3>
-        {% for offence in currentCase.offences %}
-        <div class="app-summary-card app-summary-card--purple-border govuk-!-margin-bottom-5">
-          <h4 class="govuk-heading-s govuk-!-margin-bottom-2">Count {{ loop.index }}</h4>
-          <p class="govuk-body govuk-!-font-weight-bold">{{ offence.offenceCode | default("N/A") }} - {{ offence.description | default("Not available") }}</p>
+      {% if currentCase.sentences and currentCase.sentences.length > 0 %}
+        <h3 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
+        {% for sentence in currentCase.sentences %}
+        <div class="app-summary-card app-summary-card--purple-border app-summary-card--shaded govuk-!-margin-bottom-5">
+          <h4 class="govuk-heading-s govuk-!-margin-bottom-2">Offence {{ loop.index }}</h4>
+          <p class="govuk-body govuk-!-font-weight-bold">{{ sentence.offenceCode | default("Not available") }} - {{ sentence.offenceDescription | default("Not available") }}</p>
           <dl class="govuk-summary-list govuk-summary-list--no-border">
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Committed on
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.committedOnDate | date('DD/MM/YYYY') | default("Not available") }}
+                {{ sentence.offenceDate | date('dd/MM/yyyy') | default("Not available") }}
               </dd>
             </div>
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Conviction date
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.convictionDate | date('DD/MM/YYYY') | default("Not available") }}
+                {{ sentence.convictionDate | date('dd/MM/yyyy') | default("Not available") }}
               </dd>
             </div>
-            {% if offence.sentenceType %}
+            {% if sentence.sentenceType %}
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Sentence type
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.sentenceType | default("Not available") }}
+                {{ sentence.sentenceType | default("Not available") }}
               </dd>
             </div>
             {% endif %}
-            {% if offence.sentenceLength %}
+            {% if sentence.formattedSentenceLength and sentence.formattedSentenceLength !== 'Not available' and sentence.formattedSentenceLength !== 'Not specified' %}
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Sentence length
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.sentenceLength | default("Not available") }}
+                {{ sentence.formattedSentenceLength | default("Not available") }}
               </dd>
             </div>
             {% endif %}
-            {% if offence.consecutiveOrConcurrent %}
+            {% if sentence.formattedConsecutiveOrConcurrent and sentence.formattedConsecutiveOrConcurrent !== 'Not available' and sentence.formattedConsecutiveOrConcurrent !== 'Not specified' %}
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Consecutive or concurrent
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.consecutiveOrConcurrent | default("Not available") }}
+                {{ sentence.formattedConsecutiveOrConcurrent | default("Not available") }}
               </dd>
             </div>
             {% endif %}
-            {% if offence.outcome %}
+            {% if sentence.outcome %}
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Outcome
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ offence.outcome | default("Not available") }}
+                {{ sentence.outcome | default("Not available") }}
               </dd>
             </div>
             {% endif %}
-            {% if offence.fineAmount %}
+            {% if sentence.fineAmount %}
             <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
                 Fine amount
               </dt>
               <dd class="govuk-summary-list__value">
