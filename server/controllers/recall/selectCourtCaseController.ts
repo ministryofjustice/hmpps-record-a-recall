@@ -126,7 +126,95 @@ export default class SelectCourtCaseController extends RecallBaseController {
   }
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    super.post(req, res, next)
+    const { activeSentenceChoice } = req.body
+    const { _csrf, ...formResponses } = req.body // Store form responses to repopulate
+
+    let errors
+    if (!activeSentenceChoice) {
+      errors = {
+        list: [
+          {
+            href: '#activeSentenceChoice-YES',
+            text: 'Select whether this case had an active sentence',
+          },
+        ],
+        activeSentenceChoice: {
+          text: 'Select whether this case had an active sentence',
+        },
+      }
+    }
+
+    if (errors) {
+      const { nomsNumber } = req.params
+      const recallId = req.sessionModel.get('recallId')
+
+      let reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[] | undefined
+      let currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number | undefined
+      const manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as
+        | string[]
+        | undefined
+
+      if (!reviewableCases || currentCaseIndex === undefined) {
+        const allCases = await getCourtCaseOptionsFromRas(req, res)
+        reviewableCases = this.sortCourtCasesByMostRecentConviction(allCases)
+        currentCaseIndex = parseInt(req.params.caseIndex, 10) || 0
+      }
+
+      if (
+        currentCaseIndex === undefined ||
+        !reviewableCases ||
+        reviewableCases.length === 0 ||
+        currentCaseIndex >= reviewableCases.length
+      ) {
+        return res.redirect(`${req.baseUrl}/${nomsNumber}/recall-type?recallId=${recallId}`)
+      }
+      const originalCase = reviewableCases[currentCaseIndex]
+
+      const currentCase: CourtCase & {
+        caseReferences?: string
+        courtName?: string
+        formattedOverallSentenceLength?: string
+        formattedOverallConvictionDate?: string
+        sentences?: (Sentence & {
+          formattedSentenceLength?: string
+          formattedConsecutiveOrConcurrent?: string
+          formattedOffenceDate?: string
+          formattedConvictionDate?: string
+        })[]
+      } = JSON.parse(JSON.stringify(originalCase))
+
+      currentCase.caseReferences = originalCase.reference ? originalCase.reference : 'N/A'
+      currentCase.courtName = originalCase.locationName
+      const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
+      currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
+      currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
+
+      if (currentCase.sentences) {
+        currentCase.sentences = currentCase.sentences.map(sentence => ({
+          ...sentence,
+          formattedSentenceLength: formatTerm(sentence.custodialTerm as Term | undefined),
+          formattedConsecutiveOrConcurrent: formatSentenceServeType(
+            sentence.sentenceServeType,
+            sentence.consecutiveToChargeNumber,
+          ),
+          formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
+          formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
+        }))
+      }
+
+      res.locals.nomsNumber = nomsNumber
+      res.locals.currentCase = currentCase
+      res.locals.currentCaseIndex = currentCaseIndex
+      res.locals.totalCases = reviewableCases.length
+      res.locals.previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
+      res.locals.backLinkUrl = `${req.baseUrl}/manual-recall-intercept`
+
+      req.sessionModel.set('errors', errors)
+      req.sessionModel.set('formResponses', formResponses)
+      return this.get(req, res, next)
+    }
+
+    return super.post(req, res, next)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
