@@ -33,7 +33,7 @@
         {{ pageTitle }}
       </h1>
       <p class="govuk-body">Relevant cases are those with sentences that were active when this person's licence was revoked.</p>
-      <p class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-7">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
+      <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
 
       {# Case Header Block #}
       <div class="app-summary-card govuk-!-margin-bottom-7">
@@ -153,7 +153,7 @@
           name: "activeSentenceChoice",
           fieldset: {
             legend: {
-              text: "Did this case have an active sentence at the point of recall?",
+              text: "Did this case have an active sentence?",
               isPageHeading: false,
               classes: "govuk-fieldset__legend--m"
             }
