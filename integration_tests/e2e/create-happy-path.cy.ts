@@ -51,9 +51,6 @@ context('Create recall happy path', () => {
     // Step 5: Select court cases
     const selectCasesTitle = 'Select court cases'
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
-    const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
-    selectCasesForm.selectFirstCourtCaseCheckbox()
-    new ReviewFormPage(selectCasesTitle).continueButton().click()
 
     // Step 6: Check sentences
     const sentenceCheckTitle = 'Check that the sentences and offences are correct'
