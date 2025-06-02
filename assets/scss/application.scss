@@ -21,3 +21,10 @@ $govuk-page-width: $moj-page-width;
   // This custom class provides the light grey background directly to the ticket panel
   background-color: govuk-colour("light-grey");
 }
+
+// Ensures the last row of a summary list with this class always has a bottom border
+.app-summary-list--all-rows-bordered {
+  .govuk-summary-list__row:last-child {
+    border-bottom: 1px solid $govuk-border-colour;
+  }
+}
