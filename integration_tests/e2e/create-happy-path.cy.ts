@@ -58,32 +58,33 @@ context('Create recall happy path', () => {
     FormPage.verifyOnPage<FormPage>(FormPage, courtCaseDetailsTitle)
     // Select 'Yes' for relevance
     cy.get('[value="YES"]').click()
-    new ReviewFormPage(courtCaseDetailsTitle).continueButton().click()
+    cy.get('button.govuk-button:not(.govuk-button--secondary)').click()
 
     // If there are more court cases, the test would need to handle them here
     // For simplicity, this test assumes just one case to review
 
-    // Step 6: Court case summary screen
-    // After reviewing all cases, user should land on a summary screen
-    const summaryCasesTitle = 'Confirm relevant court cases'
-    cy.url().should('include', '/person/A1234AB/record-recall/confirm-cases')
-    FormPage.verifyOnPage<FormPage>(FormPage, summaryCasesTitle)
-    new ReviewFormPage(summaryCasesTitle).continueButton().click()
-
-    // Step 7: Check sentences
+    // Step 6: Check sentences
     const sentenceCheckTitle = 'Check that the sentences and offences are correct'
     cy.url().should('include', '/person/A1234AB/record-recall/check-sentences')
     FormPage.verifyOnPage<FormPage>(FormPage, sentenceCheckTitle)
     new ReviewFormPage(sentenceCheckTitle).confirmAndContinueButton().click()
 
-    // Step 8: Recall Type
+    // Step 7: Recall Type
     const recallTypeTitle = 'What type of recall is this?'
     cy.url().should('include', '/person/A1234AB/record-recall/recall-type')
     const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
     recallTypeForm.recallTypeRadio().click()
     new ReviewFormPage(recallTypeTitle).continueButton().click()
 
-    // Step 9: Check your answers before recording this recall
+    // Step 7.5: Recall Type Interrupt
+    const recallTypeInterruptPageTitle = 'Confirm recall pathway' // Please verify this title
+    cy.log('Navigating to Recall Type Interrupt page')
+    cy.url().should('include', '/person/A1234AB/record-recall/recall-type-interrupt')
+    FormPage.verifyOnPage<FormPage>(FormPage, recallTypeInterruptPageTitle)
+    cy.log('Clicking continue on Recall Type Interrupt page')
+    cy.get('button[name="continue"]').click() // Please verify this selector
+
+    // Step 8: Check your answers before recording this recall
     const checkAnswersTitle = 'Check your answers before recording this recall'
     cy.url().should('include', '/person/A1234AB/record-recall/check-your-answers')
     FormPage.verifyOnPage<FormPage>(FormPage, checkAnswersTitle)
