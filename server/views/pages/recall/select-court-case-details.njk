@@ -97,9 +97,10 @@
               {%- endset -%}
 
               {{ mojTicketPanel({
-                classes: "app-ticket-panel--purple-border govuk-!-margin-bottom-5",
+                classes: "govuk-!-margin-bottom-5",
                 items: [{
-                  html: panelHtml
+                  html: panelHtml,
+                  classes: "moj-ticket-panel__content--blue"
                 }]
               }) }}
             {% endfor %}

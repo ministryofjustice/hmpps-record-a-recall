@@ -12,11 +12,6 @@ $govuk-page-width: $moj-page-width;
 @import 'assets/scss/local';
 
 // Utility classes for summary card enhancements
-.app-ticket-panel--purple-border {
-  // This custom class provides the purple left border directly to the ticket panel
-  border-left: 5px solid govuk-colour("purple");
-}
-
 .app-ticket-panel--shaded {
   // This custom class provides the light grey background directly to the ticket panel
   background-color: govuk-colour("light-grey");
