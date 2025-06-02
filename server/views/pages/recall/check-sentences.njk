@@ -142,30 +142,21 @@
 
 {% macro sentenceCard(sentence) %}
         {{ offenceCard({
-            offenceCode: 'OFFENCECODE',
-            offenceName: 'An Offence Name',
-            offenceStartDate: {{ sentence.offenceStartDate }},
-            offenceEndDate: '27 08 2024',
-            outcome: 'Imprisonment',
-            outcomeUpdated: false,
+            offenceCode: sentence.offenceCode,
+            offenceName: sentence.offenceDescription,
+            offenceStartDate: sentence.offenceStartDate,
+            offenceEndDate: sentence.offenceEndDate,
+            outcome: sentence.outcome,
+            outcomeUpdated: sentence.outcomeUpdated,
             hideOutcome: true,
-            countNumber: '1',
-            convictionDate: '12 09 2024',
-            terrorRelated: false,
+            countNumber: sentence.countNumber,
+            convictionDate: sentence.convictionDate,
+            terrorRelated: sentence.terrorRelated,
             isSentenced: true,
-            periodLengths: [
-              {
-                description: 'Sentence length',
-                years: '1',
-                months: '2',
-                weeks: '3',
-                days: '4',
-                periodOrder: ['years', 'months', 'weeks', 'days']
-                }
-            ],
-            sentenceServeType: 'CONSECUTIVE',
-            consecutiveTo: '3',
-            sentenceType: 'SDS (Standard Determinate Sentence)',
+            periodLengths: sentence.periodLengths,
+            sentenceServeType: sentence.sentenceServeType,
+            consecutiveTo: sentence.consecutiveTo,
+            sentenceType: sentence.sentenceType,
             detailsClasses: 'govuk-!-padding-4'
         }) }}
 
