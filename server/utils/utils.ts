@@ -6,6 +6,7 @@ import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
+import logger from '../../logger'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -69,6 +70,7 @@ export function formatDateStringToDDMMYYYY(isoDateString?: string): string {
     const dateObj = parseISO(isoDateString)
     return format(dateObj, 'dd/MM/yyyy')
   } catch (e) {
+    logger.error('Error formatting date string:', isoDateString, e)
     return 'Invalid date'
   }
 }
