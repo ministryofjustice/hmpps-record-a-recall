@@ -44,6 +44,7 @@
         </div>
         <div class="govuk-summary-card__content">
           {{ govukSummaryList({
+              "classes": "app-summary-list--all-rows-bordered",
               "rows": [
                 {
                   "key": { "text": "Case references", "classes": "govuk-!-font-weight-bold" },
@@ -62,7 +63,7 @@
 
           {# Offences Section #}
           {% if currentCase.sentences and currentCase.sentences.length > 0 %}
-            <h3 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
+            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
             {% for sentence in currentCase.sentences %}
               {% set summaryRows = [] %}
               {% set summaryRows = summaryRows.concat([
@@ -90,7 +91,7 @@
               {%- endset -%}
 
               {%- set panelHtml -%}
-                <p class="govuk-body-s govuk-!-margin-bottom-1">Count {{ loop.index }}</p>
+                <p class="govuk-heading-s govuk-!-font-weight-regular govuk-!-margin-bottom-1">Count {{ loop.index }}</p>
                 <h4 class="govuk-heading-s govuk-!-margin-bottom-2">{{ sentence.offenceCode | default("Not available") }} - {{ sentence.offenceDescription | default("Not available") }}</h4>
                 {{ summaryListHtml | safe }}
               {%- endset -%}
