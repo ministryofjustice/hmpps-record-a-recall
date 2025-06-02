@@ -38,13 +38,12 @@
       <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
 
       {# Case Header Block #}
-      <div class="govuk-summary-card govuk-!-margin-bottom-7">
-        <div class="govuk-summary-card__title-wrapper app-ticket-panel--shaded">
+      <div class="govuk-summary-card govuk-!-margin-bottom-5">
+        <div class="govuk-summary-card__title-wrapper">
           <h2 class="govuk-summary-card__title">{{ currentCase.caseNumber | default("N/A") }}<span class="govuk-!-font-weight-regular"> at </span>{{ currentCase.courtName | default("N/A") }}</h2>
         </div>
         <div class="govuk-summary-card__content">
           {{ govukSummaryList({
-              "classes": "app-summary-list--all-rows-bordered",
               "rows": [
                 {
                   "key": { "text": "Case references", "classes": "govuk-!-font-weight-bold" },
@@ -60,6 +59,8 @@
                 }
               ]
           }) }}
+
+          <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-1">
 
           {# Offences Section #}
           {% if currentCase.sentences and currentCase.sentences.length > 0 %}
