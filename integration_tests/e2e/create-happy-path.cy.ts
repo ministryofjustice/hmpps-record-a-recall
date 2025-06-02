@@ -44,9 +44,9 @@ context('Create recall happy path', () => {
     new ReviewFormPage(prisonQuestionTitle).continueButton().click()
 
     // Step 4: Manual recall intercept
-    const manualInterceptTitle = 'Manual selection of court cases'
+    const manualInterceptTitle = 'Select all the cases that are relevant to this recall'
     cy.url().should('include', '/person/A1234AB/record-recall/manual-recall-intercept')
-    const manualInterceptForm = FormPage.verifyOnPage<FormPage>(FormPage, manualInterceptTitle)
+    FormPage.verifyOnPage<FormPage>(FormPage, manualInterceptTitle)
     // Click continue to proceed with manual case selection
     new ReviewFormPage(manualInterceptTitle).continueButton().click()
 
@@ -54,8 +54,8 @@ context('Create recall happy path', () => {
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
 
     // Handle the court case selection process - mark the current case as relevant
-    const courtCaseDetailsTitle = 'Is this court case relevant to the recall?'
-    const courtCaseForm = FormPage.verifyOnPage<FormPage>(FormPage, courtCaseDetailsTitle)
+    const courtCaseDetailsTitle = 'Select all cases that had an active sentence'
+    FormPage.verifyOnPage<FormPage>(FormPage, courtCaseDetailsTitle)
     // Select 'Yes' for relevance
     cy.get('[value="YES"]').click()
     new ReviewFormPage(courtCaseDetailsTitle).continueButton().click()
@@ -67,7 +67,7 @@ context('Create recall happy path', () => {
     // After reviewing all cases, user should land on a summary screen
     const summaryCasesTitle = 'Confirm relevant court cases'
     cy.url().should('include', '/person/A1234AB/record-recall/confirm-cases')
-    const summaryCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, summaryCasesTitle)
+    FormPage.verifyOnPage<FormPage>(FormPage, summaryCasesTitle)
     new ReviewFormPage(summaryCasesTitle).continueButton().click()
 
     // Step 7: Check sentences
