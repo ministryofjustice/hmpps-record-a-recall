@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, format, isEqual, subDays } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isEqual, subDays, parseISO } from 'date-fns'
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { UAL } from 'models'
@@ -58,6 +58,19 @@ export function calculateUal(revDate: string | Date, returnToCustodyDate?: strin
     firstDay: ualStart,
     lastDay: ualEnd,
     days: differenceInCalendarDays(ualEnd, ualStart) + 1,
+  }
+}
+
+export function formatDateStringToDDMMYYYY(isoDateString?: string): string {
+  if (!isoDateString) {
+    return 'Not available'
+  }
+  try {
+    const dateObj = parseISO(isoDateString)
+    return format(dateObj, 'dd/MM/yyyy')
+  } catch (e) {
+    console.error('Error formatting date string:', isoDateString, e)
+    return 'Invalid date'
   }
 }
 

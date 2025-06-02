@@ -3,12 +3,8 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Sentence, Term } from 'models'
-import {
-  formatTerm,
-  formatSentenceServeType,
-  formatDateStringToDDMMYYYY,
-  calculateOverallSentenceLength,
-} from '../../utils/formattingUtils'
+import { formatTerm, formatSentenceServeType, calculateOverallSentenceLength } from '../../utils/sentenceUtils'
+import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 import RecallBaseController from './recallBaseController'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
