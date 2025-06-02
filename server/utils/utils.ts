@@ -69,7 +69,6 @@ export function formatDateStringToDDMMYYYY(isoDateString?: string): string {
     const dateObj = parseISO(isoDateString)
     return format(dateObj, 'dd/MM/yyyy')
   } catch (e) {
-    console.error('Error formatting date string:', isoDateString, e)
     return 'Invalid date'
   }
 }
