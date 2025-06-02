@@ -40,7 +40,7 @@
       {# Case Header Block #}
       <div class="govuk-summary-card govuk-!-margin-bottom-7">
         <div class="govuk-summary-card__title-wrapper app-ticket-panel--shaded">
-          <h2 class="govuk-summary-card__title">{{ currentCase.caseNumber | default("N/A") }} at {{ currentCase.courtName | default("N/A") }}</h2>
+          <h2 class="govuk-summary-card__title">{{ currentCase.caseNumber | default("N/A") }}<span class="govuk-!-font-weight-regular"> at </span>{{ currentCase.courtName | default("N/A") }}</h2>
         </div>
         <div class="govuk-summary-card__content">
           {{ govukSummaryList({
@@ -108,7 +108,7 @@
 
       <form method="post" novalidate class="govuk-!-margin-top-6">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
-        
+
         {{ govukRadios({
           name: "activeSentenceChoice",
           fieldset: {
