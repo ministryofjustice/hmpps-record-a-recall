@@ -48,7 +48,7 @@ context('Create recall happy path', () => {
     cy.url().should('include', '/person/A1234AB/record-recall/manual-recall-intercept')
     FormPage.verifyOnPage<FormPage>(FormPage, manualInterceptTitle)
     // Click continue to proceed with manual case selection
-    new ReviewFormPage(manualInterceptTitle).continueButton().click()
+    cy.get('button[name="continue"]').click()
 
     // Step 5: Select court cases - (now with multiple pages, one for each case)
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
