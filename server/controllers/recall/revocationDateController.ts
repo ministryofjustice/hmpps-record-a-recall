@@ -63,29 +63,35 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    // if (getRecallRoute(req) !== 'MANUAL') {
-    //   revocationDateCrdsDataComparison(req)
-    // }
-    const caseDetails = getCourtCaseOptions(req).filter((c: CourtCase) => c.status !== 'DRAFT').filter((c: CourtCase) => c.sentenced)
-    console.log('------- Court Cases from Session: -------')
-    console.log(caseDetails)
-    const crdsSentences = getCrdsSentences(req)
-    const breakdown = getBreakdown(req)
-    const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown)
-    const revocationDate = getRevocationDate(req)
+    console.log('did we get here???????', getRecallRoute(req))
+    if (getRecallRoute(req) === 'MANUAL') {
+      revocationDateCrdsDataComparison(req, res)
+    }
 
-    const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+    // const caseDetails = getCourtCaseOptions(req).filter((c: CourtCase) => c.status !== 'DRAFT').filter((c: CourtCase) => c.sentenced)
+    // const crdsSentences = getCrdsSentences(req)
+    // const breakdown = getBreakdown(req)
+    // const revocationDate = getRevocationDate(req)
+    // console.log('------- Case Details: -------')
+    // console.log(caseDetails)
+    // console.log('------- CRDS Sentences: -------')
+    // console.log(crdsSentences)
+    // const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown)
+    // console.log('------- Summarised Sentences Groups: -------')
+    // console.log(summarisedSentencesGroups)
 
-    req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
-    res.locals.summarisedSentencesGroups = summarisedSentencesGroups
-    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
-    res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
-    const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
-      g.eligibleSentences.flatMap(s => s.sentenceId),
-    ).length
-    req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
-    res.locals.casesWithEligibleSentences = sentenceCount
-    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+    // const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+
+    // req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
+    // res.locals.summarisedSentencesGroups = summarisedSentencesGroups
+    // req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
+    // res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
+    // const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
+    //   g.eligibleSentences.flatMap(s => s.sentenceId),
+    // ).length
+    // req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
+    // res.locals.casesWithEligibleSentences = sentenceCount
+    // req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
     return super.successHandler(req, res, next)
   }
 }

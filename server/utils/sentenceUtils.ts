@@ -273,6 +273,18 @@ export type SummarisedSentence = {
   offenceDescription?: string
   unadjustedSled?: string
   sentenceLengthDays?: number
+  offenceStartDate?: string
+  offenceEndDate?: string
+  outcome?: string
+  outcomeUpdated?: string
+  countNumber?: string
+  convictionDate?: string
+  terrorRelated?: boolean
+  isSentenced?: boolean
+  periodLengths?: any[]
+  sentenceServeType?: string
+  consecutiveTo?: string
+  sentenceType?: string
 }
 
 export type SummarisedSentenceGroup = {

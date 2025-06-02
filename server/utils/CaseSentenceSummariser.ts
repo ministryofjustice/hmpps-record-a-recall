@@ -17,6 +17,7 @@ import {
   SummarisedSentenceGroup,
 } from './sentenceUtils'
 import getIndividualEligibility, { determineEligibilityOnRasSentenceType } from './RecallEligiblityCalculator'
+import { getRasSentences } from '../helpers/formWizardHelper'
 
 export default function summariseSentencesGroups(
   groupedSentences: Record<string, SentenceWithDpsUuid[]>,
@@ -24,6 +25,8 @@ export default function summariseSentencesGroups(
   revocationDate: Date,
 ): SummarisedSentenceGroup[] {
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = []
+
+  console.log('groupedSentences *********', groupedSentences)
 
   Object.keys(groupedSentences).forEach(caseRef => {
     const groupsSentences = groupedSentences[caseRef]
@@ -42,6 +45,8 @@ export default function summariseSentencesGroups(
       const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdown)
 
       const { offence } = sentence
+
+      console.log('caseSentenceSummariser ****************** sentence', sentence)
 
       const recallEligibility = getIndividualEligibility(
         sentence,
@@ -73,6 +78,8 @@ export default function summariseSentencesGroups(
         'LED',
       )?.unadjusted
 
+      console.log('sentence.offencedate', sentence.offenceDate)
+
       const summary = compact([
         toSummaryListRow('Committed on', sentence.offenceDate),
         toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
@@ -101,6 +108,18 @@ export default function summariseSentencesGroups(
         summary,
         offenceCode: sentence.offenceCode,
         offenceDescription: sentence.offence.offenceDescription,
+        offenceStartDate: sentence.offenceDate,
+        offenceEndDate: sentence.offenceEndDate,
+        outcome: sentence.outcome,
+        outcomeUpdated: sentence.outcomeUpdated,
+        countNumber: sentence.countNumber,
+        convictionDate: sentence.sentenceDate,
+        terrorRelated: sentence.terrorRelated,
+        isSentenced: true,
+        periodLengths: sentence.terms,
+        sentenceServeType: sentence.sentenceType,
+        consecutiveTo: sentence.consecutiveTo,
+        sentenceType: sentence.sentenceTypeDescription,
         unadjustedSled: unadjustedSled || unadjustedLed,
         sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
       }
