@@ -3,6 +3,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "moj/components/ticket-panel/macro.njk" import mojTicketPanel %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
 {% set pageTitle = "Select all cases that had an active sentence" %}
 {% set pageId = "select-court-case-details" %}
@@ -36,117 +38,75 @@
       <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
 
       {# Case Header Block #}
-      <div class="app-summary-card govuk-!-margin-bottom-7">
-        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ currentCase.caseNumber | default("N/A") }} at {{ currentCase.courtName | default("N/A") }}</h2>
-        <dl class="govuk-summary-list">
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-              Case references
-            </dt>
-            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
-              {{ currentCase.caseReferences | default("Not available") }}
-            </dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-              Overall sentence length
-            </dt>
-            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
-              {{ currentCase.formattedOverallSentenceLength | default("Not available") }}
-            </dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-              Conviction date
-            </dt>
-            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
-              {{ currentCase.formattedOverallConvictionDate | default("Not available") }}
-            </dd>
-          </div>
-        </dl>
+      <div class="govuk-summary-card govuk-!-margin-bottom-7">
+        <div class="govuk-summary-card__title-wrapper app-ticket-panel--shaded">
+          <h2 class="govuk-summary-card__title">{{ currentCase.caseNumber | default("N/A") }} at {{ currentCase.courtName | default("N/A") }}</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          {{ govukSummaryList({
+              "rows": [
+                {
+                  "key": { "text": "Case references", "classes": "govuk-!-font-weight-bold" },
+                  "value": { "text": currentCase.caseReferences | default("Not available"), "classes": "govuk-!-font-weight-bold" }
+                },
+                {
+                  "key": { "text": "Overall sentence length", "classes": "govuk-!-font-weight-bold" },
+                  "value": { "text": currentCase.formattedOverallSentenceLength | default("Not available"), "classes": "govuk-!-font-weight-bold" }
+                },
+                {
+                  "key": { "text": "Conviction date", "classes": "govuk-!-font-weight-bold" },
+                  "value": { "text": currentCase.formattedOverallConvictionDate | default("Not available"), "classes": "govuk-!-font-weight-bold" }
+                }
+              ]
+          }) }}
 
-        {# Offences Section #}
-        {% if currentCase.sentences and currentCase.sentences.length > 0 %}
-          <h3 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-4 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
-          {% for sentence in currentCase.sentences %}
-          <div class="app-summary-card app-summary-card--purple-border app-summary-card--with-shadow app-summary-card--shaded govuk-!-margin-bottom-5">
-            <p class="govuk-body-s govuk-!-margin-bottom-1">Count {{ loop.index }}</p>
-            <h4 class="govuk-heading-m govuk-!-margin-bottom-2">{{ sentence.offenceCode | default("Not available") }} - {{ sentence.offenceDescription | default("Not available") }}</h4>
-            <dl class="govuk-summary-list govuk-summary-list--no-border">
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Committed on
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ sentence.formattedOffenceDate | default("Not available") }}
-                </dd>
-              </div>
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Conviction date
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ sentence.formattedConvictionDate | default("Not available") }}
-                </dd>
-              </div>
+          {# Offences Section #}
+          {% if currentCase.sentences and currentCase.sentences.length > 0 %}
+            <h3 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
+            {% for sentence in currentCase.sentences %}
+              {% set summaryRows = [] %}
+              {% set summaryRows = summaryRows.concat([
+                { "key": { "text": "Committed on", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedOffenceDate | default("Not available") } },
+                { "key": { "text": "Conviction date", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedConvictionDate | default("Not available") } }
+              ]) %}
               {% if sentence.sentenceType %}
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Sentence type
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ sentence.sentenceType | default("Not available") }}
-                </dd>
-              </div>
+                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Sentence type", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.sentenceType | default("Not available") } }]) %}
               {% endif %}
               {% if sentence.formattedSentenceLength and sentence.formattedSentenceLength !== 'Not available' and sentence.formattedSentenceLength !== 'Not specified' %}
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Sentence length
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ sentence.formattedSentenceLength | default("Not available") }}
-                </dd>
-              </div>
+                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Sentence length", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedSentenceLength | default("Not available") } }]) %}
               {% endif %}
               {% if sentence.formattedConsecutiveOrConcurrent and sentence.formattedConsecutiveOrConcurrent !== 'Not available' and sentence.formattedConsecutiveOrConcurrent !== 'Not specified' %}
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Consecutive or concurrent
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ sentence.formattedConsecutiveOrConcurrent | default("Not available") }}
-                </dd>
-              </div>
+                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Consecutive or concurrent", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedConsecutiveOrConcurrent | default("Not available") } }]) %}
               {% endif %}
               {% if sentence.outcome %}
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Outcome
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ sentence.outcome | default("Not available") }}
-                </dd>
-              </div>
+                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Outcome", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.outcome | default("Not available") } }]) %}
               {% endif %}
               {% if sentence.fineAmount %}
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-font-weight-bold">
-                  Fine amount
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ "£" + (sentence.fineAmount / 100) if sentence.fineAmount else "Not available" }} {# Assumes fineAmount is in pence #}
-                </dd>
-              </div>
+                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Fine amount", "classes": "govuk-!-font-weight-bold" }, "value": { "text": "£" + (sentence.fineAmount / 100) if sentence.fineAmount else "Not available" } }]) %}
               {% endif %}
-            </dl>
-          </div>
-          {% endfor %}
-        {% endif %}
 
-      </div>
+            {%- set summaryListHtml -%}
+                {{ govukSummaryList({ "rows": summaryRows, "classes": "govuk-summary-list--no-border" }) }}
+              {%- endset -%}
 
-      <form method="post" novalidate>
+              {%- set panelHtml -%}
+                <p class="govuk-body-s govuk-!-margin-bottom-1">Count {{ loop.index }}</p>
+                <h4 class="govuk-heading-s govuk-!-margin-bottom-2">{{ sentence.offenceCode | default("Not available") }} - {{ sentence.offenceDescription | default("Not available") }}</h4>
+                {{ summaryListHtml | safe }}
+              {%- endset -%}
+
+              {{ mojTicketPanel({
+                classes: "app-ticket-panel--purple-border govuk-!-margin-bottom-5",
+                items: [{
+                  html: panelHtml
+                }]
+              }) }}
+            {% endfor %}
+          {% endif %}
+        </div> <!-- govuk-summary-card__content -->
+      </div> <!-- govuk-summary-card -->
+
+      <form method="post" novalidate class="govuk-!-margin-top-6">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
         
         {{ govukRadios({
@@ -179,8 +139,8 @@
           }) }}
           <a href="{{ cancelLink }}" role="button" draggable="false" class="govuk-button govuk-button--secondary govuk-!-margin-left-1" data-module="govuk-button">
             Cancel
-          </a></form>
-
+          </a>
+      </form>
     </div>
   </div>
 {% endblock %}
