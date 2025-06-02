@@ -63,7 +63,7 @@
 
           {# Offences Section #}
           {% if currentCase.sentences and currentCase.sentences.length > 0 %}
-            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-7 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
+            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
             {% for sentence in currentCase.sentences %}
               {% set summaryRows = [] %}
               {% set summaryRows = summaryRows.concat([
