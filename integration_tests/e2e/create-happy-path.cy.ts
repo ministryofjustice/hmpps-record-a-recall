@@ -43,28 +43,48 @@ context('Create recall happy path', () => {
     prisonForm.affectsDatesRadio().click()
     new ReviewFormPage(prisonQuestionTitle).continueButton().click()
 
-    // Step 4: Select court cases
-    const selectCasesTitle = 'Select court cases'
-    cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
-    const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
-    selectCasesForm.selectFirstCourtCaseCheckbox()
-    new ReviewFormPage(selectCasesTitle).continueButton().click()
+    // Step 4: Manual recall intercept
+    const manualInterceptTitle = 'Manual selection of court cases'
+    cy.url().should('include', '/person/A1234AB/record-recall/manual-recall-intercept')
+    const manualInterceptForm = FormPage.verifyOnPage<FormPage>(FormPage, manualInterceptTitle)
+    // Click continue to proceed with manual case selection
+    new ReviewFormPage(manualInterceptTitle).continueButton().click()
 
-    // Step 5: Check sentences
+    // Step 5: Select court cases - (now with multiple pages, one for each case)
+    cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
+
+    // Handle the court case selection process - mark the current case as relevant
+    const courtCaseDetailsTitle = 'Is this court case relevant to the recall?'
+    const courtCaseForm = FormPage.verifyOnPage<FormPage>(FormPage, courtCaseDetailsTitle)
+    // Select 'Yes' for relevance
+    cy.get('[value="YES"]').click()
+    new ReviewFormPage(courtCaseDetailsTitle).continueButton().click()
+
+    // If there are more court cases, the test would need to handle them here
+    // For simplicity, this test assumes just one case to review
+
+    // Step 6: Court case summary screen
+    // After reviewing all cases, user should land on a summary screen
+    const summaryCasesTitle = 'Confirm relevant court cases'
+    cy.url().should('include', '/person/A1234AB/record-recall/confirm-cases')
+    const summaryCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, summaryCasesTitle)
+    new ReviewFormPage(summaryCasesTitle).continueButton().click()
+
+    // Step 7: Check sentences
     const sentenceCheckTitle = 'Check that the sentences and offences are correct'
     cy.url().should('include', '/person/A1234AB/record-recall/check-sentences')
     FormPage.verifyOnPage<FormPage>(FormPage, sentenceCheckTitle)
     new ReviewFormPage(sentenceCheckTitle).confirmAndContinueButton().click()
 
-    // Step 6: Select recall type
-    const recallTypeTitle = 'Select the type of recall'
+    // Step 8: Recall Type
+    const recallTypeTitle = 'What type of recall is this?'
     cy.url().should('include', '/person/A1234AB/record-recall/recall-type')
     const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
     recallTypeForm.recallTypeRadio().click()
     new ReviewFormPage(recallTypeTitle).continueButton().click()
 
-    // Step 7: Check your answers
-    const checkAnswersTitle = 'Check your answers'
+    // Step 9: Check your answers before recording this recall
+    const checkAnswersTitle = 'Check your answers before recording this recall'
     cy.url().should('include', '/person/A1234AB/record-recall/check-your-answers')
     FormPage.verifyOnPage<FormPage>(FormPage, checkAnswersTitle)
     new ReviewFormPage(checkAnswersTitle).confirmRecallBtn().click()
