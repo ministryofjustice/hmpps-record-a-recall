@@ -9,6 +9,7 @@ import {
   getTemporaryCalc,
   isManualCaseSelection,
 } from '../../helpers/formWizardHelper'
+import summariseSentencesGroups from '../../utils/CaseSentenceSummariser'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -27,7 +28,7 @@ export default class CheckSentencesController extends RecallBaseController {
     res.locals.summarisedSentencesGroups = getSummarisedSentenceGroups(req)
     res.locals.casesWithEligibleSentences = eligibleSentenceCount
     console.log('------ Check Summary Sentences ------')
-    console.log(res.locals.summarisedSentencesGroups)
+    console.log(JSON.stringify(res.locals.summarisedSentencesGroups, undefined, 2))
 
     return super.locals(req, res)
   }
