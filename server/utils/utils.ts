@@ -118,8 +118,8 @@ const getDisplayDescription = (
   switch (type) {
     case 'SENTENCE_LENGTH':
       return 'Sentence Length';
-    case 'LICENCE_PERIOD':
-      return 'Licence Period';
+    // case 'LICENCE_PERIOD':
+    //   return 'Licence Period';
     case 'CUSTODIAL_TERM':
       return 'Custodial Term';
     case 'TARIFF_LENGTH':
