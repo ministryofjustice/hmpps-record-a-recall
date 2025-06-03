@@ -41,7 +41,7 @@ describe('ManualRecallInterceptController', () => {
       jest.spyOn(controller as unknown as { locals: (...args: unknown[]) => unknown }, 'locals').mockReturnValue(locals)
       // @ts-expect-error: partial mock is sufficient for controller unit test
       await controller.get(req, res, next)
-      expect(res.render).toHaveBeenCalledWith('pages/recall/manualRecallIntercept', locals)
+      expect(res.render).toHaveBeenCalledWith('pages/recall/manual-recall-intercept.njk', locals)
     })
   })
 
