@@ -94,8 +94,10 @@ const steps = {
   },
   '/manual-recall-intercept': {
     controller: ManualRecallInterceptController,
+    fields: ['manualRecallInterceptConfirmation'],
     noPost: false,
     checkJourney: true,
+    next: 'select-cases',
   },
   '/recall-recorded': {
     controller: RecallBaseController,
