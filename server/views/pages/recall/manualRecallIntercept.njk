@@ -1,3 +1,4 @@
+
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
@@ -32,11 +33,11 @@
           },
           secondaryAction: {
             text: "Cancel recall",
-            element: 'button',
+            element: 'a',
+            href: journeyBaseLink ~ "/confirm-cancel",
             attributes: {
-              name: "cancel",
-              type: "submit",
-              "data-prevent-double-click": true
+              "data-prevent-double-click": true,
+              "role": "button" 
             },
             classes: "govuk-button--secondary govuk-button--inverse govuk-!-margin-left-1"
           }
