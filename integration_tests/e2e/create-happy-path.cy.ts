@@ -43,27 +43,32 @@ context('Create recall happy path', () => {
     prisonForm.affectsDatesRadio().click()
     new ReviewFormPage(prisonQuestionTitle).continueButton().click()
 
-    // Step 4: Select court cases
+    // Step 4: Manual journey intercept
+    cy.url().should('include', '/person/A1234AB/record-recall/manual-recall-intercept')
+    cy.contains('Select all the cases that are relevant to this recall')
+    cy.get('button').contains('Continue').click()
+
+    // Step 5: Select court cases
     const selectCasesTitle = 'Select court cases'
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
     const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
     selectCasesForm.selectFirstCourtCaseCheckbox()
     new ReviewFormPage(selectCasesTitle).continueButton().click()
 
-    // Step 5: Check sentences
+    // Step 6: Check sentences
     const sentenceCheckTitle = 'Check that the sentences and offences are correct'
     cy.url().should('include', '/person/A1234AB/record-recall/check-sentences')
     FormPage.verifyOnPage<FormPage>(FormPage, sentenceCheckTitle)
     new ReviewFormPage(sentenceCheckTitle).confirmAndContinueButton().click()
 
-    // Step 6: Select recall type
+    // Step 7: Select recall type
     const recallTypeTitle = 'Select the type of recall'
     cy.url().should('include', '/person/A1234AB/record-recall/recall-type')
     const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
     recallTypeForm.recallTypeRadio().click()
     new ReviewFormPage(recallTypeTitle).continueButton().click()
 
-    // Step 7: Check your answers
+    // Step 8: Check your answers
     const checkAnswersTitle = 'Check your answers'
     cy.url().should('include', '/person/A1234AB/record-recall/check-your-answers')
     FormPage.verifyOnPage<FormPage>(FormPage, checkAnswersTitle)
