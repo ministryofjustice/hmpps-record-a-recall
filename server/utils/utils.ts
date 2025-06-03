@@ -111,9 +111,43 @@ export interface SentenceLength {
   uuid?: string
 }
 
+// Helper function to get display string for sentence period types
+const getDisplayDescription = (
+  type: PeriodLength['periodLengthType']
+): string => {
+  switch (type) {
+    case 'SENTENCE_LENGTH':
+      return 'Sentence Length';
+    case 'LICENCE_PERIOD':
+      return 'Licence Period';
+    case 'CUSTODIAL_TERM':
+      return 'Custodial Term';
+    case 'TARIFF_LENGTH':
+      return 'Tariff Length';
+    case 'TERM_LENGTH':
+      return 'Term Length';
+    case 'OVERALL_SENTENCE_LENGTH':
+      return 'Overall Sentence Length';
+    case 'UNSUPPORTED':
+      return 'Unsupported Period';
+    default: {
+      // Fallback for any unhandled types: convert to Title Case
+      // This ensures that if new types are added, they get a reasonable default display
+      const ensuredType: string = type || ''; // Ensure type is a string for manipulation
+      return ensuredType
+        .replace(/_/g, ' ')
+        .replace(
+          /\w\S*/g,
+          (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+        );
+    }
+  }
+};
+
 export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLength => {
   if (periodLength) {
     return {
+      description: getDisplayDescription(periodLength.periodLengthType),
       ...(typeof periodLength.days === 'number' ? { days: String(periodLength.days) } : {}),
       ...(typeof periodLength.weeks === 'number' ? { weeks: String(periodLength.weeks) } : {}),
       ...(typeof periodLength.months === 'number' ? { months: String(periodLength.months) } : {}),
@@ -121,10 +155,10 @@ export const periodLengthToSentenceLength = (periodLength: PeriodLength): Senten
       periodOrder: periodLength.periodOrder.split(','),
       periodLengthType: periodLength.periodLengthType,
       uuid: periodLength.periodLengthUuid,
-    } as SentenceLength
+    } as SentenceLength;
   }
-  return null
-}
+  return null;
+};
 
 type PeriodLength  = {
   /** Format: int32 */

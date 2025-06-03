@@ -149,7 +149,7 @@
     hideOutcome: true,
     outcome: charge.sentence.outcome,
     countNumber: charge.sentence.chargeNumber,
-    convictionDate: charge.sentence.convictionDate | formatDate,
+    convictionDate: charge.sentence.convictionDate | formatDate if charge.sentence.convictionDate else 'Not available',
     terrorRelated: false,
     isSentenced: true,
     periodLengths: charge.sentence.periodLengths | periodLengthsToSentenceLengths,
