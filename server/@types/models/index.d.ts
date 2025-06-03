@@ -4,6 +4,7 @@ declare module 'models' {
     CalculatedReleaseDates,
     SentenceAndOffenceWithReleaseArrangements,
   } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+  import {ApiCharge} from "../remandAndSentencingApi/remandAndSentencingTypes";
 
   export interface Recall {
     recallId: string
@@ -38,7 +39,7 @@ declare module 'models' {
     location: string
     locationName?: string
     reference: string
-    sentences?: Sentence[]
+    sentences?: ApiCharge[]
     sentenced: boolean
   }
 
@@ -57,6 +58,7 @@ declare module 'models' {
     offenceCode: string
     offenceDescription?: string
     courtDescription?: string
+    periodLengths?
   }
 
   export type SentenceWithDpsUuid = SentenceAndOffenceWithReleaseArrangements & {

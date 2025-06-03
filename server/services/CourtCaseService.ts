@@ -44,10 +44,7 @@ export default class CourtCaseService {
       location: apiCase.latestAppearance?.courtCode,
       reference: apiCase.latestAppearance?.courtCaseReference,
       sentenced: apiCase.latestAppearance?.warrantType === 'SENTENCING' || false,
-      sentences:
-        apiCase.latestAppearance?.warrantType === 'SENTENCING'
-          ? apiCase.latestAppearance.charges.map((c: ApiCharge) => this.sentenceFromApiCharge(c, apiCase))
-          : [],
+      sentences: apiCase.latestAppearance?.charges
     }
   }
 

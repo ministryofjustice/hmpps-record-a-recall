@@ -36,6 +36,7 @@ export default function summariseSentencesGroups(
       hasIneligibleSentences: false,
       eligibleSentences: [],
       hasEligibleSentences: false,
+      sentences: [],
     }
 
     summarisedGroup.caseRefAndCourt = caseRef
@@ -81,25 +82,25 @@ export default function summariseSentencesGroups(
       console.log('sentence.offencedate', sentence.offenceDate)
 
       const summary = compact([
-        toSummaryListRow('Committed on', sentence.offenceDate),
-        toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
-        toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
-        toSummaryListRow('Custodial term', getCustodialTerm(sentence.terms)),
-        toSummaryListRow('Licence period', getLicenceTerm(sentence.terms)),
-        toSummaryListRow('Case Sequence', `${sentence.caseSequence}`),
-        toSummaryListRow('Line Sequence', `${sentence.lineSequence}`),
-        toSummaryListRow('Consecutive or concurrent', forthConsConc),
-        toSummaryListRow('Unadjusted SLED', unadjustedSled),
-        toSummaryListRow('Unadjusted LED', unadjustedLed),
-        toSummaryListRow(
-          consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-          consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-        ),
-        toSummaryListRow(
-          'Invalid recall types',
-          recallEligibility.ineligibleRecallTypes?.map(t => t.description).join(', '),
-        ),
-        toSummaryListRow('Recall Options reason', recallEligibility.description),
+        // toSummaryListRow('Committed on', sentence.offenceDate),
+        // toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
+        // toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
+        // toSummaryListRow('Custodial term', getCustodialTerm(sentence.terms)),
+        // toSummaryListRow('Licence period', getLicenceTerm(sentence.terms)),
+        // toSummaryListRow('Case Sequence', `${sentence.caseSequence}`),
+        // toSummaryListRow('Line Sequence', `${sentence.lineSequence}`),
+        // toSummaryListRow('Consecutive or concurrent', forthConsConc),
+        // toSummaryListRow('Unadjusted SLED', unadjustedSled),
+        // toSummaryListRow('Unadjusted LED', unadjustedLed),
+        // toSummaryListRow(
+        //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
+        //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
+        // ),
+        // toSummaryListRow(
+        //   'Invalid recall types',
+        //   recallEligibility.ineligibleRecallTypes?.map(t => t.description).join(', '),
+        // ),
+        // toSummaryListRow('Recall Options reason', recallEligibility.description),
       ])
 
       const thisSummarisedSentence: SummarisedSentence = {
@@ -126,10 +127,10 @@ export default function summariseSentencesGroups(
 
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
         summarisedGroup.hasEligibleSentences = true
-        summarisedGroup.eligibleSentences.push(thisSummarisedSentence)
+        summarisedGroup.eligibleSentences.push(sentence)
       } else {
         summarisedGroup.hasIneligibleSentences = true
-        summarisedGroup.ineligibleSentences.push(thisSummarisedSentence)
+        summarisedGroup.ineligibleSentences.push(sentence)
       }
     })
     summarisedSentenceGroups.push(summarisedGroup)
@@ -212,13 +213,14 @@ function summariseCase(
     ineligibleSentences: [],
     hasIneligibleSentences: false,
     eligibleSentences: [],
+    sentences: [],
     hasEligibleSentences: false,
   }
 
   courtCase.sentences.forEach(s => {
     summarisedGroup.hasEligibleSentences = true
 
-    const prisonApiSentence = prisonApiSentences.find(it => it.dpsSentenceUuid === s.sentenceUuid)
+    const prisonApiSentence = prisonApiSentences.find(it => it.dpsSentenceUuid === s.sentence.sentenceUuid)
     const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(prisonApiSentence, breakdown)
     const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
     const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(prisonApiSentence, breakdown)
@@ -242,33 +244,34 @@ function summariseCase(
       concurrentSentenceBreakdown?.sentenceLengthDays || consecutiveSentencePartBreakdown?.sentenceLengthDays
     const aggregateSentenceLengthDays = consecutiveSentenceBreakdown?.sentenceLengthDays
 
-    const recallEligibility = determineEligibilityOnRasSentenceType(s)
+    const recallEligibility = determineEligibilityOnRasSentenceType(s.sentence)
     const summary = compact([
-      toSummaryListRow('Committed on', s.offenceDate),
-      toSummaryListRow('Sentence date', s.convictionDate),
-      toSummaryListRow('Sentence type', s.sentenceType),
-      toSummaryListRow('Custodial term', stringifyTerm(s.custodialTerm)),
-      toSummaryListRow('Licence period', stringifyTerm(s.licenceTerm)),
-      toSummaryListRow('Consecutive or concurrent', s.sentenceServeType),
-      toSummaryListRow('Consecutive or concurrent', forthConsConc),
-      toSummaryListRow('Unadjusted SLED', unadjustedSled),
-      toSummaryListRow('Unadjusted LED', unadjustedLed),
-      toSummaryListRow(
-        consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-        consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-      ),
-      toSummaryListRow('Recall Options', recallEligibility.code),
-      toSummaryListRow('Recall Options reason', recallEligibility.description),
+      // toSummaryListRow('Committed on', s.offenceDate),
+      // toSummaryListRow('Sentence date', s.convictionDate),
+      // toSummaryListRow('Sentence type', s.sentenceType),
+      // toSummaryListRow('Custodial term', stringifyTerm(s.custodialTerm)),
+      // toSummaryListRow('Licence period', stringifyTerm(s.licenceTerm)),
+      // toSummaryListRow('Consecutive or concurrent', s.sentenceServeType),
+      // toSummaryListRow('Consecutive or concurrent', forthConsConc),
+      // toSummaryListRow('Unadjusted SLED', unadjustedSled),
+      // toSummaryListRow('Unadjusted LED', unadjustedLed),
+      // toSummaryListRow(
+      //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
+      //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
+      // ),
+      // toSummaryListRow('Recall Options', recallEligibility.code),
+      // toSummaryListRow('Recall Options reason', recallEligibility.description),
     ])
     const summarisedSentence: SummarisedSentence = {
-      sentenceId: s.sentenceUuid,
+      sentenceId: s.sentence.sentenceUuid,
       recallEligibility,
       summary,
-      offenceCode: s.offenceCode,
-      offenceDescription: s.offenceDescription,
+      offenceCode: s.sentence.offenceCode,
+      offenceDescription: s.sentence.offenceDescription,
     }
 
     summarisedGroup.eligibleSentences.push(summarisedSentence)
+    summarisedGroup.sentences.push(s)
   })
 
   return summarisedGroup

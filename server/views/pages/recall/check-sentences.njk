@@ -117,8 +117,8 @@
 {#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
-        {% for sentence in group.eligibleSentences %}
-            {{ sentenceCard(sentence) }}
+        {% for charge in group.sentences %}
+            {{ sentenceCard(charge) }}
         {% endfor %}
         {% from "govuk/components/details/macro.njk" import govukDetails %}
         {% if group.hasIneligibleSentences %}
@@ -140,25 +140,24 @@
 
 {% endmacro %}
 
-{% macro sentenceCard(sentence) %}
-        {{ offenceCard({
-            offenceCode: sentence.offenceCode,
-            offenceName: sentence.offenceDescription,
-            offenceStartDate: sentence.offenceStartDate,
-            offenceEndDate: sentence.offenceEndDate,
-            outcome: sentence.outcome,
-            outcomeUpdated: sentence.outcomeUpdated,
-            hideOutcome: true,
-            countNumber: sentence.countNumber,
-            convictionDate: sentence.convictionDate,
-            terrorRelated: sentence.terrorRelated,
-            isSentenced: true,
-            periodLengths: sentence.periodLengths,
-            sentenceServeType: sentence.sentenceServeType,
-            consecutiveTo: sentence.consecutiveTo,
-            sentenceType: sentence.sentenceType,
-            detailsClasses: 'govuk-!-padding-4'
-        }) }}
+{% macro sentenceCard(charge) %}
+  {{ offenceCard({
+    offenceCode: charge.offenceCode,
+    offenceName: offenceMap[charge.offenceCode],
+    offenceStartDate: charge.offenceStartDate | formatDate if charge.offenceStartDate else 'Not entered',
+    offenceEndDate: charge.offenceEndDate | formatDate,
+    hideOutcome: true,
+    outcome: charge.sentence.outcome,
+    countNumber: charge.sentence.chargeNumber,
+    convictionDate: charge.sentence.convictionDate | formatDate,
+    terrorRelated: false,
+    isSentenced: true,
+    periodLengths: charge.sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: charge.sentence.sentenceServeType,
+    consecutiveTo: charge.sentence.consecutiveToChargeNumber,
+    sentenceType: charge.sentence.sentenceType.description,
+    detailsClasses: 'govuk-!-padding-4'
+  }) }}
 
 {% endmacro %}
 

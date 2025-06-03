@@ -86,3 +86,65 @@ export function createAnswerSummaryList(
     toSummaryListRow('Recall type', journeyData.recallType.description, editLink('recall-type')),
   ])
 }
+
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): SentenceLength[] => {
+  if (periodLengths) {
+    return periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+  }
+  return null
+}
+
+export interface SentenceLength {
+  years?: string
+  months?: string
+  weeks?: string
+  days?: string
+  periodOrder: string[]
+  periodLengthType:
+    | 'SENTENCE_LENGTH'
+    | 'CUSTODIAL_TERM'
+    | 'LICENCE_PERIOD'
+    | 'TARIFF_LENGTH'
+    | 'TERM_LENGTH'
+    | 'OVERALL_SENTENCE_LENGTH'
+  description?: string
+  uuid?: string
+}
+
+export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLength => {
+  if (periodLength) {
+    return {
+      ...(typeof periodLength.days === 'number' ? { days: String(periodLength.days) } : {}),
+      ...(typeof periodLength.weeks === 'number' ? { weeks: String(periodLength.weeks) } : {}),
+      ...(typeof periodLength.months === 'number' ? { months: String(periodLength.months) } : {}),
+      ...(typeof periodLength.years === 'number' ? { years: String(periodLength.years) } : {}),
+      periodOrder: periodLength.periodOrder.split(','),
+      periodLengthType: periodLength.periodLengthType,
+      uuid: periodLength.periodLengthUuid,
+    } as SentenceLength
+  }
+  return null
+}
+
+type PeriodLength  = {
+  /** Format: int32 */
+  years?: number
+  /** Format: int32 */
+  months?: number
+  /** Format: int32 */
+  weeks?: number
+  /** Format: int32 */
+  days?: number
+  periodOrder: string
+  /** @enum {string} */
+  periodLengthType:
+    | 'SENTENCE_LENGTH'
+  | 'CUSTODIAL_TERM'
+  | 'LICENCE_PERIOD'
+  | 'TARIFF_LENGTH'
+  | 'TERM_LENGTH'
+  | 'OVERALL_SENTENCE_LENGTH'
+  | 'UNSUPPORTED'
+  /** Format: uuid */
+  periodLengthUuid: string
+}

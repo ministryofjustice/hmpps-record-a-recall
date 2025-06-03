@@ -76,7 +76,7 @@ export const sessionModelFields = {
   IS_EDIT: 'isEdit',
   RETURN_TO: 'returnTo',
   JOURNEY_COMPLETE: 'journeyComplete',
-  SENTENCES: 'sentences',
+  SENTENCES: 'crdsSentences',
   RAS_SENTENCES: 'rasSentences',
   TEMP_CALC: 'temporaryCalculation',
   BREAKDOWN: 'breakdown',

@@ -1,6 +1,6 @@
 import { addDays, isAfter, isBefore, isEqual, isValid, max } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
-import { Sentence } from 'models'
+import { ApiSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { compact } from 'lodash'
 import {
   ConcurrentSentenceBreakdown,
@@ -60,11 +60,12 @@ export default function getIndividualEligibility(
   return determineEligibilityOnCrdsSentenceType(sentence)
 }
 
-export function determineEligibilityOnRasSentenceType(sentence: Sentence): RecallEligibility {
-  if (!sentence.sentenceType) {
+export function determineEligibilityOnRasSentenceType(sentence: ApiSentence): RecallEligibility {
+  const sentenceType = sentence.sentenceType.description
+  if (!sentenceType) {
     return eligibilityReasons.RAS_LEGACY_SENTENCE
   }
-  if (isNonSDS(sentence.sentenceType)) {
+  if (isNonSDS(sentenceType)) {
     return eligibilityReasons.NON_SDS
   }
   return eligibilityReasons.SDS

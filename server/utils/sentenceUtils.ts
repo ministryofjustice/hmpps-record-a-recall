@@ -1,4 +1,4 @@
-import type { SentenceWithDpsUuid } from 'models'
+import type {Sentence, SentenceWithDpsUuid} from 'models'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
@@ -293,4 +293,5 @@ export type SummarisedSentenceGroup = {
   ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean
   hasIneligibleSentences: boolean
+  sentences: Sentence[]
 }

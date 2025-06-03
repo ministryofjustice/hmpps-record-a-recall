@@ -12,7 +12,7 @@ import {
   consecutiveToDetailsToDescription,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import dayjs from 'dayjs'
-import { initialiseName } from './utils'
+import {formatDate, initialiseName, periodLengthsToSentenceLengths} from './utils'
 import { ApplicationInfo } from '../applicationInfo'
 import config from '../config'
 
@@ -79,6 +79,9 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('sentenceDate', (date, format = 'dddd, DD MMMM YYYY') => dayjs(date).format(format))
   njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
+  njkEnv.addFilter('formatDate', formatDate)
+  njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
+
 
   // Filter to pluralize a word based on a count. Adds 's' if count is not 1.
   function pluralize(count: number): string {
