@@ -5,12 +5,12 @@ import RecallBaseController from './recallBaseController'
 export default class ManualRecallInterceptController extends RecallBaseController {
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const locals = this.locals(req, res)
-    res.render('pages/recall/manualRecallIntercept', locals)
+    res.render('pages/recall/manual-recall-intercept.njk', locals)
   }
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     if ('continue' in req.body) {
-      req.sessionModel.set('manual-recall-intercept.njk', 'confirmed')
+      req.sessionModel.set('select-court-case-details.njk', 'confirmed')
     }
     if ('cancel' in req.body) {
       return res.redirect(303, `${req.baseUrl}/confirm-cancel`)
