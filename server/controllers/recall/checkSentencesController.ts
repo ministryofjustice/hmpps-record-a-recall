@@ -10,6 +10,7 @@ import {
   isManualCaseSelection,
 } from '../../helpers/formWizardHelper'
 import ManageOffencesService from '../../services/manageOffencesService'
+import logger from '../../../logger'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -29,12 +30,15 @@ export default class CheckSentencesController extends RecallBaseController {
       .map(charge => charge.offenceCode)
       .filter(code => code)
 
+    let offenceNameMap = {}
     if (offenceCodes.length > 0) {
-      const offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
-      res.locals.offenceNameMap = offenceNameMap
-    } else {
-      res.locals.offenceNameMap = {}
+      try {
+        offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+      } catch (error) {
+        logger.error(error, `Error fetching offence names for codes: ${offenceCodes.join(', ')}`)
+      }
     }
+    res.locals.offenceNameMap = offenceNameMap
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
