@@ -10,10 +10,12 @@ export default class ManageOffencesApiClient {
   }
 
   async getOffenceByCode(code: string): Promise<Offence> {
+    console.log('getOffencesByCode - api client')
     return (await this.restClient.get({ path: `/offences/code/unique/${code}` })) as unknown as Promise<Offence>
   }
 
   async searchOffence(searchString: string): Promise<Offence[]> {
+     console.log('searchOffence - api client')
     return (await this.restClient.get({
       path: `/offences/search`,
       query: { excludeLegislation: true, searchString },
@@ -21,6 +23,7 @@ export default class ManageOffencesApiClient {
   }
 
   async getOffencesByCodes(codes: string[]): Promise<Offence[]> {
+    console.log('getOffencesByCodeS - api client')
     return (await this.restClient.get({
       path: '/offences/code/multiple',
       query: { offenceCodes: codes.join() },
