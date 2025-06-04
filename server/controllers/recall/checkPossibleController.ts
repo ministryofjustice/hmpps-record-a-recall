@@ -4,8 +4,7 @@ import { NextFunction, Response } from 'express'
 import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-// import {getCourtCaseOptions, getRecallRoute, sessionModelFields} from '../../helpers/formWizardHelper'
-import { getCourtCaseOptions, getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
@@ -32,9 +31,9 @@ export default class CheckPossibleController extends RecallBaseController {
             console.log('---------- RAS Cases ----------')
             console.log(cases)
 
-            const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE');
-            res.locals.courtCases = activeCases;
-            const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || []);
+            const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
+            res.locals.courtCases = activeCases
+            const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || [])
 
             console.log('---------- RAS Case Sentences ----------')
             console.log(sentencesFromRasCases)

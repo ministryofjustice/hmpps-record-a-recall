@@ -1,7 +1,7 @@
 import { addDays, isAfter, isBefore, isEqual, isValid, max } from 'date-fns'
-// eslint-disable-next-line import/no-unresolved
-import { ApiSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { compact } from 'lodash'
+
+import { ApiSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,

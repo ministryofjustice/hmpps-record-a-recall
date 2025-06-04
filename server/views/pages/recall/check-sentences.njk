@@ -69,7 +69,7 @@
                           <h2 class="govuk-heading-l">
                               Court cases with sentences eligible for recall ({{ casesWithEligibleSentences }})
                           </h2>
-                          {{ sentenceCards(summarisedSentencesGroups, offenceMap) }}
+                          {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
 
                     {% endblock %}
 
@@ -111,20 +111,20 @@
     </div>
 {% endblock %}
 
-{%  macro sentenceCards(groups, offenceMap) %}
+{%  macro sentenceCards(groups, offenceNameMap) %}
     {% for group in groups %}
 {#      Temporarily disabled in order to help analysis - to be reinstated for business requirement#}
 {#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
         {% for charge in group.sentences %}
-            {{ sentenceCard(charge, offenceMap) }}
+            {{ sentenceCard(charge, offenceNameMap) }}
         {% endfor %}
         {% from "govuk/components/details/macro.njk" import govukDetails %}
         {% if group.hasIneligibleSentences %}
             {% set ineligibleHtml %}
                 {% for sentence in group.ineligibleSentences %}
-                    {{ sentenceCard(sentence, offenceMap) }}
+                    {{ sentenceCard(sentence, offenceNameMap) }}
                 {% endfor %}
             {% endset %}
             {% set summaryHtml %}
@@ -140,14 +140,18 @@
 
 {% endmacro %}
 
-<p>Test: {{ offenceMap.MD71230 }}</p>
+<p>Test: {{ offenceNameMap.MD71230 }}</p>
 
-{% macro sentenceCard(charge, offenceMap) %}
-<p>Offence code: {{ charge.offenceCode }}</p>
-<p>Offence name: {{ offenceMap[charge.offenceCode | trim | upper] }}</p>
+{% macro sentenceCard(charge, offenceNameMap) %}
+  <p>Offence code1: {{ charge.offenceCode }}</p>
+  <p>Offence name2: {{ offenceNameMap[charge.offenceCode] }}</p>
+<p>Offence name3: {{ offenceNameMap["MD71230"] }}</p>
+<p>DEBUG offenceNameMap4: {{ offenceNameMap | dump }}</p>
+<p>Offence name5: {{ offenceNameMap }}</p>
+
   {{ offenceCard({
     offenceCode: charge.offenceCode,
-    offenceName: offenceMap[charge.offenceCode],
+    offenceName: offenceNameMap[charge.offenceCode],
     offenceStartDate: charge.offenceStartDate | formatDate if charge.offenceStartDate else 'Not entered',
     offenceEndDate: charge.offenceEndDate | formatDate,
     hideOutcome: true,

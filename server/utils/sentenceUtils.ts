@@ -1,4 +1,4 @@
-import type {Sentence, SentenceWithDpsUuid} from 'models'
+import type { Sentence, SentenceWithDpsUuid } from 'models'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
@@ -265,6 +265,15 @@ export function hasManualOnlySentences(sentences: SummarisedSentence[]): boolean
   return sentences.some(sentence => sentence.recallEligibility.recallRoute === 'MANUAL')
 }
 
+export type PeriodLength = {
+  description: string
+  years?: string
+  months?: string
+  weeks?: string
+  days?: string
+  periodOrder: Array<'years' | 'months' | 'weeks' | 'days'>
+}
+
 export type SummarisedSentence = {
   sentenceId?: string
   recallEligibility: RecallEligibility
@@ -281,7 +290,7 @@ export type SummarisedSentence = {
   convictionDate?: string
   terrorRelated?: boolean
   isSentenced?: boolean
-  periodLengths?: any[]
+  periodLengths?: PeriodLength[]
   sentenceServeType?: string
   consecutiveTo?: string
   sentenceType?: string

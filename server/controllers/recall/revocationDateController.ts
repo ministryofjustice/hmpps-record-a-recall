@@ -2,21 +2,28 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import { isBefore, isEqual, isAfter, min } from 'date-fns'
+// import {CourtCase} from '../../@types/models';
+
+// eslint-disable-next-line import/no-unresolved
+import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
-import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
 import getJourneyDataFromRequest, {
-  getAdjustmentsToConsiderForValidation, getBreakdown, getCourtCaseOptions, getCourtCases,
+  getAdjustmentsToConsiderForValidation,
+  getBreakdown,
+  getCourtCaseOptions,
+  getCourtCases,
   getCrdsSentences,
   getExistingAdjustments,
-  getRecallRoute, getRevocationDate,
-  RecallJourneyData, sessionModelFields,
+  getRecallRoute,
+  getRevocationDate,
+  RecallJourneyData,
+  sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import {CourtCase} from "models";
-import {summariseRasCases} from "../../utils/CaseSentenceSummariser";
-import {determineInvalidRecallTypes} from "../../utils/RecallEligiblityCalculator";
-import {SummarisedSentenceGroup} from "../../utils/sentenceUtils";
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
+import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
 
 export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -68,7 +75,9 @@ export default class RevocationDateController extends RecallBaseController {
     //   revocationDateCrdsDataComparison(req, res)
     // }
 
-    const caseDetails = getCourtCaseOptions(req).filter((c: CourtCase) => c.status !== 'DRAFT').filter((c: CourtCase) => c.sentenced)
+    const caseDetails = getCourtCaseOptions(req)
+      .filter((c: CourtCase) => c.status !== 'DRAFT')
+      .filter((c: CourtCase) => c.sentenced)
     console.log('------- Court Cases from Session: -------')
     console.log(caseDetails)
     const crdsSentences = getCrdsSentences(req)
@@ -80,7 +89,7 @@ export default class RevocationDateController extends RecallBaseController {
 
     req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
-    const test = summarisedSentencesGroups.map((a) => a.eligibleSentences)
+    const test = summarisedSentencesGroups.map(a => a.eligibleSentences)
     console.log(test, '_______________')
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
