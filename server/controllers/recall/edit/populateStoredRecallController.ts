@@ -69,13 +69,13 @@ export default class PopulateStoredRecallController extends RecallBaseController
 
     // We do a crds comparison here to figure out if it was a manual recall
     // If it was, we replace the sentence info with RaS data
-    revocationDateCrdsDataComparison(req)
+    revocationDateCrdsDataComparison(req, res)
     if (isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0) {
       req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, storedRecall.sentenceIds.length)
       const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
         storedRecall.courtCaseIds.includes(detail.caseId),
       )
-      const summarisedSentencesGroups = summariseRasCases(caseDetails)
+      const summarisedSentencesGroups = summariseRasCases(caseDetails, [], null)
       req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     }
 
