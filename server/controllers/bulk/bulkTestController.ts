@@ -1,4 +1,4 @@
-import { RequestHandler } from 'express'
+import { RequestHandler, NextFunction } from 'express'
 import { stringify } from 'csv-stringify'
 import BulkCalculationService from '../../services/bulkCalculationService'
 import PrisonerService from '../../services/prisonerService'
@@ -69,25 +69,28 @@ export default class BulkTestController {
     return res.render('pages/bulk/index')
   }
 
-  public submitBulkCalc: RequestHandler = async (req, res) => {
+  public submitBulkCalc: RequestHandler = async (req, res, next: NextFunction) => {
     const { username } = res.locals.user
     const { prisonerIds, logToConsole, prisonId } = req.body
 
     if (prisonerIds.split(/\r?\n/).length === 1 && logToConsole) {
-      return res.redirect(`/bulk?person=${prisonerIds}`)
+      res.redirect(`/bulk?person=${prisonerIds}`)
+    } else {
+      const prisoners = await this.getPrisonersDetails(prisonerIds, prisonId, username)
+      const env = config.environmentName
+
+      try {
+        const results = await this.bulkCalculationService.runCalculations(prisoners, username)
+        const fileName = prisonId ? `bulk-${prisonId}-${env}.csv` : `bulk-${env}.csv`
+        res.setHeader('Content-Type', 'text/csv')
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+        stringify(results, {
+          header: true,
+        }).pipe(res)
+      } catch (error) {
+        next(error)
+      }
     }
-
-    const prisoners = await this.getPrisonersDetails(prisonerIds, prisonId, username)
-    const env = config.environmentName
-
-    return this.bulkCalculationService.runCalculations(prisoners, username).then(results => {
-      const fileName = prisonId ? `bulk-${prisonId}-${env}.csv` : `bulk-${env}.csv`
-      res.setHeader('Content-Type', 'text/csv')
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
-      return stringify(results, {
-        header: true,
-      }).pipe(res)
-    })
   }
 
   private async getPrisonersDetails(

@@ -78,6 +78,14 @@ export default class SelectCourtCaseController extends RecallBaseController {
         formattedOverallConvictionDate?: string
         sentences?: (Sentence & {
           formattedSentenceLength?: string
+          periodLengths?: {
+            description: string
+            years?: number
+            months?: number
+            weeks?: number
+            days?: number
+            periodOrder: string[]
+          }[]
           formattedConsecutiveOrConcurrent?: string
           formattedOffenceDate?: string
           formattedConvictionDate?: string
@@ -92,16 +100,35 @@ export default class SelectCourtCaseController extends RecallBaseController {
       currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
 
       if (currentCase.sentences) {
-        currentCase.sentences = currentCase.sentences.map(sentence => ({
-          ...sentence,
-          formattedSentenceLength: formatTerm(sentence.custodialTerm as Term | undefined),
-          formattedConsecutiveOrConcurrent: formatSentenceServeType(
-            sentence.sentenceServeType,
-            sentence.consecutiveToChargeNumber,
-          ),
-          formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
-          formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
-        }))
+        currentCase.sentences = currentCase.sentences.map(sentence => {
+          const custodialTerm = sentence.custodialTerm as Term | undefined
+          const periodLengths = custodialTerm
+            ? [
+                {
+                  description: 'Sentence length',
+                  years: custodialTerm.years,
+                  months: custodialTerm.months,
+                  weeks: custodialTerm.weeks,
+                  days: custodialTerm.days,
+                  periodOrder: (['years', 'months', 'weeks', 'days'] as const).filter(
+                    p => typeof custodialTerm[p] === 'number' && custodialTerm[p] > 0,
+                  ),
+                },
+              ]
+            : []
+
+          return {
+            ...sentence,
+            periodLengths,
+            formattedSentenceLength: formatTerm(custodialTerm),
+            formattedConsecutiveOrConcurrent: formatSentenceServeType(
+              sentence.sentenceServeType,
+              sentence.consecutiveToChargeNumber,
+            ),
+            formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
+            formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
+          }
+        })
       }
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 

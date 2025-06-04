@@ -3,7 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-{% from "moj/components/ticket-panel/macro.njk" import mojTicketPanel %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
 {% set pageTitle = "Select all cases that had an active sentence" %}
@@ -66,43 +66,24 @@
           {% if currentCase.sentences and currentCase.sentences.length > 0 %}
             <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
             {% for sentence in currentCase.sentences %}
-              {% set summaryRows = [] %}
-              {% set summaryRows = summaryRows.concat([
-                { "key": { "text": "Committed on", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedOffenceDate | default("Not available") } },
-                { "key": { "text": "Conviction date", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedConvictionDate | default("Not available") } }
-              ]) %}
-              {% if sentence.sentenceType %}
-                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Sentence type", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.sentenceType | default("Not available") } }]) %}
-              {% endif %}
-              {% if sentence.formattedSentenceLength and sentence.formattedSentenceLength !== 'Not available' and sentence.formattedSentenceLength !== 'Not specified' %}
-                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Sentence length", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedSentenceLength | default("Not available") } }]) %}
-              {% endif %}
-              {% if sentence.formattedConsecutiveOrConcurrent and sentence.formattedConsecutiveOrConcurrent !== 'Not available' and sentence.formattedConsecutiveOrConcurrent !== 'Not specified' %}
-                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Consecutive or concurrent", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.formattedConsecutiveOrConcurrent | default("Not available") } }]) %}
-              {% endif %}
-              {% if sentence.outcome %}
-                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Outcome", "classes": "govuk-!-font-weight-bold" }, "value": { "text": sentence.outcome | default("Not available") } }]) %}
-              {% endif %}
-              {% if sentence.fineAmount %}
-                {% set summaryRows = summaryRows.concat([{ "key": { "text": "Fine amount", "classes": "govuk-!-font-weight-bold" }, "value": { "text": "£" + (sentence.fineAmount / 100) if sentence.fineAmount else "Not available" } }]) %}
-              {% endif %}
-
-            {%- set summaryListHtml -%}
-                {{ govukSummaryList({ "rows": summaryRows, "classes": "govuk-summary-list--no-border" }) }}
-              {%- endset -%}
-
-              {%- set panelHtml -%}
-                <p class="govuk-heading-s govuk-!-font-weight-regular govuk-!-margin-bottom-1">Count {{ loop.index }}</p>
-                <h4 class="govuk-heading-s govuk-!-margin-bottom-2">{{ sentence.offenceCode | default("Not available") }} - {{ sentence.offenceDescription | default("Not available") }}</h4>
-                {{ summaryListHtml | safe }}
-              {%- endset -%}
-
-              {{ mojTicketPanel({
-                classes: "govuk-!-margin-bottom-5",
-                items: [{
-                  html: panelHtml,
-                  classes: "moj-ticket-panel__content--blue"
-                }]
+              {{ offenceCard({
+                  offenceCode: sentence.offenceCode | default("N/A"),
+                  offenceName: sentence.offenceDescription | default("N/A"),
+                  offenceStartDate: sentence.formattedOffenceDate | default("N/A"),
+                  offenceEndDate: sentence.formattedOffenceEndDate | default("N/A") if sentence.formattedOffenceEndDate else null,
+                  outcome: sentence.outcome | default("N/A"),
+                  countNumber: loop.index,
+                  convictionDate: sentence.formattedConvictionDate | default("N/A"),
+                  terrorRelated: sentence.terrorRelated | default(false),
+                  isSentenced: true,
+                  periodLengths: sentence.periodLengths | default([]),
+                  sentenceServeType: sentence.sentenceServeType | default(null),
+                  consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+                  sentenceType: sentence.sentenceTypeDescription | default("N/A"),
+                  fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+                  detailsClasses: 'govuk-!-padding-4',
+                  actions: null,
+                  listItems: null
               }) }}
             {% endfor %}
           {% endif %}
