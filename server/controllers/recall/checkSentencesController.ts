@@ -24,13 +24,17 @@ export default class CheckSentencesController extends RecallBaseController {
 
   async getOffenceNames(req: FormWizard.Request, res: Response) {
     const summarisedGroups = getSummarisedSentenceGroups(req)
-    const offenceCodes = summarisedGroups
+    const offenceCodes = (Array.isArray(summarisedGroups) ? summarisedGroups : [])
       .flatMap(group => (group.eligibleSentences || []).concat(group.ineligibleSentences || []))
       .map(charge => charge.offenceCode)
       .filter(code => code)
 
-    const offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
-    res.locals.offenceNameMap = offenceNameMap
+    if (offenceCodes.length > 0) {
+      const offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+      res.locals.offenceNameMap = offenceNameMap
+    } else {
+      res.locals.offenceNameMap = {}
+    }
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -38,10 +42,11 @@ export default class CheckSentencesController extends RecallBaseController {
     const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
 
     const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
+    const rawSummarisedGroups = getSummarisedSentenceGroups(req)
 
     res.locals.latestSled = calculation.dates.SLED
     res.locals.manualJourney = manualJourney
-    res.locals.summarisedSentencesGroups = getSummarisedSentenceGroups(req)
+    res.locals.summarisedSentencesGroups = Array.isArray(rawSummarisedGroups) ? rawSummarisedGroups : []
     res.locals.casesWithEligibleSentences = eligibleSentenceCount
 
     return super.locals(req, res)
