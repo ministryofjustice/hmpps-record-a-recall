@@ -1,5 +1,5 @@
 import FormWizard from 'hmpo-form-wizard'
-import { Response } from 'express'
+import { Response, NextFunction } from 'express'
 
 import RecallBaseController from './recallBaseController'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -9,10 +9,28 @@ import {
   getTemporaryCalc,
   isManualCaseSelection,
 } from '../../helpers/formWizardHelper'
+import ManageOffencesService from '../../services/manageOffencesService'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
     super.middlewareSetup()
+  }
+
+  async get(req: FormWizard.Request, res: Response, next: NextFunction) {
+    await super.get(req, res, next)
+    await this.getOffenceNames(req, res)
+    return this.locals(req, res)
+  }
+
+  async getOffenceNames(req: FormWizard.Request, res: Response) {
+    const summarisedGroups = getSummarisedSentenceGroups(req)
+    const offenceCodes = summarisedGroups
+      .flatMap(group => (group.eligibleSentences || []).concat(group.ineligibleSentences || []))
+      .map(charge => charge.offenceCode)
+      .filter(code => code)
+
+    const offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+    res.locals.offenceNameMap = offenceNameMap
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {

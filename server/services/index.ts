@@ -12,6 +12,7 @@ import AdjustmentsService from './adjustmentsService'
 import ManageUsersService from './manageUsersService'
 import PrisonService from './PrisonService'
 import NomisToDpsMappingService from './NomisToDpsMappingService'
+import ManageOffencesService from './manageOffencesService'
 
 export const services = () => {
   const { applicationInfo, hmppsAuditClient, hmppsAuthClient, feComponentsClient, manageUsersApiClient } = dataAccess()
@@ -29,6 +30,7 @@ export const services = () => {
   const prisonService = new PrisonService(hmppsAuthClient)
   const manageUsersService = new ManageUsersService(manageUsersApiClient)
   const nomisMappingService = new NomisToDpsMappingService(hmppsAuthClient)
+  const manageOffencesService = new ManageOffencesService()
 
   return {
     applicationInfo,
@@ -45,6 +47,7 @@ export const services = () => {
     adjustmentsService,
     manageUsersService,
     nomisMappingService,
+    manageOffencesService,
   }
 }
 

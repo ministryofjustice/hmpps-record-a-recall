@@ -89,6 +89,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           formattedConsecutiveOrConcurrent?: string
           formattedOffenceDate?: string
           formattedConvictionDate?: string
+          apiOffenceDescription?: string
         })[]
       } = JSON.parse(JSON.stringify(originalCase))
 
@@ -96,8 +97,21 @@ export default class SelectCourtCaseController extends RecallBaseController {
       currentCase.courtName = originalCase.locationName
       const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
       currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
-
       currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
+
+      let offenceMap: Record<string, string> = {}
+      if (originalCase.sentences && originalCase.sentences.length > 0) {
+        const offenceCodes = [
+          ...new Set(originalCase.sentences.map(sentence => sentence.offenceCode).filter(Boolean) as string[]),
+        ]
+        if (offenceCodes.length > 0) {
+          try {
+            offenceMap = await req.services.manageOffencesService.getOffenceMap(offenceCodes, res.locals.user.token)
+          } catch (error) {
+            console.error('Error fetching offence descriptions from ManageOffencesService:', error)
+          }
+        }
+      }
 
       if (currentCase.sentences) {
         currentCase.sentences = currentCase.sentences.map(sentence => {
@@ -127,6 +141,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
             ),
             formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
             formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
+            apiOffenceDescription:
+              offenceMap[sentence.offenceCode] || sentence.offenceDescription || sentence.offenceCode,
           }
         })
       }
@@ -143,8 +159,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
       return
     } catch (err) {
       next(err)
-      // eslint-disable-next-line no-useless-return
-      return
     }
   }
 
