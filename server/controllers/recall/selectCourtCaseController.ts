@@ -3,11 +3,17 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Sentence, Term } from 'models'
-import { formatTerm, formatSentenceServeType, calculateOverallSentenceLength } from '../../utils/sentenceUtils'
+import {
+  formatTerm,
+  formatSentenceServeType,
+  calculateOverallSentenceLength,
+  SummarisedSentenceGroup,
+} from '../../utils/sentenceUtils'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 import RecallBaseController from './recallBaseController'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 
 export default class SelectCourtCaseController extends RecallBaseController {
   middlewareSetup() {
@@ -305,6 +311,27 @@ export default class SelectCourtCaseController extends RecallBaseController {
         res.redirect(req.originalUrl)
       })
     } else {
+      // All cases have been reviewed, or there were no cases to review.
+      const manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as (
+        | string
+        | undefined
+      )[]
+
+      let summarisedSentenceGroupsArray: SummarisedSentenceGroup[] = []
+
+      if (reviewableCases && manualRecallDecisions) {
+        const selectedCases: CourtCase[] = []
+        reviewableCases.forEach((courtCase, index) => {
+          if (manualRecallDecisions[index] === 'YES') {
+            selectedCases.push(courtCase)
+          }
+        })
+        if (selectedCases.length > 0) {
+          summarisedSentenceGroupsArray = summariseRasCases(selectedCases)
+        }
+      }
+
+      req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroupsArray)
       super.successHandler(req, res, next)
     }
   }
