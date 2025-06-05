@@ -14,6 +14,7 @@ import RecallBaseController from './recallBaseController'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import logger from '../../../logger'
 
 export default class SelectCourtCaseController extends RecallBaseController {
   middlewareSetup() {
@@ -114,7 +115,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           try {
             offenceMap = await req.services.manageOffencesService.getOffenceMap(offenceCodes, res.locals.user.token)
           } catch (error) {
-            console.error('Error fetching offence descriptions from ManageOffencesService:', error)
+            logger.error('Error fetching offence descriptions from ManageOffencesService:', error)
           }
         }
       }
