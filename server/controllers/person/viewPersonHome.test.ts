@@ -18,6 +18,7 @@ import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/ca
 import CourtService from '../../services/CourtService'
 import AdjustmentsService from '../../services/adjustmentsService'
 import ManageUsersService from '../../services/manageUsersService'
+import ManageOffencesService from '../../services/manageOffencesService'
 import NomisToDpsMappingService from '../../services/NomisToDpsMappingService'
 
 const mockHmppsAuthClient = { getSystemClientToken: jest.fn() } as unknown as HmppsAuthClient
@@ -77,6 +78,7 @@ const mockCourtCaseService = {} as unknown as CourtCaseService
 const mockCourtService = {} as unknown as CourtService
 const mockAdjustmentsService = {} as unknown as AdjustmentsService
 const mockManageUsersService = {} as unknown as ManageUsersService
+const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as ManageOffencesService
 
 interface TestServices {
   recallService: typeof mockRecallService
@@ -97,6 +99,7 @@ interface TestServices {
   courtService: typeof mockCourtService
   adjustmentsService: typeof mockAdjustmentsService
   manageUsersService: typeof mockManageUsersService
+  manageOffencesService: typeof mockManageOffencesService
 }
 
 let req: Partial<Request>
@@ -180,6 +183,7 @@ describe('viewPersonHome', () => {
         courtService: mockCourtService,
         adjustmentsService: mockAdjustmentsService,
         manageUsersService: mockManageUsersService,
+        manageOffencesService: mockManageOffencesService,
       } as TestServices,
     }
     ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue({
