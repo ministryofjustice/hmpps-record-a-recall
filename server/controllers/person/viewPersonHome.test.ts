@@ -183,6 +183,7 @@ describe('viewPersonHome', () => {
         courtService: mockCourtService,
         adjustmentsService: mockAdjustmentsService,
         manageUsersService: mockManageUsersService,
+        manageOffencesService: mockManageOffencesService,
       } as TestServices,
     }
     ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue({
