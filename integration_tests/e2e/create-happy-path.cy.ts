@@ -52,7 +52,7 @@ context('Create recall happy path', () => {
     const selectCasesTitle = 'Select court cases'
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
     const selectCasesForm = FormPage.verifyOnPage<FormPage>(FormPage, selectCasesTitle)
-    selectCasesForm.selectFirstCourtCaseCheckbox()
+    cy.get('input[type="radio"][name="activeSentenceChoice"]').first().check()
     new ReviewFormPage(selectCasesTitle).continueButton().click()
 
     // Step 6: Check sentences
@@ -67,6 +67,11 @@ context('Create recall happy path', () => {
     const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
     recallTypeForm.recallTypeRadio().click()
     new ReviewFormPage(recallTypeTitle).continueButton().click()
+
+    // Step 7a: Recall Type Interrupt
+    cy.url().should('include', '/person/A1234AB/record-recall/recall-type-interrupt')
+    cy.contains('Is this the correct recall type?')
+    cy.get('[data-qa="continue-btn"]').click()
 
     // Step 8: Check your answers
     const checkAnswersTitle = 'Check your answers'

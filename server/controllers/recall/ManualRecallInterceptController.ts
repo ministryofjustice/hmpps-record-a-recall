@@ -10,7 +10,7 @@ export default class ManualRecallInterceptController extends RecallBaseControlle
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     if ('continue' in req.body) {
-      req.sessionModel.set('manualRecallInterceptConfirmation', 'confirmed')
+      req.sessionModel.set('select-court-case-details.njk', 'confirmed')
     }
     if ('cancel' in req.body) {
       return res.redirect(303, `${req.baseUrl}/confirm-cancel`)
