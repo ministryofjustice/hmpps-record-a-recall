@@ -120,7 +120,10 @@
 
         {{ govukButton({
             text: "Continue",
-            preventDoubleClick: true
+            preventDoubleClick: true,
+            attributes: {
+              "data-qa": "continue-btn"
+            }
           }) }}
           <a href="{{ cancelLink }}" role="button" draggable="false" class="govuk-button govuk-button--secondary govuk-!-margin-left-1" data-module="govuk-button">
             Cancel
