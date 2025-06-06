@@ -1,0 +1,134 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set pageTitle = "Select all cases that had an active sentence" %}
+{% set pageId = "select-court-case-details" %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - {{ serviceName }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ super() }} {# This renders the prisoner banner from prisonerBannerLayout.njk #}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLinkUrl
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.list | length %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: errors.list
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">
+        <span class="govuk-caption-l">Record a recall</span>
+        {{ pageTitle }}
+      </h1>
+      <p class="govuk-body">Relevant cases are those with sentences that were active when this person's licence was revoked.</p>
+      <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
+
+      {# Case Header Block #}
+      <div class="govuk-summary-card govuk-!-margin-bottom-5">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">{{ currentCase.caseNumber | default("N/A") }}<span class="govuk-!-font-weight-regular"> at </span>{{ currentCase.courtName | default("N/A") }}</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          {{ govukSummaryList({
+              "rows": [
+                {
+                  "key": { "text": "Case references", "classes": "govuk-!-font-weight-bold" },
+                  "value": { "text": currentCase.caseReferences | default("Not available"), "classes": "govuk-!-font-weight-bold" }
+                },
+                {
+                  "key": { "text": "Overall sentence length", "classes": "govuk-!-font-weight-bold" },
+                  "value": { "text": currentCase.formattedOverallSentenceLength | default("Not available"), "classes": "govuk-!-font-weight-bold" }
+                },
+                {
+                  "key": { "text": "Conviction date", "classes": "govuk-!-font-weight-bold" },
+                  "value": { "text": currentCase.formattedOverallConvictionDate | default("Not available"), "classes": "govuk-!-font-weight-bold" }
+                }
+              ]
+          }) }}
+
+          <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+
+          {# Offences Section #}
+          {% if currentCase.sentences and currentCase.sentences.length > 0 %}
+            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
+            {% for sentence in currentCase.sentences %}
+              {{ offenceCard({
+                  offenceCode: sentence.offenceCode | default("N/A"),
+                  offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+                  offenceStartDate: sentence.formattedOffenceDate | default("N/A"),
+                  offenceEndDate: sentence.formattedOffenceEndDate | default("N/A") if sentence.formattedOffenceEndDate else null,
+                  outcome: sentence.outcome | default("N/A"),
+                  countNumber: loop.index,
+                  convictionDate: sentence.formattedConvictionDate | default("N/A"),
+                  terrorRelated: sentence.terrorRelated | default(false),
+                  isSentenced: true,
+                  periodLengths: sentence.periodLengths | default([]),
+                  sentenceServeType: sentence.sentenceServeType | default(null),
+                  consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+                  sentenceType: sentence.sentenceTypeDescription | default("N/A"),
+                  fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+                  detailsClasses: 'govuk-!-padding-4',
+                  actions: null,
+                  listItems: null
+              }) }}
+            {% endfor %}
+          {% endif %}
+        </div> <!-- govuk-summary-card__content -->
+      </div> <!-- govuk-summary-card -->
+
+      <form method="post" novalidate class="govuk-!-margin-top-6">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+        {{ govukRadios({
+          name: "activeSentenceChoice",
+          fieldset: {
+            legend: {
+              text: "Did this case have an active sentence?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "YES",
+              text: "Yes",
+              checked: formResponses.activeSentenceChoice == "YES"
+            },
+            {
+              value: "NO",
+              text: "No",
+              checked: formResponses.activeSentenceChoice == "NO"
+            }
+          ],
+          errorMessage: errors.activeSentenceChoice
+        }) }}
+
+        {{ govukButton({
+            text: "Continue",
+            preventDoubleClick: true,
+            attributes: {
+              "data-qa": "continue-btn"
+            }
+          }) }}
+          <a href="{{ cancelLink }}" role="button" draggable="false" class="govuk-button govuk-button--secondary govuk-!-margin-left-1" data-module="govuk-button">
+            Cancel
+          </a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

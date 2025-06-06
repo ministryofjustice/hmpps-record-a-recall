@@ -66,7 +66,7 @@ export const sessionModelFields = {
   STANDARD_ONLY: 'standardOnlyRecall',
   RECALL_TYPE: 'recallType',
   MANUAL_CASE_SELECTION: 'manualCaseSelection',
-  COURT_CASE_OPTIONS: 'CourtCaseOptions',
+  COURT_CASE_OPTIONS: 'courtCaseOptions',
   COURT_CASES: 'courtCases',
   IN_PRISON_AT_RECALL: 'inPrisonAtRecall',
   RTC_DATE: 'returnToCustodyDate',
@@ -93,6 +93,9 @@ export const sessionModelFields = {
   // incompatible (includes multiple) adjustment type of non recall ual
   HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL: 'hasMultipleOverlappingUalTypeRecall',
   DPS_SENTENCE_IDS: 'dpsSentenceIds',
+  REVIEWABLE_COURT_CASES: 'reviewableCourtCases',
+  CURRENT_CASE_INDEX: 'currentCaseIndex',
+  MANUAL_RECALL_DECISIONS: 'manualRecallDecisions',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
