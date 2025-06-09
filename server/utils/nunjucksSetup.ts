@@ -82,7 +82,6 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatDate', formatDate)
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 
-
   // Filter to pluralize a word based on a count. Adds 's' if count is not 1.
   function pluralize(count: number): string {
     return count === 1 ? '' : 's'

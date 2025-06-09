@@ -1,9 +1,7 @@
-
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import ManageOffencesApiClient from '../api/manageOffencesApiClient'
 
 export default class ManageOffencesService {
-
   async getOffencesByCodes(offenceCodes: string[], token: string): Promise<Offence[]> {
     return new ManageOffencesApiClient(token).getOffencesByCodes(offenceCodes)
   }

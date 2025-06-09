@@ -51,7 +51,7 @@ describe('ManualRecallInterceptController', () => {
       const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockResolvedValue(undefined)
       // @ts-expect-error: partial mock is sufficient for controller unit test
       await controller.post(req as unknown as import('express').Request, res, next)
-      expect(set).toHaveBeenCalledWith('manualRecallInterceptConfirmation', 'confirmed')
+      expect(set).toHaveBeenCalledWith('select-court-case-details.njk', 'confirmed')
       expect(superSpy).toHaveBeenCalledWith(req, res, next)
     })
 

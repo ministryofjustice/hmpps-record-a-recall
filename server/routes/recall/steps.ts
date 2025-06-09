@@ -111,8 +111,16 @@ const steps = {
   },
   '/select-cases': {
     controller: SelectCourtCaseController,
-    fields: ['courtCases'],
-    template: 'base-question',
+    fields: ['activeSentenceChoice'],
+    activeSentenceChoice: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select whether this case had an active sentence at the point of recall',
+        },
+      ],
+    },
+    template: 'select-court-case-details.njk',
     next: 'check-sentences',
   },
   '/not-possible': {
