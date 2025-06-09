@@ -3,14 +3,15 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Sentence, Term } from 'models'
-// import {
-//   getBreakdown,
-//   getCourtCaseOptions,
-//   getCourtCases,
-//   getCrdsSentences,
-//   getRevocationDate,
-//   sessionModelFields,
-// } from '../../helpers/formWizardHelper'
+ import {
+  getBreakdown,
+  getCourtCaseOptions,
+  getCourtCases,
+  getCrdsSentences,
+  getRevocationDate,
+  sessionModelFields,
+} from '../../helpers/formWizardHelper'
+ import {
   formatTerm,
   formatSentenceServeType,
   calculateOverallSentenceLength,
@@ -18,7 +19,6 @@ import { CourtCase, Sentence, Term } from 'models'
 } from '../../utils/sentenceUtils'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 import RecallBaseController from './recallBaseController'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import logger from '../../../logger'
@@ -358,7 +358,13 @@ export default class SelectCourtCaseController extends RecallBaseController {
           }
         })
         if (selectedCases.length > 0) {
-          summarisedSentenceGroupsArray = summariseRasCases(selectedCases)
+          const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
+          selectedCases.map(c => c.caseId).includes(detail.caseId),
+        )
+        const sentences = getCrdsSentences(req)
+        const breakdown = getBreakdown(req)
+
+summarisedSentenceGroupsArray = summariseRasCases(caseDetails, sentences, breakdown)
         }
       }
 
