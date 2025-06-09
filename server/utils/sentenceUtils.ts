@@ -271,6 +271,7 @@ export type PeriodLength = {
   weeks?: string
   days?: string
   periodOrder: Array<'years' | 'months' | 'weeks' | 'days'>
+}
 
 export function formatTerm(term: Term | undefined): string {
   if (!term) {
