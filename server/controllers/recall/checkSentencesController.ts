@@ -52,6 +52,7 @@ export default class CheckSentencesController extends RecallBaseController {
       }
       next()
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error loading offence names:', error)
       res.locals.offenceNameMap = {}
       next()

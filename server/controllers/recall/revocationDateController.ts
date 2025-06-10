@@ -12,7 +12,6 @@ import getJourneyDataFromRequest, {
   getAdjustmentsToConsiderForValidation,
   getBreakdown,
   getCourtCaseOptions,
-  getCourtCases,
   getCrdsSentences,
   getExistingAdjustments,
   getRecallRoute,
@@ -82,7 +81,6 @@ export default class RevocationDateController extends RecallBaseController {
 
     req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
-    const test = summarisedSentencesGroups.map(a => a.eligibleSentences)
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
     const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
