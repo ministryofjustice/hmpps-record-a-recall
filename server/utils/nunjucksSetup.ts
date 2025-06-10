@@ -12,7 +12,7 @@ import {
   consecutiveToDetailsToDescription,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import dayjs from 'dayjs'
-import {formatDate, initialiseName, periodLengthsToSentenceLengths} from './utils'
+import { formatDate, initialiseName, periodLengthsToSentenceLengths } from './utils'
 import { ApplicationInfo } from '../applicationInfo'
 import config from '../config'
 

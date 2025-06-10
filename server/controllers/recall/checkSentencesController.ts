@@ -32,14 +32,15 @@ export default class CheckSentencesController extends RecallBaseController {
     return super.locals(req, res)
   }
 
-  async getOffenceNameTitle(req: FormWizard.Request, offenceCodes : string[])  {
-     return await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+  async getOffenceNameTitle(req: FormWizard.Request, offenceCodes: string[]) {
+    return new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
   }
 
   async loadOffenceNames(req: FormWizard.Request, res: Response, next: () => void) {
     try {
       const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
-      const offenceCodes = summarisedSentenceGroups.flatMap(group => group.sentences || [])
+      const offenceCodes = summarisedSentenceGroups
+        .flatMap(group => group.sentences || [])
         .map(charge => charge.offenceCode)
         .filter(code => code)
 

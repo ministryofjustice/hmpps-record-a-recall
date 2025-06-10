@@ -155,7 +155,7 @@ export default {
       },
       agent: new AgentConfig(Number(get('COURT_REGISTER_API_TIMEOUT_RESPONSE', 10000))),
     },
-       manageOffencesApi: {
+    manageOffencesApi: {
       url: get('MANAGE_OFFENCES_API_URL', 'http://localhost:8083', requiredInProduction),
       timeout: {
         response: Number(get('MANAGE_OFFENCES_API_TIMEOUT_RESPONSE', 10000)),

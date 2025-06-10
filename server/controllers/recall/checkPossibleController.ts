@@ -15,8 +15,6 @@ export default class CheckPossibleController extends RecallBaseController {
     const { nomisId, username } = res.locals
     try {
       const errors: ValidationMessage[] = await req.services.calculationService.performCrdsValidation(nomisId, username)
-      console.log('---------- CRDS Validation Response ----------')
-      console.log(errors)
       res.locals.validationResponse = errors
       const recallEligibility = determineRecallEligibilityFromValidation(errors)
       res.locals.recallEligibility = recallEligibility
@@ -28,15 +26,10 @@ export default class CheckPossibleController extends RecallBaseController {
             logger.debug(newCalc.dates)
 
             const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
-            console.log('---------- RAS Cases ----------')
-            console.log(cases)
 
             const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
             res.locals.courtCases = activeCases
             const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || [])
-
-            console.log('---------- RAS Case Sentences ----------')
-            console.log(sentencesFromRasCases)
 
             const [sentences, breakdown] = await Promise.all([
               this.getCrdsSentences(req, res),
@@ -52,10 +45,6 @@ export default class CheckPossibleController extends RecallBaseController {
             const matchedRaSSentences = sentencesFromRasCases.filter(sentence =>
               dpsSentenceSequenceIds.some(mapping => mapping.dpsSentenceId === sentence.sentenceUuid),
             )
-            console.log('---------- Matched RAS Case Sentences ----------')
-            console.log(matchedRaSSentences)
-
-            console.log('---------- sentences from Ras Cases ----------', sentencesFromRasCases)
 
             res.locals.rasSentences = matchedRaSSentences.map(sentence => ({
               ...sentence,

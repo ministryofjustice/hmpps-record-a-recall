@@ -8,7 +8,6 @@ import {
   ConsecutiveSentencePart,
   Offence,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import toSummaryListRow from '../helpers/componentHelper'
 import { format8DigitDate } from '../formatters/formatDate'
 import {
   findConcurrentSentenceBreakdown,
@@ -17,7 +16,6 @@ import {
   SummarisedSentenceGroup,
 } from './sentenceUtils'
 import getIndividualEligibility, { determineEligibilityOnRasSentenceType } from './RecallEligiblityCalculator'
-import { getRasSentences } from '../helpers/formWizardHelper'
 
 export default function summariseSentencesGroups(
   groupedSentences: Record<string, SentenceWithDpsUuid[]>,
@@ -25,8 +23,6 @@ export default function summariseSentencesGroups(
   revocationDate: Date,
 ): SummarisedSentenceGroup[] {
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = []
-
-  console.log('groupedSentences *********', groupedSentences)
 
   Object.keys(groupedSentences).forEach(caseRef => {
     const groupsSentences = groupedSentences[caseRef]
@@ -46,8 +42,6 @@ export default function summariseSentencesGroups(
       const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdown)
 
       const { offence } = sentence
-
-      console.log('caseSentenceSummariser ****************** sentence', sentence)
 
       const recallEligibility = getIndividualEligibility(
         sentence,
@@ -78,8 +72,6 @@ export default function summariseSentencesGroups(
         consecutiveSentencePartBreakdown,
         'LED',
       )?.unadjusted
-
-      console.log('sentence.offencedate', sentence.offenceDate)
 
       const summary = compact([
         // toSummaryListRow('Committed on', sentence.offenceDate),

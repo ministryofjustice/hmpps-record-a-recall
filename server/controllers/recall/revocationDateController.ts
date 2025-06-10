@@ -70,16 +70,9 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    console.log('did we get here???????', getRecallRoute(req))
-    // if (getRecallRoute(req) !== 'MANUAL') {
-    //   revocationDateCrdsDataComparison(req, res)
-    // }
-
     const caseDetails = getCourtCaseOptions(req)
       .filter((c: CourtCase) => c.status !== 'DRAFT')
       .filter((c: CourtCase) => c.sentenced)
-    console.log('------- Court Cases from Session: -------')
-    console.log(caseDetails)
     const crdsSentences = getCrdsSentences(req)
     const breakdown = getBreakdown(req)
     const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown)
@@ -90,7 +83,6 @@ export default class RevocationDateController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
     const test = summarisedSentencesGroups.map(a => a.eligibleSentences)
-    console.log(test, '_______________')
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
     const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
@@ -99,7 +91,9 @@ export default class RevocationDateController extends RecallBaseController {
 
     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
     res.locals.casesWithEligibleSentences = sentenceCount
-    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, false)
+    if (getRecallRoute(req) === 'NORMAL') {
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, false)
+    }
     return super.successHandler(req, res, next)
   }
 }

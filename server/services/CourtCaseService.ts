@@ -44,7 +44,7 @@ export default class CourtCaseService {
       location: apiCase.latestAppearance?.courtCode,
       reference: apiCase.latestAppearance?.courtCaseReference,
       sentenced: apiCase.latestAppearance?.warrantType === 'SENTENCING' || false,
-      sentences: apiCase.latestAppearance?.charges
+      sentences: apiCase.latestAppearance?.charges,
     }
   }
 
@@ -63,7 +63,7 @@ export default class CourtCaseService {
       offenceCode: apiCharge.offenceCode,
       // TODO decorate with proper description
       offenceDescription: apiCharge.offenceCode,
-      courtDescription: apiCase.latestAppearance.courtCode
+      courtDescription: apiCase.latestAppearance.courtCode,
     }
   }
 }
