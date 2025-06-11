@@ -264,6 +264,14 @@ export function hasABreakdown(sentence: SentenceAndOffenceWithReleaseArrangement
 export function hasManualOnlySentences(sentences: SummarisedSentence[]): boolean {
   return sentences.some(sentence => sentence.recallEligibility.recallRoute === 'MANUAL')
 }
+export type PeriodLength = {
+  description: string
+  years?: string
+  months?: string
+  weeks?: string
+  days?: string
+  periodOrder: Array<'years' | 'months' | 'weeks' | 'days'>
+}
 
 export function formatTerm(term: Term | undefined): string {
   if (!term) {
@@ -340,6 +348,18 @@ export type SummarisedSentence = {
   offenceDescription?: string
   unadjustedSled?: string
   sentenceLengthDays?: number
+  offenceStartDate?: string
+  offenceEndDate?: string
+  outcome?: string
+  outcomeUpdated?: string
+  countNumber?: string
+  convictionDate?: string
+  terrorRelated?: boolean
+  isSentenced?: boolean
+  periodLengths?: PeriodLength[]
+  sentenceServeType?: string
+  consecutiveTo?: string
+  sentenceType?: string
 }
 
 export type SummarisedSentenceGroup = {
@@ -348,4 +368,5 @@ export type SummarisedSentenceGroup = {
   ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean
   hasIneligibleSentences: boolean
+  sentences: Sentence[]
 }
