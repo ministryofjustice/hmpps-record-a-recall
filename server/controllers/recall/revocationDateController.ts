@@ -75,6 +75,41 @@ export default class RevocationDateController extends RecallBaseController {
     const crdsSentences = getCrdsSentences(req)
     const breakdown = getBreakdown(req)
     const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown)
+      .map(group => {
+        // Filter the main sentences array based on sentence.sentenceType.description
+        const filteredMainSentences = group.sentences.filter(
+          s =>
+            (s as any).sentence &&
+            (s as any).sentence.sentenceType &&
+            typeof (s as any).sentence.sentenceType.description === 'string' &&
+            (s as any).sentence.sentenceType.description.includes('SDS')
+        )
+
+        // Get the UUIDs of these filtered SDS sentences
+        const sdsSentenceUuids = new Set(
+          filteredMainSentences.map(s => (s as any).sentence.sentenceUuid)
+        )
+
+        // Filter eligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
+        const filteredEligibleSentences = group.eligibleSentences.filter(es =>
+          sdsSentenceUuids.has(es.sentenceId)
+        )
+
+        // Filter ineligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
+        const filteredIneligibleSentences = group.ineligibleSentences.filter(is =>
+          sdsSentenceUuids.has(is.sentenceId)
+        )
+
+        return {
+          ...group,
+          sentences: filteredMainSentences,
+          eligibleSentences: filteredEligibleSentences,
+          ineligibleSentences: filteredIneligibleSentences,
+          hasEligibleSentences: filteredEligibleSentences.length > 0,
+          hasIneligibleSentences: filteredIneligibleSentences.length > 0,
+        }
+      })
+      .filter(group => group.sentences.length > 0)
     const revocationDate = getRevocationDate(req)
 
     const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
