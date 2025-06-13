@@ -24,7 +24,9 @@ export default class CalculateReleaseDatesApiClient {
   }
 
   async performFullValidation(nomsId: string): Promise<ValidationMessage[]> {
-    return this.restClient.post({ path: `/validation/${nomsId}/full-validation` }) as Promise<ValidationMessage[]>
+    return this.restClient.post({ path: `/validation/${nomsId}/full-validation?includeInactiveData=true` }) as Promise<
+      ValidationMessage[]
+    >
   }
 
   async getCalculationBreakdown(calculationRequestId: number): Promise<CalculationBreakdown> {
