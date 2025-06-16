@@ -69,12 +69,24 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const caseDetails = getCourtCaseOptions(req)
+    const courtCaseOptions = getCourtCaseOptions(req)
+    const caseDetails = courtCaseOptions
       .filter((c: CourtCase) => c.status !== 'DRAFT')
       .filter((c: CourtCase) => c.sentenced)
     const crdsSentences = getCrdsSentences(req)
     const breakdown = getBreakdown(req)
-    const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown)
+    const summarisedRasCases = summariseRasCases(caseDetails, crdsSentences, breakdown)
+    const doesContainNonSDS = summarisedRasCases.some(group =>
+      group.sentences.some(s =>
+        (s as any).sentence &&
+        (s as any).sentence.sentenceType &&
+        typeof (s as any).sentence.sentenceType.description === 'string' &&
+        !(s as any).sentence.sentenceType.description.includes('SDS')
+      )
+    );
+
+    //TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
+    const summarisedSentencesGroups = summarisedRasCases
       .map(group => {
         // Filter the main sentences array based on sentence.sentenceType.description
         const filteredMainSentences = group.sentences.filter(
@@ -124,7 +136,10 @@ export default class RevocationDateController extends RecallBaseController {
 
     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
     res.locals.casesWithEligibleSentences = sentenceCount
-    if (getRecallRoute(req) === 'NORMAL') {
+    console.log(getRecallRoute(req))
+    if (doesContainNonSDS){
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+    } else if (getRecallRoute(req) === 'NORMAL') {
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, false)
     }
     return super.successHandler(req, res, next)
