@@ -73,9 +73,13 @@ export default class RevocationDateController extends RecallBaseController {
     const doesContainNonSDS = summarisedRasCases.some(group =>
       group.sentences.some(
         s =>
+          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
           (s as any).sentence &&
+          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
           (s as any).sentence.sentenceType &&
+          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
           typeof (s as any).sentence.sentenceType.description === 'string' &&
+          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
           !(s as any).sentence.sentenceType.description.includes('SDS'),
       ),
     )
@@ -86,13 +90,18 @@ export default class RevocationDateController extends RecallBaseController {
         // Filter the main sentences array based on sentence.sentenceType.description
         const filteredMainSentences = group.sentences.filter(
           s =>
+            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
             (s as any).sentence &&
+            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
             (s as any).sentence.sentenceType &&
+            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
             typeof (s as any).sentence.sentenceType.description === 'string' &&
+            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
             (s as any).sentence.sentenceType.description.includes('SDS'),
         )
 
         // Get the UUIDs of these filtered SDS sentences
+        /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
         const sdsSentenceUuids = new Set(filteredMainSentences.map(s => (s as any).sentence.sentenceUuid))
 
         // Filter eligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
