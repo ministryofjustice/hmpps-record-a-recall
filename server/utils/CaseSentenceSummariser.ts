@@ -190,15 +190,17 @@ export function summariseRasCases(
   courtCases: CourtCase[],
   prisonApiSentences: SentenceWithDpsUuid[],
   breakdown?: CalculationBreakdown,
+  revocationDate?: Date,
 ): SummarisedSentenceGroup[] {
   const summarisedCases: SummarisedSentenceGroup[] = []
-  courtCases.forEach(c => summarisedCases.push(summariseCase(c, prisonApiSentences, breakdown)))
+  courtCases.forEach(c => summarisedCases.push(summariseCase(c, prisonApiSentences, breakdown, revocationDate)))
   return summarisedCases
 }
 function summariseCase(
   courtCase: CourtCase,
   prisonApiSentences: SentenceWithDpsUuid[],
   breakdown?: CalculationBreakdown,
+  revocationDate?: Date,
 ): SummarisedSentenceGroup {
   const summarisedGroup: SummarisedSentenceGroup = {
     caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
@@ -236,7 +238,16 @@ function summariseCase(
       concurrentSentenceBreakdown?.sentenceLengthDays || consecutiveSentencePartBreakdown?.sentenceLengthDays
     const aggregateSentenceLengthDays = consecutiveSentenceBreakdown?.sentenceLengthDays
 
-    const recallEligibility = determineEligibilityOnRasSentenceType(s.sentence)
+    const sentenceEligibility = getIndividualEligibility(
+      s.sentence,
+      concurrentSentenceBreakdown,
+      consecutiveSentencePartBreakdown ? consecutiveSentenceBreakdown : null,
+      revocationDate,
+      new Date(courtCase.date),
+    )
+
+
+    const recallEligibility = revocationDate ? determineEligibilityOnRasSentenceType(s.sentence) : sentenceEligibility
     const summary = compact([
       // toSummaryListRow('Committed on', s.offenceDate),
       // toSummaryListRow('Sentence date', s.convictionDate),
@@ -261,9 +272,18 @@ function summariseCase(
       offenceCode: s.sentence.offenceCode,
       offenceDescription: s.sentence.offenceDescription,
     }
-
-    summarisedGroup.eligibleSentences.push(summarisedSentence)
-    summarisedGroup.sentences.push(s)
+    if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
+      summarisedGroup.hasEligibleSentences = true
+      summarisedGroup.eligibleSentences.push(summarisedSentence)
+      //sentences currently being used effectively as an array of eligible sentences for display in check-information,
+      // rather than the eligibleSentences array, due to changing the types used in the view.
+      summarisedGroup.sentences.push(s)
+    } else {
+      summarisedGroup.hasIneligibleSentences = true
+      summarisedGroup.ineligibleSentences.push(summarisedSentence)
+    }
+    //summarisedGroup.eligibleSentences.push(summarisedSentence)
+    //summarisedGroup.sentences.push(s)
   })
 
   return summarisedGroup

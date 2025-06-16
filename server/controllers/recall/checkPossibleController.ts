@@ -29,7 +29,10 @@ export default class CheckPossibleController extends RecallBaseController {
 
             const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
             res.locals.courtCases = activeCases
-            const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || [])
+            const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences.map(sentence => ({
+              ...sentence,
+              sentenceDate: caseItem.date,
+            })) || [])
 
             const [sentences, breakdown] = await Promise.all([
               this.getCrdsSentences(req, res),
