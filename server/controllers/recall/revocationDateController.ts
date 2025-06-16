@@ -1,16 +1,12 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-
 import { isBefore, isEqual, isAfter, min } from 'date-fns'
-// import {CourtCase} from '../../@types/models';
-
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import getJourneyDataFromRequest, {
   getAdjustmentsToConsiderForValidation,
-  getBreakdown,
   getCourtCaseOptions,
   getCrdsSentences,
   getExistingAdjustments,
@@ -73,19 +69,18 @@ export default class RevocationDateController extends RecallBaseController {
     const caseDetails = courtCaseOptions
       .filter((c: CourtCase) => c.status !== 'DRAFT')
       .filter((c: CourtCase) => c.sentenced)
-    const crdsSentences = getCrdsSentences(req)
-    const breakdown = getBreakdown(req)
-    const summarisedRasCases = summariseRasCases(caseDetails, crdsSentences, breakdown)
+    const summarisedRasCases = summariseRasCases(caseDetails)
     const doesContainNonSDS = summarisedRasCases.some(group =>
-      group.sentences.some(s =>
-        (s as any).sentence &&
-        (s as any).sentence.sentenceType &&
-        typeof (s as any).sentence.sentenceType.description === 'string' &&
-        !(s as any).sentence.sentenceType.description.includes('SDS')
-      )
-    );
+      group.sentences.some(
+        s =>
+          (s as any).sentence &&
+          (s as any).sentence.sentenceType &&
+          typeof (s as any).sentence.sentenceType.description === 'string' &&
+          !(s as any).sentence.sentenceType.description.includes('SDS'),
+      ),
+    )
 
-    //TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
+    // TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
     const summarisedSentencesGroups = summarisedRasCases
       .map(group => {
         // Filter the main sentences array based on sentence.sentenceType.description
@@ -94,23 +89,17 @@ export default class RevocationDateController extends RecallBaseController {
             (s as any).sentence &&
             (s as any).sentence.sentenceType &&
             typeof (s as any).sentence.sentenceType.description === 'string' &&
-            (s as any).sentence.sentenceType.description.includes('SDS')
+            (s as any).sentence.sentenceType.description.includes('SDS'),
         )
 
         // Get the UUIDs of these filtered SDS sentences
-        const sdsSentenceUuids = new Set(
-          filteredMainSentences.map(s => (s as any).sentence.sentenceUuid)
-        )
+        const sdsSentenceUuids = new Set(filteredMainSentences.map(s => (s as any).sentence.sentenceUuid))
 
         // Filter eligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
-        const filteredEligibleSentences = group.eligibleSentences.filter(es =>
-          sdsSentenceUuids.has(es.sentenceId)
-        )
+        const filteredEligibleSentences = group.eligibleSentences.filter(es => sdsSentenceUuids.has(es.sentenceId))
 
         // Filter ineligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
-        const filteredIneligibleSentences = group.ineligibleSentences.filter(is =>
-          sdsSentenceUuids.has(is.sentenceId)
-        )
+        const filteredIneligibleSentences = group.ineligibleSentences.filter(is => sdsSentenceUuids.has(is.sentenceId))
 
         return {
           ...group,
@@ -136,8 +125,7 @@ export default class RevocationDateController extends RecallBaseController {
 
     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
     res.locals.casesWithEligibleSentences = sentenceCount
-    console.log(getRecallRoute(req))
-    if (doesContainNonSDS){
+    if (doesContainNonSDS) {
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
     } else if (getRecallRoute(req) === 'NORMAL') {
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, false)

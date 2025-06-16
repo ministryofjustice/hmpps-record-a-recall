@@ -1,9 +1,7 @@
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase, SentenceWithDpsUuid, Term } from 'models'
-import {
-  CalculationBreakdown,
-} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { CourtCase, SentenceWithDpsUuid } from 'models'
+import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import {
   findConcurrentSentenceBreakdown,
   findConsecutiveSentenceBreakdown,
@@ -56,9 +54,7 @@ export default function summariseSentencesGroups(
   return summarisedSentenceGroups
 }
 
-function summariseCase(
-  courtCase: CourtCase
-): SummarisedSentenceGroup {
+function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
   const summarisedGroup: SummarisedSentenceGroup = {
     caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
     ineligibleSentences: [],
@@ -87,9 +83,7 @@ function summariseCase(
   return summarisedGroup
 }
 
-export function summariseRasCases(
-  courtCases: CourtCase[]
-): SummarisedSentenceGroup[] {
+export function summariseRasCases(courtCases: CourtCase[]): SummarisedSentenceGroup[] {
   const summarisedCases: SummarisedSentenceGroup[] = []
   courtCases.forEach(c => summarisedCases.push(summariseCase(c)))
   return summarisedCases

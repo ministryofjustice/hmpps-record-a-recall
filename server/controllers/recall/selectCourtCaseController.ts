@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Sentence, Term } from 'models'
-import { getBreakdown, getCourtCaseOptions, getCrdsSentences, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import {
   formatTerm,
   formatSentenceServeType,
@@ -299,29 +299,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
     }
   }
 
-  //   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-  //     const selectedCases = getCourtCases(req)
-  //     const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) => selectedCases.includes(detail.caseId))
-  //     const sentences = getCrdsSentences(req)
-  //     const breakdown = getBreakdown(req)
-  //     const summarisedSentencesGroups = summariseRasCases(caseDetails, sentences, breakdown)
-  //     const revocationDate = getRevocationDate(req)
-
-  //     const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
-
-  //     req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
-  //     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
-  //     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
-  //     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
-  //     const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
-  //       g.eligibleSentences.flatMap(s => s.sentenceId),
-  //     ).length
-  //     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
-  //     res.locals.casesWithEligibleSentences = sentenceCount
-  //     req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
-
-  //     return super.successHandler(req, res, next)
-
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction): void {
     const reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[]
     const currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number
@@ -354,10 +331,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
           const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
             selectedCases.map(c => c.caseId).includes(detail.caseId),
           )
-          const sentences = getCrdsSentences(req)
-          const breakdown = getBreakdown(req)
-
-          summarisedSentenceGroupsArray = summariseRasCases(caseDetails, sentences, breakdown)
+          // TODO should we be passing sentences and break downs?
+          summarisedSentenceGroupsArray = summariseRasCases(caseDetails)
         }
       }
 
