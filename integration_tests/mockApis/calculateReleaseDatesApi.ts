@@ -68,7 +68,7 @@ export default {
     return stubFor({
       request: {
         method: 'POST',
-        urlPattern: `/calculate-release-dates/validation/A1234AB/full-validation`,
+        urlPattern: `/calculate-release-dates/validation/A1234AB/full-validation\\?includeInactiveData=true`,
       },
       response: {
         status: 200,
