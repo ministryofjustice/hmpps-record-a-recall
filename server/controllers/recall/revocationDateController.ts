@@ -22,7 +22,7 @@ import getJourneyDataFromRequest, {
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
-import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
+import { SummarisedSentenceGroup, hasManualOnlySentences } from '../../utils/sentenceUtils'
 
 export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
