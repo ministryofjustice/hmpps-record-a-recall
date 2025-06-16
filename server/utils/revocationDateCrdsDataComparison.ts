@@ -1,11 +1,12 @@
 import FormWizard from 'hmpo-form-wizard'
+import { Response } from 'express'
 import { getBreakdown, getCrdsSentences, getRevocationDate, sessionModelFields } from '../helpers/formWizardHelper'
 import { groupSentencesByCaseRefAndCourt, hasManualOnlySentences, SummarisedSentenceGroup } from './sentenceUtils'
 import summariseSentencesGroups from './CaseSentenceSummariser'
 import { RecallType } from '../@types/recallTypes'
 import { determineInvalidRecallTypes } from './RecallEligiblityCalculator'
 
-export default function revocationDateCrdsDataComparison(req: FormWizard.Request) {
+export default function revocationDateCrdsDataComparison(req: FormWizard.Request, res: Response) {
   const sentences = getCrdsSentences(req)
   const breakdown = getBreakdown(req)
   const revocationDate = getRevocationDate(req)
@@ -33,4 +34,16 @@ export default function revocationDateCrdsDataComparison(req: FormWizard.Request
 
   const invalidRecallTypes: RecallType[] = determineInvalidRecallTypes(summarisedSentenceGroups, revocationDate)
   req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
+
+  req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
+  res.locals.summarisedSentenceGroups = summarisedSentenceGroups
+  req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroups)
+  res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
+  const sentenceCount = summarisedSentenceGroups?.flatMap((g: SummarisedSentenceGroup) =>
+    g.eligibleSentences.flatMap(s => s.sentenceId),
+  ).length
+  req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
+  res.locals.casesWithEligibleSentences = sentenceCount
+  req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+  res.locals.groups = summariseSentencesGroups
 }

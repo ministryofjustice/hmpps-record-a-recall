@@ -2,17 +2,27 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import { isBefore, isEqual, isAfter, min } from 'date-fns'
+// import {CourtCase} from '../../@types/models';
+
+// eslint-disable-next-line import/no-unresolved
+import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
-import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
 import getJourneyDataFromRequest, {
   getAdjustmentsToConsiderForValidation,
+  getBreakdown,
+  getCourtCaseOptions,
   getCrdsSentences,
   getExistingAdjustments,
   getRecallRoute,
+  getRevocationDate,
   RecallJourneyData,
+  sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
+import { SummarisedSentenceGroup, hasManualOnlySentences } from '../../utils/sentenceUtils'
 
 export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -59,9 +69,34 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    if (getRecallRoute(req) !== 'MANUAL') {
-      revocationDateCrdsDataComparison(req)
+    const caseDetails = getCourtCaseOptions(req)
+      .filter((c: CourtCase) => c.status !== 'DRAFT')
+      .filter((c: CourtCase) => c.sentenced)
+    const crdsSentences = getCrdsSentences(req)
+    const breakdown = getBreakdown(req)
+    const revocationDate = getRevocationDate(req)
+    const summarisedSentencesGroups = summariseRasCases(caseDetails, crdsSentences, breakdown, revocationDate)
+    const eligibleSentences = summarisedSentencesGroups.flatMap(g => g.eligibleSentences)
+
+    const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+
+    req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
+    res.locals.summarisedSentencesGroups = summarisedSentencesGroups
+    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
+    res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
+    const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
+      g.eligibleSentences.flatMap(s => s.sentenceId),
+    ).length
+
+
+    req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
+    res.locals.casesWithEligibleSentences = sentenceCount
+    if (getRecallRoute(req) === 'NORMAL') {
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, false)
     }
+    const manualCaseSelection = hasManualOnlySentences(eligibleSentences)
+    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, manualCaseSelection)
+
     return super.successHandler(req, res, next)
   }
 }

@@ -1,7 +1,7 @@
 import { addDays, isAfter, isBefore, isEqual, isValid, max } from 'date-fns'
-// eslint-disable-next-line import/no-unresolved
-import { Sentence } from 'models'
 import { compact } from 'lodash'
+
+import { ApiSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
@@ -13,16 +13,20 @@ import { SummarisedSentence, SummarisedSentenceGroup } from './sentenceUtils'
 import { RecallType, RecallTypes } from '../@types/recallTypes'
 
 export default function getIndividualEligibility(
-  sentence: SentenceAndOffenceWithReleaseArrangements,
+  sentence: ApiSentence,
   concBreakdown: ConcurrentSentenceBreakdown,
   consBreakdown: ConsecutiveSentenceBreakdown,
   revocationDate: Date,
+  sentenceDate: Date,
 ): RecallEligibility {
   const breakdown = concBreakdown || consBreakdown
 
   if (!breakdown) {
+    // logger.warn(
+    //   `No breakdown found for sentence with line seq ${sentence.chargeNumber} and case seq ${sentence.caseSequence}`,
+    // )
     logger.warn(
-      `No breakdown found for sentence with line seq ${sentence.lineSequence} and case seq ${sentence.caseSequence}`,
+      `No breakdown found for sentence with line seq ${sentence.chargeNumber}`,
     )
     return eligibilityReasons.NO_BREAKDOWN
   }
@@ -45,7 +49,7 @@ export default function getIndividualEligibility(
 
   const adjustedCrd = new Date(breakdown.dates.CRD.adjusted)
 
-  if (revocationDate < new Date(sentence.sentenceDate)) {
+  if (revocationDate < new Date(sentenceDate)) {
     return eligibilityReasons.RECALL_DATE_BEFORE_SENTENCE_START
   }
 
@@ -57,14 +61,15 @@ export default function getIndividualEligibility(
     return eligibilityReasons.HDC
   }
 
-  return determineEligibilityOnCrdsSentenceType(sentence)
+  return determineEligibilityOnRasSentenceType(sentence)
 }
 
-export function determineEligibilityOnRasSentenceType(sentence: Sentence): RecallEligibility {
-  if (!sentence.sentenceType) {
+export function determineEligibilityOnRasSentenceType(sentence: ApiSentence): RecallEligibility {
+  const sentenceType = sentence.sentenceType.description
+  if (!sentenceType) {
     return eligibilityReasons.RAS_LEGACY_SENTENCE
   }
-  if (isNonSDS(sentence.sentenceType)) {
+  if (isNonSDS(sentenceType)) {
     return eligibilityReasons.NON_SDS
   }
   return eligibilityReasons.SDS
