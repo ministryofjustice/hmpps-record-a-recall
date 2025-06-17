@@ -65,6 +65,7 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
+    console.log('-----------succaesshandler')
     const courtCaseOptions = getCourtCaseOptions(req)
     const caseDetails = courtCaseOptions
       .filter((c: CourtCase) => c.status !== 'DRAFT')
@@ -78,12 +79,18 @@ export default class RevocationDateController extends RecallBaseController {
           /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
           (s as any).sentence.sentenceType &&
           /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-          typeof (s as any).sentence.sentenceType.description === 'string' &&
+          typeof (s as any).sentence.sentenceType.classification === 'string' &&
           /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-          !(s as any).sentence.sentenceType.description.includes('SDS'),
+          (s as any).sentence.sentenceType.classification == 'STANDARD',
       ),
     )
 
+    //? notation to get rid of comments 
+    // breackdown for adjusted SLEDs eg by any adjustments eg LAL
+    // crds not supporting EDS cases so test case not achievable  
+
+    // sentence type has classifcation in api not just the description. 
+    //dto has a classification in saying standard instead of looking at the descirption --> look as RAS swagger. --> sentenceType.classification ==== 'standard'
     // TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
     const summarisedSentencesGroups = summarisedRasCases
       .map(group => {
@@ -95,10 +102,12 @@ export default class RevocationDateController extends RecallBaseController {
             /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
             (s as any).sentence.sentenceType &&
             /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-            typeof (s as any).sentence.sentenceType.description === 'string' &&
+            typeof (s as any).sentence.sentenceType.classification === 'string' &&
             /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-            (s as any).sentence.sentenceType.description.includes('SDS'),
+            (s as any).sentence.sentenceType.classification !== 'STANDARD',
         )
+
+        console.log('----------------summarisedRasCases', summarisedRasCases)
 
         // Get the UUIDs of these filtered SDS sentences
         /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
