@@ -27,7 +27,7 @@ function hasSentence(
     typeof item === 'object' &&
     item !== null &&
     'sentence' in item &&
-    typeof (item as any).sentence === 'object'
+    typeof (item as Record<string, unknown>).sentence === 'object'
   )
 }
 
@@ -75,7 +75,6 @@ export default class RevocationDateController extends RecallBaseController {
     })
   }
 
-
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     const courtCaseOptions = getCourtCaseOptions(req)
     const caseDetails = courtCaseOptions
@@ -83,22 +82,16 @@ export default class RevocationDateController extends RecallBaseController {
       .filter((c: CourtCase) => c.sentenced)
     const summarisedRasCases = summariseRasCases(caseDetails)
     const doesContainNonSDS = summarisedRasCases.some(group =>
-  group.sentences.some(
-    s =>
-      hasSentence(s) &&
-      s.sentence.sentenceType?.classification === 'STANDARD',
-  ),
-)
+      group.sentences.some(s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD'),
+    )
 
     // TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
     const summarisedSentencesGroups = summarisedRasCases
       .map(group => {
         // Filter the main sentences array based on sentence.sentenceType.description
-  const filteredMainSentences = group.sentences.filter(
-  s =>
-    hasSentence(s) &&
-    s.sentence.sentenceType?.classification === 'STANDARD',
-)
+        const filteredMainSentences = group.sentences.filter(
+          s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD',
+        )
 
         // Get the UUIDs of these filtered SDS sentences
         /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
