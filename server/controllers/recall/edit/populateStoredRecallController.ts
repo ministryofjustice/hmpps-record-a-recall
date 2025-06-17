@@ -75,7 +75,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
       const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
         storedRecall.courtCaseIds.includes(detail.caseId),
       )
-      const summarisedSentencesGroups = summariseRasCases(caseDetails, [], null)
+      const summarisedSentencesGroups = summariseRasCases(caseDetails)
       req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     }
 
