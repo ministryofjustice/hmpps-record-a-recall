@@ -20,6 +20,17 @@ import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
 import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
 
+function hasSentence(
+  item: unknown,
+): item is { sentence: { sentenceType?: { classification?: string }; sentenceUuid?: string } } {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    'sentence' in item &&
+    typeof (item as any).sentence === 'object'
+  )
+}
+
 export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
@@ -63,6 +74,7 @@ export default class RevocationDateController extends RecallBaseController {
       callback(validationErrors)
     })
   }
+  
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     console.log('-----------succaesshandler')
@@ -71,19 +83,13 @@ export default class RevocationDateController extends RecallBaseController {
       .filter((c: CourtCase) => c.status !== 'DRAFT')
       .filter((c: CourtCase) => c.sentenced)
     const summarisedRasCases = summariseRasCases(caseDetails)
-    const doesContainNonSDS = summarisedRasCases.some(group =>
-      group.sentences.some(
-        s =>
-          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-          (s as any).sentence &&
-          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-          (s as any).sentence.sentenceType &&
-          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-          typeof (s as any).sentence.sentenceType.classification === 'string' &&
-          /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-          (s as any).sentence.sentenceType.classification == 'STANDARD',
-      ),
-    )
+   const doesContainNonSDS = summarisedRasCases.some(group =>
+  group.sentences.some(
+    s =>
+      hasSentence(s) &&
+      s.sentence.sentenceType?.classification === 'STANDARD',
+  ),
+)
 
     //? notation to get rid of comments 
     // breackdown for adjusted SLEDs eg by any adjustments eg LAL
@@ -110,8 +116,9 @@ export default class RevocationDateController extends RecallBaseController {
         console.log('----------------summarisedRasCases', summarisedRasCases)
 
         // Get the UUIDs of these filtered SDS sentences
-        /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-        const sdsSentenceUuids = new Set(filteredMainSentences.map(s => (s as any).sentence.sentenceUuid))
+ const sdsSentenceUuids = new Set(
+  filteredMainSentences.map(s => s.sentenceUuid).filter(Boolean),
+)
 
         // Filter eligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
         const filteredEligibleSentences = group.eligibleSentences.filter(es => sdsSentenceUuids.has(es.sentenceId))
