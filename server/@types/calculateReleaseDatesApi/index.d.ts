@@ -1400,6 +1400,10 @@ export interface components {
       approvedDates?: components['schemas']['ManualEntrySelectedDate'][]
       isSpecialistSupport?: boolean
     }
+    RecordARecallResult: {
+      validationMessages: components['schemas']['ValidationMessage'][]
+      calculatedReleaseDates?: components['schemas']['CalculatedReleaseDates']
+    }
     WorkingDay: {
       /** Format: date */
       date: string

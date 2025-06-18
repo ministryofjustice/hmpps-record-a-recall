@@ -1,11 +1,10 @@
 import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 import {
-  CalculatedReleaseDates,
   CalculationBreakdown,
   LatestCalculation,
+  RecordARecallCalculationResult,
   SentenceAndOffenceWithReleaseArrangements,
-  ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CalculateReleaseDatesApiClient {
@@ -23,12 +22,6 @@ export default class CalculateReleaseDatesApiClient {
     return this.restClient.get({ path: `/calculation/${nomsId}/latest` }) as Promise<LatestCalculation>
   }
 
-  async performFullValidation(nomsId: string): Promise<ValidationMessage[]> {
-    return this.restClient.post({ path: `/validation/${nomsId}/full-validation?includeInactiveData=true` }) as Promise<
-      ValidationMessage[]
-    >
-  }
-
   async getCalculationBreakdown(calculationRequestId: number): Promise<CalculationBreakdown> {
     return this.restClient.get({
       path: `/calculation/breakdown/${calculationRequestId}`,
@@ -43,7 +36,7 @@ export default class CalculateReleaseDatesApiClient {
     }) as Promise<SentenceAndOffenceWithReleaseArrangements[]>
   }
 
-  async calculateReleaseDates(nomsId: string): Promise<CalculatedReleaseDates> {
-    return this.restClient.post({ path: `/calculation/record-a-recall/${nomsId}` }) as Promise<CalculatedReleaseDates>
+  async calculateReleaseDates(nomsId: string): Promise<RecordARecallCalculationResult> {
+    return this.restClient.post({ path: `/record-a-recall/${nomsId}` }) as Promise<RecordARecallCalculationResult>
   }
 }

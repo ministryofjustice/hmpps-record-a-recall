@@ -2,7 +2,10 @@ import nock from 'nock'
 import CalculationService from './calculationService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 import config from '../config'
-import { CalculatedReleaseDates } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  CalculatedReleaseDates,
+  RecordARecallCalculationResult,
+} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 jest.mock('../data/hmppsAuthClient')
 
@@ -21,8 +24,12 @@ describe('CalculationService service', () => {
     it('Request a temporrary calculation', async () => {
       const nomsId = 'A1234BC'
 
-      const calculationResults = { calculationRequestId: 'uuid-returned' } as unknown as CalculatedReleaseDates
-      fakeCalculateReleaseDatesApi.post(`/calculation/record-a-recall/${nomsId}`).reply(200, calculationResults)
+      const calculationResults = {
+        validationMessages: [],
+        calculatedReleaseDates: { calculationRequestId: 'uuid-returned' } as unknown as CalculatedReleaseDates,
+      } as RecordARecallCalculationResult
+
+      fakeCalculateReleaseDatesApi.post(`/record-a-recall/${nomsId}`).reply(200, calculationResults)
 
       const calculation = await calculationService.getTemporaryCalculation(nomsId, 'user11')
 

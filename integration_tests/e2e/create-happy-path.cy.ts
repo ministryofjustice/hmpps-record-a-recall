@@ -9,7 +9,6 @@ context('Create recall happy path', () => {
     cy.task('stubSignIn')
     cy.task('stubManageUsersMeCaseloads')
     cy.task('stubPrisonerSearch')
-    cy.task('stubValidate')
     cy.task('stubRecordARecallCRDS')
     cy.task('stubSentencesAndOffences')
     cy.task('stubGetCalculationBreakdown')

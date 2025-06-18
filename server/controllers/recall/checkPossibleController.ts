@@ -1,7 +1,10 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  RecordARecallCalculationResult,
+  ValidationMessage,
+} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
@@ -14,55 +17,58 @@ export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
-      const errors: ValidationMessage[] = await req.services.calculationService.performCrdsValidation(nomisId, username)
+      const calculationResult: RecordARecallCalculationResult =
+        await req.services.calculationService.getTemporaryCalculation(nomisId, username)
+
+      const errors: ValidationMessage[] = calculationResult.validationMessages
+
       res.locals.validationResponse = errors
       const recallEligibility = determineRecallEligibilityFromValidation(errors)
       res.locals.recallEligibility = recallEligibility
-      if (recallEligibility !== eligibilityReasons.CRITICAL_VALIDATION_FAIL) {
-        await this.getTemporaryCalculation(req, res)
-          .then(async newCalc => {
-            res.locals.temporaryCalculation = newCalc
-            res.locals.calcReqId = newCalc.calculationRequestId
-            logger.debug(newCalc.dates)
 
-            const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
+      if (
+        recallEligibility !== eligibilityReasons.CRITICAL_VALIDATION_FAIL &&
+        calculationResult.calculatedReleaseDates
+      ) {
+        const newCalc = calculationResult.calculatedReleaseDates
+        res.locals.temporaryCalculation = newCalc
+        res.locals.calcReqId = newCalc.calculationRequestId
+        logger.debug(newCalc.dates)
 
-            const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
-            res.locals.courtCases = activeCases
-            const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || [])
+        const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
 
-            const [sentences, breakdown] = await Promise.all([
-              this.getCrdsSentences(req, res),
-              this.getCalculationBreakdown(req, res),
-            ])
-            const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
-            const firstBookingId = sentences[0].bookingId
+        const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
+        res.locals.courtCases = activeCases
+        const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || [])
 
-            const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
+        const [sentences, breakdown] = await Promise.all([
+          this.getCrdsSentences(req, res),
+          this.getCalculationBreakdown(req, res),
+        ])
+        const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
+        const firstBookingId = sentences[0].bookingId
 
-            res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
+        const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
 
-            const matchedRaSSentences = sentencesFromRasCases.filter(sentence =>
-              dpsSentenceSequenceIds.some(mapping => mapping.dpsSentenceId === sentence.sentenceUuid),
-            )
+        res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
-            res.locals.rasSentences = matchedRaSSentences.map(sentence => ({
-              ...sentence,
-              dpsSentenceUuid: sentence.sentenceUuid,
-            }))
+        const matchedRaSSentences = sentencesFromRasCases.filter(sentence =>
+          dpsSentenceSequenceIds.some(mapping => mapping.dpsSentenceId === sentence.sentenceUuid),
+        )
 
-            res.locals.crdsSentences = sentences.map(sentence => ({
-              ...sentence,
-              dpsSentenceUuid: dpsSentenceSequenceIds.find(
-                mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
-              )?.dpsSentenceId,
-            }))
+        res.locals.rasSentences = matchedRaSSentences.map(sentence => ({
+          ...sentence,
+          dpsSentenceUuid: sentence.sentenceUuid,
+        }))
 
-            res.locals.breakdown = breakdown
-          })
-          .catch(error => {
-            logger.error(error.userMessage)
-          })
+        res.locals.crdsSentences = sentences.map(sentence => ({
+          ...sentence,
+          dpsSentenceUuid: dpsSentenceSequenceIds.find(
+            mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
+          )?.dpsSentenceId,
+        }))
+
+        res.locals.breakdown = breakdown
 
         res.locals.existingAdjustments = await req.services.adjustmentsService
           .searchUal(nomisId, username)
