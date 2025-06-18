@@ -1,11 +1,10 @@
 import { HmppsAuthClient } from '../data'
 import CalculateReleaseDatesApiClient from '../api/calculateReleaseDatesApiClient'
 import {
-  CalculatedReleaseDates,
   CalculationBreakdown,
   LatestCalculation,
+  RecordARecallCalculationResult,
   SentenceAndOffenceWithReleaseArrangements,
-  ValidationMessage,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../logger'
 
@@ -33,14 +32,9 @@ export default class CalculationService {
     return crdApi.getLatestCalculation(nomsId)
   }
 
-  async getTemporaryCalculation(nomsId: string, username: string): Promise<CalculatedReleaseDates> {
+  async getTemporaryCalculation(nomsId: string, username: string): Promise<RecordARecallCalculationResult> {
     const crdApi = await this.getCRDApiClient(username)
     return crdApi.calculateReleaseDates(nomsId)
-  }
-
-  async performCrdsValidation(nomsId: string, username: string): Promise<ValidationMessage[]> {
-    const crdApi = await this.getCRDApiClient(username)
-    return crdApi.performFullValidation(nomsId)
   }
 
   async calculateTemporaryDates(nomisId: string, username: string) {

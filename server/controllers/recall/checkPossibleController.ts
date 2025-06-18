@@ -1,7 +1,10 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
-import { ValidationMessage } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  RecordARecallCalculationResult,
+  ValidationMessage,
+} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
@@ -14,40 +17,42 @@ export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
-      const errors: ValidationMessage[] = await req.services.calculationService.performCrdsValidation(nomisId, username)
+      const calculationResult: RecordARecallCalculationResult =
+        await req.services.calculationService.getTemporaryCalculation(nomisId, username)
+
+      const errors: ValidationMessage[] = calculationResult.validationMessages
+
       res.locals.validationResponse = errors
       const recallEligibility = determineRecallEligibilityFromValidation(errors)
       res.locals.recallEligibility = recallEligibility
-      if (recallEligibility !== eligibilityReasons.CRITICAL_VALIDATION_FAIL) {
-        await this.getTemporaryCalculation(req, res)
-          .then(async newCalc => {
-            res.locals.temporaryCalculation = newCalc
-            res.locals.calcReqId = newCalc.calculationRequestId
-            logger.debug(newCalc.dates)
-            const [sentences, breakdown] = await Promise.all([
-              this.getSentences(req, res),
-              this.getCalculationBreakdown(req, res),
-            ])
+      if (
+        recallEligibility !== eligibilityReasons.CRITICAL_VALIDATION_FAIL &&
+        calculationResult.calculatedReleaseDates
+      ) {
+        const newCalc = calculationResult.calculatedReleaseDates
+        res.locals.temporaryCalculation = newCalc
+        res.locals.calcReqId = newCalc.calculationRequestId
+        logger.debug(newCalc.dates)
+        const [sentences, breakdown] = await Promise.all([
+          this.getSentences(req, res),
+          this.getCalculationBreakdown(req, res),
+        ])
 
-            const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
-            const firstBookingId = sentences[0].bookingId
+        const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
+        const firstBookingId = sentences[0].bookingId
 
-            const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
+        const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
 
-            res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
+        res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
-            res.locals.sentences = sentences.map(sentence => ({
-              ...sentence,
-              dpsSentenceUuid: dpsSentenceSequenceIds.find(
-                mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
-              )?.dpsSentenceId,
-            }))
+        res.locals.sentences = sentences.map(sentence => ({
+          ...sentence,
+          dpsSentenceUuid: dpsSentenceSequenceIds.find(
+            mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
+          )?.dpsSentenceId,
+        }))
 
-            res.locals.breakdown = breakdown
-          })
-          .catch(error => {
-            logger.error(error.userMessage)
-          })
+        res.locals.breakdown = breakdown
 
         res.locals.existingAdjustments = await req.services.adjustmentsService
           .searchUal(nomisId, username)

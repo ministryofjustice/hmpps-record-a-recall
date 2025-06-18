@@ -30,15 +30,13 @@ export default class BulkCalculationService {
 
       let validation: ValidationMessage[] = []
       try {
-        validation = await this.calculationService.performCrdsValidation(prisoner.prisonerNumber, username)
-
         bookingId = prisoner.bookingId
-
         await this.calculationService
           .getTemporaryCalculation(prisoner.prisonerNumber, username)
-          .then(async latestCalc => {
+          .then(async result => {
             //get calculation
-            const { calculationRequestId } = latestCalc
+            const { validationMessages, calculatedReleaseDates } = result
+            const { calculationRequestId } = calculatedReleaseDates
             const sentencesAndReleaseDates = calculationRequestId
               ? await this.calculationService.getSentencesAndReleaseDates(calculationRequestId, username)
               : undefined
@@ -53,7 +51,7 @@ export default class BulkCalculationService {
                   prisoner.prisonerNumber,
                   sentence.bookingId.toString(),
                   prisonerDetails,
-                  latestCalc,
+                  calculatedReleaseDates,
                   calculationBreakdown,
                   sentence,
                   null,

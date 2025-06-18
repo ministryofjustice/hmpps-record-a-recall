@@ -44,13 +44,13 @@ export default async (req: Request, res: Response) => {
     })
 }
 
-export function getCalculation(
+export async function getCalculation(
   nomisId: string,
   storedInNomis: boolean,
   username: string,
   calcService: CalculationService,
-): Promise<CalculatedReleaseDates> | Promise<LatestCalculation> {
+): Promise<CalculatedReleaseDates | LatestCalculation> {
   return storedInNomis
     ? calcService.getLatestCalculation(nomisId, username)
-    : calcService.getTemporaryCalculation(nomisId, username)
+    : (await calcService.getTemporaryCalculation(nomisId, username))?.calculatedReleaseDates
 }
