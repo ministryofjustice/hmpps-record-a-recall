@@ -82,7 +82,7 @@ export default class RevocationDateController extends RecallBaseController {
       .filter((c: CourtCase) => c.sentenced)
     const summarisedRasCases = summariseRasCases(caseDetails)
     const doesContainNonSDS = summarisedRasCases.some(group =>
-      group.sentences.some(s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD'),
+      group.sentences.some(s => hasSentence(s) && s.sentence.sentenceType?.classification !== 'STANDARD'),
     )
 
     // TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
