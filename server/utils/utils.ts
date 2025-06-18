@@ -100,3 +100,92 @@ export function createAnswerSummaryList(
     toSummaryListRow('Recall type', journeyData.recallType.description, editLink('recall-type')),
   ])
 }
+
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): SentenceLength[] => {
+  if (periodLengths) {
+    return periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+  }
+  return null
+}
+
+export interface SentenceLength {
+  years?: string
+  months?: string
+  weeks?: string
+  days?: string
+  periodOrder: string[]
+  periodLengthType:
+    | 'SENTENCE_LENGTH'
+    | 'CUSTODIAL_TERM'
+    | 'LICENCE_PERIOD'
+    | 'TARIFF_LENGTH'
+    | 'TERM_LENGTH'
+    | 'OVERALL_SENTENCE_LENGTH'
+  description?: string
+  uuid?: string
+}
+
+// Helper function to get display string for sentence period types
+const getDisplayDescription = (type: PeriodLength['periodLengthType']): string => {
+  switch (type) {
+    case 'SENTENCE_LENGTH':
+      return 'Sentence Length'
+    case 'CUSTODIAL_TERM':
+      return 'Custodial Term'
+    case 'TARIFF_LENGTH':
+      return 'Tariff Length'
+    case 'TERM_LENGTH':
+      return 'Term Length'
+    case 'OVERALL_SENTENCE_LENGTH':
+      return 'Overall Sentence Length'
+    case 'UNSUPPORTED':
+      return 'Unsupported Period'
+    default: {
+      // Fallback for any unhandled types: convert to Title Case
+      // This ensures that if new types are added, they get a reasonable default display
+      const ensuredType: string = type || '' // Ensure type is a string for manipulation
+      return ensuredType
+        .replace(/_/g, ' ')
+        .replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
+    }
+  }
+}
+
+export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLength => {
+  if (periodLength) {
+    return {
+      description: getDisplayDescription(periodLength.periodLengthType),
+      ...(typeof periodLength.days === 'number' ? { days: String(periodLength.days) } : {}),
+      ...(typeof periodLength.weeks === 'number' ? { weeks: String(periodLength.weeks) } : {}),
+      ...(typeof periodLength.months === 'number' ? { months: String(periodLength.months) } : {}),
+      ...(typeof periodLength.years === 'number' ? { years: String(periodLength.years) } : {}),
+      periodOrder: periodLength.periodOrder.split(','),
+      periodLengthType: periodLength.periodLengthType,
+      uuid: periodLength.periodLengthUuid,
+    } as SentenceLength
+  }
+  return null
+}
+
+type PeriodLength = {
+  /** Format: int32 */
+  years?: number
+  /** Format: int32 */
+  months?: number
+  /** Format: int32 */
+  weeks?: number
+  /** Format: int32 */
+  days?: number
+  periodOrder: string
+  /** @enum {string} */
+  periodLengthType:
+    | 'SENTENCE_LENGTH'
+    | 'CUSTODIAL_TERM'
+    | 'LICENCE_PERIOD'
+    | 'TARIFF_LENGTH'
+    | 'TERM_LENGTH'
+    | 'OVERALL_SENTENCE_LENGTH'
+    | 'UNSUPPORTED'
+  /** Format: uuid */
+  periodLengthUuid: string
+}
