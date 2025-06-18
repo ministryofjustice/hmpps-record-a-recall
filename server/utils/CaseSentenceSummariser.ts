@@ -1,15 +1,7 @@
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase, SentenceWithDpsUuid, Term } from 'models'
-import {
-  CalculationBreakdown,
-  ConcurrentSentenceBreakdown,
-  ConsecutiveSentenceBreakdown,
-  ConsecutiveSentencePart,
-  Offence,
-} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import toSummaryListRow from '../helpers/componentHelper'
-import { format8DigitDate } from '../formatters/formatDate'
+import { CourtCase, SentenceWithDpsUuid } from 'models'
+import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import {
   findConcurrentSentenceBreakdown,
   findConsecutiveSentenceBreakdown,
@@ -33,6 +25,7 @@ export default function summariseSentencesGroups(
       hasIneligibleSentences: false,
       eligibleSentences: [],
       hasEligibleSentences: false,
+      sentences: [],
     }
 
     summarisedGroup.caseRefAndCourt = caseRef
@@ -41,8 +34,6 @@ export default function summariseSentencesGroups(
       const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
       const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdown)
 
-      const { offence } = sentence
-
       const recallEligibility = getIndividualEligibility(
         sentence,
         concurrentSentenceBreakdown,
@@ -50,134 +41,17 @@ export default function summariseSentencesGroups(
         revocationDate,
       )
 
-      const forthConsConc = forthwithConsecutiveConcurrent(
-        concurrentSentenceBreakdown,
-        consecutiveSentencePartBreakdown,
-      )
-
-      const sentenceLengthDays =
-        concurrentSentenceBreakdown?.sentenceLengthDays || consecutiveSentencePartBreakdown?.sentenceLengthDays
-      const aggregateSentenceLengthDays = consecutiveSentenceBreakdown?.sentenceLengthDays
-
-      const unadjustedSled = getDate(
-        concurrentSentenceBreakdown,
-        consecutiveSentenceBreakdown,
-        consecutiveSentencePartBreakdown,
-        'SLED',
-      )?.unadjusted
-
-      const unadjustedLed = getDate(
-        concurrentSentenceBreakdown,
-        consecutiveSentenceBreakdown,
-        consecutiveSentencePartBreakdown,
-        'LED',
-      )?.unadjusted
-
-      const summary = compact([
-        toSummaryListRow('Committed on', stringifyOffenceDate(offence)),
-        toSummaryListRow('Sentence date', format8DigitDate(sentence.sentenceDate)),
-        toSummaryListRow('Sentence type', sentence.sentenceTypeDescription),
-        toSummaryListRow('Custodial term', getCustodialTerm(sentence.terms)),
-        toSummaryListRow('Licence period', getLicenceTerm(sentence.terms)),
-        toSummaryListRow('Case Sequence', `${sentence.caseSequence}`),
-        toSummaryListRow('Line Sequence', `${sentence.lineSequence}`),
-        toSummaryListRow('Consecutive or concurrent', forthConsConc),
-        toSummaryListRow('Unadjusted SLED', unadjustedSled),
-        toSummaryListRow('Unadjusted LED', unadjustedLed),
-        toSummaryListRow(
-          consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-          consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-        ),
-        toSummaryListRow(
-          'Invalid recall types',
-          recallEligibility.ineligibleRecallTypes?.map(t => t.description).join(', '),
-        ),
-        toSummaryListRow('Recall Options reason', recallEligibility.description),
-      ])
-
-      const thisSummarisedSentence: SummarisedSentence = {
-        sentenceId: sentence.dpsSentenceUuid,
-        recallEligibility,
-        summary,
-        offenceCode: sentence.offence.offenceCode,
-        offenceDescription: sentence.offence.offenceDescription,
-        unadjustedSled: unadjustedSled || unadjustedLed,
-        sentenceLengthDays: consecutiveSentencePartBreakdown ? aggregateSentenceLengthDays : sentenceLengthDays,
-      }
-
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
         summarisedGroup.hasEligibleSentences = true
-        summarisedGroup.eligibleSentences.push(thisSummarisedSentence)
+        summarisedGroup.eligibleSentences.push(sentence)
       } else {
         summarisedGroup.hasIneligibleSentences = true
-        summarisedGroup.ineligibleSentences.push(thisSummarisedSentence)
+        summarisedGroup.ineligibleSentences.push(sentence)
       }
     })
     summarisedSentenceGroups.push(summarisedGroup)
   })
   return summarisedSentenceGroups
-}
-
-function forthwithConsecutiveConcurrent(
-  concBreakdown: ConcurrentSentenceBreakdown,
-  consPartBreakdown: ConsecutiveSentencePart,
-): string {
-  if (concBreakdown) {
-    return 'Concurrent'
-  }
-  if (consPartBreakdown) {
-    if (consPartBreakdown.consecutiveToLineSequence && consPartBreakdown.consecutiveToCaseSequence) {
-      return `Consecutive to case ${consPartBreakdown.consecutiveToCaseSequence}, line ${consPartBreakdown.consecutiveToLineSequence}`
-    }
-    return 'Forthwith'
-  }
-
-  return 'Unknown'
-}
-
-function getCustodialTerm(terms: Term[]): string {
-  return getTerm(terms, 'IMP')
-}
-
-function getLicenceTerm(terms: Term[]): string {
-  return getTerm(terms, 'LIC')
-}
-
-function getTerm(terms: Term[], type: string): string {
-  const term = terms?.find(t => t.code === type)
-
-  return stringifyTerm(term)
-}
-
-function stringifyTerm(term: Term): string {
-  return term ? `${term.years} years ${term.months} months ${term.weeks} weeks ${term.days} days` : undefined
-}
-
-function stringifyOffenceDate(offence: Offence) {
-  return offence.offenceEndDate
-    ? `${format8DigitDate(offence.offenceStartDate)} to ${format8DigitDate(offence.offenceEndDate)}`
-    : format8DigitDate(offence.offenceStartDate)
-}
-
-function getDate(
-  concBreakdown: ConcurrentSentenceBreakdown,
-  consBreakdown: ConsecutiveSentenceBreakdown,
-  consPartBreakdown: ConsecutiveSentencePart,
-  dateType: string,
-) {
-  if (concBreakdown) {
-    return concBreakdown.dates[dateType]
-  }
-  if (consPartBreakdown) {
-    return consBreakdown.dates[dateType]
-  }
-  return null
-}
-
-export function summariseRasCases(courtsCases: CourtCase[]): SummarisedSentenceGroup[] {
-  const summarisedCases: SummarisedSentenceGroup[] = []
-  courtsCases.forEach(c => summarisedCases.push(summariseCase(c)))
-  return summarisedCases
 }
 
 function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
@@ -186,39 +60,31 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
     ineligibleSentences: [],
     hasIneligibleSentences: false,
     eligibleSentences: [],
+    sentences: [],
     hasEligibleSentences: false,
   }
 
   courtCase.sentences.forEach(s => {
     summarisedGroup.hasEligibleSentences = true
-    const recallEligibility = determineEligibilityOnRasSentenceType(s)
-    const summary = compact([
-      toSummaryListRow('Committed on', s.offenceDate),
-      toSummaryListRow('Sentence date', s.convictionDate),
-      toSummaryListRow('Sentence type', s.sentenceType),
-      toSummaryListRow('Custodial term', stringifyTerm(s.custodialTerm)),
-      toSummaryListRow('Licence period', stringifyTerm(s.licenceTerm)),
-      toSummaryListRow('Consecutive or concurrent', s.sentenceServeType),
-      // TODO We don't have the following for RaS sentences
-      // toSummaryListRow('Unadjusted SLED', unadjustedSled),
-      // toSummaryListRow('Unadjusted LED', unadjustedLed),
-      // toSummaryListRow(
-      //   consecutiveSentencePartBreakdown ? 'Aggregate sentence length' : 'Sentence length',
-      //   consecutiveSentencePartBreakdown ? `${aggregateSentenceLengthDays}` : `${sentenceLengthDays}`,
-      // ),
-      toSummaryListRow('Recall Options', recallEligibility.code),
-      toSummaryListRow('Recall Options reason', recallEligibility.description),
-    ])
+    const recallEligibility = determineEligibilityOnRasSentenceType(s.sentence)
+    const summary = compact([])
     const summarisedSentence: SummarisedSentence = {
-      sentenceId: s.sentenceUuid,
+      sentenceId: s.sentence.sentenceUuid,
       recallEligibility,
       summary,
-      offenceCode: s.offenceCode,
-      offenceDescription: s.offenceDescription,
+      offenceCode: s.sentence.offenceCode,
+      offenceDescription: s.sentence.offenceDescription,
     }
 
     summarisedGroup.eligibleSentences.push(summarisedSentence)
+    summarisedGroup.sentences.push(s)
   })
 
   return summarisedGroup
+}
+
+export function summariseRasCases(courtCases: CourtCase[]): SummarisedSentenceGroup[] {
+  const summarisedCases: SummarisedSentenceGroup[] = []
+  courtCases.forEach(c => summarisedCases.push(summariseCase(c)))
+  return summarisedCases
 }

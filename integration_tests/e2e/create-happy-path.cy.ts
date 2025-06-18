@@ -47,8 +47,12 @@ context('Create recall happy path', () => {
     cy.contains('Select all the cases that are relevant to this recall')
     cy.get('button').contains('Continue').click()
 
-    // Step 5: Select court cases
+    // Step 5: Select BOTH court cases
     const selectCasesTitle = 'Select court cases'
+    cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
+    cy.get('input[type="radio"][name="activeSentenceChoice"]').first().check()
+    new ReviewFormPage(selectCasesTitle).continueButton().click()
+
     cy.url().should('include', '/person/A1234AB/record-recall/select-cases')
     cy.get('input[type="radio"][name="activeSentenceChoice"]').first().check()
     new ReviewFormPage(selectCasesTitle).continueButton().click()
@@ -65,11 +69,6 @@ context('Create recall happy path', () => {
     const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
     recallTypeForm.recallTypeRadio().click()
     new ReviewFormPage(recallTypeTitle).continueButton().click()
-
-    // Step 7a: Recall Type Interrupt
-    cy.url().should('include', '/person/A1234AB/record-recall/recall-type-interrupt')
-    cy.contains('Is this the correct recall type?')
-    cy.get('[data-qa="continue-btn"]').click()
 
     // Step 8: Check your answers
     const checkAnswersTitle = 'Check your answers'

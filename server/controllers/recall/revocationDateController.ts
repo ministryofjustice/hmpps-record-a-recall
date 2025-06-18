@@ -1,18 +1,35 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-
 import { isBefore, isEqual, isAfter, min } from 'date-fns'
+// eslint-disable-next-line import/no-unresolved
+import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
-import revocationDateCrdsDataComparison from '../../utils/revocationDateCrdsDataComparison'
 import getJourneyDataFromRequest, {
   getAdjustmentsToConsiderForValidation,
+  getCourtCaseOptions,
   getCrdsSentences,
   getExistingAdjustments,
   getRecallRoute,
+  getRevocationDate,
   RecallJourneyData,
+  sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
+import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
+
+function hasSentence(
+  item: unknown,
+): item is { sentence: { sentenceType?: { classification?: string }; sentenceUuid?: string } } {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    'sentence' in item &&
+    typeof (item as Record<string, unknown>).sentence === 'object'
+  )
+}
 
 export default class RevocationDateController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -59,8 +76,61 @@ export default class RevocationDateController extends RecallBaseController {
   }
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    if (getRecallRoute(req) !== 'MANUAL') {
-      revocationDateCrdsDataComparison(req)
+    const courtCaseOptions = getCourtCaseOptions(req)
+    const caseDetails = courtCaseOptions
+      .filter((c: CourtCase) => c.status !== 'DRAFT')
+      .filter((c: CourtCase) => c.sentenced)
+    const summarisedRasCases = summariseRasCases(caseDetails)
+    const doesContainNonSDS = summarisedRasCases.some(group =>
+      group.sentences.some(s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD'),
+    )
+
+    // TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
+    const summarisedSentencesGroups = summarisedRasCases
+      .map(group => {
+        // Filter the main sentences array based on sentence.sentenceType.description
+        const filteredMainSentences = group.sentences.filter(
+          s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD',
+        )
+
+        // Get the UUIDs of these filtered SDS sentences
+        /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
+        const sdsSentenceUuids = new Set(filteredMainSentences.map(s => (s as any).sentence.sentenceUuid))
+
+        // Filter eligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
+        const filteredEligibleSentences = group.eligibleSentences.filter(es => sdsSentenceUuids.has(es.sentenceId))
+
+        // Filter ineligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
+        const filteredIneligibleSentences = group.ineligibleSentences.filter(is => sdsSentenceUuids.has(is.sentenceId))
+
+        return {
+          ...group,
+          sentences: filteredMainSentences,
+          eligibleSentences: filteredEligibleSentences,
+          ineligibleSentences: filteredIneligibleSentences,
+          hasEligibleSentences: filteredEligibleSentences.length > 0,
+          hasIneligibleSentences: filteredIneligibleSentences.length > 0,
+        }
+      })
+      .filter(group => group.sentences.length > 0)
+    const revocationDate = getRevocationDate(req)
+
+    const invalidRecallTypes = determineInvalidRecallTypes(summarisedSentencesGroups, revocationDate)
+
+    req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
+    res.locals.summarisedSentencesGroups = summarisedSentencesGroups
+    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
+    res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
+    const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
+      g.eligibleSentences.flatMap(s => s.sentenceId),
+    ).length
+
+    req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
+    res.locals.casesWithEligibleSentences = sentenceCount
+    if (doesContainNonSDS) {
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+    } else if (getRecallRoute(req) === 'NORMAL') {
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, false)
     }
     return super.successHandler(req, res, next)
   }

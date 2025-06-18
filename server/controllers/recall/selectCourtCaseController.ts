@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Sentence, Term } from 'models'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import {
   formatTerm,
   formatSentenceServeType,
@@ -11,7 +12,6 @@ import {
 } from '../../utils/sentenceUtils'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 import RecallBaseController from './recallBaseController'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import logger from '../../../logger'
@@ -328,7 +328,11 @@ export default class SelectCourtCaseController extends RecallBaseController {
           }
         })
         if (selectedCases.length > 0) {
-          summarisedSentenceGroupsArray = summariseRasCases(selectedCases)
+          const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
+            selectedCases.map(c => c.caseId).includes(detail.caseId),
+          )
+          // TODO should we be passing sentences and break downs?
+          summarisedSentenceGroupsArray = summariseRasCases(caseDetails)
         }
       }
 
