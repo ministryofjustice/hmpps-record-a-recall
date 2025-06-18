@@ -23,16 +23,11 @@ export default class BulkTestController {
       } catch (e) {
         personDetails = e.userMessage
       }
-      let validation
-      try {
-        validation = await this.calculationService.performCrdsValidation(person, username)
-      } catch (e) {
-        validation = e.data.userMessage
-      }
       return this.calculationService
         .getTemporaryCalculation(person, username)
-        .then(async latestCalc => {
-          const { calculationRequestId } = latestCalc
+        .then(async result => {
+          const { validationMessages, calculatedReleaseDates } = result
+          const { calculationRequestId } = calculatedReleaseDates
           let sentencesAndReleaseDates
           try {
             sentencesAndReleaseDates = calculationRequestId
@@ -52,8 +47,8 @@ export default class BulkTestController {
 
           return res.render('pages/bulk/index', {
             personDetails,
-            validation,
-            latestCalc,
+            validation: validationMessages,
+            latestCalc: calculatedReleaseDates,
             sentencesAndReleaseDates,
             calculationBreakdown,
           })
@@ -61,7 +56,7 @@ export default class BulkTestController {
         .catch(error => {
           return res.render('pages/bulk/index', {
             personDetails,
-            validation,
+            validation: [],
             latestCalc: error.data.userMessage,
           })
         })

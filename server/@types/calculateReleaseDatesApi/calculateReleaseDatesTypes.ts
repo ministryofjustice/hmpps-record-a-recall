@@ -10,6 +10,7 @@ export type ConcurrentSentenceBreakdown = components['schemas']['ConcurrentSente
 export type ConsecutiveSentenceBreakdown = components['schemas']['ConsecutiveSentenceBreakdown']
 export type ConsecutiveSentencePart = components['schemas']['ConsecutiveSentencePart']
 export type CalculatedReleaseDates = components['schemas']['CalculatedReleaseDates']
+export type RecordARecallCalculationResult = components['schemas']['RecordARecallResult']
 export type ValidationMessage = components['schemas']['ValidationMessage']
 export type Term = components['schemas']['SentenceTerms']
 export type Offence = components['schemas']['OffenderOffence']
