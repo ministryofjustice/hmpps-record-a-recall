@@ -203,7 +203,7 @@ export default {
     adjustments: {
       url: get(
         'ADJUSTMENTS_URL',
-        'https://adjust-release-dates-dev.hmpps.service.justice.gov.uk',
+        'https://adjustments-dev.hmpps.service.justice.gov.uk',
         requiredInProduction,
       ),
     },
