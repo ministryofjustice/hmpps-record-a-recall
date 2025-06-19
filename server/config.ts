@@ -201,11 +201,7 @@ export default {
       url: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
     },
     adjustments: {
-      url: get(
-        'ADJUSTMENTS_URL',
-        'https://adjust-release-dates-dev.hmpps.service.justice.gov.uk',
-        requiredInProduction,
-      ),
+      url: get('ADJUSTMENTS_URL', 'https://adjustments-dev.hmpps.service.justice.gov.uk', requiredInProduction),
     },
     calculateReleaseDates: {
       url: get('CRDS_URL', 'https://calculate-release-dates-dev.hmpps.service.justice.gov.uk', requiredInProduction),
