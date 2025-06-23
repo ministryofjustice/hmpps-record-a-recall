@@ -3,6 +3,8 @@ import { Request, Response } from 'express'
 import { Recall } from 'models'
 import logger from '../../../logger'
 import PrisonerService from '../../services/prisonerService'
+import ManageOffencesService from '../../services/manageOffencesService'
+// import CourtCaseService from '../../services/CourtCaseService'
 import getServiceUrls from '../../helpers/urlHelper'
 
 export default async (req: Request, res: Response) => {
@@ -28,50 +30,69 @@ export default async (req: Request, res: Response) => {
 
   const urls = getServiceUrls(nomisId)
 
-  if (prisoner) {
-    let recalls: Recall[]
-    let serviceDefinitions
-    try {
-      recalls = await req.services.recallService.getAllRecalls(nomisId, username)
-      const locationIds = recalls.map(r => r.location)
-      const prisonNames = await req.services.prisonService.getPrisonNames(locationIds, username)
-      // eslint-disable-next-line no-param-reassign,no-return-assign
-      recalls.forEach(r => (r.locationName = prisonNames.get(r.location)))
-      serviceDefinitions = await req.services.courtCasesReleaseDatesService.getServiceDefinitions(
-        nomisId,
-        req.user.token,
-      )
-    } catch (e) {
-      logger.error(e)
-    }
-    // Nothing to do.
+if (prisoner) {
+    let recalls: Recall[] = []
+    let serviceDefinitions: any = null
+    let courtCases: any[] = []
 
-    // Find the latest recall by createdAt date
-    let latestRecallId: string | undefined
-    if (recalls && recalls.length > 0) {
-      const latestRecall = recalls.reduce((latest, current) => {
-        if (
-          !latest ||
-          (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
-        ) {
-          return current
-        }
-        return latest
-      }, null)
-      latestRecallId = latestRecall?.recallId
-    }
-
-    return res.render('pages/person/home', {
+  try {
+    recalls = await req.services.recallService.getAllRecalls(nomisId, username)
+    const locationIds = recalls.map(r => r.location)
+    const prisonNames = await req.services.prisonService.getPrisonNames(locationIds, username)
+    recalls.forEach(r => (r.locationName = prisonNames.get(r.location)))
+    serviceDefinitions = await req.services.courtCasesReleaseDatesService.getServiceDefinitions(
       nomisId,
-      prisoner,
-      recalls,
-      banner,
-      urls,
-      serviceDefinitions,
-      errorMessage: error?.length ? error[0] : null,
-      latestRecallId,
+      req.user.token,
+    )
+
+    courtCases = await req.services.courtCaseService.getAllCourtCases(nomisId, username)
+
+    recalls.forEach(recall => {
+      ;(recall as any).courtCases = courtCases.filter(cc => recall.courtCaseIds?.includes(cc.caseId))
     })
+  } catch (e) {
+    logger.error(e)
   }
+
+  // Find the latest recall by using createdAt date
+  let latestRecallId: string | undefined
+  if (recalls.length > 0) {
+    const latestRecall = recalls.reduce((latest, current) => {
+      if (
+        !latest ||
+        (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
+      ) {
+        return current
+      }
+      return latest
+    }, null as Recall | null)
+    latestRecallId = latestRecall?.recallId
+  }
+
+  // Extract offenceCodes from all courtCases
+  const offenceCodes = courtCases.flatMap(cc =>
+    cc.charges?.map((charge: { offenceCode: any }) => charge.offenceCode).filter(Boolean) || []
+  )
+
+  let offenceNameMap = {}
+  if (offenceCodes.length > 0) {
+    offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+  }
+
+  console.log(JSON.stringify(recalls, null, 2))
+
+  return res.render('pages/person/home', {
+    nomisId,
+    prisoner,
+    recalls,
+    offenceNameMap,
+    banner,
+    urls,
+    serviceDefinitions,
+    errorMessage: error?.length ? error[0] : null,
+    latestRecallId,
+  })
+}
   req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)
   return res.redirect('/search')
 }
