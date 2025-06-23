@@ -20,6 +20,7 @@ import AdjustmentsService from '../../services/adjustmentsService'
 import ManageUsersService from '../../services/manageUsersService'
 import ManageOffencesService from '../../services/manageOffencesService'
 import NomisToDpsMappingService from '../../services/NomisToDpsMappingService'
+import DataFlowService from '../../services/DataFlowService'
 
 const mockHmppsAuthClient = { getSystemClientToken: jest.fn() } as unknown as HmppsAuthClient
 
@@ -79,6 +80,13 @@ const mockCourtService = {} as unknown as CourtService
 const mockAdjustmentsService = {} as unknown as AdjustmentsService
 const mockManageUsersService = {} as unknown as ManageUsersService
 const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as ManageOffencesService
+const mockDataFlowService = {
+  setPrisonerDetails: jest.fn(),
+  setRecallsWithLocationNames: jest.fn(),
+  setServiceDefinitions: jest.fn(),
+  setCommonTemplateData: jest.fn(),
+  createDataMiddleware: jest.fn(),
+} as unknown as DataFlowService
 
 interface TestServices {
   recallService: typeof mockRecallService
@@ -100,6 +108,7 @@ interface TestServices {
   adjustmentsService: typeof mockAdjustmentsService
   manageUsersService: typeof mockManageUsersService
   manageOffencesService: typeof mockManageOffencesService
+  dataFlowService: typeof mockDataFlowService
 }
 
 let req: Partial<Request>
@@ -184,7 +193,9 @@ describe('viewPersonHome', () => {
         adjustmentsService: mockAdjustmentsService,
         manageUsersService: mockManageUsersService,
         manageOffencesService: mockManageOffencesService,
+        dataFlowService: mockDataFlowService,
       } as TestServices,
+      dataFlowService: mockDataFlowService,
     }
     ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue({
       prisonerNumber: 'A1234BC',

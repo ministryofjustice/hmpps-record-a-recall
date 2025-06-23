@@ -4,11 +4,11 @@ import {
   CalculatedReleaseDates,
   LatestCalculation,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { setPrisonerDetailsInLocals } from './viewPersonHomeController'
 import CalculationService from '../../services/calculationService'
 
 export default async (req: Request, res: Response) => {
-  await setPrisonerDetailsInLocals(req.services.prisonerService, res)
+  // Use DataFlowService to load prisoner details consistently
+  await req.dataFlowService.setPrisonerDetails(res)
   const { nomisId } = req.params
   const { prisoner } = res.locals
   const { username } = res.locals.user

@@ -16,6 +16,10 @@ export default class PrisonerDetailsController extends FormInitialStep {
     const prisoner = req.sessionModel.get<PrisonerSearchApiPrisoner>(sessionModelFields.PRISONER)
     const nomisId = prisoner?.prisonerNumber
 
+    // Ensure prisoner data is also available in res.locals for template consistency
+    res.locals.prisoner = prisoner
+    res.locals.nomisId = nomisId
+
     return { ...locals, prisoner, nomisId }
   }
 
@@ -24,19 +28,27 @@ export default class PrisonerDetailsController extends FormInitialStep {
     const sessionPrisoner = req.sessionModel.get<PrisonerSearchApiPrisoner>(sessionModelFields.PRISONER)
 
     if (!sessionPrisoner) {
-      req.services.prisonerService
-        .getPrisonerDetails(nomisId, username)
-        .then(newPrisoner => {
-          req.sessionModel.set(sessionModelFields.PRISONER, newPrisoner)
-          req.sessionModel.save()
-          next()
-        })
-        .catch(error => {
-          logger.error(error, `Failed to retrieve prisoner details for: ${nomisId}`)
-          req.sessionModel.unset(sessionModelFields.PRISONER)
-          next(error)
-        })
+      try {
+        const newPrisoner = await req.services.prisonerService.getPrisonerDetails(nomisId, username)
+
+        // Store in session for form wizard
+        req.sessionModel.set(sessionModelFields.PRISONER, newPrisoner)
+        req.sessionModel.save()
+
+        // Also populate res.locals for template consistency
+        res.locals.prisoner = newPrisoner
+
+        logger.debug(`Prisoner details loaded and cached for ${nomisId}`)
+        next()
+      } catch (error) {
+        logger.error(error, `Failed to retrieve prisoner details for: ${nomisId}`)
+        req.sessionModel.unset(sessionModelFields.PRISONER)
+        res.locals.prisoner = null
+        next(error)
+      }
     } else {
+      // Use cached data from session
+      res.locals.prisoner = sessionPrisoner
       next()
     }
   }
