@@ -6,6 +6,18 @@ import PrisonerService from '../../services/prisonerService'
 import ManageOffencesService from '../../services/manageOffencesService'
 // import CourtCaseService from '../../services/CourtCaseService'
 import getServiceUrls from '../../helpers/urlHelper'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
+
+
+function hasSentence(item: unknown): item is { sentence: any } {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    'sentence' in item &&
+    typeof (item as Record<string, unknown>).sentence === 'object'
+  )
+}
 
 export default async (req: Request, res: Response) => {
   await setPrisonerDetailsInLocals(req.services.prisonerService, res)
@@ -48,7 +60,7 @@ if (prisoner) {
     courtCases = await req.services.courtCaseService.getAllCourtCases(nomisId, username)
 
     recalls.forEach(recall => {
-      ;(recall as any).courtCases = courtCases.filter(cc => recall.courtCaseIds?.includes(cc.caseId))
+      (recall as any).courtCases = courtCases.filter(cc => recall.courtCaseIds?.includes(cc.caseId))
     })
   } catch (e) {
     logger.error(e)
@@ -78,8 +90,35 @@ if (prisoner) {
   if (offenceCodes.length > 0) {
     offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
   }
+  const summarisedRasCases = summariseRasCases(
+    courtCases.filter(c => c.status !== 'DRAFT' && c.sentenced)
+  )
+  
+  const summarisedSentencesGroups: SummarisedSentenceGroup[] = summarisedRasCases
+  .map(group => {
+    const filteredMainSentences = group.sentences.filter(
+      s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD',
+    )
+    
+    const sdsSentenceUuids = new Set(filteredMainSentences.map(s => (s as any).sentence.sentenceUuid))
+    
+    const filteredEligibleSentences = group.eligibleSentences.filter(es => sdsSentenceUuids.has(es.sentenceId))
+    const filteredIneligibleSentences = group.ineligibleSentences.filter(is => sdsSentenceUuids.has(is.sentenceId))
+    
+      // console.log(JSON.stringify(recalls, null, 2))
 
-  console.log(JSON.stringify(recalls, null, 2))
+    return {
+      ...group,
+      sentences: filteredMainSentences,
+      eligibleSentences: filteredEligibleSentences,
+      ineligibleSentences: filteredIneligibleSentences,
+      hasEligibleSentences: filteredEligibleSentences.length > 0,
+      hasIneligibleSentences: filteredIneligibleSentences.length > 0,
+    }
+  })
+  .filter(group => group.sentences.length > 0)
+
+
 
   return res.render('pages/person/home', {
     nomisId,
@@ -89,6 +128,7 @@ if (prisoner) {
     banner,
     urls,
     serviceDefinitions,
+    summarisedSentencesGroups,
     errorMessage: error?.length ? error[0] : null,
     latestRecallId,
   })

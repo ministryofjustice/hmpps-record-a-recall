@@ -5,6 +5,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
@@ -29,28 +31,43 @@
 {% block content %}
 <div class="govuk-grid-row govuk-!-margin-top-6">
   <div class="govuk-grid-column-two-thirds">
-  <h1 class="govuk-heading-xl">Recalls</h1>
-  {{ thingsToDo(serviceDefinitions, 'recalls') }}
-  {%  if not recalls or recalls.length == 0 %}
-    <p>There are no recalls recorded</p>
-  {% endif %}
-  {{ govukButton({
-    classes: "govuk-button--secondary",
-    text: "Record a recall",
-    preventDoubleClick: true,
-    href: '/person/' + nomisId + '/record-recall?entrypoint=recalls',
-    attributes: {  'data-qa': 'create-new-recall-btn' }
-  }) }}
+    <h1 class="govuk-heading-xl">Recalls</h1>
+    {{ thingsToDo(serviceDefinitions, 'recalls') }}
+
+    {% if not recalls or recalls.length == 0 %}
+      <p>There are no recalls recorded</p>
+    {% endif %}
+
+    {{ govukButton({
+      classes: "govuk-button--secondary",
+      text: "Record a recall",
+      preventDoubleClick: true,
+      href: '/person/' + nomisId + '/record-recall?entrypoint=recalls',
+      attributes: {  'data-qa': 'create-new-recall-btn' }
+    }) }}
 
     {% for recall in recalls %}
-
       {{ recallCard(recall, latestRecallId) }}
+    {% endfor %}
 
-    {%  endfor %}
-  </div></div>
+    {# Insert Court Cases info and offence cards here #}
+    <div class="govuk-!-margin-top-8">
+      {{ cardInfo('Court Cases', summarisedSentencesGroups.length ~ ' cases with sentences') }}
+
+      {% if summarisedSentencesGroups and summarisedSentencesGroups.length %}
+        {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
+      {% else %}
+        <p>No court cases or sentences available.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
 {% endblock %}
 
-{%  macro recallCard(recall, latestRecallId) %}
+{# Macros #}
+
+{% macro recallCard(recall, latestRecallId) %}
 <div class="govuk-summary-card govuk-!-margin-bottom-6">
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">Recalled on {{ recall.revocationDate | date }}
@@ -85,4 +102,49 @@
 {% macro cardInfo(field, value) %}
   <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ field }}</h3>
   <p class="govuk-body govuk-!-margin-bottom-2">{{ value }}</p>
+{% endmacro %}
+
+{% macro sentenceCards(groups, offenceNameMap) %}
+    {% for group in groups %}
+        <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
+
+        {% for charge in group.sentences %}
+            {{ sentenceCard(charge, offenceNameMap) }}
+        {% endfor %}
+        
+        {% if group.hasIneligibleSentences %}
+            {% set ineligibleHtml %}
+                {% for sentence in group.ineligibleSentences %}
+                    {{ sentenceCard(sentence, offenceNameMap) }}
+                {% endfor %}
+            {% endset %}
+            {% set summaryHtml %}
+                View sentences that are ineligible for recall ({{ group.ineligibleSentences | length }})
+            {% endset %}
+            {{ govukDetails({
+                summaryHtml: summaryHtml,
+                html: ineligibleHtml
+            }) }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro sentenceCard(charge, offenceNameMap) %}
+  {{ offenceCard({
+    offenceCode: charge.offenceCode,
+    offenceName: offenceNameMap[charge.offenceCode],
+    offenceStartDate: charge.offenceStartDate | formatDate if charge.offenceStartDate else 'Not entered',
+    offenceEndDate: charge.offenceEndDate | formatDate,
+    hideOutcome: true,
+    outcome: charge.sentence.outcome,
+    countNumber: charge.sentence.chargeNumber,
+    convictionDate: charge.sentence.convictionDate | formatDate if charge.sentence.convictionDate else 'Not available',
+    terrorRelated: false,
+    isSentenced: true,
+    periodLengths: charge.sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: charge.sentence.sentenceServeType,
+    consecutiveTo: charge.sentence.consecutiveToChargeNumber,
+    sentenceType: charge.sentence.sentenceType.description,
+    detailsClasses: 'govuk-!-padding-4'
+  }) }}
 {% endmacro %}
