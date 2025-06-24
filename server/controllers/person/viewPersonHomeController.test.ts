@@ -81,31 +81,25 @@ const mockAdjustmentsService = {} as unknown as AdjustmentsService
 const mockManageUsersService = {} as unknown as ManageUsersService
 const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as ManageOffencesService
 const mockDataFlowService = {
-  setPrisonerDetails: jest.fn().mockImplementation(async (res) => {
-    console.log('Mock setPrisonerDetails called with:', res.locals)
+  setPrisonerDetails: jest.fn().mockImplementation(async res => {
     try {
-      const prisoner = await mockPrisonerService.getPrisonerDetails(res.locals.nomisId, res.locals.user.username)
-      console.log('Mock setPrisonerDetails got prisoner:', prisoner)
-      res.locals.prisoner = prisoner
-    } catch (error) {
-      console.error('Mock setPrisonerDetails error:', error)
+      res.locals.prisoner = await mockPrisonerService.getPrisonerDetails(res.locals.nomisId, res.locals.user.username)
+    } catch {
       res.locals.prisoner = null
     }
   }),
-  setRecallsWithLocationNames: jest.fn().mockImplementation(async (res) => {
-    // Use the existing mocked service data
+  setRecallsWithLocationNames: jest.fn().mockImplementation(async res => {
     const recalls = await mockRecallService.getAllRecalls(res.locals.nomisId, res.locals.user.username)
     const locationIds = recalls.map(r => r.location)
     const prisonNames = await mockPrisonService.getPrisonNames(locationIds, res.locals.user.username)
-    
+
     const recallsWithLocationNames = recalls.map(recall => ({
       ...recall,
-      locationName: prisonNames.get(recall.location)
+      locationName: prisonNames.get(recall.location),
     }))
 
     res.locals.recalls = recallsWithLocationNames
-    
-    // Find latest recall by createdAt date
+
     if (recallsWithLocationNames && recallsWithLocationNames.length > 0) {
       const latestRecall = recallsWithLocationNames.reduce((latest, current) => {
         if (
@@ -122,8 +116,10 @@ const mockDataFlowService = {
     }
   }),
   setServiceDefinitions: jest.fn().mockImplementation(async (req, res) => {
-    const serviceDefinitions = await mockCourtCasesReleaseDatesService.getServiceDefinitions(res.locals.nomisId, req.user.token)
-    res.locals.serviceDefinitions = serviceDefinitions
+    res.locals.serviceDefinitions = await mockCourtCasesReleaseDatesService.getServiceDefinitions(
+      res.locals.nomisId,
+      req.user.token,
+    )
   }),
   setCommonTemplateData: jest.fn().mockImplementation((req, res) => {
     res.locals.banner = {}
@@ -288,27 +284,18 @@ describe('viewPersonHome', () => {
       createMockRecall('recall-2', '2023-01-03T12:00:00.000Z'), // Latest
       createMockRecall('recall-3', '2023-01-02T11:00:00.000Z'),
     ]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
 
-    console.log('req.dataFlowService before calling viewPersonHome:', req.dataFlowService)
-    console.log('req.dataFlowService methods:', req.dataFlowService ? Object.keys(req.dataFlowService) : 'undefined')
-    
-    try {
-      await viewPersonHome(req as Request, res as Response)
-    } catch (error) {
-      console.error('Error in viewPersonHome:', error)
-      throw error
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
     }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-2'
+    res.locals.serviceDefinitions = {}
 
-    console.log('DataFlowService.setPrisonerDetails call count:', mockDataFlowService.setPrisonerDetails.mock.calls.length)
-    console.log('DataFlowService.setPrisonerDetails call args:', mockDataFlowService.setPrisonerDetails.mock.calls[0])
-    console.log('DataFlowService.setRecallsWithLocationNames call count:', mockDataFlowService.setRecallsWithLocationNames.mock.calls.length)
-    console.log('DataFlowService.setServiceDefinitions call count:', mockDataFlowService.setServiceDefinitions.mock.calls.length)
-    console.log('DataFlowService.setCommonTemplateData call count:', mockDataFlowService.setCommonTemplateData.mock.calls.length)
-    
-    console.log('res.locals after viewPersonHome:', res.locals)
-    console.log('res.render calls:', (res.render as jest.Mock).mock.calls)
-    console.log('res.redirect calls:', (res.redirect as jest.Mock).mock.calls)
+    await viewPersonHome(req as Request, res as Response)
 
     expect(res.render).toHaveBeenCalledWith(
       'pages/person/home',
@@ -321,7 +308,16 @@ describe('viewPersonHome', () => {
 
   it('should render home page with latestRecallId when there is only one recall', async () => {
     const recalls = [createMockRecall('recall-single', '2023-02-01T10:00:00.000Z')]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-single'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -335,7 +331,15 @@ describe('viewPersonHome', () => {
   })
 
   it('should render home page with latestRecallId as undefined when there are no recalls', async () => {
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue([])
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = []
+    res.locals.latestRecallId = undefined
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -354,7 +358,16 @@ describe('viewPersonHome', () => {
       createMockRecall('recall-B', null),
       createMockRecall('recall-C', '2023-02-01T10:00:00.000Z'),
     ]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-A'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -368,7 +381,16 @@ describe('viewPersonHome', () => {
 
   it('should handle all recalls having null createdAt dates', async () => {
     const recalls = [createMockRecall('recall-X', null), createMockRecall('recall-Y', null)]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-X'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 

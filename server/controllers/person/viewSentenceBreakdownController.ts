@@ -7,8 +7,7 @@ import {
 import CalculationService from '../../services/calculationService'
 
 export default async (req: Request, res: Response) => {
-  // Use DataFlowService to load prisoner details consistently
-  await req.dataFlowService.setPrisonerDetails(res)
+  // Prisoner data is pre-loaded by createDataMiddleware in the router
   const { nomisId } = req.params
   const { prisoner } = res.locals
   const { username } = res.locals.user

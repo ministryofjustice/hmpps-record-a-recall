@@ -1,4 +1,4 @@
-import express, { Express } from 'express'
+import express, { Express, Request, Response, NextFunction } from 'express'
 import { NotFound } from 'http-errors'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -10,9 +10,11 @@ import * as auth from '../../authentication/auth'
 import type { Services } from '../../services'
 import type { ApplicationInfo } from '../../applicationInfo'
 import AuditService from '../../services/auditService'
+import DataFlowService from '../../services/DataFlowService'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 
 jest.mock('../../services/auditService')
+jest.mock('../../services/DataFlowService')
 
 const testAppInfo: ApplicationInfo = {
   applicationName: 'test',
@@ -71,9 +73,7 @@ function appSetup(
 
 export function appWithAllRoutes({
   production = false,
-  services = {
-    auditService: new AuditService(null) as jest.Mocked<AuditService>,
-  },
+  services = {},
   userSupplier = () => user,
   flashProvider = jest.fn(),
 }: {
@@ -82,6 +82,27 @@ export function appWithAllRoutes({
   userSupplier?: () => HmppsUser
   flashProvider?: jest.Mock<unknown, [string]>
 }): Express {
+  // Create a fresh mock DataFlowService for each app instance
+  const mockDataFlowService = {
+    setPrisonerDetails: jest.fn(),
+    setRecallsWithLocationNames: jest.fn(),
+    setServiceDefinitions: jest.fn(),
+    setCommonTemplateData: jest.fn(),
+    createDataMiddleware: jest.fn().mockReturnValue((req: Request, res: Response, next: NextFunction) => {
+      // Ensure res.locals has some basic structure for tests
+      next()
+    }),
+  } as unknown as jest.Mocked<DataFlowService>
+
+  // Always provide default mocks for required services
+  const defaultServices = {
+    auditService: new AuditService(null) as jest.Mocked<AuditService>,
+    dataFlowService: mockDataFlowService,
+  }
+
+  // Merge provided services with defaults
+  const mergedServices = { ...defaultServices, ...services }
+
   auth.default.authenticationMiddleware = () => (req, res, next) => next()
-  return appSetup(services as Services, production, userSupplier, flashProvider)
+  return appSetup(mergedServices as Services, production, userSupplier, flashProvider)
 }
