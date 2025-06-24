@@ -7,6 +7,7 @@ import ApiRoutes from './apiRoutes'
 import searchRouter from './search'
 import newRecallRouter from './recall'
 import addServicesToRequest from '../middleware/addServicesToRequest'
+import setUpDataFlow from '../middleware/setUpDataFlow'
 import { Services } from '../services'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import viewPersonRouter from './viewPersonRouter'
@@ -32,6 +33,7 @@ export default function routes(services: Services): Router {
   })
 
   router.use(addServicesToRequest(services))
+  router.use(setUpDataFlow())
   router.use('/search', searchRouter)
   router.use('/person/:nomisId?', populateNomisId(), viewPersonRouter(services))
   // HMPO Forms defined route

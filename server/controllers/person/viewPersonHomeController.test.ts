@@ -81,10 +81,54 @@ const mockAdjustmentsService = {} as unknown as AdjustmentsService
 const mockManageUsersService = {} as unknown as ManageUsersService
 const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as ManageOffencesService
 const mockDataFlowService = {
-  setPrisonerDetails: jest.fn(),
-  setRecallsWithLocationNames: jest.fn(),
-  setServiceDefinitions: jest.fn(),
-  setCommonTemplateData: jest.fn(),
+  setPrisonerDetails: jest.fn().mockImplementation(async (res) => {
+    console.log('Mock setPrisonerDetails called with:', res.locals)
+    try {
+      const prisoner = await mockPrisonerService.getPrisonerDetails(res.locals.nomisId, res.locals.user.username)
+      console.log('Mock setPrisonerDetails got prisoner:', prisoner)
+      res.locals.prisoner = prisoner
+    } catch (error) {
+      console.error('Mock setPrisonerDetails error:', error)
+      res.locals.prisoner = null
+    }
+  }),
+  setRecallsWithLocationNames: jest.fn().mockImplementation(async (res) => {
+    // Use the existing mocked service data
+    const recalls = await mockRecallService.getAllRecalls(res.locals.nomisId, res.locals.user.username)
+    const locationIds = recalls.map(r => r.location)
+    const prisonNames = await mockPrisonService.getPrisonNames(locationIds, res.locals.user.username)
+    
+    const recallsWithLocationNames = recalls.map(recall => ({
+      ...recall,
+      locationName: prisonNames.get(recall.location)
+    }))
+
+    res.locals.recalls = recallsWithLocationNames
+    
+    // Find latest recall by createdAt date
+    if (recallsWithLocationNames && recallsWithLocationNames.length > 0) {
+      const latestRecall = recallsWithLocationNames.reduce((latest, current) => {
+        if (
+          !latest ||
+          (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
+        ) {
+          return current
+        }
+        return latest
+      }, null)
+      res.locals.latestRecallId = latestRecall?.recallId
+    } else {
+      res.locals.latestRecallId = undefined
+    }
+  }),
+  setServiceDefinitions: jest.fn().mockImplementation(async (req, res) => {
+    const serviceDefinitions = await mockCourtCasesReleaseDatesService.getServiceDefinitions(res.locals.nomisId, req.user.token)
+    res.locals.serviceDefinitions = serviceDefinitions
+  }),
+  setCommonTemplateData: jest.fn().mockImplementation((req, res) => {
+    res.locals.banner = {}
+    res.locals.errorMessage = null
+  }),
   createDataMiddleware: jest.fn(),
 } as unknown as DataFlowService
 
@@ -246,7 +290,25 @@ describe('viewPersonHome', () => {
     ]
     ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
 
-    await viewPersonHome(req as Request, res as Response)
+    console.log('req.dataFlowService before calling viewPersonHome:', req.dataFlowService)
+    console.log('req.dataFlowService methods:', req.dataFlowService ? Object.keys(req.dataFlowService) : 'undefined')
+    
+    try {
+      await viewPersonHome(req as Request, res as Response)
+    } catch (error) {
+      console.error('Error in viewPersonHome:', error)
+      throw error
+    }
+
+    console.log('DataFlowService.setPrisonerDetails call count:', mockDataFlowService.setPrisonerDetails.mock.calls.length)
+    console.log('DataFlowService.setPrisonerDetails call args:', mockDataFlowService.setPrisonerDetails.mock.calls[0])
+    console.log('DataFlowService.setRecallsWithLocationNames call count:', mockDataFlowService.setRecallsWithLocationNames.mock.calls.length)
+    console.log('DataFlowService.setServiceDefinitions call count:', mockDataFlowService.setServiceDefinitions.mock.calls.length)
+    console.log('DataFlowService.setCommonTemplateData call count:', mockDataFlowService.setCommonTemplateData.mock.calls.length)
+    
+    console.log('res.locals after viewPersonHome:', res.locals)
+    console.log('res.render calls:', (res.render as jest.Mock).mock.calls)
+    console.log('res.redirect calls:', (res.redirect as jest.Mock).mock.calls)
 
     expect(res.render).toHaveBeenCalledWith(
       'pages/person/home',
