@@ -5,7 +5,7 @@ import CourtCaseService from '../services/CourtCaseService'
 /**
  * Middleware to load court cases details into res.locals
  */
-export default function loadCourCasea(courtCaseService: CourtCaseService) {
+export default function loadCourtCases(courtCaseService: CourtCaseService) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { nomisId, user } = res.locals
 
@@ -15,10 +15,7 @@ export default function loadCourCasea(courtCaseService: CourtCaseService) {
     }
 
     try {
-      const recallableCourtCases = await req.services.courtCaseService.getAllRecallableCourtCases(
-        user.username,
-        nomisId,
-      )
+      const recallableCourtCases = await courtCaseService.getAllRecallableCourtCases(user.username, nomisId)
       res.locals.recallableCourtCases = recallableCourtCases
       logger.debug(`Court cases details loaded for ${nomisId}`)
       console.log('----------------recallableCourtCases', recallableCourtCases)
