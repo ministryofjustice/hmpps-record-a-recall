@@ -1,7 +1,6 @@
 import type { CourtCase, Sentence } from 'models'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
-import RecallableCourtCasesApiClient from '../api/recallableCourtCasesApiClient'
 import { ApiCourtCase, ApiCourtCasePage, ApiCharge } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
@@ -13,9 +12,9 @@ export default class CourtCaseService {
     )
   }
 
-  async getRecallableCourtCases(prisonerId: string,username: string) {
-    console.log('----------', prisonerId)
-    return (await this.getApiClient2(username)).getRecallableCourtCases(prisonerId)
+  async getRecallableCourtCases(nomsId: string,username: string) {
+    console.log('----------***', nomsId)
+    return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
   }
 
   private async getCases(
@@ -32,10 +31,6 @@ export default class CourtCaseService {
 
   private async getPage(nomisId: string, page: number, username: string): Promise<ApiCourtCasePage> {
     return (await this.getApiClient(username)).getCourtCases(nomisId, page)
-  }
-
-  private async getApiClient2(username: string): Promise<RecallableCourtCasesApiClient> {
-    return new RecallableCourtCasesApiClient(await this.getSystemClientToken(username))
   }
 
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {

@@ -5,6 +5,7 @@ import {
   ApiCourtCasePage,
   CreateRecall,
   CreateRecallResponse,
+  RecallableCourtCase,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
@@ -55,5 +56,12 @@ export default class RemandAndSentencingApiClient {
     await this.restClient.delete({
       path: `/recall/${recallId}`,
     })
+  }
+
+  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCase[]> {
+    console.log('api client prisonerId', prisonerId)
+    return this.restClient.get({
+    path: `/court-case/A5052EC/recallable-court-cases`,
+    }) as Promise<RecallableCourtCase[]>
   }
 }
