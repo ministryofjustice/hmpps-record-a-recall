@@ -4,6 +4,7 @@ import { Recall } from 'models'
 import logger from '../../../logger'
 import PrisonerService from '../../services/prisonerService'
 import getServiceUrls from '../../helpers/urlHelper'
+import { RecallableCourtCase } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default async (req: Request, res: Response) => {
   await setPrisonerDetailsInLocals(req.services.prisonerService, res)
@@ -31,6 +32,7 @@ export default async (req: Request, res: Response) => {
   if (prisoner) {
     let recalls: Recall[]
     let serviceDefinitions
+    let recallableCourtCases: RecallableCourtCase[]
     try {
       recalls = await req.services.recallService.getAllRecalls(nomisId, username)
       const locationIds = recalls.map(r => r.location)
@@ -47,8 +49,8 @@ export default async (req: Request, res: Response) => {
     // Nothing to do.
 
     try {
-      const recallableCourtCases = await req.services.courtCaseService.getRecallableCourtCases(username, nomisId)
-      console.log('----------------recallableCourtCases', recallableCourtCases)
+      recallableCourtCases = await req.services.courtCaseService.getRecallableCourtCases(username, nomisId)
+      // console.log('----------------recallableCourtCases', recallableCourtCases)
     } catch (e) {
       logger.error(e)
     }
@@ -76,6 +78,7 @@ export default async (req: Request, res: Response) => {
       serviceDefinitions,
       errorMessage: error?.length ? error[0] : null,
       latestRecallId,
+      recallableCourtCases,
     })
   }
   req.flash('errorMessage', `Prisoner details for ${nomisId} not found`)
