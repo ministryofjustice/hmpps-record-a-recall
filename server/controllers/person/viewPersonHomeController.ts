@@ -52,8 +52,6 @@ export default async (req: Request, res: Response) => {
     } catch (e) {
       logger.error(e)
     }
-
-
     // Find the latest recall by createdAt date
     let latestRecallId: string | undefined
     if (recalls && recalls.length > 0) {
