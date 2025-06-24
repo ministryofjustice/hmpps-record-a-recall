@@ -1,7 +1,6 @@
 import type { CourtCase, Sentence } from 'models'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
-import RecallableCourtCasesApiClient from '../api/recallableCourtCasesApiClient'
 import { ApiCourtCase, ApiCourtCasePage, ApiCharge } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
@@ -13,7 +12,7 @@ export default class CourtCaseService {
     )
   }
 
-  async getRecallableCourtCases(nomsId: string, username: string) {
+  async getAllRecallableCourtCases(nomsId: string, username: string) {
     console.log('**')
     return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
   }

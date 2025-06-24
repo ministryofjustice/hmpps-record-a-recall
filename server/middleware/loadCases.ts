@@ -15,7 +15,10 @@ export default function loadCourCasea(courtCaseService: CourtCaseService) {
     }
 
     try {
-      const recallableCourtCases = await req.services.courtCaseService.getRecallableCourtCases(user.username, nomisId)
+      const recallableCourtCases = await req.services.courtCaseService.getAllRecallableCourtCases(
+        user.username,
+        nomisId,
+      )
       res.locals.recallableCourtCases = recallableCourtCases
       logger.debug(`Court cases details loaded for ${nomisId}`)
       console.log('----------------recallableCourtCases', recallableCourtCases)
