@@ -6,10 +6,12 @@ import { RecallableCourtCase } from '../../@types/remandAndSentencingApi/remandA
  * ViewPersonHomeController - Displays the person home page with recall information
  */
 export default async (req: Request, res: Response) => {
-  const { nomisId, prisoner, recalls, serviceDefinitions, banner, errorMessage } = res.locals
+  const { nomisId, prisoner, recalls, serviceDefinitions, banner, errorMessage, recallableCourtCases } = res.locals
 
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
+
+    console.log('-------controller', JSON.stringify(recallableCourtCases, undefined, 2))
 
     return res.render('pages/person/home', {
       nomisId,
@@ -20,6 +22,7 @@ export default async (req: Request, res: Response) => {
       serviceDefinitions,
       errorMessage,
       latestRecallId: res.locals.latestRecallId,
+      recallableCourtCases,
     })
   }
 

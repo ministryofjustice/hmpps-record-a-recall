@@ -14,6 +14,7 @@ export default class CourtCaseService {
   }
 
   async getRecallableCourtCases(nomsId: string, username: string) {
+    console.log('**')
     return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
   }
 
