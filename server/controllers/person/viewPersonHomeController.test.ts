@@ -20,7 +20,6 @@ import AdjustmentsService from '../../services/adjustmentsService'
 import ManageUsersService from '../../services/manageUsersService'
 import ManageOffencesService from '../../services/manageOffencesService'
 import NomisToDpsMappingService from '../../services/NomisToDpsMappingService'
-import DataFlowService from '../../services/DataFlowService'
 
 const mockHmppsAuthClient = { getSystemClientToken: jest.fn() } as unknown as HmppsAuthClient
 
@@ -80,53 +79,6 @@ const mockCourtService = {} as unknown as CourtService
 const mockAdjustmentsService = {} as unknown as AdjustmentsService
 const mockManageUsersService = {} as unknown as ManageUsersService
 const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as ManageOffencesService
-const mockDataFlowService = {
-  setPrisonerDetails: jest.fn().mockImplementation(async res => {
-    try {
-      res.locals.prisoner = await mockPrisonerService.getPrisonerDetails(res.locals.nomisId, res.locals.user.username)
-    } catch {
-      res.locals.prisoner = null
-    }
-  }),
-  setRecallsWithLocationNames: jest.fn().mockImplementation(async res => {
-    const recalls = await mockRecallService.getAllRecalls(res.locals.nomisId, res.locals.user.username)
-    const locationIds = recalls.map(r => r.location)
-    const prisonNames = await mockPrisonService.getPrisonNames(locationIds, res.locals.user.username)
-
-    const recallsWithLocationNames = recalls.map(recall => ({
-      ...recall,
-      locationName: prisonNames.get(recall.location),
-    }))
-
-    res.locals.recalls = recallsWithLocationNames
-
-    if (recallsWithLocationNames && recallsWithLocationNames.length > 0) {
-      const latestRecall = recallsWithLocationNames.reduce((latest, current) => {
-        if (
-          !latest ||
-          (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
-        ) {
-          return current
-        }
-        return latest
-      }, null)
-      res.locals.latestRecallId = latestRecall?.recallId
-    } else {
-      res.locals.latestRecallId = undefined
-    }
-  }),
-  setServiceDefinitions: jest.fn().mockImplementation(async (req, res) => {
-    res.locals.serviceDefinitions = await mockCourtCasesReleaseDatesService.getServiceDefinitions(
-      res.locals.nomisId,
-      req.user.token,
-    )
-  }),
-  setCommonTemplateData: jest.fn().mockImplementation((req, res) => {
-    res.locals.banner = {}
-    res.locals.errorMessage = null
-  }),
-  createDataMiddleware: jest.fn(),
-} as unknown as DataFlowService
 
 interface TestServices {
   recallService: typeof mockRecallService
@@ -148,7 +100,6 @@ interface TestServices {
   adjustmentsService: typeof mockAdjustmentsService
   manageUsersService: typeof mockManageUsersService
   manageOffencesService: typeof mockManageOffencesService
-  dataFlowService: typeof mockDataFlowService
 }
 
 let req: Partial<Request>
@@ -233,9 +184,7 @@ describe('viewPersonHome', () => {
         adjustmentsService: mockAdjustmentsService,
         manageUsersService: mockManageUsersService,
         manageOffencesService: mockManageOffencesService,
-        dataFlowService: mockDataFlowService,
       } as TestServices,
-      dataFlowService: mockDataFlowService,
     }
     ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue({
       prisonerNumber: 'A1234BC',
