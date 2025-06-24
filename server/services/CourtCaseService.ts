@@ -34,10 +34,6 @@ export default class CourtCaseService {
     return (await this.getApiClient(username)).getCourtCases(nomisId, page)
   }
 
-  private async getApiClient2(username: string): Promise<RecallableCourtCasesApiClient> {
-    return new RecallableCourtCasesApiClient(await this.getSystemClientToken(username))
-  }
-
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {
     return new RemandAndSentencingApiClient(await this.getSystemClientToken(username))
   }
