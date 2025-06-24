@@ -1,3 +1,5 @@
+import RecallableCourtCasesApiClient from "./api/recallableCourtCasesApiClient"
+
 const production = process.env.NODE_ENV === 'production'
 
 function get<T>(name: string, fallback: T, options = { requireInProduction: false }): T | string {
@@ -160,6 +162,14 @@ export default {
       timeout: {
         response: Number(get('MANAGE_OFFENCES_API_TIMEOUT_RESPONSE', 10000)),
         deadline: Number(get('MANAGE_OFFENCES_API_TIMEOUT_DEADLINE', 10000)),
+      },
+      agent: new AgentConfig(),
+    },
+    recallableCourtCasesApi: {
+      url: get('RECALLABLE_COURT_CASES_API_URL', 'http://localhost:8083', requiredInProduction),
+      timeout: {
+        response: Number(get('RECALLABLE_COURT_CASES_API_TIMEOUT_RESPONSE', 10000)),
+        deadline: Number(get('RECALLABLE_COURT_CASES_API_TIMEOUT_DEADLINE', 10000)),
       },
       agent: new AgentConfig(),
     },

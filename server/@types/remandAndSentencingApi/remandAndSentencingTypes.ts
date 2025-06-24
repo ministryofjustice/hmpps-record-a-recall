@@ -9,3 +9,8 @@ export type ApiCourtCase = components['schemas']['CourtCase']
 export type ApiCourtCasePage = components['schemas']['PageCourtCase']
 export type ApiCourtAppearance = components['schemas']['CourtAppearance']
 export type ApiSentence = components['schemas']['Sentence']
+
+export type RecallableCourtCase = components['schemas']['RecallableCourtCase']
+export type RecallableSentence = components['schemas']['RecallableSentence']
+
+

@@ -46,6 +46,11 @@ export default async (req: Request, res: Response) => {
     }
     // Nothing to do.
 
+    // wrap in try catch 
+    const recallableCourtCases = await req.services.courtCaseService.getRecallableCourtCases(username, nomisId)
+
+    console.log(recallableCourtCases)
+
     // Find the latest recall by createdAt date
     let latestRecallId: string | undefined
     if (recalls && recalls.length > 0) {
