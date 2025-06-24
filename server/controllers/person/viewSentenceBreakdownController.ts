@@ -4,6 +4,7 @@ import {
   CalculatedReleaseDates,
   LatestCalculation,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { setPrisonerDetailsInLocals } from './viewPersonHomeController'
 import CalculationService from '../../services/calculationService'
 
 export default async (req: Request, res: Response) => {
