@@ -2,8 +2,8 @@ import express, { Router } from 'express'
 import { Services } from '../services'
 import { Page } from '../services/auditService'
 import logPageView from '../middleware/logPageView'
-import viewPersonHome from '../controllers/person/viewPersonHome'
-import viewSentenceBreakdown from '../controllers/person/viewSentenceBreakdown'
+import viewPersonHome from '../controllers/person/viewPersonHomeController'
+import viewSentenceBreakdown from '../controllers/person/viewSentenceBreakdownController'
 
 export default function personRouter(services: Services): Router {
   const router = express.Router({ mergeParams: true })

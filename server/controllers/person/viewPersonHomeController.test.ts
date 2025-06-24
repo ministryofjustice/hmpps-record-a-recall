@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
-import viewPersonHome from './viewPersonHome'
+import viewPersonHome from './viewPersonHomeController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import { RecallType } from '../../@types/recallTypes'
 import HmppsAuthClient from '../../data/hmppsAuthClient'
