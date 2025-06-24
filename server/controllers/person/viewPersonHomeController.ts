@@ -49,8 +49,7 @@ export default async (req: Request, res: Response) => {
     // Nothing to do.
 
     try {
-      recallableCourtCases = await req.services.courtCaseService.getRecallableCourtCases(username, nomisId)
-      // console.log('----------------recallableCourtCases', recallableCourtCases)
+      recallableCourtCases = await req.services.courtCaseService.getRecallableCourtCases(nomisId, username)
     } catch (e) {
       logger.error(e)
     }

@@ -59,7 +59,6 @@ export default class RemandAndSentencingApiClient {
   }
 
   async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCase[]> {
-    // console.log('api client prisonerId', prisonerId)
     return this.restClient.get({
       path: `/court-case/${prisonerId}/recallable-court-cases`,
     }) as Promise<RecallableCourtCase[]>
