@@ -10,6 +10,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.resetAllMocks()
+  jest.clearAllMocks()
 })
 
 describe('GET 404', () => {

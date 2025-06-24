@@ -1,0 +1,68 @@
+import { Request, Response, NextFunction } from 'express'
+// eslint-disable-next-line import/no-unresolved
+import { Recall } from 'models'
+import logger from '../../logger'
+import RecallService from '../services/recallService'
+import PrisonService from '../services/PrisonService'
+
+/**
+ * Middleware to load recalls with location names into res.locals
+ */
+export default function loadRecalls(recallService: RecallService, prisonService: PrisonService) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const { nomisId, user } = res.locals
+
+    if (!nomisId || !user?.username) {
+      logger.warn('Missing nomisId or username in res.locals')
+      return next()
+    }
+
+    try {
+      const recalls = await recallService.getAllRecalls(nomisId, user.username)
+
+      if (recalls && recalls.length > 0) {
+        // Get location names for all recalls
+        const locationIds = recalls.map(r => r.location)
+        const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
+
+        // Add location names to recalls
+        const recallsWithLocationNames = recalls.map(recall => ({
+          ...recall,
+          locationName: prisonNames.get(recall.location),
+        }))
+
+        res.locals.recalls = recallsWithLocationNames
+        res.locals.latestRecallId = findLatestRecallId(recallsWithLocationNames)
+      } else {
+        res.locals.recalls = []
+        res.locals.latestRecallId = undefined
+      }
+    } catch (error) {
+      logger.error(error, `Failed to load recalls for ${nomisId}`)
+      res.locals.recalls = []
+    }
+
+    return next()
+  }
+}
+
+/**
+ * Find the latest recall by createdAt date
+ */
+function findLatestRecallId(recalls: Recall[]): string | undefined {
+  if (!recalls || recalls.length === 0) {
+    return undefined
+  }
+
+  const latestRecall = recalls.reduce((latest, current) => {
+    if (
+      !latest ||
+      (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
+    ) {
+      return current
+    }
+    return latest
+  }, null)
+
+  return latestRecall?.recallId
+}

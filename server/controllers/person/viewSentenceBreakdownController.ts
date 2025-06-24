@@ -4,11 +4,10 @@ import {
   CalculatedReleaseDates,
   LatestCalculation,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { setPrisonerDetailsInLocals } from './viewPersonHomeController'
 import CalculationService from '../../services/calculationService'
 
 export default async (req: Request, res: Response) => {
-  await setPrisonerDetailsInLocals(req.services.prisonerService, res)
+  // Prisoner data is pre-loaded by createDataMiddleware in the router
   const { nomisId } = req.params
   const { prisoner } = res.locals
   const { username } = res.locals.user

@@ -71,9 +71,7 @@ function appSetup(
 
 export function appWithAllRoutes({
   production = false,
-  services = {
-    auditService: new AuditService(null) as jest.Mocked<AuditService>,
-  },
+  services = {},
   userSupplier = () => user,
   flashProvider = jest.fn(),
 }: {
@@ -82,6 +80,14 @@ export function appWithAllRoutes({
   userSupplier?: () => HmppsUser
   flashProvider?: jest.Mock<unknown, [string]>
 }): Express {
+  // Always provide default mocks for required services
+  const defaultServices = {
+    auditService: new AuditService(null) as jest.Mocked<AuditService>,
+  }
+
+  // Merge provided services with defaults
+  const mergedServices = { ...defaultServices, ...services }
+
   auth.default.authenticationMiddleware = () => (req, res, next) => next()
-  return appSetup(services as Services, production, userSupplier, flashProvider)
+  return appSetup(mergedServices as Services, production, userSupplier, flashProvider)
 }
