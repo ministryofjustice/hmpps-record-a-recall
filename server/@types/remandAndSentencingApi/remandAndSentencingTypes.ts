@@ -12,3 +12,5 @@ export type ApiSentence = components['schemas']['Sentence']
 
 export type RecallableCourtCase = components['schemas']['RecallableCourtCase']
 export type RecallableSentence = components['schemas']['RecallableSentence']
+
+
