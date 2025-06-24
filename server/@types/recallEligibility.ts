@@ -104,7 +104,6 @@ const eligibilityReasons = {
     recallRoute: 'MANUAL',
     affectsEnvelope: true,
     ineligibleRecallTypes: ineligibleTypes([
-      RecallTypes.HDC_STANDARD_RECALL,
       RecallTypes.HDC_FOURTEEN_DAY_RECALL,
       RecallTypes.HDC_TWENTY_EIGHT_DAY_RECALL,
       RecallTypes.HDC_INABILITY_TO_MONITOR_RECALL,
