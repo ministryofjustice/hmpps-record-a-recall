@@ -8,8 +8,8 @@ import PrisonService from './PrisonService'
 import CourtCasesReleaseDatesService from './courtCasesReleaseDatesService'
 
 /**
- * Centralized service for managing data flow to templates
- * Standardizes how data is populated in res.locals across the application
+ * Centralised service for managing data flow to templates
+ * Standardises how data is populated in res.locals across the application
  */
 export default class DataFlowService {
   constructor(
@@ -21,7 +21,7 @@ export default class DataFlowService {
 
   /**
    * Populates prisoner details in res.locals
-   * Standardized replacement for setPrisonerDetailsInLocals function
+   * Standardised replacement for setPrisonerDetailsInLocals function
    */
   async setPrisonerDetails(res: Response): Promise<void> {
     const { nomisId, user } = res.locals
@@ -111,7 +111,7 @@ export default class DataFlowService {
   }
 
   /**
-   * Standardized flash message handling
+   * Standardised flash message handling
    */
   private setFlashMessages(req: Request, res: Response): void {
     const banner: {

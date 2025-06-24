@@ -3,7 +3,6 @@ import getServiceUrls from '../../helpers/urlHelper'
 
 /**
  * ViewPersonHomeController - Displays the person home page with recall information
- * Data is pre-loaded by createDataMiddleware in the router
  */
 export default async (req: Request, res: Response) => {
   const { nomisId, prisoner, recalls, serviceDefinitions, banner, errorMessage } = res.locals
