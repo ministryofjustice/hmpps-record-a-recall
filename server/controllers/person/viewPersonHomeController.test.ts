@@ -233,7 +233,16 @@ describe('viewPersonHome', () => {
       createMockRecall('recall-2', '2023-01-03T12:00:00.000Z'), // Latest
       createMockRecall('recall-3', '2023-01-02T11:00:00.000Z'),
     ]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-2'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -248,7 +257,16 @@ describe('viewPersonHome', () => {
 
   it('should render home page with latestRecallId when there is only one recall', async () => {
     const recalls = [createMockRecall('recall-single', '2023-02-01T10:00:00.000Z')]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-single'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -262,7 +280,15 @@ describe('viewPersonHome', () => {
   })
 
   it('should render home page with latestRecallId as undefined when there are no recalls', async () => {
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue([])
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = []
+    res.locals.latestRecallId = undefined
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -281,7 +307,16 @@ describe('viewPersonHome', () => {
       createMockRecall('recall-B', null),
       createMockRecall('recall-C', '2023-02-01T10:00:00.000Z'),
     ]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-A'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
@@ -295,7 +330,16 @@ describe('viewPersonHome', () => {
 
   it('should handle all recalls having null createdAt dates', async () => {
     const recalls = [createMockRecall('recall-X', null), createMockRecall('recall-Y', null)]
-    ;(mockRecallService.getAllRecalls as jest.Mock).mockResolvedValue(recalls)
+
+    // Simulate data pre-loaded by createDataMiddleware
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-X'
+    res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
 
