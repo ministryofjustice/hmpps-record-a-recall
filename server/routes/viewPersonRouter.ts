@@ -4,6 +4,7 @@ import { Page } from '../services/auditService'
 import logPageView from '../middleware/logPageView'
 import setupCommonData from '../middleware/setupCommonData'
 import loadPrisoner from '../middleware/loadPrisoner'
+import loadCourtCases from '../middleware/loadCourtCases'
 import loadRecalls from '../middleware/loadRecalls'
 import loadServiceDefinitions from '../middleware/loadServiceDefinitions'
 import viewPersonHome from '../controllers/person/viewPersonHomeController'
@@ -17,6 +18,7 @@ export default function personRouter(services: Services): Router {
     '/',
     setupCommonData(),
     loadPrisoner(services.prisonerService),
+    loadCourtCases(services.courtCaseService),
     loadRecalls(services.recallService, services.prisonService),
     loadServiceDefinitions(services.courtCasesReleaseDatesService),
     logPageView(services.auditService, Page.PERSON_HOME_PAGE),
@@ -28,6 +30,7 @@ export default function personRouter(services: Services): Router {
     '/sentences',
     setupCommonData(),
     loadPrisoner(services.prisonerService),
+    loadCourtCases(services.courtCaseService),
     logPageView(services.auditService, Page.VIEW_ALL_SENTENCES),
     viewSentenceBreakdown,
   )
@@ -36,6 +39,7 @@ export default function personRouter(services: Services): Router {
     '/temporary',
     setupCommonData(),
     loadPrisoner(services.prisonerService),
+    loadCourtCases(services.courtCaseService),
     logPageView(services.auditService, Page.VIEW_ALL_SENTENCES),
     viewSentenceBreakdown,
   )
