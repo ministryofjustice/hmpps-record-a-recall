@@ -15,10 +15,9 @@ export default function loadCourtCases(courtCaseService: CourtCaseService) {
     }
 
     try {
-      const recallableCourtCases = await courtCaseService.getAllRecallableCourtCases(user.username, nomisId)
+      const recallableCourtCases = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
       res.locals.recallableCourtCases = recallableCourtCases
       logger.debug(`Court cases details loaded for ${nomisId}`)
-      console.log('----------------recallableCourtCases', recallableCourtCases)
     } catch (error) {
       logger.error(error, `Failed to retrieve Court cases for: ${nomisId}`)
       res.locals.recallableCourtCases = null

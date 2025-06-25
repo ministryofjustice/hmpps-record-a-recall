@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import getServiceUrls from '../../helpers/urlHelper'
-import { RecallableCourtCase } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 /**
  * ViewPersonHomeController - Displays the person home page with recall information
@@ -10,8 +9,6 @@ export default async (req: Request, res: Response) => {
 
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
-
-    console.log('-------controller', JSON.stringify(recallableCourtCases, undefined, 2))
 
     return res.render('pages/person/home', {
       nomisId,
