@@ -61,7 +61,7 @@ export default function getIndividualEligibility(
 }
 
 export function determineEligibilityOnRasSentenceType(sentence: ApiSentence): RecallEligibility {
-  const sentenceType = sentence.sentenceType.description
+  const sentenceType = sentence.sentenceType?.description
   if (!sentenceType) {
     return eligibilityReasons.RAS_LEGACY_SENTENCE
   }
