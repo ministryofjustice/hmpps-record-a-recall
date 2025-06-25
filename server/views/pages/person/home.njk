@@ -103,7 +103,7 @@
                   <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4" style="width: 100%;">
                     {{ offenceCard({
                       offenceCode: sentence.offenceCode,
-                      offenceName: offenceNameMap[sentence.offenceCode] or sentence.offenceDescription or sentence.offenceCode,
+                      offenceName: (offenceNameMap and offenceNameMap[sentence.offenceCode]) or sentence.offenceDescription or sentence.offenceCode,
                       convictionDate: sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available',
                       periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
                       sentenceServeType: sentence.sentenceServeType,
