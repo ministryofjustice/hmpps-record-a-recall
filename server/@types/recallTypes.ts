@@ -1,5 +1,5 @@
 type RecallType = {
-  code: 'LR' | 'FTR_14' | 'FTR_28' | 'LR_HDC' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
+  code: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
   description: string
   fixedTerm: boolean
 }
@@ -20,7 +20,6 @@ const RecallTypes = {
     description: '28-day fixed term',
     fixedTerm: true,
   },
-  HDC_STANDARD_RECALL: { code: 'LR_HDC', description: 'Standard recall from HDC', fixedTerm: false },
   HDC_FOURTEEN_DAY_RECALL: {
     code: 'FTR_HDC_14',
     description: '14-day fixed term from HDC',

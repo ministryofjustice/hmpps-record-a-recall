@@ -39,6 +39,10 @@ enabled by default on newly created repos. There is no way to enable Actions oth
 If this situation changes we will update this project so that the workflow is triggered during the bootstrap project.
 Further reading: <https://github.community/t/workflow-isnt-enabled-in-repos-generated-from-template/136421>
 
+## Generating types from RaS api Backend:
+
+Run `npm run generate-remand-and-sentencing-api-types` in the route of the project
+
 ## Manually branding from template app
 Run the `rename-project.bash` and create a PR.
 
