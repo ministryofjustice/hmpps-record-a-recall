@@ -65,6 +65,9 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
   }
 
   courtCase.sentences.forEach(s => {
+    if (!s.sentence) {
+      return
+    }
     summarisedGroup.hasEligibleSentences = true
     const recallEligibility = determineEligibilityOnRasSentenceType(s.sentence)
     const summary = compact([])

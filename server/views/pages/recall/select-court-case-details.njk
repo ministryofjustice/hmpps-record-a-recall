@@ -72,7 +72,7 @@
                   offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
                   offenceStartDate: sentence.formattedOffenceDate | default("N/A"),
                   offenceEndDate: sentence.formattedOffenceEndDate | default("N/A") if sentence.formattedOffenceEndDate else null,
-                  outcome: sentence.outcome | default("N/A"),
+                  outcome: sentence.formattedOutcome | default("N/A"),
                   countNumber: loop.index,
                   convictionDate: sentence.formattedConvictionDate | default("N/A"),
                   terrorRelated: sentence.terrorRelated | default(false),
