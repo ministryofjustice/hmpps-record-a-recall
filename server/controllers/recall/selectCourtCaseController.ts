@@ -97,6 +97,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           formattedOffenceDate?: string
           formattedConvictionDate?: string
           apiOffenceDescription?: string
+          formattedOutcome?: string
         })[]
       } = JSON.parse(JSON.stringify(originalCase))
 
@@ -150,6 +151,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
             formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
             apiOffenceDescription:
               offenceMap[sentence.offenceCode] || sentence.offenceDescription || sentence.offenceCode,
+            formattedOutcome: sentence.outcome?.outcomeName || sentence.legacyData?.outcomeDescription || 'N/A',
           }
         })
       }
@@ -224,6 +226,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           formattedConsecutiveOrConcurrent?: string
           formattedOffenceDate?: string
           formattedConvictionDate?: string
+          formattedOutcome?: string
         })[]
       } = JSON.parse(JSON.stringify(originalCase))
 
@@ -243,6 +246,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           ),
           formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
           formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
+          formattedOutcome: sentence.outcome?.outcomeName || sentence.legacyData?.outcomeDescription || 'N/A',
         }))
       }
 
