@@ -2,6 +2,10 @@ import type { CourtCase, Sentence } from 'models'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import { ApiCourtCase, ApiCourtCasePage, ApiCharge } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import ManageOffencesService from './manageOffencesService'
+import { getSummarisedSentenceGroups } from '../helpers/formWizardHelper'
+// are you allowed to import FormWizard here, if not then need a way to get the details of getSummarisedSentenceGroups another way
+import FormWizard from 'hmpo-form-wizard'
 
 export default class CourtCaseService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
@@ -15,6 +19,15 @@ export default class CourtCaseService {
   async getAllRecallableCourtCases(nomsId: string, username: string) {
     return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
   }
+
+  //  async getOffenceNameMap(offenceCodes: string[], token: string): Promise<Record<string, string>> {
+  //   if (!offenceCodes || offenceCodes.length === 0) {
+  //     return {}
+  //   }
+  //   const manageOffencesService = new ManageOffencesService()
+  //   return manageOffencesService.getOffenceMap(offenceCodes, token)
+  // }
+  
 
   private async getCases(
     nomisId: string,
@@ -39,6 +52,25 @@ export default class CourtCaseService {
   private async getSystemClientToken(username: string): Promise<string> {
     return this.hmppsAuthClient.getSystemClientToken(username)
   }
+
+  private async getOffenceNameTitle(req: FormWizard.Request, offenceCodes: string[]) {
+    return new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+  }
+
+  async getOffenceNameMap(req: FormWizard.Request) {
+      const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
+      const offenceCodes = summarisedSentenceGroups
+        .flatMap(group => group.sentences || [])
+        .map(charge => charge.offenceCode)
+        .filter(code => code)
+
+      if (offenceCodes.length > 0) {
+        const offenceNameMap = await this.getOffenceNameTitle(req, offenceCodes)
+        console.log('--------offenceNameMap••••••••••••€¡#¢∞§•ªº*', offenceNameMap)
+      return offenceNameMap
+    }
+  }
+  
 
   fromApiCourtCase(apiCase: ApiCourtCase): CourtCase {
     return {

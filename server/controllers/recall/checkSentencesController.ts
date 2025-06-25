@@ -9,7 +9,6 @@ import {
   getTemporaryCalc,
   isManualCaseSelection,
 } from '../../helpers/formWizardHelper'
-import ManageOffencesService from '../../services/manageOffencesService'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -32,24 +31,11 @@ export default class CheckSentencesController extends RecallBaseController {
     return super.locals(req, res)
   }
 
-  async getOffenceNameTitle(req: FormWizard.Request, offenceCodes: string[]) {
-    return new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
-  }
 
   async loadOffenceNames(req: FormWizard.Request, res: Response, next: () => void) {
     try {
-      const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
-      const offenceCodes = summarisedSentenceGroups
-        .flatMap(group => group.sentences || [])
-        .map(charge => charge.offenceCode)
-        .filter(code => code)
+      res.locals.offenceNameMap = req.services.courtCaseService.getOffenceNameMap(req)
 
-      if (offenceCodes.length > 0) {
-        const offenceNameMap = await this.getOffenceNameTitle(req, offenceCodes)
-        res.locals.offenceNameMap = offenceNameMap
-      } else {
-        res.locals.offenceNameMap = {}
-      }
       next()
     } catch (error) {
       // eslint-disable-next-line no-console
