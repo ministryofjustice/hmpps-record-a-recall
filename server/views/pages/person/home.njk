@@ -1,5 +1,6 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -46,39 +47,10 @@
     {% for recall in recalls %}
       {{ recallCard(recall, latestRecallId) }}
     {% endfor %}
-
-    {# ----------------- Offence Cards Section Starts Here (line ~75) ------------------ #}
-
-    {% if recallableCourtCases and recallableCourtCases.cases.length %}
-      <h2 class="govuk-heading-l govuk-!-margin-top-8">Sentences eligible for recall</h2>
-
-      {% for case in recallableCourtCases.cases %}
-        <div class="govuk-summary-card govuk-!-margin-bottom-6">
-          <div class="govuk-summary-card__title-wrapper">
-            <h3 class="govuk-summary-card__title">
-              Court case on {{ case.date | date }} at {{ case.courtCode }}
-            </h3>
-          </div>
-          <div class="govuk-summary-card__content">
-            {% for sentence in case.sentences %}
-              {{ offenceCard({
-                offenceCode: sentence.offenceCode,
-                 offenceName: offenceNameMap[charge.offenceCode],
-                offenceName: sentence.offenceDescription or sentence.offenceCode,
-                convictionDate: sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available',
-                periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
-                sentenceServeType: sentence.sentenceServeType,
-                sentenceType: sentence.sentenceType,
-                detailsClasses: 'govuk-!-padding-4'
-              }) }}
-            {% endfor %}
-          </div>
-        </div>
-      {% endfor %}
-    {% endif %}
   </div>
 </div>
 {% endblock %}
+
 
 {% macro recallCard(recall, latestRecallId) %}
 <div class="govuk-summary-card govuk-!-margin-bottom-6">
@@ -99,12 +71,42 @@
   </div>
   <div class="govuk-summary-card__content" id="recall-summary">
     <div class="govuk-grid-row govuk-!-padding-bottom-2 govuk-!-margin-top-2">
+
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Recall type', recall.recallType.description) }}
         {{ cardInfo('Location', recall.locationName if recall.locationName else recall.location ) }}
+
+        {% if recallableCourtCases and recallableCourtCases.cases.length %}
+          {% set offenceDetailsHtml %}
+            {% for case in recallableCourtCases.cases %}
+              <strong class="govuk-body">Court case on {{ case.date | date }} at {{ case.courtCode }}</strong><br>
+              {% for sentence in case.sentences %}
+                {{ offenceCard({
+                  offenceCode: sentence.offenceCode,
+                  offenceName: offenceNameMap[sentence.offenceCode] or sentence.offenceDescription or sentence.offenceCode,
+                  convictionDate: sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available',
+                  periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+                  sentenceServeType: sentence.sentenceServeType,
+                  sentenceType: sentence.sentenceType,
+                  detailsClasses: 'govuk-!-padding-4'
+                }) }}
+              {% endfor %}
+              <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+            {% endfor %}
+          {% endset %}
+
+          {{ cardInfo(
+            'Court Cases (' + recallableCourtCases.cases.length + ')',
+            govukDetails({
+              summaryText: 'View offences',
+              html: offenceDetailsHtml
+            })
+          ) }}
+        {% endif %}
       </div>
+
       <div class="govuk-grid-column-one-half">
-        {{ cardInfo('Arrest date',  recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall' ) }}
+        {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
         {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
       </div>
     </div>
@@ -112,7 +114,8 @@
 </div>
 {% endmacro %}
 
+
 {% macro cardInfo(field, value) %}
   <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ field }}</h3>
-  <p class="govuk-body govuk-!-margin-bottom-2">{{ value }}</p>
+  <p class="govuk-body govuk-!-margin-bottom-2">{{ value | safe }}</p>
 {% endmacro %}

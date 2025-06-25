@@ -9,7 +9,6 @@ import loadRecalls from '../middleware/loadRecalls'
 import loadServiceDefinitions from '../middleware/loadServiceDefinitions'
 import viewPersonHome from '../controllers/person/viewPersonHomeController'
 import viewSentenceBreakdown from '../controllers/person/viewSentenceBreakdownController'
-import loadOffenceNames from '../middleware/loadOffenceNames'
 
 export default function personRouter(services: Services): Router {
   const router = express.Router({ mergeParams: true })
@@ -20,7 +19,6 @@ export default function personRouter(services: Services): Router {
     setupCommonData(),
     loadPrisoner(services.prisonerService),
     loadCourtCases(services.courtCaseService),
-    loadOffenceNames(services.manageOffencesService),
     loadRecalls(services.recallService, services.prisonService),
     loadServiceDefinitions(services.courtCasesReleaseDatesService),
     logPageView(services.auditService, Page.PERSON_HOME_PAGE),
