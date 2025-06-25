@@ -151,7 +151,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
             formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
             apiOffenceDescription:
               offenceMap[sentence.offenceCode] || sentence.offenceDescription || sentence.offenceCode,
-            formattedOutcome: sentence.outcome?.outcomeName || 'N/A',
+            formattedOutcome: sentence.outcome?.outcomeName || sentence.legacyData?.outcomeDescription || 'N/A',
           }
         })
       }
@@ -246,7 +246,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           ),
           formattedOffenceDate: formatDateStringToDDMMYYYY(sentence.offenceDate),
           formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
-          formattedOutcome: sentence.outcome?.outcomeName || 'N/A',
+          formattedOutcome: sentence.outcome?.outcomeName || sentence.legacyData?.outcomeDescription || 'N/A',
         }))
       }
 
