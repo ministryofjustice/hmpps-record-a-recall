@@ -1,21 +1,20 @@
 import type { CourtCase } from 'models'
 import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
-import { RecallableCourtCase } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  RecallableCourtCase,
+  RecallableCourtCasesResponse,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
   constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
 
   async getAllCourtCases(nomsId: string, username: string): Promise<CourtCase[]> {
     const response = await this.getAllRecallableCourtCases(nomsId, username)
-    // Handle both array response and object with cases property
-    const cases: RecallableCourtCase[] = Array.isArray(response)
-      ? response
-      : (response as { cases?: RecallableCourtCase[] })?.cases || []
-    return cases.map(recallableCase => this.fromRecallableCourtCase(recallableCase))
+    return response.cases.map(recallableCase => this.fromRecallableCourtCase(recallableCase))
   }
 
-  async getAllRecallableCourtCases(nomsId: string, username: string) {
+  async getAllRecallableCourtCases(nomsId: string, username: string): Promise<RecallableCourtCasesResponse> {
     return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
   }
 

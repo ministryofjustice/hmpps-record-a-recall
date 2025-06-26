@@ -33,19 +33,17 @@ export default function loadCourtCases(
 
     try {
       const response = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
-      const recallableCourtCases: RecallableCourtCase[] = Array.isArray(response)
-        ? response
-        : (response as { cases?: RecallableCourtCase[] })?.cases || []
+      const recallableCourtCases: RecallableCourtCase[] = response.cases || []
 
       // Enhance court cases with offence descriptions and court names
       if (recallableCourtCases && Array.isArray(recallableCourtCases) && recallableCourtCases.length > 0) {
-        let enhancedCases = await enhanceCourtCasesWithOffenceDescriptions(
-          recallableCourtCases,
-          manageOffencesService,
-          user.token,
-        )
-        enhancedCases = await enhanceCourtCasesWithCourtNames(enhancedCases, courtService, user.username)
-        res.locals.recallableCourtCases = enhancedCases
+        const [offenceEnhancedCases, courtNamesMap] = await Promise.all([
+          enhanceCourtCasesWithOffenceDescriptions(recallableCourtCases, manageOffencesService, user.token),
+          getCourtNamesMap(recallableCourtCases, courtService, user.username),
+        ])
+
+        // Apply court names to the offence-enhanced cases
+        res.locals.recallableCourtCases = applyCourtNamesToEnhancedCases(offenceEnhancedCases, courtNamesMap)
       } else {
         res.locals.recallableCourtCases = recallableCourtCases
       }
@@ -122,17 +120,17 @@ async function enhanceCourtCasesWithOffenceDescriptions(
 }
 
 /**
- * Enhances court cases by adding court names
- * @param cases Array of court cases to enhance
+ * Fetches court names map for the given court cases
+ * @param cases Array of court cases to get court codes from
  * @param courtService Service to fetch court names
  * @param username Username for authentication
- * @returns Enhanced court cases with court names
+ * @returns Map of court code to court name
  */
-async function enhanceCourtCasesWithCourtNames(
-  cases: EnhancedRecallableCourtCase[],
+async function getCourtNamesMap(
+  cases: RecallableCourtCase[],
   courtService: CourtService,
   username: string,
-): Promise<EnhancedRecallableCourtCase[]> {
+): Promise<Map<string, string>> {
   try {
     // Collect unique court codes
     const allCourtCodes = new Set<string>()
@@ -148,26 +146,52 @@ async function enhanceCourtCasesWithCourtNames(
 
     if (uniqueCourtCodes.length === 0) {
       logger.debug('No court codes found in court cases')
-      return cases
+      return new Map()
     }
 
     // Fetch court names
-    let courtNamesMap: Map<string, string> = new Map()
     try {
-      courtNamesMap = await courtService.getCourtNames(uniqueCourtCodes, username)
+      const courtNamesMap = await courtService.getCourtNames(uniqueCourtCodes, username)
       logger.debug(`Fetched names for ${courtNamesMap.size} court codes`)
+      return courtNamesMap
     } catch (error) {
       logger.error('Error fetching court names from CourtService:', error)
+      return new Map()
     }
-
-    // Enhance each case with court names
-    return cases.map(courtCase => ({
-      ...courtCase,
-      courtName: courtNamesMap.get(courtCase.courtCode) || 'Court name not available',
-    }))
   } catch (error) {
-    logger.error('Error enhancing court cases with court names:', error)
-    // Return original cases if enhancement fails
-    return cases
+    logger.error('Error getting court names map:', error)
+    return new Map()
   }
+}
+
+/**
+ * Applies court names to already enhanced court cases
+ * @param cases Array of enhanced court cases
+ * @param courtNamesMap Map of court code to court name
+ * @returns Court cases with court names applied
+ */
+function applyCourtNamesToEnhancedCases(
+  cases: EnhancedRecallableCourtCase[],
+  courtNamesMap: Map<string, string>,
+): EnhancedRecallableCourtCase[] {
+  return cases.map(courtCase => ({
+    ...courtCase,
+    courtName: courtNamesMap.get(courtCase.courtCode) || 'Court name not available',
+  }))
+}
+
+/**
+ * Enhances court cases by adding court names
+ * @param cases Array of court cases to enhance
+ * @param courtService Service to fetch court names
+ * @param username Username for authentication
+ * @returns Enhanced court cases with court names
+ */
+async function enhanceCourtCasesWithCourtNames(
+  cases: EnhancedRecallableCourtCase[],
+  courtService: CourtService,
+  username: string,
+): Promise<EnhancedRecallableCourtCase[]> {
+  const courtNamesMap = await getCourtNamesMap(cases, courtService, username)
+  return applyCourtNamesToEnhancedCases(cases, courtNamesMap)
 }

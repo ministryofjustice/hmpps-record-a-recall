@@ -5,6 +5,7 @@ import {
   CreateRecall,
   CreateRecallResponse,
   RecallableCourtCase,
+  RecallableCourtCasesResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
@@ -50,9 +51,9 @@ export default class RemandAndSentencingApiClient {
     })
   }
 
-  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCase[]> {
+  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCasesResponse> {
     return this.restClient.get({
       path: `/court-case/${prisonerId}/recallable-court-cases`,
-    }) as Promise<RecallableCourtCase[]>
+    }) as Promise<RecallableCourtCasesResponse>
   }
 }
