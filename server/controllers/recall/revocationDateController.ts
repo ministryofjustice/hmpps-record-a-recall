@@ -20,15 +20,8 @@ import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
 import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
 
-function hasSentence(
-  item: unknown,
-): item is { sentence: { sentenceType?: { classification?: string }; sentenceUuid?: string } } {
-  return (
-    typeof item === 'object' &&
-    item !== null &&
-    'sentence' in item &&
-    typeof (item as Record<string, unknown>).sentence === 'object'
-  )
+function hasSentence(item: unknown): item is { classification?: string; sentenceUuid?: string } {
+  return typeof item === 'object' && item !== null && 'classification' in item
 }
 
 export default class RevocationDateController extends RecallBaseController {
@@ -82,20 +75,17 @@ export default class RevocationDateController extends RecallBaseController {
       .filter((c: CourtCase) => c.sentenced)
     const summarisedRasCases = summariseRasCases(caseDetails)
     const doesContainNonSDS = summarisedRasCases.some(group =>
-      group.sentences.some(s => hasSentence(s) && s.sentence.sentenceType?.classification !== 'STANDARD'),
+      group.sentences.some(s => hasSentence(s) && s.classification !== 'STANDARD'),
     )
 
     // TODO this is probably hacky, determineRecallEligibilityFromValidation should be giving us a validation error that takes us down the manual path??
     const summarisedSentencesGroups = summarisedRasCases
       .map(group => {
-        // Filter the main sentences array based on sentence.sentenceType.description
-        const filteredMainSentences = group.sentences.filter(
-          s => hasSentence(s) && s.sentence.sentenceType?.classification === 'STANDARD',
-        )
+        // Filter the main sentences array based on classification
+        const filteredMainSentences = group.sentences.filter(s => hasSentence(s) && s.classification === 'STANDARD')
 
         // Get the UUIDs of these filtered SDS sentences
-        /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-        const sdsSentenceUuids = new Set(filteredMainSentences.map(s => (s as any).sentence.sentenceUuid))
+        const sdsSentenceUuids = new Set(filteredMainSentences.map(s => s.sentenceUuid))
 
         // Filter eligibleSentences: keep only those whose sentenceId is in sdsSentenceUuids
         const filteredEligibleSentences = group.eligibleSentences.filter(es => sdsSentenceUuids.has(es.sentenceId))

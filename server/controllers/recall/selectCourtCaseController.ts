@@ -180,8 +180,10 @@ export default class SelectCourtCaseController extends RecallBaseController {
               sentence.sentenceServeType,
               sentence.consecutiveToChargeNumber,
             ),
-            formattedOffenceDate: sentence.convictionDate,
-            formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
+            formattedOffenceDate: sentence.convictionDate || 'Not available',
+            formattedConvictionDate: sentence.convictionDate
+              ? formatDateStringToDDMMYYYY(sentence.convictionDate)
+              : 'Not available',
             apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
             sentenceTypeDescription: sentence.sentenceType || 'Not available',
             formattedOutcome: 'Not available', // TODO get from api sentence.outcomeDescription
@@ -303,7 +305,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
               sentence.consecutiveToChargeNumber,
             ),
             formattedOffenceDate: sentence.convictionDate,
-            formattedConvictionDate: formatDateStringToDDMMYYYY(sentence.convictionDate),
+            formattedConvictionDate: sentence.convictionDate
+              ? formatDateStringToDDMMYYYY(sentence.convictionDate)
+              : 'Not available',
             apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
             sentenceTypeDescription: sentence.sentenceType || 'Not available',
             formattedOutcome: 'Not available', // TODO get from api sentence.outcomeDescription

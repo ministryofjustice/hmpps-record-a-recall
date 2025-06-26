@@ -4,7 +4,7 @@ declare module 'models' {
     CalculatedReleaseDates,
     SentenceAndOffenceWithReleaseArrangements,
   } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
-  import { ApiCharge } from '../remandAndSentencingApi/remandAndSentencingTypes'
+  import { RecallableSentence } from '../remandAndSentencingApi/remandAndSentencingTypes'
 
   export interface Recall {
     recallId: string
@@ -39,7 +39,7 @@ declare module 'models' {
     location: string
     locationName?: string
     reference: string
-    sentences?: ApiCharge[]
+    sentences?: RecallableSentence[]
     sentenced: boolean
   }
 

@@ -1,4 +1,5 @@
 import type { SentenceWithDpsUuid, Term, Sentence } from 'models'
+import { RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
@@ -368,5 +369,5 @@ export type SummarisedSentenceGroup = {
   ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean
   hasIneligibleSentences: boolean
-  sentences: Sentence[]
+  sentences: RecallableSentence[]
 }
