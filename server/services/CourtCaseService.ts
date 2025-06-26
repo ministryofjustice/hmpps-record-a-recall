@@ -11,7 +11,7 @@ export default class CourtCaseService {
 
   async getAllCourtCases(nomsId: string, username: string): Promise<CourtCase[]> {
     const response = await this.getAllRecallableCourtCases(nomsId, username)
-    return response.cases.map(recallableCase => this.fromRecallableCourtCase(recallableCase))
+    return response.cases.map((recallableCase: RecallableCourtCase) => this.fromRecallableCourtCase(recallableCase))
   }
 
   async getAllRecallableCourtCases(nomsId: string, username: string): Promise<RecallableCourtCasesResponse> {
