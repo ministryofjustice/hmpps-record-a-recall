@@ -16,9 +16,110 @@ import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
 
+// Type for the enhanced case with view-specific properties
+type EnhancedCourtCaseForView = CourtCase & {
+  caseNumber?: string
+  caseReferences?: string
+  courtName?: string
+  formattedOverallSentenceLength?: string
+  formattedOverallConvictionDate?: string
+  sentences?: (Sentence & {
+    formattedSentenceLength?: string
+    periodLengths?: {
+      description: string
+      years?: number
+      months?: number
+      weeks?: number
+      days?: number
+      periodOrder: string[]
+    }[]
+    formattedConsecutiveOrConcurrent?: string
+    formattedOffenceDate?: string
+    formattedConvictionDate?: string
+    apiOffenceDescription?: string
+    formattedOutcome?: string
+  })[]
+}
+
 export default class SelectCourtCaseController extends RecallBaseController {
   middlewareSetup() {
     super.middlewareSetup()
+  }
+
+  /**
+   * Prepares a court case for view by adding formatted properties and enhanced sentence data
+   */
+  private prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
+    // Create a mutable copy for the view
+    const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
+
+    currentCase.caseNumber = originalCase.reference || 'N/A'
+    currentCase.caseReferences = originalCase.reference || 'N/A'
+    currentCase.courtName =
+      (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
+      (originalCase as CourtCase & { courtCode?: string }).courtCode ||
+      originalCase.locationName ||
+      'N/A'
+
+    const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
+    currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
+    currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
+
+    if (currentCase.sentences) {
+      currentCase.sentences = currentCase.sentences.map(sentence => {
+        const sentencePeriodLengths = sentence.periodLengths || []
+        const custodialPeriod = sentencePeriodLengths.find(
+          (p: unknown) =>
+            p &&
+            typeof p === 'object' &&
+            'periodLengthType' in p &&
+            (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
+        )
+        const custodialTerm = custodialPeriod
+          ? {
+              years: (custodialPeriod as { years?: number }).years || 0,
+              months: (custodialPeriod as { months?: number }).months || 0,
+              weeks: (custodialPeriod as { weeks?: number }).weeks || 0,
+              days: (custodialPeriod as { days?: number }).days || 0,
+            }
+          : undefined
+
+        const periodLengths = custodialTerm
+          ? [
+              {
+                description: 'Sentence length',
+                years: custodialTerm.years,
+                months: custodialTerm.months,
+                weeks: custodialTerm.weeks,
+                days: custodialTerm.days,
+                periodOrder: (['years', 'months', 'weeks', 'days'] as const).filter(
+                  p => typeof custodialTerm[p] === 'number' && custodialTerm[p] > 0,
+                ),
+              },
+            ]
+          : []
+
+        return {
+          ...sentence,
+          custodialTerm,
+          periodLengths,
+          formattedSentenceLength: formatTerm(custodialTerm),
+          formattedConsecutiveOrConcurrent: formatSentenceServeType(
+            sentence.sentenceServeType,
+            sentence.consecutiveToChargeNumber,
+          ),
+          formattedOffenceDate: sentence.convictionDate || 'Not available',
+          formattedConvictionDate: sentence.convictionDate
+            ? formatDateStringToDDMMYYYY(sentence.convictionDate)
+            : 'Not available',
+          apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
+          sentenceTypeDescription: sentence.sentenceType || 'Not available',
+          formattedOutcome: 'Not available', // TODO get from api sentence.outcomeDescription
+        }
+      })
+    }
+
+    return currentCase
   }
 
   private sortCourtCasesByMostRecentConviction(cases: CourtCase[]): CourtCase[] {
@@ -99,97 +200,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
       }
 
       const originalCase = reviewableCases[currentCaseIndex]
-
-      // Create a mutable copy for the view
-      const currentCase: CourtCase & {
-        caseNumber?: string
-        caseReferences?: string
-        courtName?: string
-        formattedOverallSentenceLength?: string
-        formattedOverallConvictionDate?: string
-        sentences?: (Sentence & {
-          formattedSentenceLength?: string
-          periodLengths?: {
-            description: string
-            years?: number
-            months?: number
-            weeks?: number
-            days?: number
-            periodOrder: string[]
-          }[]
-          formattedConsecutiveOrConcurrent?: string
-          formattedOffenceDate?: string
-          formattedConvictionDate?: string
-          apiOffenceDescription?: string
-          formattedOutcome?: string
-        })[]
-      } = JSON.parse(JSON.stringify(originalCase))
-
-      currentCase.caseNumber = originalCase.reference || 'N/A'
-      currentCase.caseReferences = originalCase.reference || 'N/A'
-      currentCase.courtName =
-        (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
-        (originalCase as CourtCase & { courtCode?: string }).courtCode ||
-        originalCase.locationName ||
-        'N/A'
-
-      const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
-      currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
-      currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
-
-      if (currentCase.sentences) {
-        currentCase.sentences = currentCase.sentences.map(sentence => {
-          const sentencePeriodLengths = sentence.periodLengths || []
-          const custodialPeriod = sentencePeriodLengths.find(
-            (p: unknown) =>
-              p &&
-              typeof p === 'object' &&
-              'periodLengthType' in p &&
-              (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
-          )
-          const custodialTerm = custodialPeriod
-            ? {
-                years: (custodialPeriod as { years?: number }).years || 0,
-                months: (custodialPeriod as { months?: number }).months || 0,
-                weeks: (custodialPeriod as { weeks?: number }).weeks || 0,
-                days: (custodialPeriod as { days?: number }).days || 0,
-              }
-            : undefined
-
-          const periodLengths = custodialTerm
-            ? [
-                {
-                  description: 'Sentence length',
-                  years: custodialTerm.years,
-                  months: custodialTerm.months,
-                  weeks: custodialTerm.weeks,
-                  days: custodialTerm.days,
-                  periodOrder: (['years', 'months', 'weeks', 'days'] as const).filter(
-                    p => typeof custodialTerm[p] === 'number' && custodialTerm[p] > 0,
-                  ),
-                },
-              ]
-            : []
-
-          return {
-            ...sentence,
-            custodialTerm,
-            periodLengths,
-            formattedSentenceLength: formatTerm(custodialTerm),
-            formattedConsecutiveOrConcurrent: formatSentenceServeType(
-              sentence.sentenceServeType,
-              sentence.consecutiveToChargeNumber,
-            ),
-            formattedOffenceDate: sentence.convictionDate || 'Not available',
-            formattedConvictionDate: sentence.convictionDate
-              ? formatDateStringToDDMMYYYY(sentence.convictionDate)
-              : 'Not available',
-            apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
-            sentenceTypeDescription: sentence.sentenceType || 'Not available',
-            formattedOutcome: 'Not available', // TODO get from api sentence.outcomeDescription
-          }
-        })
-      }
+      const currentCase = this.prepareCourtCaseForView(originalCase)
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
       res.locals.currentCase = currentCase
@@ -250,70 +261,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
         return res.redirect(`${req.baseUrl}/${nomsNumber}/recall-type?recallId=${recallId}`)
       }
       const originalCase = reviewableCases[currentCaseIndex]
-
-      const currentCase: CourtCase & {
-        caseNumber?: string
-        caseReferences?: string
-        courtName?: string
-        formattedOverallSentenceLength?: string
-        formattedOverallConvictionDate?: string
-        sentences?: (Sentence & {
-          formattedSentenceLength?: string
-          formattedConsecutiveOrConcurrent?: string
-          formattedOffenceDate?: string
-          formattedConvictionDate?: string
-          formattedOutcome?: string
-        })[]
-      } = JSON.parse(JSON.stringify(originalCase))
-
-      currentCase.caseNumber = originalCase.reference || 'N/A'
-      currentCase.caseReferences = originalCase.reference || 'N/A'
-      currentCase.courtName =
-        (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
-        (originalCase as CourtCase & { courtCode?: string }).courtCode ||
-        originalCase.locationName ||
-        'N/A'
-      const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
-      currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
-      currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
-
-      if (currentCase.sentences) {
-        currentCase.sentences = currentCase.sentences.map(sentence => {
-          const sentencePeriodLengths = sentence.periodLengths || []
-          const custodialPeriod = sentencePeriodLengths.find(
-            (p: unknown) =>
-              p &&
-              typeof p === 'object' &&
-              'periodLengthType' in p &&
-              (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
-          )
-          const custodialTerm = custodialPeriod
-            ? {
-                years: (custodialPeriod as { years?: number }).years || 0,
-                months: (custodialPeriod as { months?: number }).months || 0,
-                weeks: (custodialPeriod as { weeks?: number }).weeks || 0,
-                days: (custodialPeriod as { days?: number }).days || 0,
-              }
-            : undefined
-
-          return {
-            ...sentence,
-            custodialTerm,
-            formattedSentenceLength: formatTerm(custodialTerm),
-            formattedConsecutiveOrConcurrent: formatSentenceServeType(
-              sentence.sentenceServeType,
-              sentence.consecutiveToChargeNumber,
-            ),
-            formattedOffenceDate: sentence.convictionDate,
-            formattedConvictionDate: sentence.convictionDate
-              ? formatDateStringToDDMMYYYY(sentence.convictionDate)
-              : 'Not available',
-            apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
-            sentenceTypeDescription: sentence.sentenceType || 'Not available',
-            formattedOutcome: 'Not available', // TODO get from api sentence.outcomeDescription
-          }
-        })
-      }
+      const currentCase = this.prepareCourtCaseForView(originalCase)
 
       res.locals.nomsNumber = nomsNumber
       res.locals.currentCase = currentCase
