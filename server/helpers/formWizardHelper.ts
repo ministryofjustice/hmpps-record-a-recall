@@ -1,6 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase, Recall, Sentence, SentenceWithDpsUuid, UAL } from 'models'
+import { CourtCase, Recall, SentenceWithDpsUuid, UAL } from 'models'
 import { getRecallType, RecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import {
@@ -166,10 +166,6 @@ export function getBreakdown(req: FormWizard.Request): CalculationBreakdown {
 
 export function getCrdsSentences(req: FormWizard.Request): SentenceWithDpsUuid[] {
   return get<SentenceWithDpsUuid[]>(req, sessionModelFields.SENTENCES)
-}
-
-export function getRasSentences(req: FormWizard.Request): Sentence[] {
-  return get<Sentence[]>(req, sessionModelFields.RAS_SENTENCES)
 }
 
 export function getCourtCaseOptions(req: FormWizard.Request): CourtCase[] {

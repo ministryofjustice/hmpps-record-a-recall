@@ -64,23 +64,23 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
     hasEligibleSentences: false,
   }
 
-  courtCase.sentences.forEach(s => {
-    if (!s.sentence) {
+  courtCase.sentences.forEach(sentence => {
+    if (!sentence) {
       return
     }
     summarisedGroup.hasEligibleSentences = true
-    const recallEligibility = determineEligibilityOnRasSentenceType(s.sentence)
+    const recallEligibility = determineEligibilityOnRasSentenceType(sentence)
     const summary = compact([])
     const summarisedSentence: SummarisedSentence = {
-      sentenceId: s.sentence.sentenceUuid,
+      sentenceId: sentence.sentenceUuid,
       recallEligibility,
       summary,
-      offenceCode: s.sentence.offenceCode,
-      offenceDescription: s.sentence.offenceDescription,
+      offenceCode: sentence.offenceCode,
+      offenceDescription: sentence.offenceDescription || sentence.offenceCode, // Fallback to code if description not available
     }
 
     summarisedGroup.eligibleSentences.push(summarisedSentence)
-    summarisedGroup.sentences.push(s)
+    summarisedGroup.sentences.push(sentence)
   })
 
   return summarisedGroup

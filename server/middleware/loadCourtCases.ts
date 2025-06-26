@@ -6,11 +6,11 @@ import CourtService from '../services/CourtService'
 import { RecallableCourtCase, RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 // Enhanced types for court cases with additional fields
-type EnhancedRecallableSentence = RecallableSentence & {
+export type EnhancedRecallableSentence = RecallableSentence & {
   offenceDescription?: string
 }
 
-type EnhancedRecallableCourtCase = RecallableCourtCase & {
+export type EnhancedRecallableCourtCase = RecallableCourtCase & {
   courtName?: string
   sentences: EnhancedRecallableSentence[]
 }
@@ -32,7 +32,10 @@ export default function loadCourtCases(
     }
 
     try {
-      const recallableCourtCases = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
+      const response = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
+      const recallableCourtCases: RecallableCourtCase[] = Array.isArray(response)
+        ? response
+        : (response as { cases?: RecallableCourtCase[] })?.cases || []
 
       // Enhance court cases with offence descriptions and court names
       if (recallableCourtCases && Array.isArray(recallableCourtCases) && recallableCourtCases.length > 0) {
