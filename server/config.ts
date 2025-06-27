@@ -163,14 +163,6 @@ export default {
       },
       agent: new AgentConfig(),
     },
-    recallableCourtCasesApi: {
-      url: get('RECALLABLE_COURT_CASES_API_URL', 'http://localhost:8083', requiredInProduction),
-      timeout: {
-        response: Number(get('RECALLABLE_COURT_CASES_API_TIMEOUT_RESPONSE', 10000)),
-        deadline: Number(get('RECALLABLE_COURT_CASES_API_TIMEOUT_DEADLINE', 10000)),
-      },
-      agent: new AgentConfig(),
-    },
     prisonRegisterApi: {
       url: get('PRISON_REGISTER_API_URL', 'http://localhost:8083', requiredInProduction),
       timeout: {
