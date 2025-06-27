@@ -115,7 +115,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
             : 'Not available',
           apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
           sentenceTypeDescription: sentence.sentenceType || 'Not available',
-          formattedOutcome: 'Not available', // TODO get from api sentence.outcomeDescription
+          formattedOutcome: sentence.outcomeDescription || 'Not available',
         }
       })
     }

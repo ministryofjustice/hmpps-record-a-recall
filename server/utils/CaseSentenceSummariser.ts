@@ -76,7 +76,7 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
       recallEligibility,
       summary,
       offenceCode: sentence.offenceCode,
-      offenceDescription: sentence.offenceDescription || sentence.offenceCode, // Fallback to code if description not available
+      offenceDescription: sentence.offenceDescription,
     }
 
     summarisedGroup.eligibleSentences.push(summarisedSentence)
