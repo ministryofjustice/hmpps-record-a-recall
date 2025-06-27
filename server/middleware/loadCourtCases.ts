@@ -179,19 +179,3 @@ function applyCourtNamesToEnhancedCases(
     courtName: courtNamesMap.get(courtCase.courtCode) || 'Court name not available',
   }))
 }
-
-/**
- * Enhances court cases by adding court names
- * @param cases Array of court cases to enhance
- * @param courtService Service to fetch court names
- * @param username Username for authentication
- * @returns Enhanced court cases with court names
- */
-async function enhanceCourtCasesWithCourtNames(
-  cases: EnhancedRecallableCourtCase[],
-  courtService: CourtService,
-  username: string,
-): Promise<EnhancedRecallableCourtCase[]> {
-  const courtNamesMap = await getCourtNamesMap(cases, courtService, username)
-  return applyCourtNamesToEnhancedCases(cases, courtNamesMap)
-}

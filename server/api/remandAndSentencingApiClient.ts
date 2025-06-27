@@ -4,7 +4,6 @@ import {
   ApiRecall,
   CreateRecall,
   CreateRecallResponse,
-  RecallableCourtCase,
   RecallableCourtCasesResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
