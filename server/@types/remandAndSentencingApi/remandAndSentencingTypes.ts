@@ -7,7 +7,4 @@ export type ApiRecall = components['schemas']['Recall']
 export type RecallableCourtCase = components['schemas']['RecallableCourtCase']
 export type RecallableSentence = components['schemas']['RecallableSentence']
 
-export type RecallableCourtCasesResponse = {
-  totalCases: number
-  cases: RecallableCourtCase[]
-}
+export type RecallableCourtCasesResponse = components['schemas']['RecallableCourtCasesResponse']
