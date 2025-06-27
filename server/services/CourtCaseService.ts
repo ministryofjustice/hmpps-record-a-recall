@@ -32,7 +32,7 @@ export default class CourtCaseService {
       status: recallableCase.status,
       date: recallableCase.date,
       location: recallableCase.courtCode,
-      locationName: recallableCase.courtName, // Enhanced data from middleware (if available)
+      locationName: recallableCase.courtName,
       reference: recallableCase.reference,
       sentenced: recallableCase.isSentenced,
       sentences: recallableCase.sentences || [],

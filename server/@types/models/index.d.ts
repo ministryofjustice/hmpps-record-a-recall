@@ -43,24 +43,6 @@ declare module 'models' {
     sentenced: boolean
   }
 
-  export interface Sentence {
-    /** Format: uuid */
-    sentenceUuid: string
-    chargeNumber?: string
-    custodialTerm: Term
-    licenceTerm: Term
-    sentenceServeType: string
-    consecutiveToChargeNumber?: string
-    sentenceType?: string
-    /** Format: date */
-    convictionDate?: string
-    offenceDate?: string
-    offenceCode: string
-    offenceDescription?: string
-    courtDescription?: string
-    periodLengths?
-  }
-
   export type SentenceWithDpsUuid = SentenceAndOffenceWithReleaseArrangements & {
     /** Format: UUID * */
     dpsSentenceUuid: string

@@ -2,7 +2,8 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase, Sentence } from 'models'
+import { CourtCase } from 'models'
+import { RecallableSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import {
   calculateOverallSentenceLength,
@@ -23,7 +24,7 @@ type EnhancedCourtCaseForView = CourtCase & {
   courtName?: string
   formattedOverallSentenceLength?: string
   formattedOverallConvictionDate?: string
-  sentences?: (Sentence & {
+  sentences?: (RecallableSentence & {
     formattedSentenceLength?: string
     periodLengths?: {
       description: string

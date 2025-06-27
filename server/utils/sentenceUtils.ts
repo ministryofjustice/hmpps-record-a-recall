@@ -1,4 +1,4 @@
-import type { SentenceWithDpsUuid, Term, Sentence } from 'models'
+import type { SentenceWithDpsUuid, Term } from 'models'
 import { RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   CalculationBreakdown,
@@ -307,7 +307,7 @@ export function formatSentenceServeType(sentenceServeType?: string, consecutiveT
   return sentenceServeType || 'Not specified'
 }
 
-export function calculateOverallSentenceLength(sentences?: Sentence[]): Term {
+export function calculateOverallSentenceLength(sentences?: RecallableSentence[]): Term {
   const total: Term = { years: 0, months: 0, weeks: 0, days: 0 }
 
   if (!sentences || sentences.length === 0) {
@@ -315,11 +315,14 @@ export function calculateOverallSentenceLength(sentences?: Sentence[]): Term {
   }
 
   sentences.forEach(sentence => {
-    if (sentence.licenceTerm) {
-      total.days = (total.days || 0) + (sentence.licenceTerm.days || 0)
-      total.weeks = (total.weeks || 0) + (sentence.licenceTerm.weeks || 0)
-      total.months = (total.months || 0) + (sentence.licenceTerm.months || 0)
-      total.years = (total.years || 0) + (sentence.licenceTerm.years || 0)
+    // Find licence period length from periodLengths array
+    const licencePeriod = sentence.periodLengths?.find(p => p.periodLengthType === 'LICENCE_PERIOD')
+
+    if (licencePeriod) {
+      total.days = (total.days || 0) + (licencePeriod.days || 0)
+      total.weeks = (total.weeks || 0) + (licencePeriod.weeks || 0)
+      total.months = (total.months || 0) + (licencePeriod.months || 0)
+      total.years = (total.years || 0) + (licencePeriod.years || 0)
     }
   })
 
