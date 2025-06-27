@@ -2,10 +2,9 @@ import config, { ApiConfig } from '../config'
 import RestClient from '../data/restClient'
 import {
   ApiRecall,
-  ApiCourtCasePage,
   CreateRecall,
   CreateRecallResponse,
-  RecallableCourtCase,
+  RecallableCourtCasesResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
@@ -45,22 +44,15 @@ export default class RemandAndSentencingApiClient {
     }) as Promise<ApiRecall[]>
   }
 
-  async getCourtCases(prisonerId: string, page: number = 0): Promise<ApiCourtCasePage> {
-    return this.restClient.get({
-      path: `/court-case/search`,
-      query: { prisonerId, sort: 'latestCourtAppearance_appearanceDate,desc', size: 20, page },
-    }) as Promise<ApiCourtCasePage>
-  }
-
   async deleteRecall(recallId: string): Promise<void> {
     await this.restClient.delete({
       path: `/recall/${recallId}`,
     })
   }
 
-  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCase[]> {
+  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCasesResponse> {
     return this.restClient.get({
       path: `/court-case/${prisonerId}/recallable-court-cases`,
-    }) as Promise<RecallableCourtCase[]>
+    }) as Promise<RecallableCourtCasesResponse>
   }
 }

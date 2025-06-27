@@ -3,7 +3,7 @@ import FormPage from '../pages/Journey/formPage'
 import RevocationDatePage from '../pages/Journey/revocationDatePage'
 import ReviewFormPage from '../pages/Journey/reviewFormPage'
 
-context('Create recall happy path', () => {
+context('Create recall happy path | MANUAL', () => {
   beforeEach(() => {
     cy.task('reset')
     cy.task('stubSignIn')

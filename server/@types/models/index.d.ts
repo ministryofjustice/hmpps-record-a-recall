@@ -4,7 +4,7 @@ declare module 'models' {
     CalculatedReleaseDates,
     SentenceAndOffenceWithReleaseArrangements,
   } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
-  import { ApiCharge } from '../remandAndSentencingApi/remandAndSentencingTypes'
+  import { RecallableSentence } from '../remandAndSentencingApi/remandAndSentencingTypes'
 
   export interface Recall {
     recallId: string
@@ -39,26 +39,8 @@ declare module 'models' {
     location: string
     locationName?: string
     reference: string
-    sentences?: ApiCharge[]
+    sentences?: RecallableSentence[]
     sentenced: boolean
-  }
-
-  export interface Sentence {
-    /** Format: uuid */
-    sentenceUuid: string
-    chargeNumber?: string
-    custodialTerm: Term
-    licenceTerm: Term
-    sentenceServeType: string
-    consecutiveToChargeNumber?: string
-    sentenceType?: string
-    /** Format: date */
-    convictionDate?: string
-    offenceDate?: string
-    offenceCode: string
-    offenceDescription?: string
-    courtDescription?: string
-    periodLengths?
   }
 
   export type SentenceWithDpsUuid = SentenceAndOffenceWithReleaseArrangements & {
