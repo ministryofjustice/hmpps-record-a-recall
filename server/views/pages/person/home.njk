@@ -99,19 +99,21 @@
               {% for case in recallableCourtCases %}
                 <div class="govuk-!-margin-bottom-3">
                   <p class="govuk-body govuk-!-font-weight-bold">
-                    Court case on {{ case.date | date('short') }} at {{ case.courtName or 'Court name not available' }}
+                     {{ case.date | date('short') }} at {{ case.courtName or 'Court name not available' }}
                   </p>
 
                   {% if case.sentences and case.sentences.length %}
                     {% for sentence in case.sentences %}
                       <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
                         {{ offenceCard({
+                          countNumber: sentence.countNumber,
                           offenceCode: sentence.offenceCode,
                           offenceName: sentence.offenceDescription or 'Offence description not available',
                           convictionDate: sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available',
                           periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
                           sentenceServeType: sentence.sentenceServeType,
                           sentenceType: sentence.sentenceType,
+                          isSentenced: true,
                           detailsClasses: 'govuk-!-padding-4'
                         }) }}
                       </div>
