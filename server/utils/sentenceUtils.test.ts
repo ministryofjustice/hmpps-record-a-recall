@@ -26,6 +26,10 @@ describe('sentenceUtils', () => {
               },
             },
             caseSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             caseReference: '12345',
           },
         ],
@@ -33,6 +37,7 @@ describe('sentenceUtils', () => {
         breakdownByReleaseDateType: {},
         otherDates: {},
         ersedNotApplicableDueToDtoLaterThanCrd: false,
+        showSds40Hints: true,
       } as CalculationBreakdown
 
       const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2024, 1, 1))
@@ -44,6 +49,10 @@ describe('sentenceUtils', () => {
           {
             caseSequence: 1,
             lineSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             sentencedAt: '2022-01-01',
             sentenceLength: '2 years',
             consecutiveTo: null,
@@ -77,6 +86,10 @@ describe('sentenceUtils', () => {
               },
             },
             caseSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             caseReference: '12345',
           },
         ],
@@ -84,6 +97,7 @@ describe('sentenceUtils', () => {
         breakdownByReleaseDateType: {},
         otherDates: {},
         ersedNotApplicableDueToDtoLaterThanCrd: false,
+        showSds40Hints: true,
       } as CalculationBreakdown
 
       const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2024, 3, 1))
@@ -93,6 +107,10 @@ describe('sentenceUtils', () => {
           {
             caseSequence: 1,
             lineSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             sentencedAt: '2022-01-01',
             sentenceLength: '2 years',
             consecutiveTo: null,
@@ -128,6 +146,10 @@ describe('sentenceUtils', () => {
               },
             },
             caseSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             caseReference: '12345',
           },
         ],
@@ -135,6 +157,7 @@ describe('sentenceUtils', () => {
         breakdownByReleaseDateType: {},
         otherDates: {},
         ersedNotApplicableDueToDtoLaterThanCrd: false,
+        showSds40Hints: true,
       } as CalculationBreakdown
 
       const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2023, 11, 15))
@@ -145,6 +168,10 @@ describe('sentenceUtils', () => {
           {
             lineSequence: 1,
             caseSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             sentencedAt: '2022-01-01',
             sentenceLength: '2 years',
             consecutiveTo: null,
@@ -179,6 +206,10 @@ describe('sentenceUtils', () => {
               },
             },
             caseSequence: 1,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             caseReference: '12345',
           },
           {
@@ -201,6 +232,10 @@ describe('sentenceUtils', () => {
               },
             },
             caseSequence: 2,
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
             caseReference: '67890',
           },
         ],
@@ -208,6 +243,7 @@ describe('sentenceUtils', () => {
         breakdownByReleaseDateType: {},
         otherDates: {},
         ersedNotApplicableDueToDtoLaterThanCrd: false,
+        showSds40Hints: true,
       } as CalculationBreakdown
 
       const result = groupSentencesByRevocationDate(calculationBreakdown, new Date(2024, 2, 15))
@@ -223,6 +259,10 @@ describe('sentenceUtils', () => {
             sentenceLength: '3 years',
             sentencedAt: '2021-01-01',
             sled: '2023-12-01',
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
           },
         ],
         onLicenceSentences: [
@@ -234,6 +274,10 @@ describe('sentenceUtils', () => {
             sentenceLength: '2 years',
             sentencedAt: '2022-01-01',
             sled: '2024-04-01',
+            externalSentenceId: {
+              bookingId: 1,
+              sentenceSequence: 1,
+            },
           },
         ],
       })

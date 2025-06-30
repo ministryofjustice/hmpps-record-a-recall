@@ -114,6 +114,7 @@ export function mapConcurrentToSentenceDetail(sentence: ConcurrentSentenceBreakd
     lineSequence: sentence.lineSequence,
     caseSequence: sentence.caseSequence,
     sentencedAt: sentence.sentencedAt,
+    externalSentenceId: sentence.externalSentenceId,
     sentenceLength: sentence.sentenceLength,
     consecutiveTo: null,
     crd: sentence.dates.CRD?.adjusted || '',
@@ -129,6 +130,7 @@ export function mapConsecutivePartToSentenceDetail(
   return {
     lineSequence: part.lineSequence,
     caseSequence: part.caseSequence,
+    externalSentenceId: part.externalSentenceId,
     sentencedAt: crd.toISOString().split('T')[0], // Assuming CRD is used as the sentencing date for parts
     sentenceLength: part.sentenceLength,
     consecutiveTo: part.consecutiveToLineSequence || null,
@@ -194,7 +196,11 @@ export function getDecoratedOnLicenceSentences(
   allSentences: SentenceAndOffenceWithReleaseArrangements[],
 ) {
   return onLicenceSentences.map(it => {
-    const matching = allSentences.find(s => s.caseSequence === it.caseSequence && s.lineSequence === it.lineSequence)
+    const matching = allSentences.find(
+      s =>
+        s.bookingId === it.externalSentenceId.bookingId &&
+        s.sentenceSequence === it.externalSentenceId.sentenceSequence,
+    )
     return {
       ...it,
       sentenceCalculationType: matching.sentenceCalculationType,
@@ -246,7 +252,9 @@ export function findConsecutiveSentenceBreakdown(
   breakdown: CalculationBreakdown,
 ): ConsecutiveSentencePart {
   return breakdown?.consecutiveSentence?.sentenceParts?.find(
-    p => p.caseSequence === sentence.caseSequence && p.lineSequence === sentence.lineSequence,
+    p =>
+      p.externalSentenceId.sentenceSequence === sentence.sentenceSequence &&
+      p.externalSentenceId.bookingId === sentence.bookingId,
   )
 }
 export function findConcurrentSentenceBreakdown(
@@ -254,7 +262,9 @@ export function findConcurrentSentenceBreakdown(
   breakdown: CalculationBreakdown,
 ): ConcurrentSentenceBreakdown {
   return breakdown?.concurrentSentences?.find(
-    b => b.caseSequence === sentence.caseSequence && b.lineSequence === sentence.lineSequence,
+    b =>
+      b.externalSentenceId.sentenceSequence === sentence.sentenceSequence &&
+      b.externalSentenceId.bookingId === sentence.bookingId,
   )
 }
 
