@@ -1,16 +1,17 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
 
 {% block beforeContent %}
-
   {{ super() }}
 
   {% block subNavigation %}
@@ -22,35 +23,39 @@
       text: errorMessage,
       iconFallbackText: "Warning"
     }) }}
-  {%  endif %}
-
+  {% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row govuk-!-margin-top-6">
   <div class="govuk-grid-column-two-thirds">
-  <h1 class="govuk-heading-xl">Recalls</h1>
-  {{ thingsToDo(serviceDefinitions, 'recalls') }}
-  {%  if not recalls or recalls.length == 0 %}
-    <p>There are no recalls recorded</p>
-  {% endif %}
-  {{ govukButton({
-    classes: "govuk-button--secondary",
-    text: "Record a recall",
-    preventDoubleClick: true,
-    href: '/person/' + nomisId + '/record-recall?entrypoint=recalls',
-    attributes: {  'data-qa': 'create-new-recall-btn' }
-  }) }}
+    <h1 class="govuk-heading-xl">Recalls</h1>
+    {{ thingsToDo(serviceDefinitions, 'recalls') }}
 
+    {% if not recalls or recalls.length == 0 %}
+      <p>There are no recalls recorded</p>
+    {% endif %}
+
+    {{ govukButton({
+      classes: "govuk-button--secondary",
+      text: "Record a recall",
+      preventDoubleClick: true,
+      href: '/person/' + nomisId + '/record-recall?entrypoint=recalls',
+      attributes: { 'data-qa': 'create-new-recall-btn' }
+    }) }}
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
     {% for recall in recalls %}
-
-      {{ recallCard(recall, latestRecallId) }}
-
-    {%  endfor %}
-  </div></div>
+      {{ recallCard(recall, latestRecallId, recallableCourtCases) }}
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}
 
-{%  macro recallCard(recall, latestRecallId) %}
+{% macro recallCard(recall, latestRecallId, recallableCourtCases) %}
 <div class="govuk-summary-card govuk-!-margin-bottom-6">
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">Recalled on {{ recall.revocationDate | date }}
@@ -67,22 +72,78 @@
       {% endif %}
     </ul>
   </div>
+
   <div class="govuk-summary-card__content" id="recall-summary">
-    <div class="govuk-grid-row govuk-!-padding-bottom-2 govuk-!-margin-top-2">
+    <div class="govuk-grid-row govuk-!-margin-bottom-2">
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Recall type', recall.recallType.description) }}
-        {{ cardInfo('Location', recall.locationName if recall.locationName else recall.location ) }}
+        {{ cardInfo('Location', recall.locationName if recall.locationName else recall.location) }}
       </div>
       <div class="govuk-grid-column-one-half">
-        {{ cardInfo('Arrest date',  recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall' ) }}
+        {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
         {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
       </div>
     </div>
+
+    {% if recallableCourtCases and recallableCourtCases.length %}
+      <div class="govuk-grid-row govuk-!-margin-top-4">
+        <div class="govuk-grid-column-full">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Court Cases</h3>
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">
+                Court Cases ({{ recallableCourtCases.length }})
+              </span>
+            </summary>
+            <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">
+              {% for case in recallableCourtCases %}
+                <div class="govuk-!-margin-bottom-3">
+                  <p class="govuk-body govuk-!-font-weight-bold">
+                     {{ case.date | date('short') }} at {{ case.courtName or 'Court name not available' }}
+                  </p>
+
+                  {% if case.sentences and case.sentences.length %}
+                    {% for sentence in case.sentences %}
+                      <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
+                   {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+                    {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'Not available' %}
+                    {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
+
+                    {{ offenceCard({
+                      countNumber: sentence.countNumber,
+                      offenceCode: sentence.offenceCode,
+                      offenceName: sentence.offenceDescription or 'Offence description not available',
+                      offenceStartDate: offenceStartDate,
+                      offenceEndDate: offenceEndDate,
+                      hideOutcome: true,
+                      outcome: sentence.outcome or 'Not available',
+                      lineNumber: sentence.lineNumber or 'Not available',
+                      convictionDate: convictionDate,
+                      periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+                      sentenceServeType: sentence.sentenceServeType,
+                      sentenceType: sentence.sentenceType,
+                      isSentenced: true,
+                      detailsClasses: 'govuk-!-padding-4'
+                    }) }}
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <p class="govuk-body">No sentences available for this case.</p>
+                  {% endif %}
+
+                  <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                </div>
+              {% endfor %}
+            </div>
+          </details>
+        </div>
+      </div>
+    {% endif %}
   </div>
 </div>
 {% endmacro %}
 
 {% macro cardInfo(field, value) %}
   <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ field }}</h3>
-  <p class="govuk-body govuk-!-margin-bottom-2">{{ value }}</p>
+  <p class="govuk-body govuk-!-margin-bottom-2">{{ value | safe }}</p>
 {% endmacro %}

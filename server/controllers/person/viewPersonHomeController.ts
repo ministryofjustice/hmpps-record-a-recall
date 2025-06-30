@@ -20,6 +20,7 @@ export default async (req: Request, res: Response) => {
       errorMessage,
       latestRecallId: res.locals.latestRecallId,
       recallableCourtCases,
+      offenceNameMap: res.locals.offenceNameMap,
     })
   }
 
