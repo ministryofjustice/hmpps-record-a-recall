@@ -115,6 +115,9 @@
                       offenceName: sentence.offenceDescription or 'Offence description not available',
                       offenceStartDate: offenceStartDate,
                       offenceEndDate: offenceEndDate,
+                      hideOutcome: true,
+                      outcome: sentence.outcome or 'Not available',
+                      lineNumber: sentence.lineNumber or 'Not available'
                       convictionDate: convictionDate,
                       periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
                       sentenceServeType: sentence.sentenceServeType,
