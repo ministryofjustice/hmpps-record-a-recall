@@ -16,7 +16,6 @@ export default function summariseSentencesGroups(
   revocationDate: Date,
 ): SummarisedSentenceGroup[] {
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = []
-
   Object.keys(groupedSentences).forEach(caseRef => {
     const groupsSentences = groupedSentences[caseRef]
     const summarisedGroup: SummarisedSentenceGroup = {

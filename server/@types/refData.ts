@@ -1,6 +1,9 @@
+import { ExternalSentenceId } from './calculateReleaseDatesApi/calculateReleaseDatesTypes'
+
 type SentenceDetail = {
   lineSequence: number
   caseSequence: number
+  externalSentenceId: ExternalSentenceId
   sentencedAt: string
   sentenceLength: string
   consecutiveTo: number | null

@@ -14,3 +14,4 @@ export type RecordARecallCalculationResult = components['schemas']['RecordARecal
 export type ValidationMessage = components['schemas']['ValidationMessage']
 export type Term = components['schemas']['SentenceTerms']
 export type Offence = components['schemas']['OffenderOffence']
+export type ExternalSentenceId = components['schemas']['ExternalSentenceId']
