@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express'
 import logger from '../../logger'
 import CourtCaseService from '../services/CourtCaseService'
 import ManageOffencesService from '../services/manageOffencesService'
-
 import CourtService from '../services/CourtService'
 import { RecallableCourtCase, RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
@@ -26,16 +25,16 @@ export default function loadCourtCases(
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { nomisId, user } = res.locals
-    
+
     if (!nomisId || !user?.username) {
       logger.warn('Missing nomisId or username in res.locals')
       return next()
     }
-    
+
     try {
       const response = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
       const recallableCourtCases: RecallableCourtCase[] = response.cases || []
-      const recallableCourtCases = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
+
       // Enhance court cases with offence descriptions and court names
       if (recallableCourtCases && Array.isArray(recallableCourtCases) && recallableCourtCases.length > 0) {
         const [offenceEnhancedCases, courtNamesMap] = await Promise.all([
@@ -49,28 +48,11 @@ export default function loadCourtCases(
         res.locals.recallableCourtCases = recallableCourtCases
       }
 
-
       logger.debug(`Court cases details loaded for ${nomisId}`)
-
-      const offenceCodes = recallableCourtCases
-        .flatMap(courtCase => courtCase.sentences || [])
-        .map(sentence => sentence.offenceCode)
-        .filter(code => !!code)
-
-      if (offenceCodes.length > 0 && user?.token) {
-        const offenceNameMap = await new ManageOffencesService().getOffenceMap(offenceCodes, user.token)
-        res.locals.offenceNameMap = offenceNameMap
-        logger.debug(`Offence names loaded for ${nomisId}`)
-      } else {
-        res.locals.offenceNameMap = {}
-      }
-
     } catch (error) {
-      logger.error(error, `Failed to retrieve court cases or offence names for: ${nomisId}`)
+      logger.error(error, `Failed to retrieve Court cases for: ${nomisId}`)
       res.locals.recallableCourtCases = null
-      res.locals.offenceNameMap = {}
     }
-
     return next()
   }
 }
@@ -197,4 +179,3 @@ function applyCourtNamesToEnhancedCases(
     courtName: courtNamesMap.get(courtCase.courtCode) || 'Court name not available',
   }))
 }
-
