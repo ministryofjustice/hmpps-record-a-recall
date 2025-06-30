@@ -1,0 +1,22 @@
+{% macro sentenceCard(sentence, offenceNameMap) %}
+  {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'Not available' %}
+  {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
+
+  {{ offenceCard({
+    countNumber: sentence.countNumber,
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+    offenceStartDate: offenceStartDate,
+    offenceEndDate: offenceEndDate,
+    hideOutcome: true,
+    outcome: sentence.outcome or 'Not available',
+    lineNumber: sentence.lineNumber or 'Not available',
+    convictionDate: convictionDate,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    sentenceType: sentence.sentenceType,
+    isSentenced: true,
+    detailsClasses: 'govuk-!-padding-4'
+  }) }}
+{% endmacro %}

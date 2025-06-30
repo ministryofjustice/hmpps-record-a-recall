@@ -9,6 +9,7 @@
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "macros/sentence-card.njk" import sentenceCard %}
 
 
 {% set errors = validationErrors[0].text %}
@@ -117,8 +118,8 @@
 {#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
-        {% for charge in group.sentences %}
-            {{ sentenceCard(charge, offenceNameMap) }}
+        {% for sentence in group.sentences %}
+            {{ sentenceCard(sentence, offenceNameMap) }}
         {% endfor %}
         {% from "govuk/components/details/macro.njk" import govukDetails %}
         {% if group.hasIneligibleSentences %}
@@ -140,27 +141,8 @@
 
 {% endmacro %}
 
-<p>Test: {{ offenceNameMap.MD71230 }}</p>
+{{ sentenceCard(sentence, offenceNameMap) }}
 
-{% macro sentenceCard(charge, offenceNameMap) %}
 
-  {{ offenceCard({
-    offenceCode: charge.offenceCode,
-    offenceName: offenceNameMap[charge.offenceCode],
-    offenceStartDate: charge.offenceStartDate | formatDate if charge.offenceStartDate else 'Not entered',
-    offenceEndDate: charge.offenceEndDate | formatDate,
-    hideOutcome: true,
-    outcome: charge.sentence.outcome,
-    countNumber: charge.sentence.chargeNumber,
-    convictionDate: charge.sentence.convictionDate | formatDate if charge.sentence.convictionDate else 'Not available',
-    terrorRelated: false,
-    isSentenced: true,
-    periodLengths: charge.sentence.periodLengths | periodLengthsToSentenceLengths,
-    sentenceServeType: charge.sentence.sentenceServeType,
-    consecutiveTo: charge.sentence.consecutiveToChargeNumber,
-    sentenceType: charge.sentence.sentenceType.description,
-    detailsClasses: 'govuk-!-padding-4'
-  }) }}
 
-{% endmacro %}
-
+     
