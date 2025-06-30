@@ -11,7 +11,7 @@ import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelp
 import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import { NomisDpsSentenceMapping } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
+import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 
 export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,10 +45,13 @@ export default class CheckPossibleController extends RecallBaseController {
           this.getCrdsSentences(req, res),
           this.getCalculationBreakdown(req, res),
         ])
-        const sentenceSequenceNumbers = sentences.map(sentence => sentence.sentenceSequence)
-        const firstBookingId = sentences[0].bookingId
-
-        const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, sentenceSequenceNumbers, firstBookingId) // get sequence numbers
+        const nomisSentenceInformation = sentences.map(sentence => {
+          return {
+            nomisSentenceSequence: sentence.sentenceSequence,
+            nomisBookingId: sentence.bookingId,
+          }
+        })
+        const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, nomisSentenceInformation)
 
         res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
@@ -127,14 +130,8 @@ export default class CheckPossibleController extends RecallBaseController {
 
   async getNomisToDpsMapping(
     req: FormWizard.Request,
-    sentenceSequenceNumbers: number[],
-    firstBookingId: number,
+    nomisSentenceInformation: NomisSentenceId[],
   ): Promise<NomisDpsSentenceMapping[]> {
-    const nomisSentenceInformation = sentenceSequenceNumbers.map(sentence => ({
-      nomisSentenceSequence: sentence,
-      nomisBookingId: firstBookingId,
-    }))
-
     return req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)
   }
 }
