@@ -105,17 +105,23 @@
                   {% if case.sentences and case.sentences.length %}
                     {% for sentence in case.sentences %}
                       <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
-                        {{ offenceCard({
-                          countNumber: sentence.countNumber,
-                          offenceCode: sentence.offenceCode,
-                          offenceName: sentence.offenceDescription or 'Offence description not available',
-                          convictionDate: sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available',
-                          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
-                          sentenceServeType: sentence.sentenceServeType,
-                          sentenceType: sentence.sentenceType,
-                          isSentenced: true,
-                          detailsClasses: 'govuk-!-padding-4'
-                        }) }}
+                   {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+                    {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'Not available' %}
+                    {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
+
+                    {{ offenceCard({
+                      countNumber: sentence.countNumber,
+                      offenceCode: sentence.offenceCode,
+                      offenceName: sentence.offenceDescription or 'Offence description not available',
+                      offenceStartDate: offenceStartDate,
+                      offenceEndDate: offenceEndDate,
+                      convictionDate: convictionDate,
+                      periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+                      sentenceServeType: sentence.sentenceServeType,
+                      sentenceType: sentence.sentenceType,
+                      isSentenced: true,
+                      detailsClasses: 'govuk-!-padding-4'
+                    }) }}
                       </div>
                     {% endfor %}
                   {% else %}
