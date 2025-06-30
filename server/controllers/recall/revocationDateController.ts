@@ -2,7 +2,7 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import { isBefore, isEqual, isAfter, min } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
-import { CourtCase } from 'models'
+import { CourtCase, Recall } from 'models'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import getJourneyDataFromRequest, {
@@ -19,6 +19,7 @@ import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
 import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
+import { validateRevocationDateAgainstRecalls, getActiveRecallsForValidation } from '../../utils/recallOverlapValidation'
 
 function hasSentence(item: unknown): item is { classification?: string; sentenceUuid?: string } {
   return typeof item === 'object' && item !== null && 'classification' in item
@@ -62,6 +63,22 @@ export default class RevocationDateController extends RecallBaseController {
 
       if (isWithinAdjustment) {
         validationErrors.revocationDate = this.formError('revocationDate', 'cannotBeWithinAdjustmentPeriod')
+      }
+
+      // Recall overlap validation - check against existing recalls
+      const allRecalls: Recall[] = res.locals.recalls || []
+      const activeRecalls = getActiveRecallsForValidation(allRecalls)
+      
+      if (activeRecalls.length > 0) {
+        const overlapValidation = validateRevocationDateAgainstRecalls(revocationDate, activeRecalls, journeyData)
+        
+        if (!overlapValidation.isValid) {
+          const errorType = overlapValidation.errorType === 'overlapsFixedTermRecall' 
+            ? 'revocationDateOverlapsFixedTermRecall'
+            : 'revocationDateOnOrBeforeExistingRecall'
+          
+          validationErrors.revocationDate = this.formError('revocationDate', errorType)
+        }
       }
 
       callback(validationErrors)

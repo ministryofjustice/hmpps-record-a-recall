@@ -72,6 +72,8 @@ export default class FormInitialStep extends FormWizard.Controller {
       conflictingAdjustment: `There is a conflicting adjustment for these dates`,
       cannotBeWithinAdjustmentPeriod: `${fieldName} must be outside existing adjustment window`,
       multipleConflictingAdjustment: `There are multiple existing adjustments for the dates provided`,
+      revocationDateOverlapsFixedTermRecall: `${fieldName} overlaps with an existing recall period`,
+      revocationDateOnOrBeforeExistingRecall: `${fieldName} cannot be on or before an existing recall`,
     }
 
     const errorMessage = errorMessageOverrides[error.type] || errorMessages[error.type] || `${fieldName} is invalid`

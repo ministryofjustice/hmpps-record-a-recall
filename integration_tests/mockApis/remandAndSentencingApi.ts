@@ -150,6 +150,57 @@ export default {
       },
     })
   },
+  stubExistingRecalls: ({ recalls = [] }: { recalls?: any[] } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: recalls.map(recall => ({
+          recallUuid: recall.recallId,
+          prisonerId: 'A1234AB',
+          revocationDate: recall.revocationDate instanceof Date ? recall.revocationDate.toISOString() : recall.revocationDate,
+          returnToCustodyDate: recall.returnToCustodyDate ? (recall.returnToCustodyDate instanceof Date ? recall.returnToCustodyDate.toISOString() : recall.returnToCustodyDate) : null,
+          recallType: recall.recallType,
+          courtCaseIds: recall.courtCaseIds || [],
+          sentenceIds: recall.sentenceIds || [],
+          ual: recall.ual || null,
+          location: recall.location || 'BWI',
+          createdAt: recall.createdAt || new Date().toISOString(),
+        })),
+      },
+    })
+  },
+  stubEditRecall: ({ recallId }: { recallId: string }): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/recall/${recallId}`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          recallUuid: recallId,
+          prisonerId: 'A1234AB',
+          revocationDate: '2024-01-20T00:00:00.000Z',
+          returnToCustodyDate: '2024-01-20T00:00:00.000Z',
+          recallType: {
+            code: 'LR',
+            description: 'Standard',
+            fixedTerm: false,
+          },
+          courtCaseIds: ['case-456'],
+          sentenceIds: ['sentence-123'],
+          location: 'BWI',
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
+      },
+    })
+  },
   stubRecallRecorded: (): SuperAgentRequest => {
     return stubFor({
       request: {
