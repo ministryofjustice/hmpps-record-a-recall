@@ -1,7 +1,7 @@
 import { addDays, isAfter, isBefore, isEqual, isValid, max } from 'date-fns'
 import { compact } from 'lodash'
 
-import { ApiSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   ConcurrentSentenceBreakdown,
   ConsecutiveSentenceBreakdown,
@@ -60,8 +60,8 @@ export default function getIndividualEligibility(
   return determineEligibilityOnCrdsSentenceType(sentence)
 }
 
-export function determineEligibilityOnRasSentenceType(sentence: ApiSentence): RecallEligibility {
-  const sentenceType = sentence.sentenceType?.description
+export function determineEligibilityOnRasSentenceType(sentence: RecallableSentence): RecallEligibility {
+  const { sentenceType } = sentence
   if (!sentenceType) {
     return eligibilityReasons.RAS_LEGACY_SENTENCE
   }
