@@ -10,6 +10,8 @@ export default async (req: Request, res: Response) => {
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
 
+    console.log('----------------recallableCourtCases', JSON.stringify(recallableCourtCases, undefined, 2))
+
     return res.render('pages/person/home', {
       nomisId,
       prisoner,

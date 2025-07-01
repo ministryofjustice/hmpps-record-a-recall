@@ -1,23 +1,24 @@
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
 {% macro sentenceCard(sentence, offenceNameMap) %}
+  {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
   {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
-  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'Not available' %}
+  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'N/A' %}
   {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
 
   {{ offenceCard({
-    countNumber: sentence.countNumber,
-    offenceCode: sentence.offenceCode,
+    countNumber: countNumber,
+    offenceCode: sentence.offenceCode | default('N/A'),
     offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-    offenceStartDate: offenceStartDate,
-    offenceEndDate: offenceEndDate,
+    offenceStartDate: offenceStartDate | default('N/A'),
+    offenceEndDate: offenceEndDate | default('N/A'),
     hideOutcome: true,
-    outcome: sentence.outcome or 'Not available',
-    lineNumber: sentence.lineNumber or 'Not available',
-    convictionDate: convictionDate,
-    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
-    sentenceServeType: sentence.sentenceServeType,
-    sentenceType: sentence.sentenceType,
+    outcome: sentence.outcome | default('N/A'),
+    lineNumber: sentence.lineNumber | default('N/A'),
+    convictionDate: convictionDate | default('N/A'),
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+    sentenceServeType: sentence.sentenceServeType | default(null),
+    sentenceType: sentence.sentenceType | default('N/A'),
     isSentenced: true,
     detailsClasses: 'govuk-!-padding-4'
   }) }}
