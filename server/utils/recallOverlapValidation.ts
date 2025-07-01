@@ -5,7 +5,6 @@ import { RecallJourneyData } from '../helpers/formWizardHelper'
 
 /**
  * Validates if a revocation date overlaps with existing recalls
- * Based on business rules for FTR periods and recall dates
  */
 
 export interface RecallOverlapValidationResult {
@@ -13,10 +12,6 @@ export interface RecallOverlapValidationResult {
   errorType?: 'overlapsFixedTermRecall' | 'onOrBeforeExistingRecall'
 }
 
-/**
- * Main validation function for recall overlap detection
- * Implements all ACs for both create and edit modes
- */
 export function validateRevocationDateAgainstRecalls(
   revocationDate: Date,
   existingRecalls: Recall[],
@@ -25,7 +20,7 @@ export function validateRevocationDateAgainstRecalls(
   // Filter recalls to consider (exclude current recall in edit mode)
   const recallsToConsider = getRecallsToConsiderForValidation(existingRecalls, journeyData)
 
-  // AC5 & AC11: Check if revocation date is on or before any existing recall
+  // Check if revocation date is on or before any existing recall
   const hasDateOnOrBeforeExisting = recallsToConsider.some(
     recall => isEqual(revocationDate, recall.revocationDate) || isBefore(revocationDate, recall.revocationDate),
   )
@@ -37,7 +32,7 @@ export function validateRevocationDateAgainstRecalls(
     }
   }
 
-  // AC1-4 & AC7-10: Check for FTR period overlaps
+  // Check for FTR period overlaps
   const hasFtrOverlap = recallsToConsider.some(recall => {
     if (!recall.recallType?.fixedTerm) {
       return false // Only check FTR recalls
@@ -58,7 +53,6 @@ export function validateRevocationDateAgainstRecalls(
 
 /**
  * Filter recalls to consider for validation
- * AC6: Excludes current recall when editing
  */
 export function getRecallsToConsiderForValidation(allRecalls: Recall[], journeyData: RecallJourneyData): Recall[] {
   if (!allRecalls || allRecalls.length === 0) {
@@ -74,7 +68,7 @@ export function getRecallsToConsiderForValidation(allRecalls: Recall[], journeyD
 }
 
 /**
- * Check if revocation date falls within an FTR period
+ * Check if revocation date falls within a FTR period
  * Handles both "already in prison" and "not in prison" scenarios
  */
 function isRevocationDateWithinFtrPeriod(
@@ -88,8 +82,6 @@ function isRevocationDateWithinFtrPeriod(
   }
 
   // Determine the reference date for the FTR period
-  // AC1-2 (already in prison): Use revocation date
-  // AC3-4 (not in prison): Use return to custody date
   const referenceDate = determineReferenceDate(existingRecall, journeyData)
   if (!referenceDate) {
     return false
@@ -126,36 +118,27 @@ function getFtrPeriodDays(recallTypeCode: string): number | null {
  * Based on whether the offender was in prison at the time of recall
  */
 function determineReferenceDate(existingRecall: Recall, _journeyData: RecallJourneyData): Date | null {
-  // For AC1-2 (already in prison): Use revocation date
-  // For AC3-4 (not in prison): Use return to custody date
-
   // Check if the existing recall was for someone already in prison
-  // If we have UAL, they were not in prison (UAL = Unlawfully at Large)
+  // If we have UAL, they were not in prison
   const wasInPrisonAtRecall = !existingRecall.ual
 
   if (wasInPrisonAtRecall) {
-    // AC1-2: Use revocation date
     return existingRecall.revocationDate
   }
-  // AC3-4: Use return to custody date
   // If no return to custody date, fallback to revocation date + 1 day (start of UAL period)
   return existingRecall.returnToCustodyDate || addDays(existingRecall.revocationDate, 1)
 }
 
 /**
  * Get active recalls from res.locals that should be considered for validation
- * Only includes active recalls (not soft-deleted or withdrawn)
  */
 export function getActiveRecallsForValidation(recalls: Recall[]): Recall[] {
   if (!recalls || recalls.length === 0) {
     return []
   }
 
-  // Filter to only active recalls
-  // Based on BA answers: only check against active recalls
   return recalls.filter(_recall => {
-    // Add any additional filtering logic here if recall status becomes available
-    // For now, assume all recalls in the array are active
+    // In case we want to add any filtering logic, for now we take all recalls in the array
     return true
   })
 }
