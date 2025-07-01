@@ -19,7 +19,10 @@ import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { determineInvalidRecallTypes } from '../../utils/RecallEligiblityCalculator'
 import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
-import { validateRevocationDateAgainstRecalls, getActiveRecallsForValidation } from '../../utils/recallOverlapValidation'
+import {
+  validateRevocationDateAgainstRecalls,
+  getActiveRecallsForValidation,
+} from '../../utils/recallOverlapValidation'
 
 function hasSentence(item: unknown): item is { classification?: string; sentenceUuid?: string } {
   return typeof item === 'object' && item !== null && 'classification' in item
@@ -68,15 +71,16 @@ export default class RevocationDateController extends RecallBaseController {
       // Recall overlap validation - check against existing recalls
       const allRecalls: Recall[] = res.locals.recalls || []
       const activeRecalls = getActiveRecallsForValidation(allRecalls)
-      
+
       if (activeRecalls.length > 0) {
         const overlapValidation = validateRevocationDateAgainstRecalls(revocationDate, activeRecalls, journeyData)
-        
+
         if (!overlapValidation.isValid) {
-          const errorType = overlapValidation.errorType === 'overlapsFixedTermRecall' 
-            ? 'revocationDateOverlapsFixedTermRecall'
-            : 'revocationDateOnOrBeforeExistingRecall'
-          
+          const errorType =
+            overlapValidation.errorType === 'overlapsFixedTermRecall'
+              ? 'revocationDateOverlapsFixedTermRecall'
+              : 'revocationDateOnOrBeforeExistingRecall'
+
           validationErrors.revocationDate = this.formError('revocationDate', errorType)
         }
       }

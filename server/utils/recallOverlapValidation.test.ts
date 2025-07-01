@@ -1,4 +1,3 @@
-
 import { addDays, subDays } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
@@ -12,7 +11,6 @@ import {
 
 describe('Recall Overlap Validation', () => {
   const baseDate = new Date('2024-01-15')
-  const nomsId = 'A1234BC'
 
   // Test data factories
   const createRecallJourneyData = (isEdit: boolean, currentRecallId?: string): RecallJourneyData => ({
@@ -50,16 +48,19 @@ describe('Recall Overlap Validation', () => {
     revocationDate: Date,
     hasUal = false,
   ): Recall => {
-    const recallType = ftrType === 'FTR_14' ? RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL : RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL
+    const recallType =
+      ftrType === 'FTR_14' ? RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL : RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL
     return createMockRecall(recallId, {
       recallType,
       revocationDate,
       returnToCustodyDate: hasUal ? addDays(revocationDate, 3) : revocationDate,
-      ual: hasUal ? {
-        firstDay: addDays(revocationDate, 1),
-        lastDay: addDays(revocationDate, 2),
-        days: 2,
-      } : undefined,
+      ual: hasUal
+        ? {
+            firstDay: addDays(revocationDate, 1),
+            lastDay: addDays(revocationDate, 2),
+            days: 2,
+          }
+        : undefined,
     })
   }
 
@@ -69,11 +70,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_14', baseDate, false) // No UAL = already in prison
         const testDate = addDays(baseDate, 10) // Within 14 days
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(false)
         expect(result.errorType).toBe('overlapsFixedTermRecall')
@@ -83,11 +80,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_14', baseDate, false)
         const testDate = addDays(baseDate, 15) // Outside 14 days
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -98,11 +91,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_28', baseDate, false)
         const testDate = addDays(baseDate, 20) // Within 28 days
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(false)
         expect(result.errorType).toBe('overlapsFixedTermRecall')
@@ -112,11 +101,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_28', baseDate, false)
         const testDate = addDays(baseDate, 29) // Outside 28 days
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -128,11 +113,7 @@ describe('Recall Overlap Validation', () => {
         const returnToCustodyDate = existingRecall.returnToCustodyDate!
         const testDate = addDays(returnToCustodyDate, 10) // Within 14 days of RTC date
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(false)
         expect(result.errorType).toBe('overlapsFixedTermRecall')
@@ -143,11 +124,7 @@ describe('Recall Overlap Validation', () => {
         const returnToCustodyDate = existingRecall.returnToCustodyDate!
         const testDate = addDays(returnToCustodyDate, 15) // Outside 14 days of RTC date
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -159,11 +136,7 @@ describe('Recall Overlap Validation', () => {
         const returnToCustodyDate = existingRecall.returnToCustodyDate!
         const testDate = addDays(returnToCustodyDate, 20) // Within 28 days of RTC date
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(false)
         expect(result.errorType).toBe('overlapsFixedTermRecall')
@@ -174,11 +147,7 @@ describe('Recall Overlap Validation', () => {
         const returnToCustodyDate = existingRecall.returnToCustodyDate!
         const testDate = addDays(returnToCustodyDate, 29) // Outside 28 days of RTC date
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -189,11 +158,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createMockRecall('existing-123', { revocationDate: baseDate })
         const testDate = baseDate // Same date
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(false)
         expect(result.errorType).toBe('onOrBeforeExistingRecall')
@@ -203,11 +168,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createMockRecall('existing-123', { revocationDate: baseDate })
         const testDate = subDays(baseDate, 1) // Before existing
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(false)
         expect(result.errorType).toBe('onOrBeforeExistingRecall')
@@ -217,11 +178,7 @@ describe('Recall Overlap Validation', () => {
         const existingRecall = createMockRecall('existing-123', { revocationDate: baseDate })
         const testDate = addDays(baseDate, 1) // After existing
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [existingRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [existingRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -236,7 +193,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(true) // Should be valid because current recall is excluded
@@ -251,7 +208,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall, otherRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(false) // Should fail because of other recall
@@ -269,7 +226,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall, otherFtrRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(false)
@@ -287,7 +244,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall, otherFtrRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(false)
@@ -306,7 +263,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall, otherFtrRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(false)
@@ -325,7 +282,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall, otherFtrRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(false)
@@ -343,7 +300,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [currentRecall, otherRecall],
-          createRecallJourneyData(true, currentRecallId)
+          createRecallJourneyData(true, currentRecallId),
         )
 
         expect(result.isValid).toBe(false)
@@ -360,7 +317,7 @@ describe('Recall Overlap Validation', () => {
         const result = validateRevocationDateAgainstRecalls(
           testDate,
           [ftr14Recall, ftr28Recall],
-          createRecallJourneyData(false)
+          createRecallJourneyData(false),
         )
 
         expect(result.isValid).toBe(false)
@@ -370,11 +327,7 @@ describe('Recall Overlap Validation', () => {
       it('should handle empty recalls array', () => {
         const testDate = baseDate
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -382,15 +335,11 @@ describe('Recall Overlap Validation', () => {
       it('should ignore non-FTR recalls for FTR overlap checks', () => {
         const standardRecall = createMockRecall('standard-123', {
           revocationDate: baseDate,
-          recallType: RecallTypes.STANDARD_RECALL
+          recallType: RecallTypes.STANDARD_RECALL,
         })
         const testDate = addDays(baseDate, 5) // After standard recall, should be valid
 
-        const result = validateRevocationDateAgainstRecalls(
-          testDate,
-          [standardRecall],
-          createRecallJourneyData(false)
-        )
+        const result = validateRevocationDateAgainstRecalls(testDate, [standardRecall], createRecallJourneyData(false))
 
         expect(result.isValid).toBe(true)
       })
@@ -399,10 +348,7 @@ describe('Recall Overlap Validation', () => {
 
   describe('getRecallsToConsiderForValidation', () => {
     it('should return all recalls when not editing', () => {
-      const recalls = [
-        createMockRecall('recall-1'),
-        createMockRecall('recall-2'),
-      ]
+      const recalls = [createMockRecall('recall-1'), createMockRecall('recall-2')]
 
       const result = getRecallsToConsiderForValidation(recalls, createRecallJourneyData(false))
 
@@ -412,10 +358,7 @@ describe('Recall Overlap Validation', () => {
 
     it('should exclude current recall when editing', () => {
       const currentRecallId = 'current-123'
-      const recalls = [
-        createMockRecall(currentRecallId),
-        createMockRecall('other-456'),
-      ]
+      const recalls = [createMockRecall(currentRecallId), createMockRecall('other-456')]
 
       const result = getRecallsToConsiderForValidation(recalls, createRecallJourneyData(true, currentRecallId))
 
@@ -432,10 +375,7 @@ describe('Recall Overlap Validation', () => {
 
   describe('getActiveRecallsForValidation', () => {
     it('should return all recalls (currently no filtering implemented)', () => {
-      const recalls = [
-        createMockRecall('recall-1'),
-        createMockRecall('recall-2'),
-      ]
+      const recalls = [createMockRecall('recall-1'), createMockRecall('recall-2')]
 
       const result = getActiveRecallsForValidation(recalls)
 
