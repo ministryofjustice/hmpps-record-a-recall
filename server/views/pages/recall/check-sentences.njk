@@ -144,7 +144,7 @@
   {% else %}
     {% set countNumber = 1 %}
   {% endif %}
-  
+
   {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
   {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'N/A' %}
   {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
@@ -154,7 +154,7 @@
     offenceCode: sentence.offenceCode | default('N/A'),
     offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
     offenceStartDate: offenceStartDate | default('N/A'),
-    offenceEndDate: offenceEndDate | default('N/A'),
+    offenceEndDate: offenceEndDate | default(null),
     hideOutcome: true,
     outcome: sentence.outcome | default('N/A'),
     lineNumber: sentence.lineNumber | default('N/A'),
