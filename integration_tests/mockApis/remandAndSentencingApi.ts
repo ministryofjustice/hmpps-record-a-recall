@@ -1,22 +1,6 @@
 import { SuperAgentRequest } from 'superagent'
 import { stubFor } from './wiremock'
 
-interface MockRecall {
-  recallId: string
-  revocationDate: Date | string
-  returnToCustodyDate?: Date | string | null
-  recallType: {
-    code: string
-    description: string
-    fixedTerm: boolean
-  }
-  courtCaseIds?: string[]
-  sentenceIds?: string[]
-  ual?: unknown
-  location?: string
-  createdAt?: Date | string
-}
-
 export default {
   stubSearchCourtCases: ({ prisonerId = 'A1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
@@ -163,68 +147,6 @@ export default {
             courtCaseIds: [],
           },
         ],
-      },
-    })
-  },
-  stubExistingRecalls: ({ recalls = [] }: { recalls?: MockRecall[] } = {}): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'GET',
-        urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: recalls.map(recall => {
-          let returnToCustodyDate = null
-          if (recall.returnToCustodyDate) {
-            returnToCustodyDate =
-              recall.returnToCustodyDate instanceof Date
-                ? recall.returnToCustodyDate.toISOString()
-                : recall.returnToCustodyDate
-          }
-
-          return {
-            recallUuid: recall.recallId,
-            prisonerId: 'A1234AB',
-            revocationDate:
-              recall.revocationDate instanceof Date ? recall.revocationDate.toISOString() : recall.revocationDate,
-            returnToCustodyDate,
-            recallType: recall.recallType,
-            courtCaseIds: recall.courtCaseIds || [],
-            sentenceIds: recall.sentenceIds || [],
-            ual: recall.ual || null,
-            location: recall.location || 'BWI',
-            createdAt: recall.createdAt || new Date().toISOString(),
-          }
-        }),
-      },
-    })
-  },
-  stubEditRecall: ({ recallId }: { recallId: string }): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'GET',
-        urlPath: `/remand-and-sentencing-api/recall/${recallId}`,
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: {
-          recallUuid: recallId,
-          prisonerId: 'A1234AB',
-          revocationDate: '2024-01-20T00:00:00.000Z',
-          returnToCustodyDate: '2024-01-20T00:00:00.000Z',
-          recallType: {
-            code: 'LR',
-            description: 'Standard',
-            fixedTerm: false,
-          },
-          courtCaseIds: ['case-456'],
-          sentenceIds: ['sentence-123'],
-          location: 'BWI',
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
       },
     })
   },
