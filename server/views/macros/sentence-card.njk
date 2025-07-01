@@ -1,3 +1,5 @@
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+
 {% macro sentenceCard(sentence, offenceNameMap) %}
   {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
   {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'Not available' %}

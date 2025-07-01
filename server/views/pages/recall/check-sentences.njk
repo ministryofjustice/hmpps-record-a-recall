@@ -9,8 +9,6 @@
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
-{% from "macros/sentence-card.njk" import sentenceCard %}
-
 
 {% set errors = validationErrors[0].text %}
 
@@ -136,12 +134,33 @@
             html: ineligibleHtml
         }) }}
         {% endif %}
-{#        {% endif %}#}
     {% endfor %}
 
 {% endmacro %}
 
-{{ sentenceCard(sentence, offenceNameMap) }}
+{% macro sentenceCard(sentence, offenceNameMap) %}
+
+  {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'Not available' %}
+  {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
+
+  {{ offenceCard({
+    countNumber: sentence.countNumber,
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+    offenceStartDate: offenceStartDate,
+    offenceEndDate: offenceEndDate,
+    hideOutcome: true,
+    outcome: sentence.outcome or 'Not available',
+    lineNumber: sentence.lineNumber or 'Not available',
+    convictionDate: convictionDate,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    sentenceType: sentence.sentenceType,
+    isSentenced: true,
+    detailsClasses: 'govuk-!-padding-4'
+  }) }}
+{% endmacro %}
 
 
 
