@@ -10,7 +10,6 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-
 {% set errors = validationErrors[0].text %}
 
 {% block beforeContent %}
@@ -117,8 +116,8 @@
 {#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
-        {% for charge in group.sentences %}
-            {{ sentenceCard(charge, offenceNameMap) }}
+        {% for sentence in group.sentences %}
+            {{ sentenceCard(sentence, offenceNameMap) }}
         {% endfor %}
         {% from "govuk/components/details/macro.njk" import govukDetails %}
         {% if group.hasIneligibleSentences %}
@@ -135,32 +134,36 @@
             html: ineligibleHtml
         }) }}
         {% endif %}
-{#        {% endif %}#}
     {% endfor %}
 
 {% endmacro %}
 
-<p>Test: {{ offenceNameMap.MD71230 }}</p>
+{% macro sentenceCard(sentence, offenceNameMap) %}
+    {% if sentence.countNumber is defined and sentence.countNumber is not none %}
+    {% set countNumber = sentence.countNumber %}
+  {% else %}
+    {% set countNumber = 1 %}
+  {% endif %}
 
-{% macro sentenceCard(charge, offenceNameMap) %}
+  {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'N/A' %}
+  {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
 
   {{ offenceCard({
-    offenceCode: charge.offenceCode,
-    offenceName: offenceNameMap[charge.offenceCode],
-    offenceStartDate: charge.offenceStartDate | formatDate if charge.offenceStartDate else 'Not entered',
-    offenceEndDate: charge.offenceEndDate | formatDate,
+    countNumber: countNumber,
+    offenceCode: sentence.offenceCode | default('N/A'),
+    offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+    offenceStartDate: offenceStartDate | default('N/A'),
+    offenceEndDate: offenceEndDate | default(null),
     hideOutcome: true,
-    outcome: charge.sentence.outcome,
-    countNumber: charge.sentence.chargeNumber,
-    convictionDate: charge.sentence.convictionDate | formatDate if charge.sentence.convictionDate else 'Not available',
-    terrorRelated: false,
+    outcome: sentence.outcome | default('N/A'),
+    lineNumber: sentence.lineNumber | default('N/A'),
+    convictionDate: convictionDate | default('N/A'),
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+    sentenceServeType: sentence.sentenceServeType | default(null),
+    sentenceType: sentence.sentenceType | default('N/A'),
     isSentenced: true,
-    periodLengths: charge.sentence.periodLengths | periodLengthsToSentenceLengths,
-    sentenceServeType: charge.sentence.sentenceServeType,
-    consecutiveTo: charge.sentence.consecutiveToChargeNumber,
-    sentenceType: charge.sentence.sentenceType.description,
     detailsClasses: 'govuk-!-padding-4'
   }) }}
-
 {% endmacro %}
 
