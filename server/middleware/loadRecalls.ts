@@ -4,6 +4,7 @@ import { Recall } from 'models'
 import logger from '../../logger'
 import RecallService from '../services/recallService'
 import PrisonService from '../services/PrisonService'
+import { RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 /**
  * Middleware to load recalls with location names into res.locals
@@ -25,14 +26,19 @@ export default function loadRecalls(recallService: RecallService, prisonService:
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
-        // Add location names to recalls
-        const recallsWithLocationNames = recalls.map(recall => ({
-          ...recall,
-          locationName: prisonNames.get(recall.location),
-        }))
+        // Enhance recalls with location name and source (if from NOMIS)
+        const recallsWithExtras = recalls.map(recall => {
+          const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
-        res.locals.recalls = recallsWithLocationNames
-        res.locals.latestRecallId = findLatestRecallId(recallsWithLocationNames)
+          return {
+            ...recall,
+            locationName: prisonNames.get(recall.location),
+            ...(isFromNomis ? { source: 'nomis' as const } : {}),
+          }
+        })
+
+        res.locals.recalls = recallsWithExtras
+        res.locals.latestRecallId = findLatestRecallId(recallsWithExtras)
       } else {
         res.locals.recalls = []
         res.locals.latestRecallId = undefined
@@ -44,6 +50,10 @@ export default function loadRecalls(recallService: RecallService, prisonService:
 
     return next()
   }
+}
+
+function isRecallFromNomis(recallableSentence: RecallableSentence): boolean {
+  return recallableSentence?.classification === 'LEGACY_RECALL'
 }
 
 /**

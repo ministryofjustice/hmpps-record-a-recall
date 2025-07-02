@@ -62,6 +62,8 @@ export default function getIndividualEligibility(
 
 export function determineEligibilityOnRasSentenceType(sentence: RecallableSentence): RecallEligibility {
   const { sentenceType } = sentence
+  console.log('------------sentence.classification which is optional???', sentence.classification)
+  console.log('------------sentenceType', sentenceType)
   if (!sentenceType) {
     return eligibilityReasons.RAS_LEGACY_SENTENCE
   }

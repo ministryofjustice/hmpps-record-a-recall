@@ -20,6 +20,7 @@ declare module 'models' {
     locationName?: string
     sentenceIds: string[]
     courtCaseIds: string[]
+    sentences?: RecallableSentence[]
   }
 
   export interface UAL {

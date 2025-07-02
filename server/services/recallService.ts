@@ -94,6 +94,7 @@ export default class RecallService {
       location: apiRecall.createdByPrison,
       sentenceIds: apiRecall.sentences.map(s => s.sentenceUuid),
       courtCaseIds: apiRecall.courtCaseIds,
+      sentences: apiRecall.sentences,
     }
   }
 }
