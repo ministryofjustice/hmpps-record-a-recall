@@ -84,6 +84,7 @@
   </div>
 
   <div class="govuk-summary-card__content" id="recall-summary">
+    <div class="govuk-grid-row govuk-!-margin-bottom-2">
     <div class="govuk-grid-column-one-half">
       {{ cardInfo('Recall type', recall.recallType.description) }}
       {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
@@ -107,6 +108,7 @@
       {% else %}
         {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
       {% endif %}
+        </div>
     </div>
 
     {% if recallableCourtCases and recallableCourtCases.length %}
