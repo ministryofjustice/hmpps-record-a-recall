@@ -6,7 +6,7 @@ import { RecallJourneyData } from '../helpers/formWizardHelper'
 import {
   validateRevocationDateAgainstRecalls,
   getRecallsToConsiderForValidation,
-  getActiveRecallsForValidation,
+  getRecallsForValidation,
 } from './recallOverlapValidation'
 
 describe('Recall Overlap Validation', () => {
@@ -374,17 +374,17 @@ describe('Recall Overlap Validation', () => {
   })
 
   describe('getActiveRecallsForValidation', () => {
-    it('should return all recalls (currently no filtering implemented)', () => {
+    it('should return all recalls (inactive recalls are deleted from database)', () => {
       const recalls = [createMockRecall('recall-1'), createMockRecall('recall-2')]
 
-      const result = getActiveRecallsForValidation(recalls)
+      const result = getRecallsForValidation(recalls)
 
       expect(result).toHaveLength(2)
       expect(result).toEqual(recalls)
     })
 
     it('should handle empty array', () => {
-      const result = getActiveRecallsForValidation([])
+      const result = getRecallsForValidation([])
 
       expect(result).toHaveLength(0)
     })

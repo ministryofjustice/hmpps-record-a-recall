@@ -38,7 +38,7 @@ export function validateRevocationDateAgainstRecalls(
       return false // Only check FTR recalls
     }
 
-    return isRevocationDateWithinFtrPeriod(revocationDate, recall, journeyData)
+    return isRevocationDateWithinFtrPeriod(revocationDate, recall)
   })
 
   if (hasFtrOverlap) {
@@ -71,18 +71,14 @@ export function getRecallsToConsiderForValidation(allRecalls: Recall[], journeyD
  * Check if revocation date falls within a FTR period
  * Handles both "already in prison" and "not in prison" scenarios
  */
-function isRevocationDateWithinFtrPeriod(
-  revocationDate: Date,
-  existingRecall: Recall,
-  journeyData: RecallJourneyData,
-): boolean {
+function isRevocationDateWithinFtrPeriod(revocationDate: Date, existingRecall: Recall): boolean {
   const ftrDays = getFtrPeriodDays(existingRecall.recallType.code)
   if (!ftrDays) {
     return false
   }
 
   // Determine the reference date for the FTR period
-  const referenceDate = determineReferenceDate(existingRecall, journeyData)
+  const referenceDate = determineReferenceDate(existingRecall)
   if (!referenceDate) {
     return false
   }
@@ -117,28 +113,32 @@ function getFtrPeriodDays(recallTypeCode: string): number | null {
  * Determine the reference date for FTR period calculation
  * Based on whether the offender was in prison at the time of recall
  */
-function determineReferenceDate(existingRecall: Recall, _journeyData: RecallJourneyData): Date | null {
+function determineReferenceDate(existingRecall: Recall): Date | null {
   // Check if the existing recall was for someone already in prison
   // If we have UAL, they were not in prison
   const wasInPrisonAtRecall = !existingRecall.ual
 
   if (wasInPrisonAtRecall) {
+    // For offenders already in prison, use revocation date as FTR period start
     return existingRecall.revocationDate
   }
-  // If no return to custody date, fallback to revocation date + 1 day (start of UAL period)
+
+  // For offenders not in prison (Unlawfully at Large), the FTR period starts from their return to custody date.
+  // If the return to custody date is not yet known, we use the day after the revocation as the start of the
+  // UAL period for this calculation.
   return existingRecall.returnToCustodyDate || addDays(existingRecall.revocationDate, 1)
 }
 
 /**
- * Get active recalls from res.locals that should be considered for validation
+ * Get active recalls that should be considered for validation
+ * Note: In this system, inactive recalls are deleted from the database rather than marked as inactive,
+ * so all recalls returned by the API are considered active. This function exists for future extensibility
+ * if recall status management changes.
  */
-export function getActiveRecallsForValidation(recalls: Recall[]): Recall[] {
+export function getRecallsForValidation(recalls: Recall[]): Recall[] {
   if (!recalls || recalls.length === 0) {
     return []
   }
-
-  return recalls.filter(_recall => {
-    // In case we want to add any filtering logic, for now we take all recalls in the array
-    return true
-  })
+  // This function is a placeholder for future filtering logic if recall status management changes
+  return recalls
 }
