@@ -125,7 +125,7 @@
                           offenceCode: sentence.offenceCode | default('N/A'),
                           offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
                           offenceStartDate: offenceStartDate | default('N/A'),
-                          offenceEndDate: offenceEndDate | default('N/A'),
+                          offenceEndDate: offenceEndDate | null,
                           hideOutcome: true,
                           outcome: sentence.outcome | default('N/A'),
                           lineNumber: sentence.lineNumber | default('N/A'),
