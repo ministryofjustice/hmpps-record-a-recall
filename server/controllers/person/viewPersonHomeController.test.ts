@@ -112,6 +112,29 @@ const createMockRecall = (recallId: string, createdAtArg: string | null): Recall
     status: 'BEING_BOOKED_ON',
     documents: [],
     createdAt: createdAtArg as string,
+    created_by_username: 'DPS',
+    revocationDate: new Date('2023-01-01'),
+    returnToCustodyDate: new Date('2023-01-02'),
+    recallType: {
+      code: 'LR',
+      name: 'Licence Revocation',
+      description: 'Licence Revocation Recall',
+      fixedTerm: false,
+    } as RecallType,
+    isFixedTermRecall: false,
+    location: 'KMI',
+    sentenceIds: [],
+    courtCaseIds: [],
+  }) as Recall
+
+const createMockRecallFromNomis = (recallId: string, createdAtArg: string | null): Recall =>
+  ({
+    recallId,
+    nomisNumber: 'Z1234BC',
+    status: 'BEING_BOOKED_ON',
+    documents: [],
+    createdAt: createdAtArg as string,
+    created_by_username: 'hmpps-prisoner-from-nomis-migration-court-sentencing-1',
     revocationDate: new Date('2023-01-01'),
     returnToCustodyDate: new Date('2023-01-02'),
     recallType: {
@@ -278,6 +301,38 @@ describe('viewPersonHome', () => {
       }),
     )
   })
+
+    
+it('should render home page with nomisRecallId when there is only one recall and it is from nomis', async () => {
+  const recalls = [createMockRecallFromNomis('recall-single', '2023-02-01T10:00:00.000Z')]
+
+  // Simulate data pre-loaded by createDataMiddleware
+  res.locals.prisoner = {
+    prisonerNumber: 'Z1234BC',
+    firstName: 'TestFirstName',
+    lastName: 'TestLastName',
+  }
+  res.locals.recalls = recalls
+  res.locals.latestRecallId = 'recall-single'
+  res.locals.recall = { created_by_username: 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' }
+  res.locals.serviceDefinitions = {}
+
+  await viewPersonHome(req as Request, res as Response)
+
+  expect(res.render).toHaveBeenCalledWith(
+    'pages/person/home',
+    expect.objectContaining({
+      latestRecallId: 'recall-single',
+      recalls: expect.arrayContaining([
+        expect.objectContaining({
+          created_by_username: 'hmpps-prisoner-from-nomis-migration-court-sentencing-1',
+        }),
+      ]),
+    }),
+  )
+}) 
+
+
 
   it('should render home page with latestRecallId as undefined when there are no recalls', async () => {
     // Simulate data pre-loaded by createDataMiddleware

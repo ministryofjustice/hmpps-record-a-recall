@@ -9,6 +9,7 @@ declare module 'models' {
   export interface Recall {
     recallId: string
     createdAt: string
+    created_by_username: string
     revocationDate: Date
     returnToCustodyDate: Date
     ual?: UAL
@@ -20,6 +21,7 @@ declare module 'models' {
     locationName?: string
     sentenceIds: string[]
     courtCaseIds: string[]
+    sentences?: RecallableSentence[]
   }
 
   export interface UAL {
