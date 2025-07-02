@@ -65,7 +65,7 @@ describe('Recall Overlap Validation', () => {
   }
 
   describe('validateRevocationDateAgainstRecalls', () => {
-    describe('AC1: 14-day FTR overlap - already in prison', () => {
+    describe('14-day FTR overlap - already in prison', () => {
       it('should prevent overlap within 14 days of existing 14-day FTR (already in prison)', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_14', baseDate, false) // No UAL = already in prison
         const testDate = addDays(baseDate, 10) // Within 14 days
@@ -86,7 +86,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC2: 28-day FTR overlap - already in prison', () => {
+    describe('28-day FTR overlap - already in prison', () => {
       it('should prevent overlap within 28 days of existing 28-day FTR (already in prison)', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_28', baseDate, false)
         const testDate = addDays(baseDate, 20) // Within 28 days
@@ -107,7 +107,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC3: 14-day FTR overlap - not in prison', () => {
+    describe('14-day FTR overlap - not in prison', () => {
       it('should prevent overlap within 14 days of return to custody date (not in prison)', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_14', baseDate, true) // Has UAL = not in prison
         const returnToCustodyDate = existingRecall.returnToCustodyDate!
@@ -130,7 +130,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC4: 28-day FTR overlap - not in prison', () => {
+    describe('28-day FTR overlap - not in prison', () => {
       it('should prevent overlap within 28 days of return to custody date (not in prison)', () => {
         const existingRecall = createFtrRecall('existing-123', 'FTR_28', baseDate, true)
         const returnToCustodyDate = existingRecall.returnToCustodyDate!
@@ -153,7 +153,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC5: Revocation date on or before existing recall', () => {
+    describe('Revocation date on or before existing recall', () => {
       it('should prevent revocation date equal to existing recall date', () => {
         const existingRecall = createMockRecall('existing-123', { revocationDate: baseDate })
         const testDate = baseDate // Same date
@@ -184,7 +184,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC6: Edit mode - exclude current recall from validation', () => {
+    describe('Edit mode - exclude current recall from validation', () => {
       it('should exclude current recall being edited from validation', () => {
         const currentRecallId = 'current-recall-123'
         const currentRecall = createMockRecall(currentRecallId, { revocationDate: baseDate })
@@ -216,7 +216,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC7: Edit mode - 14-day FTR overlap validation', () => {
+    describe('Edit mode - 14-day FTR overlap validation', () => {
       it('should prevent overlap with other 14-day FTR when editing (already in prison)', () => {
         const currentRecallId = 'current-recall-123'
         const currentRecall = createMockRecall(currentRecallId)
@@ -234,7 +234,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC8: Edit mode - 28-day FTR overlap validation', () => {
+    describe('Edit mode - 28-day FTR overlap validation', () => {
       it('should prevent overlap with other 28-day FTR when editing (already in prison)', () => {
         const currentRecallId = 'current-recall-123'
         const currentRecall = createMockRecall(currentRecallId)
@@ -252,7 +252,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC9: Edit mode - 14-day FTR overlap validation (not in prison)', () => {
+    describe('Edit mode - 14-day FTR overlap validation (not in prison)', () => {
       it('should prevent overlap with other 14-day FTR when editing (not in prison)', () => {
         const currentRecallId = 'current-recall-123'
         const currentRecall = createMockRecall(currentRecallId)
@@ -271,7 +271,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC10: Edit mode - 28-day FTR overlap validation (not in prison)', () => {
+    describe('Edit mode - 28-day FTR overlap validation (not in prison)', () => {
       it('should prevent overlap with other 28-day FTR when editing (not in prison)', () => {
         const currentRecallId = 'current-recall-123'
         const currentRecall = createMockRecall(currentRecallId)
@@ -290,7 +290,7 @@ describe('Recall Overlap Validation', () => {
       })
     })
 
-    describe('AC11: Edit mode - revocation date on or before existing recall', () => {
+    describe('Edit mode - revocation date on or before existing recall', () => {
       it('should prevent edited revocation date on or before other existing recall', () => {
         const currentRecallId = 'current-recall-123'
         const currentRecall = createMockRecall(currentRecallId)
