@@ -87,7 +87,13 @@
     <div class="govuk-grid-row govuk-!-margin-bottom-2">
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Recall type', recall.recallType.description) }}
-        {{ cardInfo('Location', recall.locationName if recall.locationName else recall.location) }}
+          {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+            {{ cardInfo('Revocation date', 'Not entered') }}
+          {% else %}
+            {{ cardInfo('Revocation date', recall.revocationDate | date) }}
+          {% endif %}
+        </div>
+
       </div>
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
