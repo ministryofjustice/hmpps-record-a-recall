@@ -60,13 +60,13 @@
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">
       Recalled on {{ recall.revocationDate | date }}
-      {% if recall.source != 'nomis' %}
+      {% if recall.created_by_username !== 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
         <span class="moj-badge moj-badge--green govuk-!-margin-bottom-1 govuk-!-margin-left-1">Active</span>
       {% endif %}
     </h2>
 
     <ul class="govuk-summary-card__actions">
-      {% if recall.source == 'nomis' %}
+      {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
         <li class="govuk-summary-card__action">
           <span class="moj-badge moj-badge--blue govuk-!-margin-bottom-1 govuk-!-margin-left-1">NOMIS</span>
         </li>
@@ -117,19 +117,19 @@
                       <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
                         {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
                         {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
-                        {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else 'N/A' %}
+                        {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
                         {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
 
                         {{ offenceCard({
                           countNumber: countNumber,
                           offenceCode: sentence.offenceCode | default('N/A'),
                           offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-                          offenceStartDate: offenceStartDate | default('N/A'),
-                          offenceEndDate: offenceEndDate | null,
+                          offenceStartDate: offenceStartDate,
+                          offenceEndDate: offenceEndDate,
                           hideOutcome: true,
                           outcome: sentence.outcome | default('N/A'),
                           lineNumber: sentence.lineNumber | default('N/A'),
-                          convictionDate: convictionDate | default('N/A'),
+                          convictionDate: convictionDate,
                           periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
                           sentenceServeType: sentence.sentenceServeType | default(null),
                           sentenceType: sentence.sentenceType | default('N/A'),

@@ -86,6 +86,7 @@ export default class RecallService {
     return {
       recallId: apiRecall.recallUuid,
       createdAt: apiRecall.createdAt,
+      created_by_username: apiRecall.createdByUsername,
       revocationDate: apiRecall.revocationDate ? new Date(apiRecall.revocationDate) : null,
       returnToCustodyDate: apiRecall.returnToCustodyDate ? new Date(apiRecall.returnToCustodyDate) : null,
       recallType: getRecallType(apiRecall.recallType),

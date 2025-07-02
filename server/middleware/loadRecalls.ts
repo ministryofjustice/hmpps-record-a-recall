@@ -52,45 +52,11 @@ export default function loadRecalls(recallService: RecallService, prisonService:
   }
 }
 
-// function isRecallFromNomis(recallableSentence: RecallableSentence): boolean {
-//   console.log('recallableSentence full object:', JSON.stringify(recallableSentence, undefined, 2))
-//   console.log('sentenceType type:', typeof recallableSentence?.sentenceType);
-// console.log('sentenceType value:', recallableSentence?.sentenceType);
-
-//   // console.log('*************--------recallableSentence?.sentenceType?.classification', recallableSentence?.sentenceType?.classification)
-//   return recallableSentence?.sentenceType?.classification === 'LEGACY_RECALL'
-// }
-
-// function isRecallFromNomis(recallableSentence: RecallableSentence): boolean {
-//   if (!recallableSentence) return false;
-  
-//   const sentenceType = recallableSentence.sentenceType;
-  
-//   if (sentenceType == null) return false; // catches null and undefined
-  
-//   if (typeof sentenceType === 'object' && sentenceType !== null && 'classification' in sentenceType) {
-//     return sentenceType.classification === 'LEGACY_RECALL';
-//   }
-  
-//   return false;
-//}
-
-function hasClassification(obj: any): obj is { classification: string } {
-  return obj && typeof obj === 'object' && 'classification' in obj;
+export function isRecallFromNomis(recall: Recall): boolean {
+  return recall?.created_by_username === 'hmpps-prisoner-from-nomis-migration-court-sentencing-1'
 }
 
-function isRecallFromNomis(recallableSentence: RecallableSentence): boolean {
-  if (!recallableSentence) return false;
-  const sentenceType = recallableSentence.sentenceType;
-  if (!sentenceType) return false;
-  if (hasClassification(sentenceType)) {
-    console.log('sentenceType type:', typeof recallableSentence?.sentenceType);
-    console.log('recallableSentence full object:', JSON.stringify(recallableSentence, undefined, 2))
-    console.log('*************--------sentenceType.classification', sentenceType.classification)
-    return sentenceType.classification === 'LEGACY_RECALL';
-  }
-  return false;
-}
+// check the last sentence in recall 
 
 
 /**
