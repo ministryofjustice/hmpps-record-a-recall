@@ -4,7 +4,6 @@ import { Recall } from 'models'
 import logger from '../../logger'
 import RecallService from '../services/recallService'
 import PrisonService from '../services/PrisonService'
-import { RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 /**
  * Middleware to load recalls with location names into res.locals
@@ -26,7 +25,6 @@ export default function loadRecalls(recallService: RecallService, prisonService:
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
-        // Enhance recalls with location name and source (if from NOMIS)
         const recallsWithExtras = recalls.map(recall => {
           const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
@@ -55,9 +53,6 @@ export default function loadRecalls(recallService: RecallService, prisonService:
 export function isRecallFromNomis(recall: Recall): boolean {
   return recall?.created_by_username === 'hmpps-prisoner-from-nomis-migration-court-sentencing-1'
 }
-
-// check the last sentence in recall 
-
 
 /**
  * Find the latest recall by createdAt date
