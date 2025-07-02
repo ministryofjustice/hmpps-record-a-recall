@@ -91,7 +91,18 @@
       </div>
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
-        {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
+        {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.ualString if recall.ualString else 'None recorded' }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-2">
+            Go to adjustments to 
+            <a class="govuk-link" href="https://adjustments-dev.hmpps.service.justice.gov.uk/{{ nomisId }}/unlawfully-at-large/view" target="_blank" rel="noopener noreferrer">
+              view UAL details
+            </a>.
+          </p>
+        {% else %}
+          {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
+        {% endif %}
       </div>
     </div>
 
