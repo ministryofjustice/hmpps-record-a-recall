@@ -40,12 +40,33 @@ export default function summariseSentencesGroups(
         revocationDate,
       )
 
+      const summarisedSentence: SummarisedSentence = {
+        sentenceId: sentence.sentenceUuid,
+        recallEligibility,
+        summary: [],
+        offenceCode: sentence.offenceCode,
+        offenceDescription: sentence.offenceDescription,
+        unadjustedSled: sentence.unadjustedSled,
+        sentenceLengthDays: sentence.sentenceLengthDays,
+        offenceStartDate: sentence.offenceStartDate,
+        offenceEndDate: sentence.offenceEndDate,
+        outcome: sentence.outcome,
+        outcomeUpdated: sentence.outcomeUpdated,
+        countNumber: sentence.countNumber,
+        convictionDate: sentence.convictionDate,
+        terrorRelated: sentence.terrorRelated,
+        isSentenced: sentence.isSentenced,
+        sentenceServeType: sentence.sentenceServeType,
+        consecutiveTo: sentence.consecutiveTo,
+        sentenceType: sentence.sentenceType,
+      }
+
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
         summarisedGroup.hasEligibleSentences = true
-        summarisedGroup.eligibleSentences.push(sentence)
+        summarisedGroup.eligibleSentences.push(summarisedSentence)
       } else {
         summarisedGroup.hasIneligibleSentences = true
-        summarisedGroup.ineligibleSentences.push(sentence)
+        summarisedGroup.ineligibleSentences.push(summarisedSentence)
       }
     })
     summarisedSentenceGroups.push(summarisedGroup)

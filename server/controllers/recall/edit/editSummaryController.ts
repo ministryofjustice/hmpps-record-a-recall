@@ -1,9 +1,15 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+import logger from '../../../../logger'
 
 import RecallBaseController from '../recallBaseController'
 import { createAnswerSummaryList } from '../../../utils/utils'
-import getJourneyDataFromRequest, { RecallJourneyData, sessionModelFields } from '../../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, {
+  RecallJourneyData,
+  sessionModelFields,
+  getUalToCreate,
+  getUalToEdit,
+} from '../../../helpers/formWizardHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class EditSummaryController extends RecallBaseController {
@@ -39,6 +45,26 @@ export default class EditSummaryController extends RecallBaseController {
         sentenceIds: journeyData.sentenceIds || journeyData.storedRecall.sentenceIds,
       }
       await req.services.recallService.updateRecall(recallId, recallToSave, username)
+
+      // Handle associated UAL adjustments if dates have changed
+      const ualToCreate = getUalToCreate(req)
+      const ualToEdit = getUalToEdit(req)
+
+      if (ualToCreate) {
+        // For an edited recall we already have the recallId so attach it
+        ualToCreate.recallId = recallId
+        await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
+          logger.error('Error while posting UAL to adjustments API during recall edit')
+        })
+      }
+
+      if (ualToEdit) {
+        // Ensure the UAL links back to the recall only if not creating another one in the same operation
+        ualToEdit.recallId = ualToCreate ? null : recallId
+        await req.services.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
+          logger.error('Error while updating UAL in adjustments API during recall edit')
+        })
+      }
 
       return next()
     } catch (error) {
