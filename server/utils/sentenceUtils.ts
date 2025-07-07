@@ -238,13 +238,28 @@ export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtend
 export function groupSentencesByCaseRefAndCourt(
   sentences: SentenceWithDpsUuid[],
 ): Record<string, SentenceAndOffenceWithReleaseArrangements[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return sentences.reduce((result: any, currentValue: any) => {
-    const ref = `${currentValue.caseReference || 'Case'} at ${currentValue.courtDescription}`
-    // eslint-disable-next-line no-param-reassign
-    ;(result[ref] = result[ref] || []).push(currentValue)
-    return result
-  }, {})
+  // Handle undefined, null, or empty sentences array
+  if (!sentences || !Array.isArray(sentences) || sentences.length === 0) {
+    return {}
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return sentences.reduce((result: any, currentValue: any) => {
+      // Handle cases where currentValue might be null/undefined
+      if (!currentValue) {
+        return result
+      }
+
+      const ref = `${currentValue.caseReference || 'Case'} at ${currentValue.courtDescription || 'Unknown Court'}`
+      // eslint-disable-next-line no-param-reassign
+      ;(result[ref] = result[ref] || []).push(currentValue)
+      return result
+    }, {})
+  } catch (error) {
+    logger.error(`Error in groupSentencesByCaseRefAndCourt: ${error.message}`, error)
+    return {}
+  }
 }
 
 export function findConsecutiveSentenceBreakdown(

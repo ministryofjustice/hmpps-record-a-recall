@@ -38,14 +38,18 @@ export default class RevocationDateController extends RecallBaseController {
     super.validateFields(req, res, errorsParam => {
       const validationErrors = { ...(errorsParam || {}) } as Record<string, FormWizard.Controller.Error>
       const { values } = req.form
-      const sentences = getCrdsSentences(req)
+      const sentences = getCrdsSentences(req) || []
 
-      const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
+      // Validate sentence date only if sentences exist
+      if (sentences.length > 0) {
+        const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
 
-      if (isBefore(values.revocationDate as string, earliestSentenceDate)) {
-        validationErrors.revocationDate = this.formError('revocationDate', 'mustBeAfterEarliestSentenceDate')
+        if (isBefore(values.revocationDate as string, earliestSentenceDate)) {
+          validationErrors.revocationDate = this.formError('revocationDate', 'mustBeAfterEarliestSentenceDate')
+        }
       }
 
+      // Always validate UAL adjustments regardless of sentences
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
       const adjustmentsToConsider = getAdjustmentsToConsiderForValidation(journeyData, allExistingAdjustments)
@@ -129,9 +133,9 @@ export default class RevocationDateController extends RecallBaseController {
     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
-    const sentenceCount = summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) =>
-      g.eligibleSentences.flatMap(s => s.sentenceId),
-    ).length
+    const sentenceCount =
+      summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) => g.eligibleSentences.flatMap(s => s.sentenceId))
+        .length || 0
 
     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
     res.locals.casesWithEligibleSentences = sentenceCount

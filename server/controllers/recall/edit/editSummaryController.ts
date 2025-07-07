@@ -3,12 +3,11 @@ import { NextFunction, Response } from 'express'
 import logger from '../../../../logger'
 
 import RecallBaseController from '../recallBaseController'
-import { createAnswerSummaryList } from '../../../utils/utils'
+import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
 import getJourneyDataFromRequest, {
   RecallJourneyData,
   sessionModelFields,
-  getUalToCreate,
-  getUalToEdit,
+  getPrisoner,
 } from '../../../helpers/formWizardHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
@@ -46,24 +45,56 @@ export default class EditSummaryController extends RecallBaseController {
       }
       await req.services.recallService.updateRecall(recallId, recallToSave, username)
 
-      // Handle associated UAL adjustments if dates have changed
-      const ualToCreate = getUalToCreate(req)
-      const ualToEdit = getUalToEdit(req)
+      // Calculate the new UAL with current form data
+      const newUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
 
-      if (ualToCreate) {
-        // For an edited recall we already have the recallId so attach it
-        ualToCreate.recallId = recallId
-        await req.services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
-          logger.error('Error while posting UAL to adjustments API during recall edit')
-        })
-      }
+      if (newUal) {
+        try {
+          // Find existing UAL adjustments for this recall
+          const existingAdjustments = await req.services.adjustmentsService.searchUal(nomisId, username, recallId)
+          const ualAdjustments = existingAdjustments.filter(
+            adj => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
+          )
 
-      if (ualToEdit) {
-        // Ensure the UAL links back to the recall only if not creating another one in the same operation
-        ualToEdit.recallId = ualToCreate ? null : recallId
-        await req.services.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
-          logger.error('Error while updating UAL in adjustments API during recall edit')
-        })
+          if (ualAdjustments.length > 0) {
+            // Update existing UAL adjustment with fresh dates
+            const existingUal = ualAdjustments[0]
+            const prisonerDetails = getPrisoner(req)
+
+            const ualToUpdate = {
+              ...newUal,
+              nomisId,
+              bookingId: prisonerDetails.bookingId,
+              recallId,
+              adjustmentId: existingUal.id,
+            }
+
+            await req.services.adjustmentsService.updateUal(ualToUpdate, username, existingUal.id)
+            logger.info(
+              `Updated existing UAL adjustment ${existingUal.id} for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
+            )
+          } else {
+            // No existing UAL found, create a new one
+            const prisonerDetails = getPrisoner(req)
+            const ualToCreate = {
+              ...newUal,
+              nomisId,
+              bookingId: prisonerDetails.bookingId,
+              recallId,
+            }
+
+            await req.services.adjustmentsService.postUal(ualToCreate, username)
+            logger.info(
+              `Created new UAL adjustment for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
+            )
+          }
+        } catch (error) {
+          logger.error(`Error handling UAL adjustments for recall ${recallId}: ${error.message}`, error)
+        }
+      } else {
+        logger.info(
+          `No UAL period needed for recall ${recallId} - revocation date and return to custody date are too close`,
+        )
       }
 
       return next()

@@ -1,5 +1,7 @@
+// eslint-disable-next-line import/no-unresolved
+import { SentenceWithDpsUuid } from 'models'
 import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { groupSentencesByRevocationDate } from './sentenceUtils'
+import { groupSentencesByRevocationDate, groupSentencesByCaseRefAndCourt } from './sentenceUtils'
 
 describe('sentenceUtils', () => {
   describe('groupSentencesByRevocationDate', () => {
@@ -295,6 +297,89 @@ describe('sentenceUtils', () => {
       const result = groupSentencesByRevocationDate(breakdown, new Date(2024, 2, 15))
 
       expect(result).toEqual({ activeSentences: [], expiredSentences: [], onLicenceSentences: [] })
+    })
+  })
+
+  describe('groupSentencesByCaseRefAndCourt', () => {
+    it('should group sentences by case reference and court', () => {
+      const sentences: SentenceWithDpsUuid[] = [
+        {
+          caseReference: '12345',
+          courtDescription: 'Liverpool Crown Court',
+          dpsSentenceUuid: 'uuid1',
+        } as SentenceWithDpsUuid,
+        {
+          caseReference: '12345',
+          courtDescription: 'Liverpool Crown Court',
+          dpsSentenceUuid: 'uuid2',
+        } as SentenceWithDpsUuid,
+        {
+          caseReference: '67890',
+          courtDescription: 'Manchester Crown Court',
+          dpsSentenceUuid: 'uuid3',
+        } as SentenceWithDpsUuid,
+      ]
+
+      const result = groupSentencesByCaseRefAndCourt(sentences)
+
+      expect(result).toEqual({
+        '12345 at Liverpool Crown Court': [
+          {
+            caseReference: '12345',
+            courtDescription: 'Liverpool Crown Court',
+            dpsSentenceUuid: 'uuid1',
+          },
+          {
+            caseReference: '12345',
+            courtDescription: 'Liverpool Crown Court',
+            dpsSentenceUuid: 'uuid2',
+          },
+        ],
+        '67890 at Manchester Crown Court': [
+          {
+            caseReference: '67890',
+            courtDescription: 'Manchester Crown Court',
+            dpsSentenceUuid: 'uuid3',
+          },
+        ],
+      })
+    })
+
+    it('should handle undefined sentences array', () => {
+      const result = groupSentencesByCaseRefAndCourt(undefined as SentenceWithDpsUuid[] | undefined)
+      expect(result).toEqual({})
+    })
+
+    it('should handle null sentences array', () => {
+      const result = groupSentencesByCaseRefAndCourt(null as SentenceWithDpsUuid[] | null)
+      expect(result).toEqual({})
+    })
+
+    it('should handle empty sentences array', () => {
+      const result = groupSentencesByCaseRefAndCourt([])
+      expect(result).toEqual({})
+    })
+
+    it('should handle sentences without case reference', () => {
+      const sentences: SentenceWithDpsUuid[] = [
+        {
+          caseReference: undefined,
+          courtDescription: 'Liverpool Crown Court',
+          dpsSentenceUuid: 'uuid1',
+        } as SentenceWithDpsUuid,
+      ]
+
+      const result = groupSentencesByCaseRefAndCourt(sentences)
+
+      expect(result).toEqual({
+        'Case at Liverpool Crown Court': [
+          {
+            caseReference: undefined,
+            courtDescription: 'Liverpool Crown Court',
+            dpsSentenceUuid: 'uuid1',
+          },
+        ],
+      })
     })
   })
 })
