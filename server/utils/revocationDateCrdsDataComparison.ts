@@ -7,7 +7,7 @@ import { RecallType } from '../@types/recallTypes'
 import { determineInvalidRecallTypes } from './RecallEligiblityCalculator'
 
 export default function revocationDateCrdsDataComparison(req: FormWizard.Request, res: Response) {
-  const sentences = getCrdsSentences(req)
+  const sentences = getCrdsSentences(req) || []
   const breakdown = getBreakdown(req)
   const revocationDate = getRevocationDate(req)
 
