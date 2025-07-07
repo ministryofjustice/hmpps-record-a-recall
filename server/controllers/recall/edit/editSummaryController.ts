@@ -47,7 +47,7 @@ export default class EditSummaryController extends RecallBaseController {
 
         const prisonerDetails = getPrisoner(req)
 
-        if (ualAdjustments.length > 0) {
+        if (ualAdjustments.length) {
           // Handle unexpected multiple UAL adjustments, should only be one per recall
           if (ualAdjustments.length > 1) {
             logger.warn(

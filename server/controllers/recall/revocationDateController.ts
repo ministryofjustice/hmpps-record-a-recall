@@ -41,7 +41,7 @@ export default class RevocationDateController extends RecallBaseController {
       const sentences = getCrdsSentences(req) || []
 
       // Validate sentence date only if sentences exist
-      if (sentences.length > 0) {
+      if (sentences.length) {
         const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
 
         if (isBefore(values.revocationDate as string, earliestSentenceDate)) {
