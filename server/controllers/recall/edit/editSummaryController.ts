@@ -1,9 +1,14 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+import logger from '../../../../logger'
 
 import RecallBaseController from '../recallBaseController'
-import { createAnswerSummaryList } from '../../../utils/utils'
-import getJourneyDataFromRequest, { RecallJourneyData, sessionModelFields } from '../../../helpers/formWizardHelper'
+import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
+import getJourneyDataFromRequest, {
+  RecallJourneyData,
+  sessionModelFields,
+  getPrisoner,
+} from '../../../helpers/formWizardHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class EditSummaryController extends RecallBaseController {
@@ -29,6 +34,72 @@ export default class EditSummaryController extends RecallBaseController {
       const { nomisId, recallId } = res.locals
       const { username, activeCaseload } = res.locals.user
 
+      // Calculate the new UAL with current form data first
+      const newUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+
+      // Handle UAL adjustments before updating the recall to ensure data consistency
+      if (newUal) {
+        // Find existing UAL adjustments for this recall
+        const existingAdjustments = await req.services.adjustmentsService.searchUal(nomisId, username, recallId)
+        const ualAdjustments = existingAdjustments.filter(
+          adj => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
+        )
+
+        const prisonerDetails = getPrisoner(req)
+
+        if (ualAdjustments.length) {
+          // Handle unexpected multiple UAL adjustments, should only be one per recall
+          if (ualAdjustments.length > 1) {
+            logger.warn(
+              `Found ${ualAdjustments.length} UAL adjustments for recall ${recallId}. Expected only one. Cleaning up duplicates.`,
+            )
+
+            // Delete the duplicate UAL adjustments (keep the first one)
+            const duplicateAdjustments = ualAdjustments.slice(1)
+            await Promise.all(
+              duplicateAdjustments.map(async duplicateUal => {
+                await req.services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
+                logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
+              }),
+            )
+          }
+
+          // Update existing UAL adjustment with fresh dates
+          const existingUal = ualAdjustments[0]
+
+          const ualToUpdate = {
+            ...newUal,
+            nomisId,
+            bookingId: prisonerDetails.bookingId,
+            recallId,
+            adjustmentId: existingUal.id,
+          }
+
+          await req.services.adjustmentsService.updateUal(ualToUpdate, username, existingUal.id)
+          logger.info(
+            `Updated existing UAL adjustment ${existingUal.id} for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
+          )
+        } else {
+          // No existing UAL found, create a new one
+          const ualToCreate = {
+            ...newUal,
+            nomisId,
+            bookingId: prisonerDetails.bookingId,
+            recallId,
+          }
+
+          await req.services.adjustmentsService.postUal(ualToCreate, username)
+          logger.info(
+            `Created new UAL adjustment for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
+          )
+        }
+      } else {
+        logger.info(
+          `No UAL period needed for recall ${recallId} - revocation date and return to custody date are too close`,
+        )
+      }
+
+      // Update the recall only after UAL adjustments succeed
       const recallToSave: CreateRecall = {
         prisonerId: nomisId,
         revocationDate: journeyData.revDateString,

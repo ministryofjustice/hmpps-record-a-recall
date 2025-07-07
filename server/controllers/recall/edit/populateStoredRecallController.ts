@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import RecallBaseController from '../recallBaseController'
+import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 import logger from '../../../../logger'
 import { calculateUal } from '../../../utils/utils'
@@ -30,8 +31,9 @@ export default class PopulateStoredRecallController extends RecallBaseController
   }
 
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    const { username, recallId } = res.locals
+    const { username, recallId, nomisId } = res.locals
     try {
+      // Load the stored recall
       await req.services.recallService
         .getRecall(recallId, username)
         .then(async storedRecall => {
@@ -39,6 +41,14 @@ export default class PopulateStoredRecallController extends RecallBaseController
         })
         .catch(error => {
           logger.error(error.userMessage)
+        })
+
+      // Load existing UAL adjustments for the person and specific recall for editing
+      res.locals.existingAdjustments = await req.services.adjustmentsService
+        .searchUal(nomisId, username, recallId)
+        .catch((e: Error): AdjustmentDto[] => {
+          logger.error('Error loading existing adjustments for edit:', e.message)
+          return []
         })
     } catch (error) {
       logger.error(error)
@@ -66,6 +76,9 @@ export default class PopulateStoredRecallController extends RecallBaseController
       this.getBooleanAsFormValue(!storedRecall.returnToCustodyDate),
     )
     req.sessionModel.set(sessionModelFields.COURT_CASES, storedRecall.courtCaseIds)
+
+    // Store existing adjustments in session for the edit flow
+    req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
 
     // We do a crds comparison here to figure out if it was a manual recall
     // If it was, we replace the sentence info with RaS data
