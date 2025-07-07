@@ -17,6 +17,7 @@ import editRecallRouter from './recall/edit'
 import populateRecallId from '../middleware/populateRecallId'
 import deleteRecallRouter from './recall/deleteRecall'
 import loadCourtCases from '../middleware/loadCourtCases'
+import loadRecalls from '../middleware/loadRecalls'
 
 export default function routes(services: Services): Router {
   const router = Router()
@@ -41,6 +42,7 @@ export default function routes(services: Services): Router {
     populateEntrypoint(),
     populateNomisId(),
     populateRecallId(),
+    loadRecalls(services.recallService, services.prisonService),
     editRecallRouter,
   )
   router.use(
@@ -48,6 +50,7 @@ export default function routes(services: Services): Router {
     populateEntrypoint(),
     populateNomisId(),
     loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
+    loadRecalls(services.recallService, services.prisonService),
     newRecallRouter,
   )
   router.use('/bulk', bulkTestRouter(services))
