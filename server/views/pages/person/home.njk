@@ -47,7 +47,7 @@
 </div>
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
+  <div class="govuk-grid-column-full govuk-!-margin-bottom-0">
     {% for recall in recalls %}
       {{ recallCard(recall, latestRecallId, recallableCourtCases) }}
     {% endfor %}
@@ -56,7 +56,7 @@
 {% endblock %}
 
 {% macro recallCard(recall, latestRecallId, recallableCourtCases) %}
-<div class="govuk-summary-card govuk-!-margin-bottom-6">
+<div class="govuk-summary-card{% if not loop.last %} govuk-!-margin-bottom-6{% endif %}">
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">
       Recalled on {{ recall.revocationDate | date }}
@@ -83,93 +83,96 @@
     </ul>
   </div>
 
-  <div class="govuk-summary-card__content" id="recall-summary">
+  <div class="govuk-summary-card__content govuk-!-margin-bottom-0" id="recall-summary">
     <div class="govuk-grid-row govuk-!-margin-bottom-2">
-    <div class="govuk-grid-column-one-half">
-      {{ cardInfo('Recall type', recall.recallType.description) }}
-      {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
-        {{ cardInfo('Revocation date', 'Not entered') }}
-      {% else %}
-        {{ cardInfo('Revocation date', recall.revocationDate | date) }}
-      {% endif %}
-    </div>
+      <div class="govuk-grid-column-one-half">
+        {{ cardInfo('Recall type', recall.recallType.description) }}
+        {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+          {{ cardInfo('Revocation date', 'Not entered') }}
+        {% else %}
+          {{ cardInfo('Revocation date', recall.revocationDate | date) }}
+        {% endif %}
+      </div>
 
-    <div class="govuk-grid-column-one-half">
-      {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
-      {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
-        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
-        <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.ualString if recall.ualString else 'None recorded' }}</p>
-        <p class="govuk-body govuk-!-margin-bottom-2">
-          Go to adjustments to 
-          <a class="govuk-link" href="https://adjustments-dev.hmpps.service.justice.gov.uk/{{ nomisId }}/unlawfully-at-large/view" target="_blank" rel="noopener noreferrer">
-            view UAL details
-          </a>.
-        </p>
-      {% else %}
-        {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
-      {% endif %}
-        </div>
+      <div class="govuk-grid-column-one-half">
+        {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
+        {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.ualString if recall.ualString else 'None recorded' }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-2">
+            Go to adjustments to 
+            <a class="govuk-link" href="https://adjustments-dev.hmpps.service.justice.gov.uk/{{ nomisId }}/unlawfully-at-large/view" target="_blank" rel="noopener noreferrer">
+              view UAL details
+            </a>.
+          </p>
+        {% else %}
+          {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
+        {% endif %}
+      </div>
     </div>
 
     {% if recallableCourtCases and recallableCourtCases.length %}
-      <div class="govuk-grid-row govuk-!-margin-top-4">
-        <div class="govuk-grid-column-full">
-          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Court Cases</h3>
-          <details class="govuk-details" data-module="govuk-details">
-            <summary class="govuk-details__summary">
-              <span class="govuk-details__summary-text">
-                Court Cases ({{ recallableCourtCases.length }})
-              </span>
-            </summary>
-            <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">
-              {% for case in recallableCourtCases %}
-                <div class="govuk-!-margin-bottom-3">
-                  <p class="govuk-body govuk-!-font-weight-bold">
-                     {{ case.date | date('short') }} at {{ case.courtName or 'Court name not available' }}
-                  </p>
+    <div class="govuk-grid-row govuk-!-margin-top-4">
+      <div class="govuk-grid-column-full">
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Court Cases</h3>
+        <details class="govuk-details" data-module="govuk-details">
+          <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">
+              Court Cases ({{ recallableCourtCases.length }})
+            </span>
+          </summary>
+          <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">
+            {% for case in recallableCourtCases %}
+              <div class="govuk-!-margin-bottom-3">
+                <p class="govuk-body govuk-!-font-weight-bold">
+                  {{ case.date | date('short') }} at {{ case.courtName or 'Court name not available' }}
+                </p>
 
-                  {% if case.sentences and case.sentences.length %}
-                    {% for sentence in case.sentences %}
-                      <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
-                        {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
-                        {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
-                        {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
-                        {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
+                {% if case.sentences and case.sentences.length %}
+                  {% for sentence in case.sentences %}
+                    <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
+                      {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
+                      {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+                      {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
+                      {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
 
-                        {{ offenceCard({
-                          countNumber: countNumber,
-                          offenceCode: sentence.offenceCode | default('N/A'),
-                          offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-                          offenceStartDate: offenceStartDate,
-                          offenceEndDate: offenceEndDate,
-                          hideOutcome: true,
-                          outcome: sentence.outcome | default('N/A'),
-                          lineNumber: sentence.lineNumber | default('N/A'),
-                          convictionDate: convictionDate,
-                          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
-                          sentenceServeType: sentence.sentenceServeType | default(null),
-                          sentenceType: sentence.sentenceType | default('N/A'),
-                          isSentenced: true,
-                          detailsClasses: 'govuk-!-padding-4'
-                        }) }}
-                      </div>
-                    {% endfor %}
-                  {% else %}
-                    <p class="govuk-body">No sentences available for this case.</p>
-                  {% endif %}
+                      {{ offenceCard({
+                        countNumber: countNumber,
+                        offenceCode: sentence.offenceCode | default('N/A'),
+                        offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+                        offenceStartDate: offenceStartDate,
+                        offenceEndDate: offenceEndDate,
+                        hideOutcome: true,
+                        outcome: sentence.outcome | default('N/A'),
+                        lineNumber: sentence.lineNumber | default('N/A'),
+                        convictionDate: convictionDate,
+                        periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+                        sentenceServeType: sentence.sentenceServeType | default(null),
+                        sentenceType: sentence.sentenceType | default('N/A'),
+                        isSentenced: true,
+                        detailsClasses: 'govuk-!-padding-4'
+                      }) }}
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <p class="govuk-body">No sentences available for this case.</p>
+                {% endif %}
 
-                  <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-                </div>
-              {% endfor %}
-            </div>
-          </details>
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+              </div>
+            {% endfor %}
+          </div>
+        </details>
       </div>
+    </div>
     {% endif %}
   </div>
 </div>
 {% endmacro %}
 
 {% macro cardInfo(field, value) %}
-  <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ field }}</h3>
-  <p class="govuk-body govuk-!-margin-bottom-2">{{ value | safe }}</p>
+  {% if value %}
+    <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ field }}</h3>
+    <p class="govuk-body govuk-!-margin-bottom-2">{{ value | safe }}</p>
+  {% endif %}
 {% endmacro %}
