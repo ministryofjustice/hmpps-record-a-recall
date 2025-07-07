@@ -94,6 +94,8 @@ describe('Recall service', () => {
           location: 'HMI',
           sentenceIds: ['123ABC'],
           courtCaseIds: ['CASE1'],
+          created_by_username: 'johndoe',
+          sentences: [{ sentenceUuid: '123ABC' }],
         },
       ])
     })

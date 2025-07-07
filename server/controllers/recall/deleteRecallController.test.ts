@@ -56,6 +56,7 @@ describe('deleteRecallController', () => {
   const mockApiRecall: Recall = {
     recallId,
     createdAt: new Date('2023-10-26T10:00:00.000Z').toISOString(),
+    created_by_username: 'DPS',
     revocationDate: new Date('2023-10-01'),
     returnToCustodyDate: new Date('2023-10-02'),
     recallType: RecallTypes.STANDARD_RECALL,
