@@ -132,9 +132,9 @@ export default class RevocationDateController extends RecallBaseController {
     res.locals.summarisedSentencesGroups = summarisedSentencesGroups
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     res.locals.casesWithEligibleSentences = summarisedSentencesGroups.filter(group => group.hasEligibleSentences).length
-    const sentenceCount =
-      summarisedSentencesGroups?.flatMap((g: SummarisedSentenceGroup) => g.eligibleSentences.flatMap(s => s.sentenceId))
-        .length || 0
+    const sentenceCount = (summarisedSentencesGroups || []).flatMap((g: SummarisedSentenceGroup) =>
+      g.eligibleSentences.flatMap(s => s.sentenceId),
+    ).length
 
     req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
     res.locals.casesWithEligibleSentences = sentenceCount
