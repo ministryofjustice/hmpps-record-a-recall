@@ -49,7 +49,6 @@ export default class RevocationDateController extends RecallBaseController {
         }
       }
 
-      // Always validate UAL adjustments regardless of sentences
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
       const adjustmentsToConsider = getAdjustmentsToConsiderForValidation(journeyData, allExistingAdjustments)
