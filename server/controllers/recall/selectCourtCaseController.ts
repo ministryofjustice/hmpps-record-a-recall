@@ -17,6 +17,17 @@ import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
 
+// Non-recallable sentence calc types (NOMIS)
+const NON_RECALLABLE_SENTENCE_CALC_TYPES = [
+  'A/FINE', // Imprisoned in Default of Fine
+  'BOTUS', // ORA Breach Top Up Supervision
+  'CIVIL', // Civil Imprisonment
+  'DTO', // Detention and Training Order
+  'DTO_ORA', // ORA Detention and Training Order
+  'VOO', // Violent Offender Order
+  'YRO', // Youth Rehabilitation Order
+]
+
 // Type for the enhanced case with view-specific properties
 type EnhancedCourtCaseForView = CourtCase & {
   caseNumber?: string
@@ -24,6 +35,40 @@ type EnhancedCourtCaseForView = CourtCase & {
   courtName?: string
   formattedOverallSentenceLength?: string
   formattedOverallConvictionDate?: string
+  hasNonRecallableSentences?: boolean
+  hasMixedSentenceTypes?: boolean
+  recallableSentences?: (RecallableSentence & {
+    formattedSentenceLength?: string
+    periodLengths?: {
+      description: string
+      years?: number
+      months?: number
+      weeks?: number
+      days?: number
+      periodOrder: string[]
+    }[]
+    formattedConsecutiveOrConcurrent?: string
+    formattedOffenceDate?: string
+    formattedConvictionDate?: string
+    apiOffenceDescription?: string
+    formattedOutcome?: string
+  })[]
+  nonRecallableSentences?: (RecallableSentence & {
+    formattedSentenceLength?: string
+    periodLengths?: {
+      description: string
+      years?: number
+      months?: number
+      weeks?: number
+      days?: number
+      periodOrder: string[]
+    }[]
+    formattedConsecutiveOrConcurrent?: string
+    formattedOffenceDate?: string
+    formattedConvictionDate?: string
+    apiOffenceDescription?: string
+    formattedOutcome?: string
+  })[]
   sentences?: (RecallableSentence & {
     formattedSentenceLength?: string
     periodLengths?: {
@@ -48,6 +93,47 @@ export default class SelectCourtCaseController extends RecallBaseController {
   }
 
   /**
+   * Determines if a sentence is non-recallable based on NOMIS sentence calc type
+   */
+  private isNonRecallableSentence(sentence: RecallableSentence): boolean {
+    const sentenceCalcType = sentence.sentenceLegacyData?.sentenceCalcType
+    return sentenceCalcType && NON_RECALLABLE_SENTENCE_CALC_TYPES.includes(sentenceCalcType)
+  }
+
+  /**
+   * Filters court cases to exclude those with only non-recallable sentences
+   * and determines if cases have mixed sentence types
+   */
+  private filterAndClassifyCourtCases(cases: CourtCase[]): CourtCase[] {
+    return cases.filter(courtCase => {
+      if (!courtCase.sentences || courtCase.sentences.length === 0) {
+        return false // Exclude cases with no sentences
+      }
+
+      const hasRecallable = courtCase.sentences.some(sentence => !this.isNonRecallableSentence(sentence))
+      const hasNonRecallable = courtCase.sentences.some(sentence => this.isNonRecallableSentence(sentence))
+
+      // Only include cases that have at least one recallable sentence
+      return hasRecallable
+    })
+  }
+
+  /**
+   * Determines if a court case requires manual journey routing
+   * (has both recallable and non-recallable sentences)
+   */
+  private requiresManualJourney(courtCase: CourtCase): boolean {
+    if (!courtCase.sentences || courtCase.sentences.length === 0) {
+      return false
+    }
+
+    const hasRecallable = courtCase.sentences.some(sentence => !this.isNonRecallableSentence(sentence))
+    const hasNonRecallable = courtCase.sentences.some(sentence => this.isNonRecallableSentence(sentence))
+
+    return hasRecallable && hasNonRecallable
+  }
+
+  /**
    * Prepares a court case for view by adding formatted properties and enhanced sentence data
    */
   private prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
@@ -67,7 +153,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
     currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
 
     if (currentCase.sentences) {
-      currentCase.sentences = currentCase.sentences.map(sentence => {
+      const enhancedSentences = currentCase.sentences.map(sentence => {
         const sentencePeriodLengths = sentence.periodLengths || []
         const custodialPeriod = sentencePeriodLengths.find(
           (p: unknown) =>
@@ -120,6 +206,17 @@ export default class SelectCourtCaseController extends RecallBaseController {
             sentence.outcomeDescription || sentence.chargeLegacyData.outcomeDescription || 'Not available',
         }
       })
+
+      // Separate recallable and non-recallable sentences
+      const recallableSentences = enhancedSentences.filter(sentence => !this.isNonRecallableSentence(sentence))
+      const nonRecallableSentences = enhancedSentences.filter(sentence => this.isNonRecallableSentence(sentence))
+
+      // Set properties for template rendering
+      currentCase.sentences = enhancedSentences
+      currentCase.recallableSentences = recallableSentences
+      currentCase.nonRecallableSentences = nonRecallableSentences
+      currentCase.hasNonRecallableSentences = nonRecallableSentences.length > 0
+      currentCase.hasMixedSentenceTypes = recallableSentences.length > 0 && nonRecallableSentences.length > 0
     }
 
     return currentCase
@@ -188,6 +285,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
           reviewableCases = await getCourtCaseOptionsFromRas(req, res)
         }
 
+        // Filter out cases with only non-recallable sentences
+        reviewableCases = this.filterAndClassifyCourtCases(reviewableCases)
         reviewableCases = this.sortCourtCasesByMostRecentConviction(reviewableCases)
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
