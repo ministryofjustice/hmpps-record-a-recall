@@ -60,15 +60,15 @@
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">
       Recalled on {{ recall.revocationDate | date }}
-      {% if recall.created_by_username !== 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+      {% if recall.source === 'NOMIS' %}
         <span class="moj-badge moj-badge--green govuk-!-margin-bottom-1 govuk-!-margin-left-1">Active</span>
       {% endif %}
     </h2>
 
     <ul class="govuk-summary-card__actions">
-      {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+      {% if recall.source === 'NOMIS' %}
         <li class="govuk-summary-card__action">
-          <span class="moj-badge moj-badge--blue govuk-!-margin-bottom-1 govuk-!-margin-left-1">NOMIS</span>
+          <span class="moj-badge moj-badge--grey govuk-!-margin-bottom-1 govuk-!-margin-left-1">NOMIS</span>
         </li>
       {% else %}
         <li class="govuk-summary-card__action">
@@ -87,7 +87,7 @@
     <div class="govuk-grid-row govuk-!-margin-bottom-2">
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Recall type', recall.recallType.description) }}
-        {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
+        {% if recall.source === 'NOMIS' %}
           {{ cardInfo('Revocation date', 'Not entered') }}
         {% else %}
           {{ cardInfo('Revocation date', recall.revocationDate | date) }}
@@ -96,17 +96,21 @@
 
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
-        {% if recall.created_by_username == 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' %}
-          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
-          <p class="govuk-body govuk-!-margin-bottom-2">{{ recall.ualString if recall.ualString else 'None recorded' }}</p>
-          <p class="govuk-body govuk-!-margin-bottom-2">
-            Go to adjustments to 
-            <a class="govuk-link" href="https://adjustments-dev.hmpps.service.justice.gov.uk/{{ nomisId }}/unlawfully-at-large/view" target="_blank" rel="noopener noreferrer">
-              view UAL details
-            </a>.
-          </p>
-        {% else %}
-          {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}
+
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
+        <p class="govuk-body govuk-!-margin-bottom-2">
+          {% if recall.source !== 'NOMIS' %}
+            {{ recall.ualString if recall.ualString else 'None recorded' }}
+          {% endif %}
+        </p>
+
+        {% if recall.source === 'NOMIS' %}
+        <p class="govuk-body govuk-!-margin-bottom-2">
+          Go to adjustments to 
+          <a class="govuk-link" href="https://adjustments-dev.hmpps.service.justice.gov.uk/{{ nomisId }}/unlawfully-at-large/view" target="_blank" rel="noopener noreferrer">
+            view UAL details
+          </a>.
+        </p>
         {% endif %}
       </div>
     </div>
