@@ -60,7 +60,7 @@
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">
       {% if recall.revocationDate %}
-        Recorded on {{ recall.revocationDate | date }} at {{ recall.locationName or 'Location not available' }}
+        Recorded on {{ recall.createdAt | date }} at {{ recall.locationName or 'Location not available' }}
       {% else %}
         {{ recall.locationName or 'Location not available' }}
       {% endif %}
