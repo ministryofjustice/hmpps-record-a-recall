@@ -59,7 +59,11 @@
 <div class="govuk-summary-card{% if not loop.last %} govuk-!-margin-bottom-6{% endif %}">
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">
-      Recalled on {{ recall.revocationDate | date }}
+      {% if recall.revocationDate %}
+        Recorded on {{ recall.revocationDate | date }} at {{ recall.locationName or 'Location not available' }}
+      {% else %}
+        {{ recall.locationName or 'Location not available' }}
+      {% endif %}
       {% if recall.source === 'NOMIS' %}
         <span class="moj-badge moj-badge--green govuk-!-margin-bottom-1 govuk-!-margin-left-1">Active</span>
       {% endif %}
@@ -98,20 +102,18 @@
         {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
 
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
-        <p class="govuk-body govuk-!-margin-bottom-2">
-          {% if recall.source !== 'NOMIS' %}
-            {{ recall.ualString if recall.ualString else 'None recorded' }}
-          {% endif %}
-        </p>
 
         {% if recall.source === 'NOMIS' %}
+          {% set ualLink = 'https://adjustments-dev.hmpps.service.justice.gov.uk/' + nomisId %}
+        {% else %}
+          {% set ualLink = 'https://adjustments-dev.hmpps.service.justice.gov.uk/' + nomisId + '/unlawfully-at-large/view' %}
+        {% endif %}
+
         <p class="govuk-body govuk-!-margin-bottom-2">
-          Go to adjustments to 
-          <a class="govuk-link" href="https://adjustments-dev.hmpps.service.justice.gov.uk/{{ nomisId }}/unlawfully-at-large/view" target="_blank" rel="noopener noreferrer">
-            view UAL details
+          <a class="govuk-link" href="{{ ualLink }}" target="_blank" rel="noopener noreferrer">
+            View UAL details
           </a>.
         </p>
-        {% endif %}
       </div>
     </div>
 
@@ -138,21 +140,21 @@
                       {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
                       {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
                       {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
-                      {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not available' %}
+                      {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not entered' %}
 
                       {{ offenceCard({
                         countNumber: countNumber,
-                        offenceCode: sentence.offenceCode | default('N/A'),
+                        offenceCode: sentence.offenceCode | default('Not entered'),
                         offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
                         offenceStartDate: offenceStartDate,
                         offenceEndDate: offenceEndDate,
                         hideOutcome: true,
-                        outcome: sentence.outcome | default('N/A'),
-                        lineNumber: sentence.lineNumber | default('N/A'),
+                        outcome: sentence.outcome | default('Not entered'),
+                        lineNumber: sentence.lineNumber | default('Not entered'),
                         convictionDate: convictionDate,
-                        periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+                        periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
                         sentenceServeType: sentence.sentenceServeType | default(null),
-                        sentenceType: sentence.sentenceType | default('N/A'),
+                        sentenceType: sentence.sentenceType | default('Not entered'),
                         isSentenced: true,
                         detailsClasses: 'govuk-!-padding-4'
                       }) }}
