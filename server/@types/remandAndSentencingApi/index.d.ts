@@ -1012,6 +1012,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/court-case/{courtCaseUuid}/latest-offence-date': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve the latest offence date for a court case (checks both offence start and end dates)
+     * @description This endpoint returns the most recent offence start or end date across all appearances and charges for a given court case.
+     */
+    get: operations['getLatestOffenceDate']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/court-case/{courtCaseUuid}/latest-appearance': {
     parameters: {
       query?: never
@@ -1391,7 +1411,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1486,6 +1506,7 @@ export interface components {
       overallConvictionDate?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
       prisonId: string
+      documents?: components['schemas']['UploadedDocument'][]
     }
     CreateCourtCase: {
       prisonerId: string
@@ -1499,7 +1520,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -1546,6 +1567,12 @@ export interface components {
       sentenceReference: string
       consecutiveToSentenceReference?: string
     }
+    UploadedDocument: {
+      /** Format: uuid */
+      documentUUID: string
+      documentType: string
+      fileName: string
+    }
     CreateChargeResponse: {
       /** Format: uuid */
       chargeUuid: string
@@ -1563,11 +1590,6 @@ export interface components {
       /** Format: uuid */
       appearanceUUID?: string
       documents: components['schemas']['UploadedDocument'][]
-    }
-    UploadedDocument: {
-      /** Format: uuid */
-      documentUUID: string
-      documentType: string
     }
     LegacySentenceCreatedResponse: {
       prisonerId: string
@@ -1963,7 +1985,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2158,7 +2180,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -2166,7 +2188,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime?: string
       courtId: string
     }
@@ -2199,7 +2221,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -2217,7 +2239,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime?: string
       courtId: string
     }
@@ -2305,6 +2327,7 @@ export interface components {
       sentenceServeType?: string
       sentenceLegacyData?: components['schemas']['SentenceLegacyData']
       outcomeDescription?: string
+      nomisSentenceCalcType?: string
     }
     CourtCaseCountNumber: {
       countNumber: string
@@ -2466,7 +2489,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 09:49:35.775444802 */
+      /** @example 08:36:25.843005257 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
@@ -5265,6 +5288,55 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['RecallableCourtCasesResponse']
+        }
+      }
+    }
+  }
+  getLatestOffenceDate: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        courtCaseUuid: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns the latest offence date */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': string
+        }
+      }
+      /** @description No offence dates found */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': string
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': string
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': string
         }
       }
     }
