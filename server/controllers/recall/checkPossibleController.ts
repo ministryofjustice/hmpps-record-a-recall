@@ -13,9 +13,7 @@ import determineRecallEligibilityFromValidation from '../../utils/crdsValidation
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
-import { RecallableSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-
-import { isNonRecallableSentence } from '../../utils/nonRecallableSentenceUtils'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CheckPossibleController extends RecallBaseController {
   /**
@@ -32,11 +30,7 @@ export default class CheckPossibleController extends RecallBaseController {
       }
 
       // Check if case has at least one recallable sentence
-      const hasRecallable = courtCase.sentences.some(
-        (sentence: RecallableSentence) => !isNonRecallableSentence(sentence),
-      )
-
-      return hasRecallable
+      return courtCase.sentences.some((sentence: RecallableCourtCaseSentence) => sentence.isRecallable === true)
     })
 
     // Check if we filtered out cases (meaning some had only non-recallable sentences)

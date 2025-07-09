@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
-import { RecallableSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import {
   calculateOverallSentenceLength,
@@ -16,7 +16,6 @@ import RecallBaseController from './recallBaseController'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
-import { isNonRecallableSentence } from '../../utils/nonRecallableSentenceUtils'
 
 // Type for the enhanced case with view-specific properties
 type EnhancedCourtCaseForView = CourtCase & {
@@ -27,7 +26,7 @@ type EnhancedCourtCaseForView = CourtCase & {
   formattedOverallConvictionDate?: string
   hasNonRecallableSentences?: boolean
   hasMixedSentenceTypes?: boolean
-  recallableSentences?: (RecallableSentence & {
+  recallableSentences?: (RecallableCourtCaseSentence & {
     formattedSentenceLength?: string
     periodLengths?: {
       description: string
@@ -43,7 +42,7 @@ type EnhancedCourtCaseForView = CourtCase & {
     apiOffenceDescription?: string
     formattedOutcome?: string
   })[]
-  nonRecallableSentences?: (RecallableSentence & {
+  nonRecallableSentences?: (RecallableCourtCaseSentence & {
     formattedSentenceLength?: string
     periodLengths?: {
       description: string
@@ -59,7 +58,7 @@ type EnhancedCourtCaseForView = CourtCase & {
     apiOffenceDescription?: string
     formattedOutcome?: string
   })[]
-  sentences?: (RecallableSentence & {
+  sentences?: (RecallableCourtCaseSentence & {
     formattedSentenceLength?: string
     periodLengths?: {
       description: string
@@ -93,7 +92,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
       }
 
       // Only include cases that have at least one recallable sentence
-      return courtCase.sentences.some(sentence => !isNonRecallableSentence(sentence))
+      return courtCase.sentences.some(sentence => sentence.isRecallable === true)
     })
   }
 
@@ -173,15 +172,18 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
       // Separate recallable and non-recallable sentences in a single pass
       const { recallableSentences, nonRecallableSentences } = enhancedSentences.reduce(
-        (acc, sentence) => {
-          if (isNonRecallableSentence(sentence)) {
-            acc.nonRecallableSentences.push(sentence)
-          } else {
+        (
+          acc: { recallableSentences: typeof enhancedSentences; nonRecallableSentences: typeof enhancedSentences },
+          sentence,
+        ) => {
+          if (sentence.isRecallable === true) {
             acc.recallableSentences.push(sentence)
+          } else {
+            acc.nonRecallableSentences.push(sentence)
           }
           return acc
         },
-        { recallableSentences: [] as typeof enhancedSentences, nonRecallableSentences: [] as typeof enhancedSentences },
+        { recallableSentences: [], nonRecallableSentences: [] },
       )
 
       // Set properties for template rendering
