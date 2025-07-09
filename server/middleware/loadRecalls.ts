@@ -51,7 +51,7 @@ export default function loadRecalls(recallService: RecallService, prisonService:
 }
 
 export function isRecallFromNomis(recall: Recall): boolean {
-  return recall?.created_by_username === 'hmpps-prisoner-from-nomis-migration-court-sentencing-1'
+  return recall?.source === 'NOMIS'
 }
 
 /**
