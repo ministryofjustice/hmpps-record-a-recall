@@ -1,6 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-
+// eslint-disable-next-line import/no-unresolved
+import { CourtCase } from 'models'
 import {
   RecordARecallCalculationResult,
   ValidationMessage,
@@ -12,8 +13,38 @@ import determineRecallEligibilityFromValidation from '../../utils/crdsValidation
 import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
+import { RecallableSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+
+import { isNonRecallableSentence } from '../../utils/nonRecallableSentenceUtils'
 
 export default class CheckPossibleController extends RecallBaseController {
+  /**
+   * Filters court cases to exclude those with only non-recallable sentences
+   * and checks if any cases were filtered out
+   */
+  private filterCourtCasesWithNonRecallableSentences(cases: CourtCase[]): {
+    filteredCases: CourtCase[]
+    wereCasesFilteredOut: boolean
+  } {
+    const filteredCases = cases.filter(courtCase => {
+      if (!courtCase.sentences || courtCase.sentences.length === 0) {
+        return false // Exclude cases with no sentences
+      }
+
+      // Check if case has at least one recallable sentence
+      const hasRecallable = courtCase.sentences.some(
+        (sentence: RecallableSentence) => !isNonRecallableSentence(sentence),
+      )
+
+      return hasRecallable
+    })
+
+    // Check if we filtered out cases (meaning some had only non-recallable sentences)
+    const wereCasesFilteredOut = filteredCases.length < cases.length
+
+    return { filteredCases, wereCasesFilteredOut }
+  }
+
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
@@ -38,8 +69,25 @@ export default class CheckPossibleController extends RecallBaseController {
         const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
 
         const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
-        res.locals.courtCases = activeCases
-        const sentencesFromRasCases = activeCases.flatMap(caseItem => caseItem.sentences || [])
+
+        // Apply non-recallable sentence filtering
+        const { filteredCases, wereCasesFilteredOut } = this.filterCourtCasesWithNonRecallableSentences(activeCases)
+
+        // If we would normally go to manual journey but the only issue is non-recallable sentences,
+        // override to normal journey and use filtered cases
+        let casesToUse = activeCases
+        if (
+          recallEligibility.recallRoute === 'MANUAL' &&
+          recallEligibility === eligibilityReasons.NON_CRITICAL_VALIDATION_FAIL &&
+          wereCasesFilteredOut
+        ) {
+          // Override recall eligibility to normal journey since we've filtered out the problematic cases
+          res.locals.recallEligibility = eligibilityReasons.HAPPY_PATH_POSSIBLE
+          casesToUse = filteredCases
+        }
+
+        res.locals.courtCases = casesToUse
+        const sentencesFromRasCases = casesToUse.flatMap(caseItem => caseItem.sentences || [])
 
         const [sentences, breakdown] = await Promise.all([
           this.getCrdsSentences(req, res),
@@ -80,10 +128,12 @@ export default class CheckPossibleController extends RecallBaseController {
             return []
           })
       }
+
+      return super.configure(req, res, next)
     } catch (error) {
       logger.error(error)
+      return next(error)
     }
-    return super.configure(req, res, next)
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {

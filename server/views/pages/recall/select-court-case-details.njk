@@ -70,8 +70,8 @@
               {{ offenceCard({
                   offenceCode: sentence.offenceCode | default("N/A"),
                   offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
-                  offenceStartDate: offenceStartDate | default('N/A'),
-                  offenceEndDate: offenceEndDate | default(null),
+                  offenceStartDate: sentence.offenceStartDate | default('N/A'),
+                  offenceEndDate: sentence.offenceEndDate | default(null),
                   outcome: sentence.formattedOutcome | default("N/A"),
                   countNumber: loop.index,
                   convictionDate: sentence.formattedConvictionDate | default("N/A"),
@@ -102,8 +102,8 @@
                   {{ offenceCard({
                       offenceCode: sentence.offenceCode | default("N/A"),
                       offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
-                      offenceStartDate: offenceStartDate | default('N/A'),
-                      offenceEndDate: offenceEndDate | default(null),
+                      offenceStartDate: sentence.offenceStartDate | default('N/A'),
+                      offenceEndDate: sentence.offenceEndDate | default(null),
                       outcome: sentence.formattedOutcome | default("N/A"),
                       countNumber: loop.index,
                       convictionDate: sentence.formattedConvictionDate | default("N/A"),

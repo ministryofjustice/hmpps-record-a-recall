@@ -16,17 +16,7 @@ import RecallBaseController from './recallBaseController'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
-
-// Non-recallable sentence calc types (NOMIS)
-const NON_RECALLABLE_SENTENCE_CALC_TYPES = [
-  'A/FINE', // Imprisoned in Default of Fine
-  'BOTUS', // ORA Breach Top Up Supervision
-  'CIVIL', // Civil Imprisonment
-  'DTO', // Detention and Training Order
-  'DTO_ORA', // ORA Detention and Training Order
-  'VOO', // Violent Offender Order
-  'YRO', // Youth Rehabilitation Order
-]
+import { isNonRecallableSentence } from '../../utils/nonRecallableSentenceUtils'
 
 // Type for the enhanced case with view-specific properties
 type EnhancedCourtCaseForView = CourtCase & {
@@ -93,14 +83,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
   }
 
   /**
-   * Determines if a sentence is non-recallable based on NOMIS sentence calc type
-   */
-  private isNonRecallableSentence(sentence: RecallableSentence): boolean {
-    const sentenceCalcType = sentence.sentenceLegacyData?.sentenceCalcType
-    return sentenceCalcType && NON_RECALLABLE_SENTENCE_CALC_TYPES.includes(sentenceCalcType)
-  }
-
-  /**
    * Filters court cases to exclude those with only non-recallable sentences
    * and determines if cases have mixed sentence types
    */
@@ -110,27 +92,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
         return false // Exclude cases with no sentences
       }
 
-      const hasRecallable = courtCase.sentences.some(sentence => !this.isNonRecallableSentence(sentence))
-      const hasNonRecallable = courtCase.sentences.some(sentence => this.isNonRecallableSentence(sentence))
-
       // Only include cases that have at least one recallable sentence
-      return hasRecallable
+      return courtCase.sentences.some(sentence => !isNonRecallableSentence(sentence))
     })
-  }
-
-  /**
-   * Determines if a court case requires manual journey routing
-   * (has both recallable and non-recallable sentences)
-   */
-  private requiresManualJourney(courtCase: CourtCase): boolean {
-    if (!courtCase.sentences || courtCase.sentences.length === 0) {
-      return false
-    }
-
-    const hasRecallable = courtCase.sentences.some(sentence => !this.isNonRecallableSentence(sentence))
-    const hasNonRecallable = courtCase.sentences.some(sentence => this.isNonRecallableSentence(sentence))
-
-    return hasRecallable && hasNonRecallable
   }
 
   /**
@@ -207,9 +171,18 @@ export default class SelectCourtCaseController extends RecallBaseController {
         }
       })
 
-      // Separate recallable and non-recallable sentences
-      const recallableSentences = enhancedSentences.filter(sentence => !this.isNonRecallableSentence(sentence))
-      const nonRecallableSentences = enhancedSentences.filter(sentence => this.isNonRecallableSentence(sentence))
+      // Separate recallable and non-recallable sentences in a single pass
+      const { recallableSentences, nonRecallableSentences } = enhancedSentences.reduce(
+        (acc, sentence) => {
+          if (isNonRecallableSentence(sentence)) {
+            acc.nonRecallableSentences.push(sentence)
+          } else {
+            acc.recallableSentences.push(sentence)
+          }
+          return acc
+        },
+        { recallableSentences: [] as typeof enhancedSentences, nonRecallableSentences: [] as typeof enhancedSentences },
+      )
 
       // Set properties for template rendering
       currentCase.sentences = enhancedSentences
