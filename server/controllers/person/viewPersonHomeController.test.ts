@@ -125,6 +125,7 @@ const createMockRecall = (recallId: string, createdAtArg: string | null): Recall
     location: 'KMI',
     sentenceIds: [],
     courtCaseIds: [],
+    source: 'DPS',
   }) as Recall
 
 const createMockRecallFromNomis = (recallId: string, createdAtArg: string | null): Recall =>
@@ -147,6 +148,7 @@ const createMockRecallFromNomis = (recallId: string, createdAtArg: string | null
     location: 'KMI',
     sentenceIds: [],
     courtCaseIds: [],
+    source: 'NOMIS',
   }) as Recall
 
 describe('viewPersonHome', () => {
@@ -302,10 +304,9 @@ describe('viewPersonHome', () => {
     )
   })
 
-  it('should render home page with nomisRecallId when there is only one recall and it is from nomis', async () => {
+  it('should render home page with a nomis recall that has a source of NOMIS when there is only one recall and it is from nomis', async () => {
     const recalls = [createMockRecallFromNomis('recall-single', '2023-02-01T10:00:00.000Z')]
 
-    // Simulate data pre-loaded by createDataMiddleware
     res.locals.prisoner = {
       prisonerNumber: 'Z1234BC',
       firstName: 'TestFirstName',
@@ -313,7 +314,7 @@ describe('viewPersonHome', () => {
     }
     res.locals.recalls = recalls
     res.locals.latestRecallId = 'recall-single'
-    res.locals.recall = { created_by_username: 'hmpps-prisoner-from-nomis-migration-court-sentencing-1' }
+    res.locals.recall = { source: 'NOMIS' }
     res.locals.serviceDefinitions = {}
 
     await viewPersonHome(req as Request, res as Response)
@@ -324,8 +325,37 @@ describe('viewPersonHome', () => {
         latestRecallId: 'recall-single',
         recalls: expect.arrayContaining([
           expect.objectContaining({
-            created_by_username: 'hmpps-prisoner-from-nomis-migration-court-sentencing-1',
+            source: 'NOMIS',
           }),
+        ]),
+      }),
+    )
+  })
+
+  it('should render home page with two recalls: a NOMIS recall with source NOMIS and a recall created from the recall service with source DPS', async () => {
+    const nomisRecall = createMockRecallFromNomis('recall-nomis', '2023-02-01T10:00:00.000Z')
+    const dpsRecall = createMockRecall('recall-dps', '2023-03-01T10:00:00.000Z')
+    const recalls = [nomisRecall, dpsRecall]
+
+    res.locals.prisoner = {
+      prisonerNumber: 'Z1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = 'recall-nomis'
+    res.locals.recall = nomisRecall
+    res.locals.serviceDefinitions = {}
+
+    await viewPersonHome(req as Request, res as Response)
+
+    expect(res.render).toHaveBeenCalledWith(
+      'pages/person/home',
+      expect.objectContaining({
+        latestRecallId: 'recall-nomis',
+        recalls: expect.arrayContaining([
+          expect.objectContaining({ recallId: 'recall-nomis', source: 'NOMIS' }),
+          expect.objectContaining({ recallId: 'recall-dps', source: 'DPS' }),
         ]),
       }),
     )

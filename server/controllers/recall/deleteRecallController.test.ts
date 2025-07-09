@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { Recall, UAL } from 'models'
+import { RecallSource } from '../../@types/models/recall'
 import { getDeleteRecallConfirmation, postDeleteRecallConfirmation } from './deleteRecallController'
 import { PrisonerSearchApiPrisoner as Prisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import { HmppsUser } from '../../interfaces/hmppsUser'
@@ -70,6 +71,7 @@ describe('deleteRecallController', () => {
     sentenceIds: ['SENTENCE_UUID_1'],
     courtCaseIds: ['COURT_CASE_UUID_1'],
     isFixedTermRecall: false,
+    source: RecallSource.DPS,
   }
 
   const mockApiPrisoner: Prisoner = {

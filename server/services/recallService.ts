@@ -96,6 +96,7 @@ export default class RecallService {
       sentenceIds: apiRecall.sentences.map(s => s.sentenceUuid),
       courtCaseIds: apiRecall.courtCaseIds,
       sentences: apiRecall.sentences,
+      source: apiRecall.source,
     }
   }
 }

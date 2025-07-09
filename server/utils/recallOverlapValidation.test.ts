@@ -40,6 +40,7 @@ describe('Recall Overlap Validation', () => {
     location: 'BWI',
     sentenceIds: ['123'],
     courtCaseIds: ['456'],
+    source: 'DPS',
     ...overrides,
   })
 
