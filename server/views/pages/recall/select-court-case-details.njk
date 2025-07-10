@@ -63,15 +63,15 @@
 
           <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-1">
 
-          {# Offences Section #}
-          {% if currentCase.sentences and currentCase.sentences.length > 0 %}
-            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">Offences ({{ currentCase.sentences.length }})</h3>
-            {% for sentence in currentCase.sentences %}
+          {# Recallable Offences Section #}
+          {% if currentCase.recallableSentences and currentCase.recallableSentences.length > 0 %}
+            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">Offences ({{ currentCase.recallableSentences.length }})</h3>
+            {% for sentence in currentCase.recallableSentences %}
               {{ offenceCard({
                   offenceCode: sentence.offenceCode | default("N/A"),
                   offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
-                  offenceStartDate: offenceStartDate | default('N/A'),
-                  offenceEndDate: offenceEndDate | default(null),
+                  offenceStartDate: sentence.offenceStartDate | default('N/A'),
+                  offenceEndDate: sentence.offenceEndDate | default(null),
                   outcome: sentence.formattedOutcome | default("N/A"),
                   countNumber: loop.index,
                   convictionDate: sentence.formattedConvictionDate | default("N/A"),
@@ -87,6 +87,40 @@
                   listItems: null
               }) }}
             {% endfor %}
+          {% endif %}
+
+          {# Non-Recallable Sentences Dropdown #}
+          {% if currentCase.hasNonRecallableSentences %}
+            <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  View offences which are not eligible for recall ({{ currentCase.nonRecallableSentences.length }})
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                {% for sentence in currentCase.nonRecallableSentences %}
+                  {{ offenceCard({
+                      offenceCode: sentence.offenceCode | default("N/A"),
+                      offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+                      offenceStartDate: sentence.offenceStartDate | default('N/A'),
+                      offenceEndDate: sentence.offenceEndDate | default(null),
+                      outcome: sentence.formattedOutcome | default("N/A"),
+                      countNumber: loop.index,
+                      convictionDate: sentence.formattedConvictionDate | default("N/A"),
+                      terrorRelated: sentence.terrorRelated | default(false),
+                      isSentenced: true,
+                      periodLengths: sentence.periodLengths | default([]),
+                      sentenceServeType: sentence.sentenceServeType | default(null),
+                      consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+                      sentenceType: sentence.sentenceTypeDescription | default("N/A"),
+                      fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+                      detailsClasses: 'govuk-!-padding-4',
+                      actions: null,
+                      listItems: null
+                  }) }}
+                {% endfor %}
+              </div>
+            </details>
           {% endif %}
         </div> <!-- govuk-summary-card__content -->
       </div> <!-- govuk-summary-card -->

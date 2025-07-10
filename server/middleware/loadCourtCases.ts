@@ -3,10 +3,13 @@ import logger from '../../logger'
 import CourtCaseService from '../services/CourtCaseService'
 import ManageOffencesService from '../services/manageOffencesService'
 import CourtService from '../services/CourtService'
-import { RecallableCourtCase, RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  RecallableCourtCase,
+  RecallableCourtCaseSentence,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 // Enhanced types for court cases with additional fields
-export type EnhancedRecallableSentence = RecallableSentence & {
+export type EnhancedRecallableSentence = RecallableCourtCaseSentence & {
   offenceDescription?: string
 }
 
@@ -75,7 +78,7 @@ async function enhanceCourtCasesWithOffenceDescriptions(
 
     cases.forEach(courtCase => {
       if (courtCase.sentences && Array.isArray(courtCase.sentences)) {
-        courtCase.sentences.forEach((sentence: RecallableSentence) => {
+        courtCase.sentences.forEach((sentence: RecallableCourtCaseSentence) => {
           if (sentence.offenceCode && typeof sentence.offenceCode === 'string') {
             allOffenceCodes.add(sentence.offenceCode)
           }
@@ -106,7 +109,7 @@ async function enhanceCourtCasesWithOffenceDescriptions(
       ...courtCase,
       sentences:
         courtCase.sentences?.map(
-          (sentence: RecallableSentence): EnhancedRecallableSentence => ({
+          (sentence: RecallableCourtCaseSentence): EnhancedRecallableSentence => ({
             ...sentence,
             offenceDescription: offenceMap[sentence.offenceCode || ''] || 'Description not available',
           }),
