@@ -1,18 +1,18 @@
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Recall } from 'models'
-import { RecallEligibilityService, RecallEligibilityAssessment, CourtCaseSummary } from './RecallEligibilityService'
+import {
+  RecallEligibilityService,
+  RecallEligibilityAssessment,
+  RecallRoute,
+  CourtCaseSummary,
+} from './RecallEligibilityService'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { CalculationBreakdown, ValidationMessage } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
-import { RecallType, RecallTypes } from '../@types/recallTypes'
-import {
-  isCriticalValidationError,
-  determineCrdsRouting,
-  RecallRoute,
-  RECALL_VALIDATION_ERRORS,
-} from '../utils/constants'
+import { RecallType } from '../@types/recallTypes'
+import { isCriticalValidationError } from '../utils/constants'
 import logger from '../../logger'
 
 /**
@@ -93,15 +93,15 @@ export class RecallRoutingService {
       logger.info(`Processing recall routing for prisoner ${request.nomsId}`)
 
       // 1. Perform comprehensive eligibility assessment
-      const eligibilityAssessment = await this.eligibilityService.assessRecallEligibility({
-        courtCases: request.courtCases,
-        adjustments: request.adjustments,
-        existingRecalls: request.existingRecalls,
-        breakdown: request.calculationBreakdown,
-        validationMessages: request.validationMessages,
-        revocationDate: request.revocationDate,
-        journeyData: request.journeyData,
-      })
+      const eligibilityAssessment = await this.eligibilityService.assessRecallEligibility(
+        request.courtCases,
+        request.adjustments,
+        request.existingRecalls,
+        request.calculationBreakdown,
+        request.validationMessages,
+        request.revocationDate,
+        request.journeyData,
+      )
 
       // 2. Determine next steps based on routing
       const nextSteps = this.determineNextSteps(eligibilityAssessment)
@@ -140,7 +140,7 @@ export class RecallRoutingService {
         },
         validationMessages: [
           {
-            code: RECALL_VALIDATION_ERRORS.UNSUPPORTED_SENTENCE_TYPE,
+            code: 'UNSUPPORTED_SENTENCE_TYPE',
             message: 'An error occurred during recall routing assessment',
             arguments: [],
             type: 'VALIDATION',
@@ -187,29 +187,29 @@ export class RecallRoutingService {
       const { filteredCases, wereCasesFilteredOut } = this.filterCourtCasesWithNonRecallableSentences(activeCases)
 
       // 3. Determine initial routing from CRDS validation
-      const initialRouting = determineCrdsRouting(validationMessages)
+      const initialRouting = this.determineCrdsRouting(validationMessages)
       const initialEligibility = this.mapValidationToEligibility(validationMessages)
 
       // 4. Apply smart routing override if applicable
       const { routing, eligibility, casesToUse } = this.applySmartRoutingOverride(
         initialRouting,
         initialEligibility,
-        filteredCases,
+        activeCases,
         wereCasesFilteredOut,
       )
 
       // 5. If we have a revocation date, run full eligibility assessment
       let fullAssessment: RecallEligibilityAssessment | null = null
       if (journeyData && journeyData.revocationDate) {
-        fullAssessment = await this.eligibilityService.assessRecallEligibility({
-          courtCases: casesToUse,
+        fullAssessment = await this.eligibilityService.assessRecallEligibility(
+          casesToUse,
           adjustments,
           existingRecalls,
-          breakdown: calculationBreakdown,
+          calculationBreakdown,
           validationMessages,
-          revocationDate: journeyData.revocationDate,
+          journeyData.revocationDate,
           journeyData,
-        })
+        )
       }
 
       // Generate session and local updates based on routing decision
@@ -312,6 +312,22 @@ export class RecallRoutingService {
   }
 
   /**
+   * Determine routing from CRDS validation messages
+   */
+  private determineCrdsRouting(validationMessages: ValidationMessage[]): RecallRoute {
+    if (!validationMessages || validationMessages.length === 0) {
+      return 'NORMAL'
+    }
+
+    const errorCodes = validationMessages.map(v => v.code)
+    if (errorCodes.some(code => isCriticalValidationError(code))) {
+      return 'NO_SENTENCES_FOR_RECALL'
+    }
+
+    return 'MANUAL_REVIEW_REQUIRED'
+  }
+
+  /**
    * Determine next steps based on routing decision
    */
   private determineNextSteps(assessment: RecallEligibilityAssessment): NextSteps {
@@ -362,19 +378,11 @@ export class RecallRoutingService {
   private getRecommendedRecallTypes(assessment: RecallEligibilityAssessment): string[] {
     const availableTypes = ['STANDARD_RECALL']
 
-    if (
-      !assessment.eligibilityDetails.invalidRecallTypes.some(
-        type => type.code === RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL.code,
-      )
-    ) {
+    if (!assessment.eligibilityDetails.invalidRecallTypes.some(type => type.code === 'FTR_14')) {
       availableTypes.push('FOURTEEN_DAY_FIXED_TERM_RECALL')
     }
 
-    if (
-      !assessment.eligibilityDetails.invalidRecallTypes.some(
-        type => type.code === RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL.code,
-      )
-    ) {
+    if (!assessment.eligibilityDetails.invalidRecallTypes.some(type => type.code === 'FTR_28')) {
       availableTypes.push('TWENTY_EIGHT_DAY_FIXED_TERM_RECALL')
     }
 

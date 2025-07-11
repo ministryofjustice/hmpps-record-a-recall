@@ -4,41 +4,29 @@ import { compact } from 'lodash'
 import { CourtCase, Recall } from 'models'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { CalculationBreakdown, ValidationMessage } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import { RecallType, RecallTypes } from '../@types/recallTypes'
 import { SummarisedSentence, SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
-import {
-  determineCrdsRouting,
-  RECALL_PERIODS,
-  SENTENCE_THRESHOLDS,
-  RECALL_VALIDATION_ERRORS,
-  RecallRoute,
-} from '../utils/constants'
-import { summariseCourtCase } from '../utils/CaseSentenceSummariser'
+import { isCriticalValidationError } from '../utils/constants'
 import logger from '../../logger'
-
-/**
- * Request object for recall eligibility assessment
- */
-export interface RecallEligibilityRequest {
-  courtCases: CourtCase[]
-  adjustments: AdjustmentDto[]
-  existingRecalls: Recall[]
-  breakdown: CalculationBreakdown | null
-  validationMessages: ValidationMessage[]
-  revocationDate: Date
-  journeyData?: RecallJourneyData
-}
 
 /**
  * Centralised service for all recall eligibility calculations and validations
  */
 export class RecallEligibilityService {
   // Core eligibility assessment - main entry point
-  async assessRecallEligibility(request: RecallEligibilityRequest): Promise<RecallEligibilityAssessment> {
-    const { courtCases, adjustments, existingRecalls, validationMessages, revocationDate, journeyData } = request
-
+  async assessRecallEligibility(
+    courtCases: CourtCase[],
+    adjustments: AdjustmentDto[],
+    existingRecalls: Recall[],
+    breakdown: CalculationBreakdown | null,
+    validationMessages: ValidationMessage[],
+    revocationDate: Date,
+    journeyData?: RecallJourneyData,
+  ): Promise<RecallEligibilityAssessment> {
+    // 1. Validate revocation date against basic constraints
     const dateValidation = this.validateRevocationDate(
       revocationDate,
       courtCases,
@@ -47,74 +35,63 @@ export class RecallEligibilityService {
       journeyData,
     )
     if (!dateValidation.isValid) {
-      return this.buildInvalidDateResponse(dateValidation.validationMessages)
+      return {
+        isValid: false,
+        routing: 'CONFLICTING_ADJUSTMENTS',
+        eligibilityDetails: {
+          invalidRecallTypes: [],
+          eligibleSentenceCount: 0,
+          hasNonSdsSentences: false,
+          courtCaseSummary: [],
+        },
+        validationMessages: dateValidation.validationMessages,
+      }
     }
 
-    const assessmentData = this.buildEligibilityAssessmentData(courtCases, validationMessages, revocationDate)
-
-    return this.buildEligibilityAssessment(assessmentData, dateValidation.validationMessages)
-  }
-
-  private buildInvalidDateResponse(validationMessages: ValidationMessage[]): RecallEligibilityAssessment {
-    return {
-      isValid: false,
-      routing: 'CONFLICTING_ADJUSTMENTS',
-      eligibilityDetails: {
-        invalidRecallTypes: [],
-        eligibleSentenceCount: 0,
-        hasNonSdsSentences: false,
-        courtCaseSummary: [],
-      },
-      validationMessages,
-    }
-  }
-
-  private buildEligibilityAssessmentData(
-    courtCases: CourtCase[],
-    validationMessages: ValidationMessage[],
-    revocationDate: Date,
-  ): EligibilityAssessmentData {
-    // Process court cases and sentences
+    // 2. Process court cases and sentences
     const processedCases = this.processCourtCases(courtCases)
 
-    // Determine routing based on CRDS validation
-    const crdsRouting = determineCrdsRouting(validationMessages)
+    // 3. Determine routing based on CRDS validation
+    const crdsRouting = this.determineCrdsRouting(validationMessages)
 
-    // Check for non-SDS sentences and apply filtering
+    // 4. Check for non-SDS sentences
     const hasNonSdsSentences = this.hasNonSdsSentences(processedCases)
+
+    // 5. Apply SDS filtering if needed
     const filteredCases = this.applySdsFiltering(processedCases, hasNonSdsSentences)
 
-    // Calculate routing and eligibility details
+    // 6. Calculate invalid recall types
     const invalidRecallTypes = this.calculateInvalidRecallTypes(filteredCases, revocationDate)
+
+    // 7. Determine final routing
     const finalRouting = this.determineFinalRouting(crdsRouting, hasNonSdsSentences, filteredCases)
+
+    // 8. Calculate eligible sentence count
     const eligibleSentenceCount = this.calculateEligibleSentenceCount(filteredCases)
 
     return {
-      processedCases,
-      crdsRouting,
-      hasNonSdsSentences,
-      filteredCases,
-      invalidRecallTypes,
-      finalRouting,
-      eligibleSentenceCount,
+      isValid: finalRouting !== 'CONFLICTING_ADJUSTMENTS',
+      routing: finalRouting,
+      eligibilityDetails: {
+        invalidRecallTypes,
+        eligibleSentenceCount,
+        hasNonSdsSentences,
+        courtCaseSummary: this.buildCourtCaseSummary(filteredCases),
+      },
+      validationMessages: dateValidation.validationMessages,
     }
   }
 
-  private buildEligibilityAssessment(
-    data: EligibilityAssessmentData,
-    validationMessages: ValidationMessage[],
-  ): RecallEligibilityAssessment {
-    return {
-      isValid: data.finalRouting !== 'CONFLICTING_ADJUSTMENTS',
-      routing: data.finalRouting,
-      eligibilityDetails: {
-        invalidRecallTypes: data.invalidRecallTypes,
-        eligibleSentenceCount: data.eligibleSentenceCount,
-        hasNonSdsSentences: data.hasNonSdsSentences,
-        courtCaseSummary: this.buildCourtCaseSummary(data.filteredCases),
-      },
-      validationMessages,
+  // RAS sentence eligibility assessment
+  private assessRasSentenceEligibility(sentence: RecallableCourtCaseSentence): RecallEligibility {
+    const { sentenceType } = sentence
+    if (!sentenceType) {
+      return eligibilityReasons.RAS_LEGACY_SENTENCE
     }
+    if (this.isNonSDS(sentenceType)) {
+      return eligibilityReasons.NON_SDS
+    }
+    return eligibilityReasons.SDS
   }
 
   // Fixed-term recall eligibility checks
@@ -127,7 +104,7 @@ export class RecallEligibilityService {
 
     logger.debug('Mixture of sentence lengths')
 
-    const fourteenDaysFromRecall = addDays(revocationDate, RECALL_PERIODS.FOURTEEN_DAYS)
+    const fourteenDaysFromRecall = addDays(revocationDate, 14)
     logger.debug(
       `Checking if latest SLED [${latestExpiryDateOfTwelveMonthPlusSentences}] is over 14 days from date of recall [${fourteenDaysFromRecall}]`,
     )
@@ -151,7 +128,7 @@ export class RecallEligibilityService {
     const latestExpiryDateOfTwelveMonthPlusSentences = this.getLatestExpiryDateOfTwelveMonthPlusSentences(sentences)
     logger.debug('Mixture of sentence lengths')
 
-    const fourteenDaysFromRecall = addDays(revocationDate, RECALL_PERIODS.FOURTEEN_DAYS)
+    const fourteenDaysFromRecall = addDays(revocationDate, 14)
     logger.debug(
       `Checking if latest SLED [${latestExpiryDateOfTwelveMonthPlusSentences}] is over 14 days from date of recall [${fourteenDaysFromRecall}]`,
     )
@@ -178,7 +155,7 @@ export class RecallEligibilityService {
       const earliestSentenceDate = min(sentences.map(s => new Date(s.convictionDate || s.offenceStartDate || '')))
       if (isBefore(revocationDate, earliestSentenceDate)) {
         validationMessages.push({
-          code: RECALL_VALIDATION_ERRORS.OFFENCE_DATE_AFTER_SENTENCE_START_DATE,
+          code: 'REMAND_ON_OR_AFTER_SENTENCE_DATE',
           message: 'Revocation date must be after earliest sentence date',
           arguments: [],
           type: 'VALIDATION',
@@ -215,21 +192,17 @@ export class RecallEligibilityService {
     const adjustmentsToConsider = this.getAdjustmentsToConsiderForValidation(adjustments, journeyData)
 
     const isWithinAdjustment = adjustmentsToConsider.some((adjustment: AdjustmentDto) => {
-      if (!this.isValidAdjustment(adjustment) || !adjustment.fromDate || !adjustment.toDate) return false
-
-      const fromDate = new Date(adjustment.fromDate)
-      const toDate = new Date(adjustment.toDate)
-
-      if (!this.isValidDate(fromDate) || !this.isValidDate(toDate)) return false
+      if (!adjustment.fromDate || !adjustment.toDate) return false
 
       return (
-        (isEqual(revocationDate, fromDate) || isAfter(revocationDate, fromDate)) && isBefore(revocationDate, toDate)
+        (isEqual(revocationDate, adjustment.fromDate) || isAfter(revocationDate, adjustment.fromDate)) &&
+        isBefore(revocationDate, adjustment.toDate)
       )
     })
 
     if (isWithinAdjustment) {
       validationMessages.push({
-        code: RECALL_VALIDATION_ERRORS.ADJUSTMENT_FUTURE_DATED_UAL,
+        code: 'ADJUSTMENT_FUTURE_DATED_UAL',
         message: 'Revocation date cannot be within adjustment period',
         arguments: [],
         type: 'VALIDATION',
@@ -253,18 +226,13 @@ export class RecallEligibilityService {
     const recallsToConsider = this.getRecallsToConsiderForValidation(existingRecalls, journeyData)
 
     // Check if revocation date is on or before any existing recall
-    const hasDateOnOrBeforeExisting = recallsToConsider.some(recall => {
-      if (!this.isValidRecall(recall) || !recall.revocationDate) return false
-
-      const recallRevocationDate = new Date(recall.revocationDate)
-      if (!this.isValidDate(recallRevocationDate)) return false
-
-      return isEqual(revocationDate, recallRevocationDate) || isBefore(revocationDate, recallRevocationDate)
-    })
+    const hasDateOnOrBeforeExisting = recallsToConsider.some(
+      recall => isEqual(revocationDate, recall.revocationDate) || isBefore(revocationDate, recall.revocationDate),
+    )
 
     if (hasDateOnOrBeforeExisting) {
       validationMessages.push({
-        code: RECALL_VALIDATION_ERRORS.FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER,
+        code: 'CONCURRENT_CONSECUTIVE_SENTENCES_DURATION',
         message: 'Revocation date cannot be on or before existing recall date',
         arguments: [],
         type: 'VALIDATION',
@@ -281,7 +249,7 @@ export class RecallEligibilityService {
 
     if (hasFtrOverlap) {
       validationMessages.push({
-        code: RECALL_VALIDATION_ERRORS.FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER,
+        code: 'FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER',
         message: 'Revocation date overlaps with existing Fixed Term Recall period',
         arguments: [],
         type: 'VALIDATION',
@@ -309,12 +277,56 @@ export class RecallEligibilityService {
   }
 
   private processCourtCase(courtCase: CourtCase): SummarisedSentenceGroup | null {
-    const summarisedGroup = summariseCourtCase(courtCase, true)
+    const summarisedGroup: SummarisedSentenceGroup = {
+      caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
+      ineligibleSentences: [],
+      hasIneligibleSentences: false,
+      eligibleSentences: [],
+      sentences: [],
+      hasEligibleSentences: false,
+    }
+
+    courtCase.sentences.forEach(sentence => {
+      if (!sentence) return
+
+      const recallEligibility = this.assessRasSentenceEligibility(sentence)
+      const summarisedSentence: SummarisedSentence = {
+        sentenceId: sentence.sentenceUuid,
+        recallEligibility,
+        summary: compact([]),
+        offenceCode: sentence.offenceCode,
+        offenceDescription: sentence.offenceDescription,
+      }
+
+      if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
+        summarisedGroup.hasEligibleSentences = true
+        summarisedGroup.eligibleSentences.push(summarisedSentence)
+      } else {
+        summarisedGroup.hasIneligibleSentences = true
+        summarisedGroup.ineligibleSentences.push(summarisedSentence)
+      }
+
+      summarisedGroup.sentences.push(sentence)
+    })
+
     return summarisedGroup.sentences.length > 0 ? summarisedGroup : null
   }
 
+  private determineCrdsRouting(validationMessages: ValidationMessage[]): RecallRoute {
+    if (validationMessages && validationMessages.length === 0) {
+      return 'NORMAL'
+    }
+
+    const errorCodes = validationMessages.map(v => v.code)
+    if (errorCodes.some(code => isCriticalValidationError(code))) {
+      return 'NO_SENTENCES_FOR_RECALL'
+    }
+
+    return 'MANUAL_REVIEW_REQUIRED'
+  }
+
   private hasNonSdsSentences(cases: SummarisedSentenceGroup[]): boolean {
-    return cases.some(group => group.sentences.some(s => this.isValidSentence(s) && s.classification !== 'STANDARD'))
+    return cases.some(group => group.sentences.some(s => this.hasSentence(s) && s.classification !== 'STANDARD'))
   }
 
   private applySdsFiltering(cases: SummarisedSentenceGroup[], hasNonSds: boolean): SummarisedSentenceGroup[] {
@@ -326,7 +338,7 @@ export class RecallEligibilityService {
     return cases
       .map(group => {
         const filteredMainSentences = group.sentences.filter(
-          s => this.isValidSentence(s) && s.classification === 'STANDARD',
+          s => this.hasSentence(s) && s.classification === 'STANDARD',
         )
         const sdsSentenceUuids = new Set(filteredMainSentences.map(s => s.sentenceUuid))
         const filteredEligibleSentences = group.eligibleSentences.filter(es => sdsSentenceUuids.has(es.sentenceId))
@@ -391,66 +403,38 @@ export class RecallEligibilityService {
 
   private buildCourtCaseSummary(cases: SummarisedSentenceGroup[]): CourtCaseSummary[] {
     return cases.map(group => ({
-      caseReference: group.caseReference,
-      courtName: group.courtName,
+      caseReference: this.extractCaseReference(group.caseRefAndCourt),
+      courtName: this.extractCourtName(group.caseRefAndCourt),
       hasEligibleSentences: group.hasEligibleSentences,
       sentenceCount: group.sentences.length,
     }))
   }
 
-  private isValidSentence(item: RecallableCourtCaseSentence | null | undefined): item is RecallableCourtCaseSentence {
-    return item !== null && item !== undefined
+  private isSDS(sentenceDescription: string): boolean {
+    return sentenceDescription.includes('Standard Determinate Sentence')
   }
 
-  private isValidDate(date: Date | string | null | undefined): date is Date {
-    if (date instanceof Date) {
-      return !Number.isNaN(date.getTime())
-    }
-    return false
+  private isNonSDS(sentenceDescription: string): boolean {
+    return !this.isSDS(sentenceDescription)
   }
 
-  private isValidAdjustment(adjustment: AdjustmentDto | null | undefined): adjustment is AdjustmentDto {
-    return (
-      adjustment !== null &&
-      adjustment !== undefined &&
-      adjustment.fromDate !== undefined &&
-      adjustment.toDate !== undefined
-    )
-  }
-
-  private isValidRecall(recall: Recall | null | undefined): recall is Recall {
-    return recall !== null && recall !== undefined
-  }
-
-  private hasValidSentenceLength(
-    sentence: SummarisedSentence,
-  ): sentence is SummarisedSentence & { sentenceLengthDays: number } {
-    return typeof sentence.sentenceLengthDays === 'number' && sentence.sentenceLengthDays > 0
+  private hasSentence(item: unknown): item is { classification?: string; sentenceUuid?: string } {
+    return typeof item === 'object' && item !== null && 'classification' in item
   }
 
   private hasSentencesUnderTwelveMonths(sentences: SummarisedSentence[]): boolean {
-    return sentences.some(
-      sentence =>
-        this.hasValidSentenceLength(sentence) &&
-        sentence.sentenceLengthDays < SENTENCE_THRESHOLDS.TWELVE_MONTHS_IN_DAYS,
-    )
+    return sentences.some(sentence => sentence.sentenceLengthDays && sentence.sentenceLengthDays < 365)
   }
 
   private hasSentencesEqualToOrOverTwelveMonths(sentences: SummarisedSentence[]): boolean {
-    return sentences.some(
-      sentence =>
-        this.hasValidSentenceLength(sentence) &&
-        sentence.sentenceLengthDays >= SENTENCE_THRESHOLDS.TWELVE_MONTHS_IN_DAYS,
-    )
+    return sentences.some(sentence => sentence.sentenceLengthDays && sentence.sentenceLengthDays >= 365)
   }
 
   private getLatestExpiryDateOfTwelveMonthPlusSentences(sentences: SummarisedSentence[]): Date {
     return max(
       sentences
-        .filter(s => s.unadjustedSled !== null && this.isValidDate(s.unadjustedSled))
-        .filter(
-          s => this.hasValidSentenceLength(s) && s.sentenceLengthDays >= SENTENCE_THRESHOLDS.TWELVE_MONTHS_IN_DAYS,
-        )
+        .filter(s => s.unadjustedSled !== null)
+        .filter(s => s.sentenceLengthDays && s.sentenceLengthDays >= 365)
         .map(s => s.unadjustedSled),
     )
   }
@@ -528,6 +512,16 @@ export class RecallEligibilityService {
 
     return existingRecall.returnToCustodyDate || addDays(existingRecall.revocationDate, 1)
   }
+
+  private extractCaseReference(caseRefAndCourt: string): string {
+    const match = caseRefAndCourt.match(/Case (.+?) at/)
+    return match ? match[1] : 'Unknown'
+  }
+
+  private extractCourtName(caseRefAndCourt: string): string {
+    const match = caseRefAndCourt.match(/at (.+?) on/)
+    return match ? match[1] : 'Unknown Court'
+  }
 }
 
 export interface RecallEligibilityAssessment {
@@ -554,12 +548,4 @@ export interface CourtCaseSummary {
   sentenceCount: number
 }
 
-export interface EligibilityAssessmentData {
-  processedCases: SummarisedSentenceGroup[]
-  crdsRouting: RecallRoute
-  hasNonSdsSentences: boolean
-  filteredCases: SummarisedSentenceGroup[]
-  invalidRecallTypes: RecallType[]
-  finalRouting: RecallRoute
-  eligibleSentenceCount: number
-}
+export type RecallRoute = 'NORMAL' | 'MANUAL_REVIEW_REQUIRED' | 'NO_SENTENCES_FOR_RECALL' | 'CONFLICTING_ADJUSTMENTS'
