@@ -1,18 +1,13 @@
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Recall } from 'models'
-import {
-  RecallEligibilityService,
-  RecallEligibilityAssessment,
-  RecallRoute,
-  CourtCaseSummary,
-} from './RecallEligibilityService'
+import { RecallEligibilityService, RecallEligibilityAssessment, CourtCaseSummary } from './RecallEligibilityService'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { CalculationBreakdown, ValidationMessage } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import { RecallType } from '../@types/recallTypes'
-import { isCriticalValidationError } from '../utils/constants'
+import { isCriticalValidationError, determineCrdsRouting, RecallRoute } from '../utils/constants'
 import logger from '../../logger'
 
 /**
@@ -93,15 +88,15 @@ export class RecallRoutingService {
       logger.info(`Processing recall routing for prisoner ${request.nomsId}`)
 
       // 1. Perform comprehensive eligibility assessment
-      const eligibilityAssessment = await this.eligibilityService.assessRecallEligibility(
-        request.courtCases,
-        request.adjustments,
-        request.existingRecalls,
-        request.calculationBreakdown,
-        request.validationMessages,
-        request.revocationDate,
-        request.journeyData,
-      )
+      const eligibilityAssessment = await this.eligibilityService.assessRecallEligibility({
+        courtCases: request.courtCases,
+        adjustments: request.adjustments,
+        existingRecalls: request.existingRecalls,
+        breakdown: request.calculationBreakdown,
+        validationMessages: request.validationMessages,
+        revocationDate: request.revocationDate,
+        journeyData: request.journeyData,
+      })
 
       // 2. Determine next steps based on routing
       const nextSteps = this.determineNextSteps(eligibilityAssessment)
@@ -187,7 +182,7 @@ export class RecallRoutingService {
       const { filteredCases, wereCasesFilteredOut } = this.filterCourtCasesWithNonRecallableSentences(activeCases)
 
       // 3. Determine initial routing from CRDS validation
-      const initialRouting = this.determineCrdsRouting(validationMessages)
+      const initialRouting = determineCrdsRouting(validationMessages)
       const initialEligibility = this.mapValidationToEligibility(validationMessages)
 
       // 4. Apply smart routing override if applicable
@@ -201,15 +196,15 @@ export class RecallRoutingService {
       // 5. If we have a revocation date, run full eligibility assessment
       let fullAssessment: RecallEligibilityAssessment | null = null
       if (journeyData && journeyData.revocationDate) {
-        fullAssessment = await this.eligibilityService.assessRecallEligibility(
-          casesToUse,
+        fullAssessment = await this.eligibilityService.assessRecallEligibility({
+          courtCases: casesToUse,
           adjustments,
           existingRecalls,
-          calculationBreakdown,
+          breakdown: calculationBreakdown,
           validationMessages,
-          journeyData.revocationDate,
+          revocationDate: journeyData.revocationDate,
           journeyData,
-        )
+        })
       }
 
       // Generate session and local updates based on routing decision
@@ -309,22 +304,6 @@ export class RecallRoutingService {
     }
 
     return updates
-  }
-
-  /**
-   * Determine routing from CRDS validation messages
-   */
-  private determineCrdsRouting(validationMessages: ValidationMessage[]): RecallRoute {
-    if (!validationMessages || validationMessages.length === 0) {
-      return 'NORMAL'
-    }
-
-    const errorCodes = validationMessages.map(v => v.code)
-    if (errorCodes.some(code => isCriticalValidationError(code))) {
-      return 'NO_SENTENCES_FOR_RECALL'
-    }
-
-    return 'MANUAL_REVIEW_REQUIRED'
   }
 
   /**

@@ -9,6 +9,7 @@ import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { ValidationMessage, CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { determineCrdsRouting } from '../utils/constants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ServiceAsAny = any
@@ -173,15 +174,15 @@ describe('RecallRoutingService', () => {
         }),
       })
 
-      expect(mockEligibilityService.assessRecallEligibility).toHaveBeenCalledWith(
-        mockRequest.courtCases,
-        mockRequest.adjustments,
-        mockRequest.existingRecalls,
-        mockRequest.calculationBreakdown,
-        mockRequest.validationMessages,
-        mockRequest.revocationDate,
-        mockRequest.journeyData,
-      )
+      expect(mockEligibilityService.assessRecallEligibility).toHaveBeenCalledWith({
+        courtCases: mockRequest.courtCases,
+        adjustments: mockRequest.adjustments,
+        existingRecalls: mockRequest.existingRecalls,
+        breakdown: mockRequest.calculationBreakdown,
+        validationMessages: mockRequest.validationMessages,
+        revocationDate: mockRequest.revocationDate,
+        journeyData: mockRequest.journeyData,
+      })
     })
 
     it('should return manual review response when required', async () => {
@@ -523,9 +524,9 @@ describe('RecallRoutingService', () => {
       })
     })
 
-    describe('determineCrdsRouting', () => {
+    describe('determineCrdsRouting (shared utility)', () => {
       it('should return NORMAL for empty validation messages', () => {
-        const result = privateService.determineCrdsRouting([])
+        const result = determineCrdsRouting([])
         expect(result).toBe('NORMAL')
       })
 
@@ -537,7 +538,7 @@ describe('RecallRoutingService', () => {
           type: 'VALIDATION' as const,
         }
 
-        const result = privateService.determineCrdsRouting([criticalMessage])
+        const result = determineCrdsRouting([criticalMessage])
         expect(result).toBe('NO_SENTENCES_FOR_RECALL')
       })
 
@@ -549,7 +550,7 @@ describe('RecallRoutingService', () => {
           type: 'VALIDATION' as const,
         }
 
-        const result = privateService.determineCrdsRouting([nonCriticalMessage])
+        const result = determineCrdsRouting([nonCriticalMessage])
         expect(result).toBe('MANUAL_REVIEW_REQUIRED')
       })
     })
