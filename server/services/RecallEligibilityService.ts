@@ -155,7 +155,7 @@ export class RecallEligibilityService {
       const earliestSentenceDate = min(sentences.map(s => new Date(s.convictionDate || s.offenceStartDate || '')))
       if (isBefore(revocationDate, earliestSentenceDate)) {
         validationMessages.push({
-          code: 'REMAND_ON_OR_AFTER_SENTENCE_DATE',
+          code: 'OFFENCE_DATE_AFTER_SENTENCE_START_DATE',
           message: 'Revocation date must be after earliest sentence date',
           arguments: [],
           type: 'VALIDATION',
@@ -232,7 +232,7 @@ export class RecallEligibilityService {
 
     if (hasDateOnOrBeforeExisting) {
       validationMessages.push({
-        code: 'CONCURRENT_CONSECUTIVE_SENTENCES_DURATION',
+        code: 'FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER',
         message: 'Revocation date cannot be on or before existing recall date',
         arguments: [],
         type: 'VALIDATION',
@@ -286,7 +286,7 @@ export class RecallEligibilityService {
       hasEligibleSentences: false,
     }
 
-    courtCase.sentences.forEach(sentence => {
+    courtCase.sentences?.forEach(sentence => {
       if (!sentence) return
 
       const recallEligibility = this.assessRasSentenceEligibility(sentence)
