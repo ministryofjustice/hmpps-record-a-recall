@@ -59,12 +59,8 @@
 <div class="govuk-summary-card{% if not loop.last %} govuk-!-margin-bottom-6{% endif %}">
   <div class="govuk-summary-card__title-wrapper">
     <h2 class="govuk-summary-card__title">
-      {% if recall.revocationDate %}
-        Recorded on {{ recall.createdAt | date }} at {{ recall.locationName or 'Location not available' }}
-      {% else %}
-        {{ recall.locationName or 'Location not available' }}
-      {% endif %}
-      {% if recall.source === 'NOMIS' %}
+        Recorded on {{ recall.createdAt | date }}{% if recall.locationName %} at {{ recall.locationName }}{% endif %}
+      {% if recall.source !== 'NOMIS' %}
         <span class="moj-badge moj-badge--green govuk-!-margin-bottom-1 govuk-!-margin-left-1">Active</span>
       {% endif %}
     </h2>
