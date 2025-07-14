@@ -102,18 +102,19 @@
         {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}
 
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
-
-        {% if recall.source === 'NOMIS' %}
-          {% set ualLink = 'https://adjustments-dev.hmpps.service.justice.gov.uk/' + nomisId %}
+       {% if recall.source !== 'NOMIS' and recall.ual %}
+          <p class="govuk-body govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ urls.adjustmentsOverview }}" target="_blank" rel="noopener noreferrer">
+              View UAL details
+            </a>.
+          </p>
         {% else %}
-          {% set ualLink = 'https://adjustments-dev.hmpps.service.justice.gov.uk/' + nomisId + '/unlawfully-at-large/view' %}
-        {% endif %}
-
-        <p class="govuk-body govuk-!-margin-bottom-2">
-          <a class="govuk-link" href="{{ ualLink }}" target="_blank" rel="noopener noreferrer">
-            View UAL details
-          </a>.
-        </p>
+          <p class="govuk-body govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ urls.adjustments }}" target="_blank" rel="noopener noreferrer">
+              View UAL details
+            </a>.
+          </p>
+        {% endif %}      
       </div>
     </div>
 
