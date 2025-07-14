@@ -394,7 +394,9 @@ export type SummarisedSentence = {
 }
 
 export type SummarisedSentenceGroup = {
-  caseRefAndCourt: string
+  caseRefAndCourt: string // Keeping for backward compatibility
+  caseReference: string
+  courtName: string
   eligibleSentences: SummarisedSentence[]
   ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean

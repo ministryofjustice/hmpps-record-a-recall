@@ -323,6 +323,8 @@ export class RecallEligibilityService {
   private processCourtCase(courtCase: CourtCase): SummarisedSentenceGroup | null {
     const summarisedGroup: SummarisedSentenceGroup = {
       caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
+      caseReference: courtCase.reference ?? 'Unknown',
+      courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
       ineligibleSentences: [],
       hasIneligibleSentences: false,
       eligibleSentences: [],
@@ -434,8 +436,8 @@ export class RecallEligibilityService {
 
   private buildCourtCaseSummary(cases: SummarisedSentenceGroup[]): CourtCaseSummary[] {
     return cases.map(group => ({
-      caseReference: this.extractCaseReference(group.caseRefAndCourt),
-      courtName: this.extractCourtName(group.caseRefAndCourt),
+      caseReference: group.caseReference,
+      courtName: group.courtName,
       hasEligibleSentences: group.hasEligibleSentences,
       sentenceCount: group.sentences.length,
     }))
@@ -574,52 +576,6 @@ export class RecallEligibilityService {
     }
 
     return existingRecall.returnToCustodyDate || addDays(existingRecall.revocationDate, 1)
-  }
-
-  private extractCaseReference(caseRefAndCourt: string): string {
-    if (!caseRefAndCourt || typeof caseRefAndCourt !== 'string') {
-      return 'Unknown'
-    }
-
-    // More robust pattern that handles various edge cases
-    // Format: "Case {reference} at {court} on {date}"
-    const patterns = [
-      /^Case\s+(.+?)\s+at\s+.+?\s+on\s+.+$/i, // Standard format
-      /^Case\s+(.+?)\s+at\s+/i, // Fallback without date requirement
-      /Case\s+([^a-z\s]*\w[^a-z]*)/i, // Extract reference-like content (alphanumeric with possible special chars)
-    ]
-
-    for (const pattern of patterns) {
-      const match = caseRefAndCourt.match(pattern)
-      if (match && match[1]?.trim()) {
-        return match[1].trim()
-      }
-    }
-
-    return 'Unknown'
-  }
-
-  private extractCourtName(caseRefAndCourt: string): string {
-    if (!caseRefAndCourt || typeof caseRefAndCourt !== 'string') {
-      return 'Unknown Court'
-    }
-
-    // More robust pattern that handles various edge cases
-    // Format: "Case {reference} at {court} on {date}"
-    const patterns = [
-      /^Case\s+.+?\s+at\s+(.+?)\s+on\s+.+$/i, // Standard format
-      /\s+at\s+(.+?)\s+on\s+/i, // Extract court between "at" and "on"
-      /\s+at\s+(.+?)$/i, // Fallback without date requirement
-    ]
-
-    for (const pattern of patterns) {
-      const match = caseRefAndCourt.match(pattern)
-      if (match && match[1]?.trim()) {
-        return match[1].trim()
-      }
-    }
-
-    return 'Unknown Court'
   }
 }
 

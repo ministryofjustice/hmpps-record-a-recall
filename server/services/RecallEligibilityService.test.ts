@@ -677,32 +677,6 @@ describe('RecallEligibilityService', () => {
       expect(result[0].hasEligibleSentences).toBe(true)
       expect(result[0].hasIneligibleSentences).toBe(false) // Even legacy sentences are eligible (MANUAL route)
     })
-
-    it('should extract case reference correctly', () => {
-      const caseRefAndCourt = 'Case REF001 at Test Court on 2023-01-01'
-
-      const result = privateService.extractCaseReference(caseRefAndCourt)
-
-      expect(result).toBe('REF001')
-    })
-
-    it('should extract court name correctly', () => {
-      const caseRefAndCourt = 'Case REF001 at Test Court on 2023-01-01'
-
-      const result = privateService.extractCourtName(caseRefAndCourt)
-
-      expect(result).toBe('Test Court')
-    })
-
-    it('should handle malformed case reference string', () => {
-      const malformedString = 'Invalid format'
-
-      const caseRef = privateService.extractCaseReference(malformedString)
-      const courtName = privateService.extractCourtName(malformedString)
-
-      expect(caseRef).toBe('Unknown')
-      expect(courtName).toBe('Unknown Court')
-    })
   })
 
   describe('SDS filtering', () => {

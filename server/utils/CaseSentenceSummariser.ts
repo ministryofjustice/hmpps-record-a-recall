@@ -18,16 +18,23 @@ export default function summariseSentencesGroups(
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = []
   Object.keys(groupedSentences).forEach(caseRef => {
     const groupsSentences = groupedSentences[caseRef]
+
+    // Extract case reference and court name from the grouped key
+    // Format: "{reference} at {court}"
+    const parts = caseRef.match(/^(.+?)\s+at\s+(.+)$/)
+    const caseReference = parts?.[1] || 'Unknown'
+    const courtName = parts?.[2] || 'Unknown Court'
+
     const summarisedGroup: SummarisedSentenceGroup = {
       caseRefAndCourt: caseRef,
+      caseReference,
+      courtName,
       ineligibleSentences: [],
       hasIneligibleSentences: false,
       eligibleSentences: [],
       hasEligibleSentences: false,
       sentences: [],
     }
-
-    summarisedGroup.caseRefAndCourt = caseRef
     groupsSentences.forEach((sentence: SentenceWithDpsUuid) => {
       const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(sentence, breakdown)
       const consecutiveSentenceBreakdown = breakdown.consecutiveSentence
@@ -77,6 +84,8 @@ export default function summariseSentencesGroups(
 function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
   const summarisedGroup: SummarisedSentenceGroup = {
     caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
+    caseReference: courtCase.reference ?? 'Unknown',
+    courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
     ineligibleSentences: [],
     hasIneligibleSentences: false,
     eligibleSentences: [],
