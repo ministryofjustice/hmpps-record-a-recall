@@ -609,22 +609,18 @@ describe('RecallEligibilityService', () => {
     })
 
     describe('sentence classification helpers', () => {
-      it('should correctly identify SDS sentences', () => {
-        const result = privateService.isSDS('Standard Determinate Sentence')
-
-        expect(result).toBe(true)
-      })
-
       it('should correctly identify non-SDS sentences', () => {
-        const result = privateService.isNonSDS('Extended Determinate Sentence')
+        const nonSdsSentence = { ...mockNonSdsSentence }
+        const result = privateService.isNonSDS(nonSdsSentence)
 
         expect(result).toBe(true)
       })
 
-      it('should correctly identify non-SDS sentences by negation', () => {
-        const result = privateService.isNonSDS('Some Other Sentence Type')
+      it('should correctly identify SDS sentences as not non-SDS', () => {
+        const sdsSentence = { ...mockSdsSentence }
+        const result = privateService.isNonSDS(sdsSentence)
 
-        expect(result).toBe(true)
+        expect(result).toBe(false)
       })
     })
   })
@@ -995,8 +991,10 @@ describe('RecallEligibilityService', () => {
         revocationDate,
       })
 
+      // The sentence without classification is processed but has MANUAL routing (NON_SDS)
       expect(result.isValid).toBe(true)
-      expect(result.eligibilityDetails.eligibleSentenceCount).toBe(1)
+      expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
+      expect(result.eligibilityDetails.eligibleSentenceCount).toBe(0)
     })
 
     it('should handle adjustments with missing dates', () => {

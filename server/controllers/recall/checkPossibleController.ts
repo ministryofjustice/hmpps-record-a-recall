@@ -37,7 +37,6 @@ export default class CheckPossibleController extends RecallBaseController {
         breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
       }
 
-      // Get court cases and adjustments in parallel
       const [cases, existingAdjustments] = await Promise.all([
         req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username),
         req.services.adjustmentsService.searchUal(nomisId, username).catch((e: Error): AdjustmentDto[] => {

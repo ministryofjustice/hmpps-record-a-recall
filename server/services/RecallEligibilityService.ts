@@ -39,7 +39,6 @@ export class RecallEligibilityService {
   async assessRecallEligibility(request: RecallEligibilityRequest): Promise<RecallEligibilityAssessment> {
     const { courtCases, adjustments, existingRecalls, validationMessages, revocationDate, journeyData } = request
 
-    // 1. Validate revocation date against basic constraints
     const dateValidation = this.validateRevocationDate(
       revocationDate,
       courtCases,
@@ -51,10 +50,8 @@ export class RecallEligibilityService {
       return this.buildInvalidDateResponse(dateValidation.validationMessages)
     }
 
-    // 2. Process and filter court cases for eligibility assessment
     const assessmentData = this.buildEligibilityAssessmentData(courtCases, validationMessages, revocationDate)
 
-    // 3. Build comprehensive response
     return this.buildEligibilityAssessment(assessmentData, dateValidation.validationMessages)
   }
 
@@ -126,7 +123,7 @@ export class RecallEligibilityService {
     if (!sentenceType) {
       return eligibilityReasons.RAS_LEGACY_SENTENCE
     }
-    if (this.isNonSDS(sentenceType)) {
+    if (this.isNonSDS(sentence)) {
       return eligibilityReasons.NON_SDS
     }
     return eligibilityReasons.SDS
@@ -444,53 +441,32 @@ export class RecallEligibilityService {
     }))
   }
 
-  private isSDS(sentenceDescription: string): boolean {
-    return sentenceDescription.includes('Standard Determinate Sentence')
+  private isNonSDS(sentence: RecallableCourtCaseSentence): boolean {
+    return sentence.classification !== 'STANDARD'
   }
 
-  private isNonSDS(sentenceDescription: string): boolean {
-    return !this.isSDS(sentenceDescription)
+  private isValidSentence(item: RecallableCourtCaseSentence | null | undefined): item is RecallableCourtCaseSentence {
+    return item !== null && item !== undefined
   }
 
-  private isValidSentence(item: unknown): item is { classification: string; sentenceUuid: string } {
+  private isValidDate(date: Date | string | null | undefined): date is Date {
+    if (date instanceof Date) {
+      return !Number.isNaN(date.getTime())
+    }
+    return false
+  }
+
+  private isValidAdjustment(adjustment: AdjustmentDto | null | undefined): adjustment is AdjustmentDto {
     return (
-      typeof item === 'object' &&
-      item !== null &&
-      'sentenceUuid' in item &&
-      'classification' in item &&
-      typeof (item as Record<string, unknown>).sentenceUuid === 'string' &&
-      typeof (item as Record<string, unknown>).classification === 'string'
-    )
-  }
-
-  private hasSentence(item: unknown): item is { classification?: string; sentenceUuid?: string } {
-    return typeof item === 'object' && item !== null && 'classification' in item
-  }
-
-  private isValidDate(date: unknown): date is Date {
-    return date instanceof Date && !Number.isNaN(date.getTime())
-  }
-
-  private isValidAdjustment(adjustment: unknown): adjustment is AdjustmentDto {
-    return (
-      typeof adjustment === 'object' &&
       adjustment !== null &&
-      'id' in adjustment &&
-      'adjustmentType' in adjustment &&
-      'fromDate' in adjustment &&
-      'toDate' in adjustment &&
-      typeof (adjustment as Record<string, unknown>).id === 'string'
+      adjustment !== undefined &&
+      adjustment.fromDate !== undefined &&
+      adjustment.toDate !== undefined
     )
   }
 
-  private isValidRecall(recall: unknown): recall is Recall {
-    return (
-      typeof recall === 'object' &&
-      recall !== null &&
-      'recallId' in recall &&
-      'revocationDate' in recall &&
-      typeof (recall as Record<string, unknown>).recallId === 'string'
-    )
+  private isValidRecall(recall: Recall | null | undefined): recall is Recall {
+    return recall !== null && recall !== undefined
   }
 
   private hasValidSentenceLength(
