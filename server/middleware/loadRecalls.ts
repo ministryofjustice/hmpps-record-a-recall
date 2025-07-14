@@ -20,8 +20,6 @@ export default function loadRecalls(recallService: RecallService, prisonService:
     try {
       const recalls = await recallService.getAllRecalls(nomisId, user.username)
 
-      console.log('-----------recalls', JSON.stringify(recalls), undefined, 2)
-
       if (recalls && recalls.length > 0) {
         // Get location names for all recalls
         const locationIds = recalls.map(r => r.location)
