@@ -14,7 +14,7 @@ import { determineCrdsRouting } from '../utils/constants'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ServiceAsAny = any
 
-// Create a proper sentence mock that matches both interfaces
+// Create a sentence mock that matches both interfaces
 const createMockSentence = (overrides: Partial<RecallableCourtCaseSentence> = {}): RecallableCourtCaseSentence => ({
   sentenceUuid: 'sent1',
   offenceCode: 'OFF001',
@@ -100,7 +100,6 @@ describe('RecallRoutingService', () => {
     mockEligibilityService = new RecallEligibilityService() as jest.Mocked<RecallEligibilityService>
     service = new RecallRoutingService()
     privateService = service as ServiceAsAny
-    // Replace the private eligibilityService with our mock
     privateService.eligibilityService = mockEligibilityService
   })
 
