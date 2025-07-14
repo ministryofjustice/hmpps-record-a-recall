@@ -1,4 +1,3 @@
-import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, SentenceWithDpsUuid } from 'models'
 import { CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
