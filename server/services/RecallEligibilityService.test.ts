@@ -3,7 +3,6 @@ import { addDays } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Recall } from 'models'
 import { RecallEligibilityService } from './RecallEligibilityService'
-import { eligibilityReasons } from '../@types/recallEligibility'
 
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { ValidationMessage, CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -582,48 +581,7 @@ describe('RecallEligibilityService', () => {
     })
   })
 
-  describe('sentence classification', () => {
-    describe('assessRasSentenceEligibility', () => {
-      it('should return SDS for standard determinate sentences', () => {
-        const result = privateService.assessRasSentenceEligibility(mockSdsSentence)
-
-        expect(result).toBe(eligibilityReasons.SDS)
-      })
-
-      it('should return NON_SDS for non-standard sentences', () => {
-        const result = privateService.assessRasSentenceEligibility(mockNonSdsSentence)
-
-        expect(result).toBe(eligibilityReasons.NON_SDS)
-      })
-
-      it('should return RAS_LEGACY_SENTENCE for sentences without type', () => {
-        const legacySentence: RecallableCourtCaseSentence = {
-          ...mockSdsSentence,
-          sentenceType: undefined,
-        }
-
-        const result = privateService.assessRasSentenceEligibility(legacySentence)
-
-        expect(result).toBe(eligibilityReasons.RAS_LEGACY_SENTENCE)
-      })
-    })
-
-    describe('sentence classification helpers', () => {
-      it('should correctly identify non-SDS sentences', () => {
-        const nonSdsSentence = { ...mockNonSdsSentence }
-        const result = privateService.isNonSDS(nonSdsSentence)
-
-        expect(result).toBe(true)
-      })
-
-      it('should correctly identify SDS sentences as not non-SDS', () => {
-        const sdsSentence = { ...mockSdsSentence }
-        const result = privateService.isNonSDS(sdsSentence)
-
-        expect(result).toBe(false)
-      })
-    })
-  })
+  describe('sentence classification', () => {})
 
   describe('court case processing', () => {
     it('should process court cases correctly', () => {

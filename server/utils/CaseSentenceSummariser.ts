@@ -7,26 +7,21 @@ import {
   findConsecutiveSentenceBreakdown,
   SummarisedSentence,
   SummarisedSentenceGroup,
+  GroupedSentences,
 } from './sentenceUtils'
 import getIndividualEligibility, { determineEligibilityOnRasSentenceType } from './RecallEligiblityCalculator'
 
 export default function summariseSentencesGroups(
-  groupedSentences: Record<string, SentenceWithDpsUuid[]>,
+  groupedSentences: GroupedSentences[],
   breakdown: CalculationBreakdown,
   revocationDate: Date,
 ): SummarisedSentenceGroup[] {
   const summarisedSentenceGroups: SummarisedSentenceGroup[] = []
-  Object.keys(groupedSentences).forEach(caseRef => {
-    const groupsSentences = groupedSentences[caseRef]
-
-    // Extract case reference and court name from the grouped key
-    // Format: "{reference} at {court}"
-    const parts = caseRef.match(/^(.+?)\s+at\s+(.+)$/)
-    const caseReference = parts?.[1] || 'Unknown'
-    const courtName = parts?.[2] || 'Unknown Court'
+  groupedSentences.forEach(group => {
+    const { caseReference, courtName, sentences: groupsSentences } = group
 
     const summarisedGroup: SummarisedSentenceGroup = {
-      caseRefAndCourt: caseRef,
+      caseRefAndCourt: `${caseReference} at ${courtName}`, // Keep for backward compatibility
       caseReference,
       courtName,
       ineligibleSentences: [],
@@ -81,9 +76,10 @@ export default function summariseSentencesGroups(
   return summarisedSentenceGroups
 }
 
-function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
+export function summariseCourtCase(courtCase: CourtCase, includeDate = true): SummarisedSentenceGroup {
+  const dateString = includeDate ? ` on ${courtCase.date}` : ''
   const summarisedGroup: SummarisedSentenceGroup = {
-    caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
+    caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location}${dateString}`,
     caseReference: courtCase.reference ?? 'Unknown',
     courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
     ineligibleSentences: [],
@@ -93,22 +89,26 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
     hasEligibleSentences: false,
   }
 
-  courtCase.sentences.forEach(sentence => {
-    if (!sentence) {
-      return
-    }
-    summarisedGroup.hasEligibleSentences = true
+  courtCase.sentences?.forEach(sentence => {
+    if (!sentence) return
+
     const recallEligibility = determineEligibilityOnRasSentenceType(sentence)
-    const summary = compact([])
     const summarisedSentence: SummarisedSentence = {
       sentenceId: sentence.sentenceUuid,
       recallEligibility,
-      summary,
+      summary: [],
       offenceCode: sentence.offenceCode,
       offenceDescription: sentence.offenceDescription,
     }
 
-    summarisedGroup.eligibleSentences.push(summarisedSentence)
+    if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
+      summarisedGroup.hasEligibleSentences = true
+      summarisedGroup.eligibleSentences.push(summarisedSentence)
+    } else {
+      summarisedGroup.hasIneligibleSentences = true
+      summarisedGroup.ineligibleSentences.push(summarisedSentence)
+    }
+
     summarisedGroup.sentences.push(sentence)
   })
 
@@ -116,7 +116,7 @@ function summariseCase(courtCase: CourtCase): SummarisedSentenceGroup {
 }
 
 export function summariseRasCases(courtCases: CourtCase[]): SummarisedSentenceGroup[] {
-  const summarisedCases: SummarisedSentenceGroup[] = []
-  courtCases.forEach(c => summarisedCases.push(summariseCase(c)))
-  return summarisedCases
+  return courtCases
+    .map(courtCase => summariseCourtCase(courtCase, false)) // RAS cases don't include date
+    .filter(group => group.sentences.length > 0)
 }

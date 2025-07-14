@@ -322,42 +322,50 @@ describe('sentenceUtils', () => {
 
       const result = groupSentencesByCaseRefAndCourt(sentences)
 
-      expect(result).toEqual({
-        '12345 at Liverpool Crown Court': [
-          {
-            caseReference: '12345',
-            courtDescription: 'Liverpool Crown Court',
-            dpsSentenceUuid: 'uuid1',
-          },
-          {
-            caseReference: '12345',
-            courtDescription: 'Liverpool Crown Court',
-            dpsSentenceUuid: 'uuid2',
-          },
-        ],
-        '67890 at Manchester Crown Court': [
-          {
-            caseReference: '67890',
-            courtDescription: 'Manchester Crown Court',
-            dpsSentenceUuid: 'uuid3',
-          },
-        ],
-      })
+      expect(result).toEqual([
+        {
+          caseReference: '12345',
+          courtName: 'Liverpool Crown Court',
+          sentences: [
+            {
+              caseReference: '12345',
+              courtDescription: 'Liverpool Crown Court',
+              dpsSentenceUuid: 'uuid1',
+            },
+            {
+              caseReference: '12345',
+              courtDescription: 'Liverpool Crown Court',
+              dpsSentenceUuid: 'uuid2',
+            },
+          ],
+        },
+        {
+          caseReference: '67890',
+          courtName: 'Manchester Crown Court',
+          sentences: [
+            {
+              caseReference: '67890',
+              courtDescription: 'Manchester Crown Court',
+              dpsSentenceUuid: 'uuid3',
+            },
+          ],
+        },
+      ])
     })
 
     it('should handle undefined sentences array', () => {
       const result = groupSentencesByCaseRefAndCourt(undefined as SentenceWithDpsUuid[] | undefined)
-      expect(result).toEqual({})
+      expect(result).toEqual([])
     })
 
     it('should handle null sentences array', () => {
       const result = groupSentencesByCaseRefAndCourt(null as SentenceWithDpsUuid[] | null)
-      expect(result).toEqual({})
+      expect(result).toEqual([])
     })
 
     it('should handle empty sentences array', () => {
       const result = groupSentencesByCaseRefAndCourt([])
-      expect(result).toEqual({})
+      expect(result).toEqual([])
     })
 
     it('should handle sentences without case reference', () => {
@@ -371,15 +379,19 @@ describe('sentenceUtils', () => {
 
       const result = groupSentencesByCaseRefAndCourt(sentences)
 
-      expect(result).toEqual({
-        'Case at Liverpool Crown Court': [
-          {
-            caseReference: undefined,
-            courtDescription: 'Liverpool Crown Court',
-            dpsSentenceUuid: 'uuid1',
-          },
-        ],
-      })
+      expect(result).toEqual([
+        {
+          caseReference: 'Unknown',
+          courtName: 'Liverpool Crown Court',
+          sentences: [
+            {
+              caseReference: undefined,
+              courtDescription: 'Liverpool Crown Court',
+              dpsSentenceUuid: 'uuid1',
+            },
+          ],
+        },
+      ])
     })
   })
 })

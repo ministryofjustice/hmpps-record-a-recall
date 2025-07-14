@@ -6,8 +6,13 @@ import { CalculationBreakdown, ValidationMessage } from '../@types/calculateRele
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
-import { RecallType } from '../@types/recallTypes'
-import { isCriticalValidationError, determineCrdsRouting, RecallRoute } from '../utils/constants'
+import { RecallType, RecallTypes } from '../@types/recallTypes'
+import {
+  isCriticalValidationError,
+  determineCrdsRouting,
+  RecallRoute,
+  RECALL_VALIDATION_ERRORS,
+} from '../utils/constants'
 import logger from '../../logger'
 
 /**
@@ -135,7 +140,7 @@ export class RecallRoutingService {
         },
         validationMessages: [
           {
-            code: 'UNSUPPORTED_SENTENCE_TYPE',
+            code: RECALL_VALIDATION_ERRORS.UNSUPPORTED_SENTENCE_TYPE,
             message: 'An error occurred during recall routing assessment',
             arguments: [],
             type: 'VALIDATION',
@@ -357,11 +362,19 @@ export class RecallRoutingService {
   private getRecommendedRecallTypes(assessment: RecallEligibilityAssessment): string[] {
     const availableTypes = ['STANDARD_RECALL']
 
-    if (!assessment.eligibilityDetails.invalidRecallTypes.some(type => type.code === 'FTR_14')) {
+    if (
+      !assessment.eligibilityDetails.invalidRecallTypes.some(
+        type => type.code === RecallTypes.FOURTEEN_DAY_FIXED_TERM_RECALL.code,
+      )
+    ) {
       availableTypes.push('FOURTEEN_DAY_FIXED_TERM_RECALL')
     }
 
-    if (!assessment.eligibilityDetails.invalidRecallTypes.some(type => type.code === 'FTR_28')) {
+    if (
+      !assessment.eligibilityDetails.invalidRecallTypes.some(
+        type => type.code === RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL.code,
+      )
+    ) {
       availableTypes.push('TWENTY_EIGHT_DAY_FIXED_TERM_RECALL')
     }
 

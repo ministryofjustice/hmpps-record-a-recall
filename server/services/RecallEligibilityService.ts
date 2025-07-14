@@ -4,7 +4,6 @@ import { compact } from 'lodash'
 import { CourtCase, Recall } from 'models'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { CalculationBreakdown, ValidationMessage } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import { RecallType, RecallTypes } from '../@types/recallTypes'
 import { SummarisedSentence, SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
@@ -16,6 +15,7 @@ import {
   RECALL_VALIDATION_ERRORS,
   RecallRoute,
 } from '../utils/constants'
+import { summariseCourtCase } from '../utils/CaseSentenceSummariser'
 import logger from '../../logger'
 
 /**
@@ -115,18 +115,6 @@ export class RecallEligibilityService {
       },
       validationMessages,
     }
-  }
-
-  // RAS sentence eligibility assessment
-  private assessRasSentenceEligibility(sentence: RecallableCourtCaseSentence): RecallEligibility {
-    const { sentenceType } = sentence
-    if (!sentenceType) {
-      return eligibilityReasons.RAS_LEGACY_SENTENCE
-    }
-    if (this.isNonSDS(sentence)) {
-      return eligibilityReasons.NON_SDS
-    }
-    return eligibilityReasons.SDS
   }
 
   // Fixed-term recall eligibility checks
@@ -321,40 +309,7 @@ export class RecallEligibilityService {
   }
 
   private processCourtCase(courtCase: CourtCase): SummarisedSentenceGroup | null {
-    const summarisedGroup: SummarisedSentenceGroup = {
-      caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
-      caseReference: courtCase.reference ?? 'Unknown',
-      courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
-      ineligibleSentences: [],
-      hasIneligibleSentences: false,
-      eligibleSentences: [],
-      sentences: [],
-      hasEligibleSentences: false,
-    }
-
-    courtCase.sentences?.forEach(sentence => {
-      if (!sentence) return
-
-      const recallEligibility = this.assessRasSentenceEligibility(sentence)
-      const summarisedSentence: SummarisedSentence = {
-        sentenceId: sentence.sentenceUuid,
-        recallEligibility,
-        summary: compact([]),
-        offenceCode: sentence.offenceCode,
-        offenceDescription: sentence.offenceDescription,
-      }
-
-      if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
-        summarisedGroup.hasEligibleSentences = true
-        summarisedGroup.eligibleSentences.push(summarisedSentence)
-      } else {
-        summarisedGroup.hasIneligibleSentences = true
-        summarisedGroup.ineligibleSentences.push(summarisedSentence)
-      }
-
-      summarisedGroup.sentences.push(sentence)
-    })
-
+    const summarisedGroup = summariseCourtCase(courtCase, true)
     return summarisedGroup.sentences.length > 0 ? summarisedGroup : null
   }
 
@@ -441,10 +396,6 @@ export class RecallEligibilityService {
       hasEligibleSentences: group.hasEligibleSentences,
       sentenceCount: group.sentences.length,
     }))
-  }
-
-  private isNonSDS(sentence: RecallableCourtCaseSentence): boolean {
-    return sentence.classification !== 'STANDARD'
   }
 
   private isValidSentence(item: RecallableCourtCaseSentence | null | undefined): item is RecallableCourtCaseSentence {
