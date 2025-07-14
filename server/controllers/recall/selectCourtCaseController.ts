@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
-import { RecallableSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import {
   calculateOverallSentenceLength,
@@ -24,7 +24,41 @@ type EnhancedCourtCaseForView = CourtCase & {
   courtName?: string
   formattedOverallSentenceLength?: string
   formattedOverallConvictionDate?: string
-  sentences?: (RecallableSentence & {
+  hasNonRecallableSentences?: boolean
+  hasMixedSentenceTypes?: boolean
+  recallableSentences?: (RecallableCourtCaseSentence & {
+    formattedSentenceLength?: string
+    periodLengths?: {
+      description: string
+      years?: number
+      months?: number
+      weeks?: number
+      days?: number
+      periodOrder: string[]
+    }[]
+    formattedConsecutiveOrConcurrent?: string
+    formattedOffenceDate?: string
+    formattedConvictionDate?: string
+    apiOffenceDescription?: string
+    formattedOutcome?: string
+  })[]
+  nonRecallableSentences?: (RecallableCourtCaseSentence & {
+    formattedSentenceLength?: string
+    periodLengths?: {
+      description: string
+      years?: number
+      months?: number
+      weeks?: number
+      days?: number
+      periodOrder: string[]
+    }[]
+    formattedConsecutiveOrConcurrent?: string
+    formattedOffenceDate?: string
+    formattedConvictionDate?: string
+    apiOffenceDescription?: string
+    formattedOutcome?: string
+  })[]
+  sentences?: (RecallableCourtCaseSentence & {
     formattedSentenceLength?: string
     periodLengths?: {
       description: string
@@ -48,6 +82,21 @@ export default class SelectCourtCaseController extends RecallBaseController {
   }
 
   /**
+   * Filters court cases to exclude those with only non-recallable sentences
+   * and determines if cases have mixed sentence types
+   */
+  private filterAndClassifyCourtCases(cases: CourtCase[]): CourtCase[] {
+    return cases.filter(courtCase => {
+      if (!courtCase.sentences || courtCase.sentences.length === 0) {
+        return false // Exclude cases with no sentences
+      }
+
+      // Only include cases that have at least one recallable sentence
+      return courtCase.sentences.some(sentence => sentence.isRecallable === true)
+    })
+  }
+
+  /**
    * Prepares a court case for view by adding formatted properties and enhanced sentence data
    */
   private prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
@@ -67,7 +116,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
     currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
 
     if (currentCase.sentences) {
-      currentCase.sentences = currentCase.sentences.map(sentence => {
+      const enhancedSentences = currentCase.sentences.map(sentence => {
         const sentencePeriodLengths = sentence.periodLengths || []
         const custodialPeriod = sentencePeriodLengths.find(
           (p: unknown) =>
@@ -120,6 +169,29 @@ export default class SelectCourtCaseController extends RecallBaseController {
             sentence.outcomeDescription || sentence.chargeLegacyData.outcomeDescription || 'Not available',
         }
       })
+
+      // Separate recallable and non-recallable sentences in a single pass
+      const { recallableSentences, nonRecallableSentences } = enhancedSentences.reduce(
+        (
+          acc: { recallableSentences: typeof enhancedSentences; nonRecallableSentences: typeof enhancedSentences },
+          sentence,
+        ) => {
+          if (sentence.isRecallable === true) {
+            acc.recallableSentences.push(sentence)
+          } else {
+            acc.nonRecallableSentences.push(sentence)
+          }
+          return acc
+        },
+        { recallableSentences: [], nonRecallableSentences: [] },
+      )
+
+      // Set properties for template rendering
+      currentCase.sentences = enhancedSentences
+      currentCase.recallableSentences = recallableSentences
+      currentCase.nonRecallableSentences = nonRecallableSentences
+      currentCase.hasNonRecallableSentences = nonRecallableSentences.length > 0
+      currentCase.hasMixedSentenceTypes = recallableSentences.length > 0 && nonRecallableSentences.length > 0
     }
 
     return currentCase
@@ -188,6 +260,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
           reviewableCases = await getCourtCaseOptionsFromRas(req, res)
         }
 
+        // Filter out cases with only non-recallable sentences
+        reviewableCases = this.filterAndClassifyCourtCases(reviewableCases)
         reviewableCases = this.sortCourtCasesByMostRecentConviction(reviewableCases)
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]

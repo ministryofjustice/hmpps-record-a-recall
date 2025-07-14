@@ -1,5 +1,5 @@
 import type { SentenceWithDpsUuid, Term } from 'models'
-import { RecallableSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
@@ -332,7 +332,7 @@ export function formatSentenceServeType(sentenceServeType?: string, consecutiveT
   return sentenceServeType || 'Not specified'
 }
 
-export function calculateOverallSentenceLength(sentences?: RecallableSentence[]): Term {
+export function calculateOverallSentenceLength(sentences?: RecallableCourtCaseSentence[]): Term {
   const total: Term = { years: 0, months: 0, weeks: 0, days: 0 }
 
   if (!sentences || sentences.length === 0) {
@@ -341,7 +341,9 @@ export function calculateOverallSentenceLength(sentences?: RecallableSentence[])
 
   sentences.forEach(sentence => {
     // Find licence period length from periodLengths array
-    const licencePeriod = sentence.periodLengths?.find(p => p.periodLengthType === 'LICENCE_PERIOD')
+    const licencePeriod = sentence.periodLengths?.find(
+      (p: { periodLengthType: string }) => p.periodLengthType === 'LICENCE_PERIOD',
+    )
 
     if (licencePeriod) {
       total.days = (total.days || 0) + (licencePeriod.days || 0)
@@ -397,5 +399,5 @@ export type SummarisedSentenceGroup = {
   ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean
   hasIneligibleSentences: boolean
-  sentences: RecallableSentence[]
+  sentences: RecallableCourtCaseSentence[]
 }

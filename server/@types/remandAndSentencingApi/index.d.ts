@@ -1411,7 +1411,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1520,7 +1520,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -1987,7 +1987,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2182,7 +2182,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -2190,7 +2190,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime?: string
       courtId: string
     }
@@ -2223,7 +2223,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -2241,7 +2241,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime?: string
       courtId: string
     }
@@ -2288,14 +2288,9 @@ export interface components {
       /** @enum {string} */
       status: 'ACTIVE' | 'INACTIVE' | 'EDITED' | 'DELETED' | 'DRAFT' | 'FUTURE' | 'MERGED' | 'MANY_CHARGES_DATA_FIX'
       isSentenced: boolean
-      sentences: components['schemas']['RecallableSentence'][]
+      sentences: components['schemas']['RecallableCourtCaseSentence'][]
     }
-    RecallableCourtCasesResponse: {
-      /** Format: int32 */
-      totalCases: number
-      cases: components['schemas']['RecallableCourtCase'][]
-    }
-    RecallableSentence: {
+    RecallableCourtCaseSentence: {
       /** Format: uuid */
       sentenceUuid: string
       offenceCode?: string
@@ -2329,7 +2324,12 @@ export interface components {
       sentenceServeType?: string
       sentenceLegacyData?: components['schemas']['SentenceLegacyData']
       outcomeDescription?: string
-      nomisSentenceCalcType?: string
+      isRecallable: boolean
+    }
+    RecallableCourtCasesResponse: {
+      /** Format: int32 */
+      totalCases: number
+      cases: components['schemas']['RecallableCourtCase'][]
     }
     CourtCaseCountNumber: {
       countNumber: string
@@ -2366,12 +2366,12 @@ export interface components {
       /** Format: int64 */
       offset?: number
       sort?: components['schemas']['SortObject']
+      unpaged?: boolean
       /** Format: int32 */
       pageSize?: number
       paged?: boolean
       /** Format: int32 */
       pageNumber?: number
-      unpaged?: boolean
     }
     SortObject: {
       empty?: boolean
@@ -2491,7 +2491,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:50:21.797613374 */
+      /** @example 14:39:51.188429543 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
