@@ -1,5 +1,4 @@
 import nock from 'nock'
-// import { RecallSource } from 'models'
 import { RecallSource } from '../@types/models/recall'
 import RecallService from './recallService'
 import HmppsAuthClient from '../data/hmppsAuthClient'

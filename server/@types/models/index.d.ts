@@ -7,10 +7,6 @@ declare module 'models' {
   import { RecallSource } from './recall'
   import { RecallableSentence } from '../remandAndSentencingApi/remandAndSentencingTypes'
 
-  export enum RecallSource {
-    NOMIS = 'NOMIS',
-    DPS = 'DPS',
-  }
   export interface Recall {
     recallId: string
     createdAt: string
