@@ -1,7 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
-// eslint-disable-next-line import/no-unresolved
-import { CourtCase } from 'models'
+
 import {
   RecordARecallCalculationResult,
   ValidationMessage,
@@ -9,90 +8,75 @@ import {
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
-import determineRecallEligibilityFromValidation from '../../utils/crdsValidationUtil'
-import { eligibilityReasons } from '../../@types/recallEligibility'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
-import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallRoutingService } from '../../services/RecallRoutingService'
 
 export default class CheckPossibleController extends RecallBaseController {
-  /**
-   * Filters court cases to exclude those with only non-recallable sentences
-   * and checks if any cases were filtered out
-   */
-  private filterCourtCasesWithNonRecallableSentences(cases: CourtCase[]): {
-    filteredCases: CourtCase[]
-    wereCasesFilteredOut: boolean
-  } {
-    const filteredCases = cases.filter(courtCase => {
-      if (!courtCase.sentences || courtCase.sentences.length === 0) {
-        return false // Exclude cases with no sentences
-      }
+  private recallRoutingService: RecallRoutingService
 
-      // Check if case has at least one recallable sentence
-      return courtCase.sentences.some((sentence: RecallableCourtCaseSentence) => sentence.isRecallable === true)
-    })
-
-    // Check if we filtered out cases (meaning some had only non-recallable sentences)
-    const wereCasesFilteredOut = filteredCases.length < cases.length
-
-    return { filteredCases, wereCasesFilteredOut }
+  constructor(options: FormWizard.Controller.Options) {
+    super(options)
+    this.recallRoutingService = new RecallRoutingService()
   }
 
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
+      // Get calculation result and validation messages
       const calculationResult: RecordARecallCalculationResult =
         await req.services.calculationService.getTemporaryCalculation(nomisId, username)
 
       const errors: ValidationMessage[] = calculationResult.validationMessages
-
       res.locals.validationResponse = errors
-      const recallEligibility = determineRecallEligibilityFromValidation(errors)
-      res.locals.recallEligibility = recallEligibility
 
-      if (
-        recallEligibility !== eligibilityReasons.CRITICAL_VALIDATION_FAIL &&
-        calculationResult.calculatedReleaseDates
-      ) {
+      // Get breakdown immediately if we have calculation results
+      let breakdown = null
+      if (calculationResult.calculatedReleaseDates) {
+        const tempCalcReqId = calculationResult.calculatedReleaseDates.calculationRequestId
+        breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
+      }
+
+      const [cases, existingAdjustments] = await Promise.all([
+        req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username),
+        req.services.adjustmentsService.searchUal(nomisId, username).catch((e: Error): AdjustmentDto[] => {
+          logger.error(e.message)
+          return []
+        }),
+      ])
+
+      // Use routing service for smart filtering and routing decisions
+      const routingResponse = await this.recallRoutingService.routeRecallWithSmartFiltering(
+        nomisId,
+        cases,
+        existingAdjustments,
+        [], // No existing recalls at this stage
+        breakdown,
+        errors,
+      )
+
+      res.locals.recallEligibility = routingResponse.eligibility
+      res.locals.courtCases = routingResponse.casesToUse
+      res.locals.smartOverrideApplied = routingResponse.smartOverrideApplied
+      res.locals.wereCasesFilteredOut = routingResponse.wereCasesFilteredOut
+      res.locals.routingResponse = routingResponse // Store for locals method
+
+      if (calculationResult.calculatedReleaseDates && routingResponse.casesToUse.length > 0) {
         const newCalc = calculationResult.calculatedReleaseDates
         res.locals.temporaryCalculation = newCalc
         res.locals.calcReqId = newCalc.calculationRequestId
-        logger.debug(newCalc.dates)
 
-        const cases = await req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username)
+        const sentencesFromRasCases = routingResponse.casesToUse.flatMap(caseItem => caseItem.sentences || [])
 
-        const activeCases = cases.filter(caseItem => caseItem.status === 'ACTIVE')
+        const sentences = await this.getCrdsSentences(req, res)
 
-        // Apply non-recallable sentence filtering
-        const { filteredCases, wereCasesFilteredOut } = this.filterCourtCasesWithNonRecallableSentences(activeCases)
-
-        // If we would normally go to manual journey but the only issue is non-recallable sentences,
-        // override to normal journey and use filtered cases
-        let casesToUse = activeCases
-        if (
-          recallEligibility.recallRoute === 'MANUAL' &&
-          recallEligibility === eligibilityReasons.NON_CRITICAL_VALIDATION_FAIL &&
-          wereCasesFilteredOut
-        ) {
-          // Override recall eligibility to normal journey since we've filtered out the problematic cases
-          res.locals.recallEligibility = eligibilityReasons.HAPPY_PATH_POSSIBLE
-          casesToUse = filteredCases
-        }
-
-        res.locals.courtCases = casesToUse
-        const sentencesFromRasCases = casesToUse.flatMap(caseItem => caseItem.sentences || [])
-
-        const [sentences, breakdown] = await Promise.all([
-          this.getCrdsSentences(req, res),
-          this.getCalculationBreakdown(req, res),
-        ])
         const nomisSentenceInformation = sentences.map(sentence => {
           return {
             nomisSentenceSequence: sentence.sentenceSequence,
             nomisBookingId: sentence.bookingId,
           }
         })
+
         const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, nomisSentenceInformation)
 
         res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
@@ -114,14 +98,9 @@ export default class CheckPossibleController extends RecallBaseController {
         }))
 
         res.locals.breakdown = breakdown
-
-        res.locals.existingAdjustments = await req.services.adjustmentsService
-          .searchUal(nomisId, username)
-          .catch((e: Error): AdjustmentDto[] => {
-            logger.error(e.message)
-            return []
-          })
       }
+
+      res.locals.existingAdjustments = existingAdjustments
 
       return super.configure(req, res, next)
     } catch (error) {
@@ -132,16 +111,24 @@ export default class CheckPossibleController extends RecallBaseController {
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
+
     req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     req.sessionModel.set(sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
-    const errors: ValidationMessage[] = res.locals.validationResponse
-    if (getRecallRoute(req) === 'NOT_POSSIBLE') {
-      const crdsValidationErrors = errors.map(error => error.message)
-      res.locals.crdsValidationErrors = crdsValidationErrors
-      req.sessionModel.set(sessionModelFields.CRDS_ERRORS, crdsValidationErrors)
-    } else if (getRecallRoute(req) === 'MANUAL') {
-      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+
+    const { routingResponse } = res.locals
+    if (routingResponse) {
+      Object.entries(routingResponse.sessionUpdates).forEach(([key, value]) => {
+        const sessionField = this.mapToSessionField(key)
+        if (sessionField) {
+          req.sessionModel.set(sessionField, value)
+        }
+      })
+
+      Object.entries(routingResponse.localUpdates).forEach(([key, value]) => {
+        res.locals[key] = value
+      })
     }
+
     req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, res.locals.courtCases)
     req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.crdsSentences)
     req.sessionModel.set(sessionModelFields.RAS_SENTENCES, res.locals.rasSentences)
@@ -153,18 +140,20 @@ export default class CheckPossibleController extends RecallBaseController {
     return { ...locals }
   }
 
+  /**
+   * Map service field names to session model field names
+   */
+  private mapToSessionField(serviceFieldName: string): string | null {
+    const fieldMap: Record<string, string> = {
+      recallEligibility: sessionModelFields.RECALL_ELIGIBILITY,
+      crdsErrors: sessionModelFields.CRDS_ERRORS,
+      manualCaseSelection: sessionModelFields.MANUAL_CASE_SELECTION,
+    }
+    return fieldMap[serviceFieldName] || null
+  }
+
   recallPossible(req: FormWizard.Request, res: Response) {
     return getRecallRoute(req) && getRecallRoute(req) !== 'NOT_POSSIBLE'
-  }
-
-  getTemporaryCalculation(req: FormWizard.Request, res: Response) {
-    const { nomisId, username } = res.locals
-    return req.services.calculationService.calculateTemporaryDates(nomisId, username)
-  }
-
-  getCalculationBreakdown(req: FormWizard.Request, res: Response) {
-    const { calcReqId, username } = res.locals
-    return req.services.calculationService.getCalculationBreakdown(calcReqId, username)
   }
 
   getCrdsSentences(req: FormWizard.Request, res: Response) {
