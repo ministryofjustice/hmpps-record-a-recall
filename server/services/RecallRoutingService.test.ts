@@ -56,6 +56,7 @@ describe('RecallRoutingService', () => {
   const mockRecall: Recall = {
     recallId: 'recall1',
     createdAt: '2023-06-01T10:00:00Z',
+    created_by_username: 'DPS',
     revocationDate: new Date('2023-06-01'),
     returnToCustodyDate: new Date('2023-06-02'),
     recallType: {
@@ -67,6 +68,7 @@ describe('RecallRoutingService', () => {
     locationName: 'Test Location',
     sentenceIds: ['sent1'],
     courtCaseIds: ['case1'],
+    source: 'DPS',
   }
 
   const mockAdjustment: AdjustmentDto = {

@@ -25,14 +25,18 @@ export default function loadRecalls(recallService: RecallService, prisonService:
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
-        // Add location names to recalls
-        const recallsWithLocationNames = recalls.map(recall => ({
-          ...recall,
-          locationName: prisonNames.get(recall.location),
-        }))
+        const recallsWithExtras = recalls.map(recall => {
+          const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
-        res.locals.recalls = recallsWithLocationNames
-        res.locals.latestRecallId = findLatestRecallId(recallsWithLocationNames)
+          return {
+            ...recall,
+            locationName: prisonNames.get(recall.location),
+            ...(isFromNomis ? { source: 'nomis' as const } : {}),
+          }
+        })
+
+        res.locals.recalls = recallsWithExtras
+        res.locals.latestRecallId = findLatestRecallId(recallsWithExtras)
       } else {
         res.locals.recalls = []
         res.locals.latestRecallId = undefined
@@ -44,6 +48,10 @@ export default function loadRecalls(recallService: RecallService, prisonService:
 
     return next()
   }
+}
+
+export function isRecallFromNomis(recall: Recall): boolean {
+  return recall?.source === 'NOMIS'
 }
 
 /**

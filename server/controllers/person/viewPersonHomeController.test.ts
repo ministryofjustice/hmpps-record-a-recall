@@ -1,4 +1,7 @@
+import type { Express } from 'express'
+import request from 'supertest'
 import { Request, Response } from 'express'
+import * as cheerio from 'cheerio'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
 import viewPersonHome from './viewPersonHomeController'
@@ -20,6 +23,31 @@ import AdjustmentsService from '../../services/adjustmentsService'
 import ManageUsersService from '../../services/manageUsersService'
 import ManageOffencesService from '../../services/manageOffencesService'
 import NomisToDpsMappingService from '../../services/NomisToDpsMappingService'
+import { appWithAllRoutes } from '../../routes/testutils/appSetup'
+import { RecallableCourtCasesResponse } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+
+let app: Express
+
+beforeEach(() => {
+  app = appWithAllRoutes({
+    services: {
+      prisonerService: mockPrisonerService,
+      prisonService: mockPrisonService,
+      recallService: mockRecallService,
+      courtCaseService: mockCourtCaseService,
+      courtService: mockCourtService,
+      adjustmentsService: mockAdjustmentsService,
+      manageOffencesService: mockManageOffencesService,
+      courtCasesReleaseDatesService: mockCourtCasesReleaseDatesService,
+      auditService: mockAuditService,
+    },
+  })
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
+  jest.clearAllMocks()
+})
 
 const mockHmppsAuthClient = { getSystemClientToken: jest.fn() } as unknown as HmppsAuthClient
 
@@ -36,7 +64,7 @@ const mockRecallService = {
   getApiClient: jest.fn(),
   getSystemClientToken: jest.fn(),
   fromApiRecall: jest.fn(),
-} as unknown as RecallService
+} as unknown as jest.Mocked<RecallService>
 const mockPrisonerService = {
   hmppsAuthClient: mockHmppsAuthClient,
   getPrisonerDetails: jest.fn(),
@@ -50,7 +78,7 @@ const mockPrisonService = {
   getPrisonName: jest.fn(),
   getApiClient: jest.fn(),
   getSystemClientToken: jest.fn(),
-} as unknown as PrisonService
+} as unknown as jest.Mocked<PrisonService>
 const mockCourtCasesReleaseDatesService = {
   getServiceDefinitions: jest.fn(),
 } as unknown as CourtCasesReleaseDatesService
@@ -74,11 +102,11 @@ const mockPpcsService = { getDetails: jest.fn() }
 const mockPrisonerOffenderSearchService = { search: jest.fn() }
 const mockNomisToDpsMappingService = { getMapping: jest.fn() } as unknown as NomisToDpsMappingService
 const mockBulkCalculationService = {} as unknown as BulkCalculationService
-const mockCourtCaseService = {} as unknown as CourtCaseService
-const mockCourtService = {} as unknown as CourtService
+const mockCourtCaseService = { getAllRecallableCourtCases: jest.fn() } as unknown as jest.Mocked<CourtCaseService>
+const mockCourtService = { getCourtNames: jest.fn() } as unknown as jest.Mocked<CourtService>
 const mockAdjustmentsService = {} as unknown as AdjustmentsService
 const mockManageUsersService = {} as unknown as ManageUsersService
-const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as ManageOffencesService
+const mockManageOffencesService = { getOffenceMap: jest.fn() } as unknown as jest.Mocked<ManageOffencesService>
 
 interface TestServices {
   recallService: typeof mockRecallService
@@ -112,6 +140,7 @@ const createMockRecall = (recallId: string, createdAtArg: string | null): Recall
     status: 'BEING_BOOKED_ON',
     documents: [],
     createdAt: createdAtArg as string,
+    created_by_username: 'DPS',
     revocationDate: new Date('2023-01-01'),
     returnToCustodyDate: new Date('2023-01-02'),
     recallType: {
@@ -124,7 +153,94 @@ const createMockRecall = (recallId: string, createdAtArg: string | null): Recall
     location: 'KMI',
     sentenceIds: [],
     courtCaseIds: [],
+    source: 'DPS',
   }) as Recall
+
+const createMockRecallFromNomis = (recallId: string, createdAtArg: string | null): Recall =>
+  ({
+    recallId,
+    nomisNumber: 'Z1234BC',
+    status: 'BEING_BOOKED_ON',
+    documents: [],
+    createdAt: createdAtArg as string,
+    created_by_username: 'hmpps-prisoner-from-nomis-migration-court-sentencing-1',
+    revocationDate: new Date('2023-01-01'),
+    returnToCustodyDate: new Date('2023-01-02'),
+    recallType: {
+      code: 'LR',
+      name: 'Licence Revocation',
+      description: 'Licence Revocation Recall',
+      fixedTerm: false,
+    } as RecallType,
+    isFixedTermRecall: false,
+    location: 'KMI',
+    sentenceIds: [],
+    courtCaseIds: [],
+    source: 'NOMIS',
+  }) as Recall
+
+const mockRecallableCourtCases: RecallableCourtCasesResponse = {
+  totalCases: 1,
+  cases: [
+    {
+      courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',
+      reference: '',
+      courtCode: 'ABRYCT',
+      date: '2017-06-12',
+      status: 'ACTIVE',
+      isSentenced: true,
+      sentences: [
+        {
+          sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
+          countNumber: '1',
+          offenceCode: 'HA04005',
+          sentenceType: 'EDS (Extended Determinate Sentence)',
+          classification: 'EXTENDED',
+          systemOfRecord: 'RAS',
+          periodLengths: [
+            {
+              years: 1,
+              months: 1,
+              weeks: 1,
+              days: 1,
+              periodOrder: 'years,months,weeks,days',
+              periodLengthType: 'CUSTODIAL_TERM',
+              periodLengthUuid: 'fc003e29-ede9-4302-b970-27ab3b6a11e4',
+            },
+            {
+              years: 5,
+              months: null,
+              weeks: null,
+              days: null,
+              periodOrder: 'years,months,weeks,days',
+              periodLengthType: 'LICENCE_PERIOD',
+              legacyData: null,
+              periodLengthUuid: '8c5ac995-db1e-4cdf-9acd-56aa6abc99f6',
+            },
+          ],
+          convictionDate: '2025-02-02',
+          chargeLegacyData: {
+            postedDate: '2025-06-12',
+            nomisOutcomeCode: '',
+            outcomeDescription: '',
+            outcomeDispositionCode: '',
+            outcomeConvictionFlag: true,
+          },
+          sentenceServeType: 'CONCURRENT',
+          sentenceLegacyData: {
+            sentenceCalcType: '',
+            sentenceCategory: '',
+            sentenceTypeDesc: '',
+            postedDate: '2025-06-12T10:59:45.378275',
+            active: true,
+            nomisLineReference: '2',
+          },
+          isRecallable: true,
+        },
+      ],
+    },
+  ],
+}
 
 describe('viewPersonHome', () => {
   beforeEach(async () => {
@@ -277,6 +393,59 @@ describe('viewPersonHome', () => {
         recalls,
       }),
     )
+  })
+
+  it('should render home page with a nomis recall that has a source of NOMIS when there is only one recall and it is from nomis', () => {
+    mockCourtCaseService.getAllRecallableCourtCases.mockResolvedValue(mockRecallableCourtCases)
+    mockPrisonService.getPrisonNames.mockResolvedValue(new Map<string, string>([['KMI', 'Kirkham']]))
+    mockRecallService.getAllRecalls.mockResolvedValue([
+      createMockRecallFromNomis('recall-single', '2023-02-01T10:00:00.000Z'),
+    ])
+    mockCourtService.getCourtNames.mockResolvedValue(new Map<string, string>([['ABRYCT', 'Accrington Youth Court']]))
+    mockManageOffencesService.getOffenceMap.mockResolvedValue(
+      new Map<string, string>([['HA04005', 'offence description']]),
+    )
+
+    return request(app)
+      .get('/person/Z1234BC')
+      .expect(200)
+      .expect('Content-Type', /html/)
+      .expect(response => {
+        const $ = cheerio.load(response.text)
+        const badges = $('.moj-badge')
+        const nomisBadge = $('[data-qa="nomis-badge"]')
+        expect(badges).toHaveLength(1)
+        expect(badges.first().text()).toEqual('NOMIS')
+        expect(nomisBadge.text()).toBe('NOMIS')
+      })
+  })
+
+  it('should render home page with two recalls: a NOMIS recall with source NOMIS and a recall created from the recall service with source DPS', () => {
+    mockCourtCaseService.getAllRecallableCourtCases.mockResolvedValue(mockRecallableCourtCases)
+    mockPrisonService.getPrisonNames.mockResolvedValue(new Map<string, string>([['KMI', 'Kirkham']]))
+    mockRecallService.getAllRecalls.mockResolvedValue([
+      createMockRecallFromNomis('recall-single', '2023-02-01T10:00:00.000Z'),
+      createMockRecall('recall-dps', '2023-03-01T10:00:00.000Z'),
+    ])
+
+    mockCourtService.getCourtNames.mockResolvedValue(new Map<string, string>([['ABRYCT', 'Accrington Youth Court']]))
+    mockManageOffencesService.getOffenceMap.mockResolvedValue(
+      new Map<string, string>([['HA04005', 'offence description']]),
+    )
+
+    return request(app)
+      .get('/person/Z1234BC')
+      .expect(200)
+      .expect('Content-Type', /html/)
+      .expect(response => {
+        const $ = cheerio.load(response.text)
+        const badges = $('.moj-badge')
+        const nomisBadge = $('[data-qa="nomis-badge"]')
+        const dpsBadge = $('[data-qa="active-badge"]')
+        expect(badges).toHaveLength(2)
+        expect(nomisBadge.text()).toBe('NOMIS')
+        expect(dpsBadge.text()).toBe('Active')
+      })
   })
 
   it('should render home page with latestRecallId as undefined when there are no recalls', async () => {

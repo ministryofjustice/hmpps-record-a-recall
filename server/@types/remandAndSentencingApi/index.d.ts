@@ -652,6 +652,46 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/sentence/{sentenceUuid}/sentences-after-on-other-court-appearance-details': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Sentences after on other court appearance details
+     * @description This endpoint will return details of the court appearances of sentences after this sentence
+     */
+    get: operations['sentencesAfterOnOtherCourtAppearanceDetails']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/sentence/{sentenceUuid}/has-sentences-after-on-other-court-appearance': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Any sentences after on another appearance
+     * @description This endpoint will return true if any other sentence has a consecutive to link to the sentence at sentenceUuid that is on a different court appearance
+     */
+    get: operations['hasSentencesAfterOnOtherCase']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/sentence/consecutive-to-details': {
     parameters: {
       query?: never
@@ -1292,6 +1332,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/document-admin/cleanup': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Deletes uploaded documents without an appearance ID
+     * @description Deletes all uploaded documents where the appearance ID is null
+     */
+    delete: operations['cleanupDocument']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -1374,6 +1434,7 @@ export interface components {
         | 'COURT_APPEARANCE_UPDATED'
         | 'COURT_APPEARANCE_DELETED'
         | 'SENTENCE_INSERTED'
+        | 'SENTENCE_FIX_SINGLE_CHARGE_INSERTED'
         | 'SENTENCE_UPDATED'
         | 'SENTENCE_DELETED'
         | 'LEGACY_COURT_CASE_REFERENCES_UPDATED'
@@ -1388,6 +1449,7 @@ export interface components {
       sentenceIds?: string[]
       previousRecallId?: string
       previousSentenceIds?: string[]
+      originalSentenceId?: string
     }
     UnlinkEventsToEmit: {
       courtCaseEventMetadata?: components['schemas']['EventMetadata']
@@ -1411,7 +1473,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1520,7 +1582,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -1842,6 +1904,20 @@ export interface components {
       /** Format: int32 */
       displayOrder: number
     }
+    CourtAppearanceAfterSentence: {
+      /** Format: uuid */
+      appearanceUuid: string
+      caseReference?: string
+      /** Format: date */
+      appearanceDate: string
+      courtCode: string
+    }
+    SentencesAfterOnOtherCourtAppearanceDetailsResponse: {
+      appearances: components['schemas']['CourtAppearanceAfterSentence'][]
+    }
+    HasSentenceAfterOnOtherCourtAppearanceResponse: {
+      hasSentenceAfterOnOtherCourtAppearance: boolean
+    }
     SentenceConsecutiveToDetails: {
       courtCaseReference?: string
       courtCode: string
@@ -1987,7 +2063,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2182,7 +2258,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -2190,7 +2266,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime?: string
       courtId: string
     }
@@ -2223,7 +2299,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -2241,7 +2317,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime?: string
       courtId: string
     }
@@ -2366,12 +2442,12 @@ export interface components {
       /** Format: int64 */
       offset?: number
       sort?: components['schemas']['SortObject']
-      unpaged?: boolean
       /** Format: int32 */
       pageSize?: number
       paged?: boolean
       /** Format: int32 */
       pageNumber?: number
+      unpaged?: boolean
     }
     SortObject: {
       empty?: boolean
@@ -2491,7 +2567,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 14:39:51.188429543 */
+      /** @example 02:21:40.795767508 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
@@ -4480,13 +4556,93 @@ export interface operations {
           '*/*': components['schemas']['Sentence']
         }
       }
-      /** @description Not found if no charge at uuid */
+      /** @description Not found if no sentence at uuid */
       404: {
         headers: {
           [name: string]: unknown
         }
         content: {
           '*/*': components['schemas']['Sentence']
+        }
+      }
+    }
+  }
+  sentencesAfterOnOtherCourtAppearanceDetails: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        sentenceUuid: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns true or false */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SentencesAfterOnOtherCourtAppearanceDetailsResponse']
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SentencesAfterOnOtherCourtAppearanceDetailsResponse']
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SentencesAfterOnOtherCourtAppearanceDetailsResponse']
+        }
+      }
+    }
+  }
+  hasSentencesAfterOnOtherCase: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        sentenceUuid: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns true or false */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['HasSentenceAfterOnOtherCourtAppearanceResponse']
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['HasSentenceAfterOnOtherCourtAppearanceResponse']
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['HasSentenceAfterOnOtherCourtAppearanceResponse']
         }
       }
     }
@@ -5887,6 +6043,24 @@ export interface operations {
       }
       /** @description Forbidden, requires an appropriate role */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  cleanupDocument: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Cleanup completed */
+      200: {
         headers: {
           [name: string]: unknown
         }

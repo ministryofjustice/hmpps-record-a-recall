@@ -1,4 +1,5 @@
 import nock from 'nock'
+import { RecallSource } from '../@types/models/recall'
 import RecallService from './recallService'
 import HmppsAuthClient from '../data/hmppsAuthClient'
 import config from '../config'
@@ -73,6 +74,7 @@ describe('Recall service', () => {
           createdByPrison: 'HMI',
           sentences: [{ sentenceUuid: '123ABC' }],
           courtCaseIds: ['CASE1'],
+          source: RecallSource.DPS,
         } as ApiRecall,
       ])
 
@@ -94,6 +96,9 @@ describe('Recall service', () => {
           location: 'HMI',
           sentenceIds: ['123ABC'],
           courtCaseIds: ['CASE1'],
+          created_by_username: 'johndoe',
+          sentences: [{ sentenceUuid: '123ABC' }],
+          source: RecallSource.DPS,
         },
       ])
     })

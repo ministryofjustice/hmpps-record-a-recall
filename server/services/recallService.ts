@@ -86,6 +86,7 @@ export default class RecallService {
     return {
       recallId: apiRecall.recallUuid,
       createdAt: apiRecall.createdAt,
+      created_by_username: apiRecall.createdByUsername,
       revocationDate: apiRecall.revocationDate ? new Date(apiRecall.revocationDate) : null,
       returnToCustodyDate: apiRecall.returnToCustodyDate ? new Date(apiRecall.returnToCustodyDate) : null,
       recallType: getRecallType(apiRecall.recallType),
@@ -94,6 +95,8 @@ export default class RecallService {
       location: apiRecall.createdByPrison,
       sentenceIds: apiRecall.sentences.map(s => s.sentenceUuid),
       courtCaseIds: apiRecall.courtCaseIds,
+      sentences: apiRecall.sentences,
+      source: apiRecall.source,
     }
   }
 }

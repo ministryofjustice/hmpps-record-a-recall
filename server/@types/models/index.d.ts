@@ -4,11 +4,13 @@ declare module 'models' {
     CalculatedReleaseDates,
     SentenceAndOffenceWithReleaseArrangements,
   } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+  import { RecallSource } from './recall'
   import { RecallableSentence } from '../remandAndSentencingApi/remandAndSentencingTypes'
 
   export interface Recall {
     recallId: string
     createdAt: string
+    created_by_username: string
     revocationDate: Date
     returnToCustodyDate: Date
     ual?: UAL
@@ -20,6 +22,8 @@ declare module 'models' {
     locationName?: string
     sentenceIds: string[]
     courtCaseIds: string[]
+    sentences?: RecallableSentence[]
+    source: RecallSource
   }
 
   export interface UAL {

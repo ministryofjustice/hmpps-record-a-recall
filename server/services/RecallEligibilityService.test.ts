@@ -97,6 +97,7 @@ describe('RecallEligibilityService', () => {
   const mockRecall: Recall = {
     recallId: 'recall1',
     createdAt: '2023-04-01T10:00:00Z',
+    created_by_username: 'DPS',
     revocationDate: new Date('2023-04-01'),
     returnToCustodyDate: new Date('2023-04-02'),
     recallType: {
@@ -108,11 +109,13 @@ describe('RecallEligibilityService', () => {
     locationName: 'Test Location',
     sentenceIds: ['sent1'],
     courtCaseIds: ['case1'],
+    source: 'DPS',
   }
 
   const mockFtrRecall: Recall = {
     recallId: 'recall2',
     createdAt: '2023-04-01T10:00:00Z',
+    created_by_username: 'DPS',
     revocationDate: new Date('2023-04-01'),
     returnToCustodyDate: new Date('2023-04-02'),
     recallType: {
@@ -124,6 +127,7 @@ describe('RecallEligibilityService', () => {
     locationName: 'Test Location',
     sentenceIds: ['sent2'],
     courtCaseIds: ['case1'],
+    source: 'DPS',
   }
 
   const mockCalculationBreakdown: CalculationBreakdown = {
@@ -309,12 +313,14 @@ describe('RecallEligibilityService', () => {
         storedRecall: {
           recallId: 'recall1',
           createdAt: '2023-06-01T10:00:00Z',
+          created_by_username: 'DPS',
           revocationDate: new Date('2023-06-01'),
           returnToCustodyDate: new Date('2023-06-02'),
           recallType: { code: 'LR', description: 'Standard Recall', fixedTerm: false },
           location: 'TEST',
           sentenceIds: ['sent1'],
           courtCaseIds: ['case1'],
+          source: 'DPS',
         },
         revocationDate,
         inPrisonAtRecall: true,
@@ -352,12 +358,14 @@ describe('RecallEligibilityService', () => {
         storedRecall: {
           recallId: 'recall1',
           createdAt: '2023-06-01T10:00:00Z',
+          created_by_username: 'DPS',
           revocationDate: new Date('2023-06-01'),
           returnToCustodyDate: new Date('2023-06-02'),
           recallType: { code: 'LR', description: 'Standard Recall', fixedTerm: false },
           location: 'TEST',
           sentenceIds: ['sent1'],
           courtCaseIds: ['case1'],
+          source: 'DPS',
         },
         revocationDate,
         inPrisonAtRecall: true,

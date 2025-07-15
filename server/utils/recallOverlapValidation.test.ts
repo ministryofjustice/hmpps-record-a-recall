@@ -33,12 +33,14 @@ describe('Recall Overlap Validation', () => {
   const createMockRecall = (recallId: string, overrides: Partial<Recall> = {}): Recall => ({
     recallId,
     createdAt: '2024-01-01T00:00:00.000Z',
+    created_by_username: 'DPS',
     revocationDate: baseDate,
     returnToCustodyDate: addDays(baseDate, 1),
     recallType: RecallTypes.STANDARD_RECALL,
     location: 'BWI',
     sentenceIds: ['123'],
     courtCaseIds: ['456'],
+    source: 'DPS',
     ...overrides,
   })
 
