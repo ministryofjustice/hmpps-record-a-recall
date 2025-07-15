@@ -235,30 +235,38 @@ export function hasSingleTypeOfSentence(decoratedSentences: SentenceDetailExtend
   )
 }
 
-export function groupSentencesByCaseRefAndCourt(
-  sentences: SentenceWithDpsUuid[],
-): Record<string, SentenceAndOffenceWithReleaseArrangements[]> {
+export function groupSentencesByCaseRefAndCourt(sentences: SentenceWithDpsUuid[]): GroupedSentences[] {
   // Handle undefined, null, or empty sentences array
   if (!sentences || !Array.isArray(sentences) || sentences.length === 0) {
-    return {}
+    return []
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return sentences.reduce((result: any, currentValue: any) => {
-      // Handle cases where currentValue might be null/undefined
-      if (!currentValue) {
-        return result
+    // Group sentences by unique case reference and court combination
+    const grouped = new Map<string, GroupedSentences>()
+
+    sentences.forEach(sentence => {
+      if (!sentence) return
+
+      const caseReference = sentence.caseReference || 'Unknown'
+      const courtName = sentence.courtDescription || 'Unknown Court'
+      const key = `${caseReference}|${courtName}`
+
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          caseReference,
+          courtName,
+          sentences: [],
+        })
       }
 
-      const ref = `${currentValue.caseReference || 'Case'} at ${currentValue.courtDescription || 'Unknown Court'}`
-      // eslint-disable-next-line no-param-reassign
-      ;(result[ref] = result[ref] || []).push(currentValue)
-      return result
-    }, {})
+      grouped.get(key)!.sentences.push(sentence)
+    })
+
+    return Array.from(grouped.values())
   } catch (error) {
     logger.error(`Error in groupSentencesByCaseRefAndCourt: ${error.message}`, error)
-    return {}
+    return []
   }
 }
 
@@ -394,10 +402,18 @@ export type SummarisedSentence = {
 }
 
 export type SummarisedSentenceGroup = {
-  caseRefAndCourt: string
+  caseRefAndCourt: string // Keeping for backward compatibility
+  caseReference: string
+  courtName: string
   eligibleSentences: SummarisedSentence[]
   ineligibleSentences: SummarisedSentence[]
   hasEligibleSentences: boolean
   hasIneligibleSentences: boolean
   sentences: RecallableCourtCaseSentence[]
+}
+
+export interface GroupedSentences {
+  caseReference: string
+  courtName: string
+  sentences: SentenceWithDpsUuid[]
 }

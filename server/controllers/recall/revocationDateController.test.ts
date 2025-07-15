@@ -1,5 +1,5 @@
-import { Response } from 'express'
 import FormWizard from 'hmpo-form-wizard'
+import { Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
 import RevocationDateController from './revocationDateController'
@@ -14,13 +14,14 @@ jest.mock('../../helpers/formWizardHelper', () => {
     default: jest.fn(),
     getExistingAdjustments: jest.fn(),
     getCrdsSentences: jest.fn().mockReturnValue([]),
+    getCourtCaseOptions: jest.fn().mockReturnValue([]),
   }
 })
 
 describe('RevocationDateController', () => {
   let req: FormWizard.Request
   let res: Response
-  const controller = new RevocationDateController({ fields: {}, route: '/mock-route' })
+  const controller = new RevocationDateController({ route: '/revocation-date' } as FormWizard.Controller.Options)
 
   const recallId = 'RECALL_123'
   const nomsId = 'A1234BC'
