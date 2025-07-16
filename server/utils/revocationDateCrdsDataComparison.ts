@@ -44,6 +44,5 @@ export default function revocationDateCrdsDataComparison(req: FormWizard.Request
   ).length
   req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, sentenceCount)
   res.locals.casesWithEligibleSentences = sentenceCount
-  req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
   res.locals.groups = summariseSentencesGroups
 }

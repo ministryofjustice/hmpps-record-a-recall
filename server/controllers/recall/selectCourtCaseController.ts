@@ -262,6 +262,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
         // Filter out cases with only non-recallable sentences
         reviewableCases = this.filterAndClassifyCourtCases(reviewableCases)
+
         reviewableCases = this.sortCourtCasesByMostRecentConviction(reviewableCases)
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
