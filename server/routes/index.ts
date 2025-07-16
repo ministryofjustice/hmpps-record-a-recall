@@ -42,6 +42,7 @@ export default function routes(services: Services): Router {
     populateEntrypoint(),
     populateNomisId(),
     populateRecallId(),
+    loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
     loadRecalls(services.recallService, services.prisonService),
     editRecallRouter,
   )

@@ -11,6 +11,7 @@ import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelp
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 
 export default class CheckPossibleController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
@@ -37,6 +38,7 @@ export default class CheckPossibleController extends RecallBaseController {
         breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
       }
 
+      // Get court cases and adjustments in parallel
       const [cases, existingAdjustments] = await Promise.all([
         req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username),
         req.services.adjustmentsService.searchUal(nomisId, username).catch((e: Error): AdjustmentDto[] => {
@@ -60,6 +62,10 @@ export default class CheckPossibleController extends RecallBaseController {
       res.locals.smartOverrideApplied = routingResponse.smartOverrideApplied
       res.locals.wereCasesFilteredOut = routingResponse.wereCasesFilteredOut
       res.locals.routingResponse = routingResponse // Store for locals method
+
+      // Generate summarized sentence groups from the court cases
+      const summarisedSentenceGroups = summariseRasCases(routingResponse.casesToUse)
+      res.locals.summarisedSentenceGroups = summarisedSentenceGroups
 
       if (calculationResult.calculatedReleaseDates && routingResponse.casesToUse.length > 0) {
         const newCalc = calculationResult.calculatedReleaseDates
@@ -136,6 +142,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
     req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
+    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, res.locals.summarisedSentenceGroups)
 
     return { ...locals }
   }

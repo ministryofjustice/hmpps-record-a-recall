@@ -26,7 +26,8 @@ export default class PopulateStoredRecallController extends RecallBaseController
   }
 
   async setCourtCaseItems(req: FormWizard.Request, res: Response, next: NextFunction) {
-    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, await getCourtCaseOptionsFromRas(req, res))
+    const courtCaseOptions = await getCourtCaseOptionsFromRas(req, res)
+    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, courtCaseOptions)
     return next()
   }
 
@@ -82,12 +83,20 @@ export default class PopulateStoredRecallController extends RecallBaseController
 
     // We do a crds comparison here to figure out if it was a manual recall
     // If it was, we replace the sentence info with RaS data
+
     revocationDateCrdsDataComparison(req, res)
-    if (isManualCaseSelection(req) || getEligibleSentenceCount(req) === 0) {
+
+    const manualSelection = isManualCaseSelection(req)
+    const eligibleCount = getEligibleSentenceCount(req)
+
+    if (manualSelection || eligibleCount === 0) {
       req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, storedRecall.sentenceIds.length)
-      const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
+      const allCourtCaseOptions = getCourtCaseOptions(req)
+
+      const caseDetails = allCourtCaseOptions.filter((detail: CourtCase) =>
         storedRecall.courtCaseIds.includes(detail.caseId),
       )
+
       const summarisedSentencesGroups = summariseRasCases(caseDetails)
       req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     }
