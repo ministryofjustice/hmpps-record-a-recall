@@ -279,6 +279,8 @@ export class RecallEligibilityService {
   private processCourtCase(courtCase: CourtCase): SummarisedSentenceGroup | null {
     const summarisedGroup: SummarisedSentenceGroup = {
       caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
+      caseReference: courtCase.reference ?? 'Unknown',
+      courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
       ineligibleSentences: [],
       hasIneligibleSentences: false,
       eligibleSentences: [],
@@ -286,7 +288,7 @@ export class RecallEligibilityService {
       hasEligibleSentences: false,
     }
 
-    courtCase.sentences.forEach(sentence => {
+    courtCase.sentences?.forEach(sentence => {
       if (!sentence) return
 
       const recallEligibility = this.assessRasSentenceEligibility(sentence)
@@ -390,7 +392,12 @@ export class RecallEligibilityService {
       return 'NO_SENTENCES_FOR_RECALL'
     }
 
-    if (hasNonSds || crdsRouting === 'MANUAL_REVIEW_REQUIRED') {
+    // Check if any sentences require manual routing
+    const hasManualRoutingSentences = filteredCases.some(group =>
+      group.eligibleSentences.some(sentence => sentence.recallEligibility.recallRoute === 'MANUAL'),
+    )
+
+    if (hasNonSds || crdsRouting === 'MANUAL_REVIEW_REQUIRED' || hasManualRoutingSentences) {
       return 'MANUAL_REVIEW_REQUIRED'
     }
 

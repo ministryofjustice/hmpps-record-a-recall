@@ -194,7 +194,7 @@ export class RecallRoutingService {
       const { routing, eligibility, casesToUse } = this.applySmartRoutingOverride(
         initialRouting,
         initialEligibility,
-        activeCases,
+        filteredCases,
         wereCasesFilteredOut,
       )
 

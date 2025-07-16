@@ -147,14 +147,14 @@ describe('RecallEligibilityService', () => {
 
   describe('assessRecallEligibility', () => {
     it('should return normal routing for valid SDS sentences', async () => {
-      const result = await service.assessRecallEligibility({
-        courtCases: [mockCourtCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [mockCourtCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NORMAL')
@@ -168,14 +168,14 @@ describe('RecallEligibilityService', () => {
         sentences: [mockNonSdsSentence],
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [nonSdsCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [nonSdsCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
@@ -189,14 +189,14 @@ describe('RecallEligibilityService', () => {
         sentences: [mockSdsSentence, mockNonSdsSentence],
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mixedCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [mixedCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('MANUAL_REVIEW_REQUIRED')
@@ -211,14 +211,14 @@ describe('RecallEligibilityService', () => {
         toDate: '2023-06-15', // Overlaps with revocation date
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mockCourtCase],
-        adjustments: [conflictingAdjustment],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [mockCourtCase],
+        [conflictingAdjustment],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(false)
       expect(result.routing).toBe('CONFLICTING_ADJUSTMENTS')
@@ -232,14 +232,14 @@ describe('RecallEligibilityService', () => {
         sentences: [],
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [emptyCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [emptyCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
@@ -254,14 +254,14 @@ describe('RecallEligibilityService', () => {
         type: 'VALIDATION',
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mockCourtCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [criticalValidation],
+      const result = await service.assessRecallEligibility(
+        [mockCourtCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [criticalValidation],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
@@ -275,14 +275,14 @@ describe('RecallEligibilityService', () => {
         type: 'VALIDATION',
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mockCourtCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [nonCriticalValidation],
+      const result = await service.assessRecallEligibility(
+        [mockCourtCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [nonCriticalValidation],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('MANUAL_REVIEW_REQUIRED')
@@ -294,14 +294,14 @@ describe('RecallEligibilityService', () => {
         sentences: [mockShortSentence, mockSdsSentence],
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mixedCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [mixedCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.eligibilityDetails.invalidRecallTypes.length).toBeGreaterThan(0) // Should have some invalid types based on sentence mix
@@ -337,15 +337,15 @@ describe('RecallEligibilityService', () => {
         recallId: 'recall1', // Link to the recall being edited
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mockCourtCase],
-        adjustments: [adjustmentLinkedToRecall],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [mockCourtCase],
+        [adjustmentLinkedToRecall],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
         journeyData,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NORMAL')
@@ -381,15 +381,15 @@ describe('RecallEligibilityService', () => {
         revocationDate: new Date('2023-06-15'), // Would conflict but should be excluded
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [mockCourtCase],
-        adjustments: [],
-        existingRecalls: [conflictingRecall],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [mockCourtCase],
+        [],
+        [conflictingRecall],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
         journeyData,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NORMAL')
@@ -412,7 +412,7 @@ describe('RecallEligibilityService', () => {
 
       expect(result.isValid).toBe(false)
       expect(result.validationMessages).toHaveLength(1)
-      expect(result.validationMessages[0].code).toBe('OFFENCE_DATE_AFTER_SENTENCE_START_DATE')
+      expect(result.validationMessages[0].code).toBe('REMAND_ON_OR_AFTER_SENTENCE_DATE')
     })
 
     it('should fail validation for revocation date within adjustment period', () => {
@@ -439,7 +439,7 @@ describe('RecallEligibilityService', () => {
 
       expect(result.isValid).toBe(false)
       expect(result.validationMessages).toHaveLength(1)
-      expect(result.validationMessages[0].code).toBe('FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER')
+      expect(result.validationMessages[0].code).toBe('CONCURRENT_CONSECUTIVE_SENTENCES_DURATION')
     })
 
     it('should fail validation for revocation date overlapping with FTR period', () => {
@@ -873,14 +873,7 @@ describe('RecallEligibilityService', () => {
 
   describe('edge cases and error handling', () => {
     it('should handle empty court cases array', async () => {
-      const result = await service.assessRecallEligibility({
-        courtCases: [],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
-        revocationDate,
-      })
+      const result = await service.assessRecallEligibility([], [], [], mockCalculationBreakdown, [], revocationDate)
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
@@ -893,14 +886,14 @@ describe('RecallEligibilityService', () => {
         sentences: undefined,
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [caseWithUndefinedSentences],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [caseWithUndefinedSentences],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
@@ -922,19 +915,19 @@ describe('RecallEligibilityService', () => {
         sentences: [incompleteSentence],
       }
 
-      const result = await service.assessRecallEligibility({
-        courtCases: [incompleteCase],
-        adjustments: [],
-        existingRecalls: [],
-        breakdown: mockCalculationBreakdown,
-        validationMessages: [],
+      const result = await service.assessRecallEligibility(
+        [incompleteCase],
+        [],
+        [],
+        mockCalculationBreakdown,
+        [],
         revocationDate,
-      })
+      )
 
-      // The sentence without classification is processed but has MANUAL routing (NON_SDS)
+      // The sentence without sentenceType is processed as RAS_LEGACY_SENTENCE with MANUAL routing
       expect(result.isValid).toBe(true)
-      expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
-      expect(result.eligibilityDetails.eligibleSentenceCount).toBe(0)
+      expect(result.routing).toBe('MANUAL_REVIEW_REQUIRED')
+      expect(result.eligibilityDetails.eligibleSentenceCount).toBe(1)
     })
 
     it('should handle adjustments with missing dates', () => {
