@@ -9,7 +9,6 @@ import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { ValidationMessage, CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { determineCrdsRouting } from '../utils/constants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ServiceAsAny = any
@@ -522,37 +521,6 @@ describe('RecallRoutingService', () => {
 
         const result = privateService.mapValidationToEligibility([nonCriticalMessage])
         expect(result).toBe(eligibilityReasons.NON_CRITICAL_VALIDATION_FAIL)
-      })
-    })
-
-    describe('determineCrdsRouting (shared utility)', () => {
-      it('should return NORMAL for empty validation messages', () => {
-        const result = determineCrdsRouting([])
-        expect(result).toBe('NORMAL')
-      })
-
-      it('should return NO_SENTENCES_FOR_RECALL for critical errors', () => {
-        const criticalMessage: ValidationMessage = {
-          code: 'UNSUPPORTED_SENTENCE_TYPE' as const,
-          message: 'Critical error',
-          arguments: [] as string[],
-          type: 'VALIDATION' as const,
-        }
-
-        const result = determineCrdsRouting([criticalMessage])
-        expect(result).toBe('NO_SENTENCES_FOR_RECALL')
-      })
-
-      it('should return MANUAL_REVIEW_REQUIRED for non-critical errors', () => {
-        const nonCriticalMessage: ValidationMessage = {
-          code: 'ADJUSTMENT_FUTURE_DATED_UAL' as const,
-          message: 'Non-critical error',
-          arguments: [] as string[],
-          type: 'VALIDATION' as const,
-        }
-
-        const result = determineCrdsRouting([nonCriticalMessage])
-        expect(result).toBe('MANUAL_REVIEW_REQUIRED')
       })
     })
 

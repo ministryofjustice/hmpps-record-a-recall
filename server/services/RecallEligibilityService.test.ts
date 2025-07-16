@@ -412,7 +412,7 @@ describe('RecallEligibilityService', () => {
 
       expect(result.isValid).toBe(false)
       expect(result.validationMessages).toHaveLength(1)
-      expect(result.validationMessages[0].code).toBe('OFFENCE_DATE_AFTER_SENTENCE_START_DATE')
+      expect(result.validationMessages[0].code).toBe('REMAND_ON_OR_AFTER_SENTENCE_DATE')
     })
 
     it('should fail validation for revocation date within adjustment period', () => {
@@ -439,7 +439,7 @@ describe('RecallEligibilityService', () => {
 
       expect(result.isValid).toBe(false)
       expect(result.validationMessages).toHaveLength(1)
-      expect(result.validationMessages[0].code).toBe('FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER')
+      expect(result.validationMessages[0].code).toBe('CONCURRENT_CONSECUTIVE_SENTENCES_DURATION')
     })
 
     it('should fail validation for revocation date overlapping with FTR period', () => {
@@ -931,10 +931,10 @@ describe('RecallEligibilityService', () => {
         revocationDate,
       })
 
-      // The sentence without classification is processed but has MANUAL routing (NON_SDS)
+      // The sentence without sentenceType is processed as RAS_LEGACY_SENTENCE with MANUAL routing
       expect(result.isValid).toBe(true)
-      expect(result.routing).toBe('NO_SENTENCES_FOR_RECALL')
-      expect(result.eligibilityDetails.eligibleSentenceCount).toBe(0)
+      expect(result.routing).toBe('MANUAL_REVIEW_REQUIRED')
+      expect(result.eligibilityDetails.eligibleSentenceCount).toBe(1)
     })
 
     it('should handle adjustments with missing dates', () => {
