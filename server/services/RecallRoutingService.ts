@@ -93,15 +93,15 @@ export class RecallRoutingService {
       logger.info(`Processing recall routing for prisoner ${request.nomsId}`)
 
       // 1. Perform comprehensive eligibility assessment
-      const eligibilityAssessment = await this.eligibilityService.assessRecallEligibility(
-        request.courtCases,
-        request.adjustments,
-        request.existingRecalls,
-        request.calculationBreakdown,
-        request.validationMessages,
-        request.revocationDate,
-        request.journeyData,
-      )
+      const eligibilityAssessment = await this.eligibilityService.assessRecallEligibility({
+        courtCases: request.courtCases,
+        adjustments: request.adjustments,
+        existingRecalls: request.existingRecalls,
+        breakdown: request.calculationBreakdown,
+        validationMessages: request.validationMessages,
+        revocationDate: request.revocationDate,
+        journeyData: request.journeyData,
+      })
 
       // 2. Determine next steps based on routing
       const nextSteps = this.determineNextSteps(eligibilityAssessment)
@@ -201,15 +201,15 @@ export class RecallRoutingService {
       // 5. If we have a revocation date, run full eligibility assessment
       let fullAssessment: RecallEligibilityAssessment | null = null
       if (journeyData && journeyData.revocationDate) {
-        fullAssessment = await this.eligibilityService.assessRecallEligibility(
-          casesToUse,
+        fullAssessment = await this.eligibilityService.assessRecallEligibility({
+          courtCases: casesToUse,
           adjustments,
           existingRecalls,
-          calculationBreakdown,
+          breakdown: calculationBreakdown,
           validationMessages,
-          journeyData.revocationDate,
+          revocationDate: journeyData.revocationDate,
           journeyData,
-        )
+        })
       }
 
       // Generate session and local updates based on routing decision

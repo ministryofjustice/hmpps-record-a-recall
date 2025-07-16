@@ -12,20 +12,24 @@ import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { isCriticalValidationError } from '../utils/constants'
 import logger from '../../logger'
 
+export interface RecallEligibilityRequest {
+  courtCases: CourtCase[]
+  adjustments: AdjustmentDto[]
+  existingRecalls: Recall[]
+  breakdown: CalculationBreakdown | null
+  validationMessages: ValidationMessage[]
+  revocationDate: Date
+  journeyData?: RecallJourneyData
+}
+
 /**
  * Centralised service for all recall eligibility calculations and validations
  */
 export class RecallEligibilityService {
   // Core eligibility assessment - main entry point
-  async assessRecallEligibility(
-    courtCases: CourtCase[],
-    adjustments: AdjustmentDto[],
-    existingRecalls: Recall[],
-    breakdown: CalculationBreakdown | null,
-    validationMessages: ValidationMessage[],
-    revocationDate: Date,
-    journeyData?: RecallJourneyData,
-  ): Promise<RecallEligibilityAssessment> {
+  async assessRecallEligibility(request: RecallEligibilityRequest): Promise<RecallEligibilityAssessment> {
+    const { courtCases, adjustments, existingRecalls, validationMessages, revocationDate, journeyData } = request
+
     // 1. Validate revocation date against basic constraints
     const dateValidation = this.validateRevocationDate(
       revocationDate,

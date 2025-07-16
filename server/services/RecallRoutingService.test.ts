@@ -174,15 +174,15 @@ describe('RecallRoutingService', () => {
         }),
       })
 
-      expect(mockEligibilityService.assessRecallEligibility).toHaveBeenCalledWith(
-        mockRequest.courtCases,
-        mockRequest.adjustments,
-        mockRequest.existingRecalls,
-        mockRequest.calculationBreakdown,
-        mockRequest.validationMessages,
-        mockRequest.revocationDate,
-        mockRequest.journeyData,
-      )
+      expect(mockEligibilityService.assessRecallEligibility).toHaveBeenCalledWith({
+        courtCases: mockRequest.courtCases,
+        adjustments: mockRequest.adjustments,
+        existingRecalls: mockRequest.existingRecalls,
+        breakdown: mockRequest.calculationBreakdown,
+        validationMessages: mockRequest.validationMessages,
+        revocationDate: mockRequest.revocationDate,
+        journeyData: mockRequest.journeyData,
+      })
     })
 
     it('should return manual review response when required', async () => {
