@@ -67,6 +67,69 @@ export default {
       },
     })
   },
+  stubRecordARecallCRDSNonManual: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPattern: `/calculate-release-dates/record-a-recall/([A-Z0-9]*)`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          calculatedReleaseDates: {
+            dates: {
+              conditionalReleaseDate: '2023-12-15',
+            },
+            calculationRequestId: 123456789,
+            bookingId: 12345678,
+            prisonerId: 'BA1234AB',
+            calculationStatus: 'CONFIRMED',
+            calculationFragments: null,
+            effectiveSentenceLength: {
+              years: 5,
+              months: 3,
+              days: 12,
+              zero: false,
+              negative: false,
+              units: [
+                {
+                  durationEstimated: true,
+                  duration: {
+                    seconds: 158112000,
+                    zero: false,
+                    nano: 0,
+                    negative: false,
+                    positive: true,
+                  },
+                  timeBased: true,
+                  dateBased: false,
+                },
+              ],
+              chronology: {
+                id: 'SENTENCE-1',
+                calendarType: 'ISO',
+                isoBased: true,
+              },
+            },
+            calculationType: 'CALCULATED',
+            approvedDates: {
+              homeDetentionCurfewEligibilityDate: '2023-11-15',
+              earliestReleaseDate: '2023-12-15',
+            },
+            calculationReference: '550e8400-e29b-41d4-a716-446655440000',
+            calculationReason: null,
+            otherReasonDescription: 'Good behavior adjustment',
+            calculationDate: '2023-10-20',
+            historicalTusedSource: 'NOMIS',
+            sdsEarlyReleaseAllocatedTranche: 'TRANCHE_1',
+            sdsEarlyReleaseTranche: 'TRANCHE_1',
+          },
+          validationMessages: [],
+        },
+      },
+    })
+  },
   stubGetCalculationBreakdown: (): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -257,6 +320,26 @@ export default {
       },
     })
   },
+  // stubLatestCalculationNonManual: (): SuperAgentRequest => {
+  //   return stubFor({
+  //     request: {
+  //       method: 'GET',
+  //       urlPattern: `/calculate-release-dates/calculation/results/BA1234AB/1234`,
+  //     },
+  //     response: {
+  //       status: 200,
+  //       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+  //       jsonBody: {
+  //         dates: {
+  //           SLED: '2018-11-05',
+  //           CRD: '2017-05-07',
+  //           HDCED: '2016-12-24',
+  //         },
+  //         calculationRequestId: 123,
+  //       },
+  //     },
+  //   })
+  // },
   stubGetLatestCalculation: (): SuperAgentRequest => {
     const latestCalculation: LatestCalculation = {
       prisonerId: 'A1234AB',

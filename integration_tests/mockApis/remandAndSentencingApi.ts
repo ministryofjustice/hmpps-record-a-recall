@@ -275,6 +275,33 @@ export default {
       },
     })
   },
+    stubRecallPersonNonManual: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: '/remand-and-sentencing-api/recall/person/BA1234AB',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+
+        jsonBody: [
+          {
+            recallUuid: 'ABC',
+            prisonerId: 'BA1234AB',
+            revocationDate: '2018-03-03T00:00:00.000Z',
+            returnToCustodyDate: null,
+            recallType: {
+              code: 'LR',
+              description: 'Standard',
+              fixedTerm: false,
+            },
+            courtCaseIds: [],
+          },
+        ],
+      },
+    })
+  },
   stubRecallRecorded: (): SuperAgentRequest => {
     return stubFor({
       request: {
