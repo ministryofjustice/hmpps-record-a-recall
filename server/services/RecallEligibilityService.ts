@@ -237,7 +237,7 @@ export class RecallEligibilityService {
     if (hasDateOnOrBeforeExisting) {
       validationMessages.push({
         code: 'CONCURRENT_CONSECUTIVE_SENTENCES_DURATION',
-        message: 'Revocation date cannot be on or before existing recall date',
+        message: 'You cannot create a recall with a revocation date on or before the existing recall',
         arguments: [],
         type: 'VALIDATION',
       })
@@ -254,7 +254,7 @@ export class RecallEligibilityService {
     if (hasFtrOverlap) {
       validationMessages.push({
         code: 'FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER',
-        message: 'Revocation date overlaps with existing Fixed Term Recall period',
+        message: 'The date entered overlaps with an existing recall',
         arguments: [],
         type: 'VALIDATION',
       })
