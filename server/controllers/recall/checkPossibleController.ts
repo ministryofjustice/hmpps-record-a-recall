@@ -1,5 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+// eslint-disable-next-line import/no-unresolved
+import { Recall } from 'models'
 
 import {
   RecordARecallCalculationResult,
@@ -38,11 +40,15 @@ export default class CheckPossibleController extends RecallBaseController {
         breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
       }
 
-      // Get court cases and adjustments in parallel
-      const [cases, existingAdjustments] = await Promise.all([
+      // Get court cases, adjustments, and existing recalls in parallel
+      const [cases, existingAdjustments, existingRecalls] = await Promise.all([
         req.services.courtCaseService.getAllCourtCases(res.locals.nomisId, req.user.username),
         req.services.adjustmentsService.searchUal(nomisId, username).catch((e: Error): AdjustmentDto[] => {
           logger.error(e.message)
+          return []
+        }),
+        req.services.recallService.getAllRecalls(nomisId, username).catch((e: Error): Recall[] => {
+          logger.error('Error loading existing recalls:', e.message)
           return []
         }),
       ])
@@ -52,7 +58,7 @@ export default class CheckPossibleController extends RecallBaseController {
         nomisId,
         cases,
         existingAdjustments,
-        [], // No existing recalls at this stage
+        existingRecalls,
         breakdown,
         errors,
       )
