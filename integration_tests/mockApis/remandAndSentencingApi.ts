@@ -125,7 +125,7 @@ export default {
       },
     })
   },
-   stubSearchCourtCasesWithSDS: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
+   stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
@@ -149,7 +149,7 @@ export default {
                   sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
                   offenceCode: 'HA04005',
                   sentenceType: 'SDS (Standard Determinate Sentence)',
-                  classification: 'EXTENDED',
+                  classification: 'STANDARD',
                   systemOfRecord: 'RAS',
                   periodLengths: [
                     {
