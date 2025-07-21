@@ -125,7 +125,7 @@ export default {
       },
     })
   },
-   stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
+  stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
@@ -275,7 +275,7 @@ export default {
       },
     })
   },
-    stubRecallPersonNonManual: (): SuperAgentRequest => {
+  stubRecallPersonNonManual: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',

@@ -100,7 +100,7 @@ export default {
       },
     })
   },
-   stubPrisonerSearchNonManual: (): SuperAgentRequest => {
+  stubPrisonerSearchNonManual: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
@@ -119,7 +119,7 @@ export default {
             bookingId: '0001200924',
             bookNumber: '38412A',
             title: 'Ms',
-            firstName: 'Robert',
+            firstName: 'Roberta',
             middleNames: 'John James',
             lastName: 'Larsen',
             dateOfBirth: '1975-04-02',

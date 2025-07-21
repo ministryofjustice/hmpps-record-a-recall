@@ -320,26 +320,7 @@ export default {
       },
     })
   },
-  // stubLatestCalculationNonManual: (): SuperAgentRequest => {
-  //   return stubFor({
-  //     request: {
-  //       method: 'GET',
-  //       urlPattern: `/calculate-release-dates/calculation/results/BA1234AB/1234`,
-  //     },
-  //     response: {
-  //       status: 200,
-  //       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-  //       jsonBody: {
-  //         dates: {
-  //           SLED: '2018-11-05',
-  //           CRD: '2017-05-07',
-  //           HDCED: '2016-12-24',
-  //         },
-  //         calculationRequestId: 123,
-  //       },
-  //     },
-  //   })
-  // },
+
   stubGetLatestCalculation: (): SuperAgentRequest => {
     const latestCalculation: LatestCalculation = {
       prisonerId: 'A1234AB',

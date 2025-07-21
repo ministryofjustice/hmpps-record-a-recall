@@ -28,7 +28,7 @@ export default {
     })
   },
 
-    stubGetPrisonerDetailsTwo: (): SuperAgentRequest => {
+  stubGetPrisonerDetailsTwo: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',

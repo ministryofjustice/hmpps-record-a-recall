@@ -9,10 +9,10 @@ context('Create recall happy path | NON-MANUAL', () => {
     cy.task('stubSignIn')
     cy.task('stubManageUsersMeCaseloads')
     cy.task('stubPrisonerSearchNonManual')
-    cy.task('stubRecordARecallCRDSNonManual') 
+    cy.task('stubRecordARecallCRDSNonManual')
     cy.task('stubSentencesAndOffences')
 
-    cy.task('stubGetCalculationBreakdown') 
+    cy.task('stubGetCalculationBreakdown')
     cy.task('stubGetCourtsByIds')
     cy.task('stubSearchCourtCasesWithBothSDS', { sortBy: 'desc' })
     cy.task('stubRecallPersonNonManual', { sortBy: 'desc' })
