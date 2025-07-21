@@ -32,44 +32,29 @@ context('Create recall happy path | MANUAL', () => {
     PersonHomePage.goTo('A1234AB').createNewRecallButton().click()
 
     // Step 2: Revocation date
-    Page.verifyOnPage(RevocationDatePage)
-      .enterRevocationDate('2018-04-02')
-      .clickContinue()
+    Page.verifyOnPage(RevocationDatePage).enterRevocationDate('2018-04-02').clickContinue()
 
     // Step 3: Was in prison?
-    Page.verifyOnPage(WasInPrisonQuestionPage)
-      .selectYes()
-      .clickContinue()
+    Page.verifyOnPage(WasInPrisonQuestionPage).selectYes().clickContinue()
 
     // Step 4: Manual recall intercept
-    Page.verifyOnPage<ManualInterceptPage>(ManualInterceptPage)
-    .verifyInstructions()
-    .clickContinue()
+    Page.verifyOnPage<ManualInterceptPage>(ManualInterceptPage).verifyInstructions().clickContinue()
 
     // Step 5: Select court cases (x2)
-    Page.verifyOnPage(SelectCourtCasesPage)
-      .selectFirstCase()
-      .clickContinue()
+    Page.verifyOnPage(SelectCourtCasesPage).selectFirstCase().clickContinue()
 
-    Page.verifyOnPage(SelectCourtCasesPage)
-      .selectFirstCase()
-      .clickContinue()
+    Page.verifyOnPage(SelectCourtCasesPage).selectFirstCase().clickContinue()
 
     // Step 6: Check sentences
-    Page.verifyOnPage(CheckSentencesPage)
-      .confirmAndContinue()
+    Page.verifyOnPage(CheckSentencesPage).confirmAndContinue()
 
     // Step 7: Select recall type
-    Page.verifyOnPage(SelectRecallTypePage)
-      .selectRecallType()
-      .clickContinue()
+    Page.verifyOnPage(SelectRecallTypePage).selectRecallType().clickContinue()
 
     // Step 8: Check your answers
-    Page.verifyOnPage(CheckYourAnswersPage)
-      .confirmRecall()
+    Page.verifyOnPage(CheckYourAnswersPage).confirmRecall()
 
     // Final Step: Confirmation
-    Page.verifyOnPage(ConfirmationPage)
-      .verifySuccessMessage('Recall recorded')
+    Page.verifyOnPage(ConfirmationPage).verifySuccessMessage('Recall recorded')
   })
 })

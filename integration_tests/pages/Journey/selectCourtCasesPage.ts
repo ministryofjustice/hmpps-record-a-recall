@@ -15,4 +15,3 @@ export default class SelectCourtCasesPage extends Page {
     return this
   }
 }
-
