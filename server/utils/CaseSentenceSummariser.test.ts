@@ -6,7 +6,6 @@ import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/re
 describe('CaseSentenceSummariser', () => {
   describe('summariseRasCases', () => {
     it('should only include recallable sentences in eligibleSentences when court case has mixed sentence types', () => {
-      // Test case for scenario: SDS synced as recall, "Imprisonment in default of fine" unchanged
       const mockRecallableSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-1',
         sentenceType: 'SDS',
@@ -64,7 +63,6 @@ describe('CaseSentenceSummariser', () => {
     })
 
     it('should only include recallable sentences for A5900EC scenario', () => {
-      // Test case for scenario: SDS synced as recall, "Civil imprisonment" unchanged
       const mockRecallableSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-3',
         sentenceType: 'SDS',
