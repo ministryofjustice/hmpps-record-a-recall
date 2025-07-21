@@ -100,7 +100,7 @@ export function summariseCourtCase(courtCase: CourtCase, includeDate = true): Su
       offenceDescription: sentence.offenceDescription,
     }
 
-    if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
+    if (sentence.isRecallable === true && recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
       summarisedGroup.hasEligibleSentences = true
       summarisedGroup.eligibleSentences.push(summarisedSentence)
     } else {
