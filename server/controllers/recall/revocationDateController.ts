@@ -66,11 +66,11 @@ export default class RevocationDateController extends RecallBaseController {
 
         // Add validation errors from routing service
         routingResponse.validationMessages.forEach(msg => {
-          if (msg.code.includes('OVERLAPS_ADJUSTMENT') || msg.code.includes('ADJUSTMENT_FUTURE_DATED_UAL')) {
+          if (msg.code === 'ADJUSTMENT_FUTURE_DATED_UAL') {
             validationErrors.revocationDate = this.formError('revocationDate', 'cannotBeWithinAdjustmentPeriod')
-          } else if (msg.code.includes('OVERLAPS_FTR')) {
+          } else if (msg.code === 'FTR_SENTENCES_CONFLICT_WITH_EACH_OTHER') {
             validationErrors.revocationDate = this.formError('revocationDate', 'revocationDateOverlapsFixedTermRecall')
-          } else if (msg.code.includes('ON_OR_BEFORE_EXISTING')) {
+          } else if (msg.code === 'CONCURRENT_CONSECUTIVE_SENTENCES_DURATION') {
             validationErrors.revocationDate = this.formError('revocationDate', 'revocationDateOnOrBeforeExistingRecall')
           } else {
             // For other validation codes, use a generic error message
