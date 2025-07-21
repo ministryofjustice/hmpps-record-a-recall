@@ -1,7 +1,11 @@
-import PersonHome from '../pages/personHome'
-import FormPage from '../pages/Journey/formPage'
+import PersonHomePage from '../pages/personHome'
 import RevocationDatePage from '../pages/Journey/revocationDatePage'
-import ReviewFormPage from '../pages/Journey/reviewFormPage'
+import WasInPrisonQuestionPage from '../pages/Journey/wasInPrisonQuestionPage'
+import CheckSentencesPage from '../pages/Journey/checkSentencesPage'
+import SelectRecallTypePage from '../pages/Journey/selectRecallTypePage'
+import CheckYourAnswersPage from '../pages/Journey/checkYourAnswersPage'
+import ConfirmationPage from '../pages/Journey/confirmationPage'
+import Page from '../pages/page'
 
 context('Create recall happy path | NON-MANUAL', () => {
   beforeEach(() => {
@@ -24,47 +28,33 @@ context('Create recall happy path | NON-MANUAL', () => {
     cy.signIn()
 
     // Step 1: Go to person and start recall
-    const personPage = PersonHome.goTo('BA1234AB')
-    personPage.createNewRecallButton().click()
-    cy.url().should('include', '/person/BA1234AB/record-recall/revocation-date')
+    PersonHomePage.goTo('BA1234AB').createNewRecallButton().click()
 
     // Step 2: Revocation date
-    const revocationPage = RevocationDatePage.verifyOnPage<RevocationDatePage>(
-      RevocationDatePage,
-      'Enter the date of revocation',
-    )
-    revocationPage.enterRevocationDate('2021-04-04')
-    revocationPage.continueButton().click()
+    Page.verifyOnPage(RevocationDatePage)
+      .enterRevocationDate('2021-04-04')
+      .clickContinue()
 
-    // Step 3: Was this person in prison?
-    const prisonQuestionTitle = 'Was this person in prison when the recall was made?'
-    cy.url().should('include', '/person/BA1234AB/record-recall/rtc-date')
-    const prisonForm = FormPage.verifyOnPage<FormPage>(FormPage, prisonQuestionTitle)
-    prisonForm.affectsDatesRadio().click()
-    new ReviewFormPage(prisonQuestionTitle).continueButton().click()
+    // Step 3: Was in prison
+    Page.verifyOnPage(WasInPrisonQuestionPage)
+      .selectYes()
+      .clickContinue()
 
     // Step 4: Check sentences
-    const sentenceCheckTitle = 'Check that the sentences and offences are correct'
-    cy.url().should('include', '/person/BA1234AB/record-recall/check-sentences')
-    FormPage.verifyOnPage<FormPage>(FormPage, sentenceCheckTitle)
-    new ReviewFormPage(sentenceCheckTitle).confirmAndContinueButton().click()
+    Page.verifyOnPage(CheckSentencesPage)
+      .confirmAndContinue()
 
     // Step 5: Select recall type
-    const recallTypeTitle = 'Select the type of recall'
-    cy.url().should('include', '/person/BA1234AB/record-recall/recall-type')
-    const recallTypeForm = FormPage.verifyOnPage<FormPage>(FormPage, recallTypeTitle)
-    recallTypeForm.recallTypeRadio().click()
-    new ReviewFormPage(recallTypeTitle).continueButton().click()
+    Page.verifyOnPage(SelectRecallTypePage)
+      .selectRecallType()
+      .clickContinue()
 
     // Step 6: Check your answers
-    const checkAnswersTitle = 'Check your answers'
-    cy.url().should('include', '/person/BA1234AB/record-recall/check-your-answers')
-    FormPage.verifyOnPage<FormPage>(FormPage, checkAnswersTitle)
-    new ReviewFormPage(checkAnswersTitle).confirmRecallBtn().click()
+    Page.verifyOnPage(CheckYourAnswersPage)
+      .confirmRecall()
 
     // Final Step: Confirmation
-    cy.url().should('include', '/person/BA1234AB/record-recall/recall-recorded')
-    const confirmationForm = FormPage.verifyOnPage<FormPage>(FormPage, 'What you can do next')
-    confirmationForm.successMessage().contains('Recall recorded')
+    Page.verifyOnPage(ConfirmationPage)
+      .verifySuccessMessage('Recall recorded')
   })
 })
