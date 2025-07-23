@@ -7,8 +7,6 @@ import getServiceUrls from '../../helpers/urlHelper'
 export default async (req: Request, res: Response) => {
   const { nomisId, prisoner, recalls, serviceDefinitions, banner, errorMessage, recallableCourtCases } = res.locals
 
-  console.log('recall', JSON.stringify(recalls, undefined, 2))
-
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
 
