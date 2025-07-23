@@ -136,31 +136,36 @@
                 </p>
 
                 {% if case.sentences and case.sentences.length %}
-                  {% for sentence in case.sentences %}
-                    <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
-                      {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
-                      {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
-                      {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
-                      {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not entered' %}
+                  {% set recallableSentences = case.sentences | selectattr('isRecallable', 'equalto', true) | list %}
+                  {% if recallableSentences | length %}
+                    {% for sentence in recallableSentences %}
+                      <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
+                        {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
+                        {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+                        {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
+                        {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not entered' %}
 
-                      {{ offenceCard({
-                        countNumber: countNumber,
-                        offenceCode: sentence.offenceCode | default('Not entered'),
-                        offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-                        offenceStartDate: offenceStartDate,
-                        offenceEndDate: offenceEndDate,
-                        hideOutcome: true,
-                        outcome: sentence.outcome | default('Not entered'),
-                        lineNumber: sentence.lineNumber | default('Not entered'),
-                        convictionDate: convictionDate,
-                        periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
-                        sentenceServeType: sentence.sentenceServeType | default(null),
-                        sentenceType: sentence.sentenceType | default('Not entered'),
-                        isSentenced: true,
-                        detailsClasses: 'govuk-!-padding-4'
-                      }) }}
-                    </div>
-                  {% endfor %}
+                        {{ offenceCard({
+                          countNumber: countNumber,
+                          offenceCode: sentence.offenceCode | default('Not entered'),
+                          offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+                          offenceStartDate: offenceStartDate,
+                          offenceEndDate: offenceEndDate,
+                          hideOutcome: true,
+                          outcome: sentence.outcome | default('Not entered'),
+                          lineNumber: sentence.lineNumber | default('Not entered'),
+                          convictionDate: convictionDate,
+                          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
+                          sentenceServeType: sentence.sentenceServeType | default(null),
+                          sentenceType: sentence.sentenceType | default('Not entered'),
+                          isSentenced: true,
+                          detailsClasses: 'govuk-!-padding-4'
+                        }) }}
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <p class="govuk-body">No recallable sentences available for this case.</p>
+                  {% endif %}
                 {% else %}
                   <p class="govuk-body">No sentences available for this case.</p>
                 {% endif %}
