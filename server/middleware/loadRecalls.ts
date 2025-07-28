@@ -36,13 +36,13 @@ export default function loadRecalls(
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
-        // Collect all unique offence codes from all recalls
-        const allOffenceCodes = new Set<string>()
+        // Collect all offence codes from all recalls
+        const allOffenceCodes: string[] = []
         recalls.forEach(recall => {
           if (recall.sentences && Array.isArray(recall.sentences)) {
             recall.sentences.forEach(sentence => {
               if (sentence.offenceCode && typeof sentence.offenceCode === 'string') {
-                allOffenceCodes.add(sentence.offenceCode)
+                allOffenceCodes.push(sentence.offenceCode)
               }
             })
           }
@@ -50,10 +50,11 @@ export default function loadRecalls(
 
         // Fetch offence descriptions
         let offenceMap: Record<string, string> = {}
-        const uniqueOffenceCodes = [...allOffenceCodes].filter(Boolean)
-        if (uniqueOffenceCodes.length > 0) {
+        // Remove duplicates and filter out falsy values
+        const offenceCodes = [...new Set(allOffenceCodes)].filter(Boolean)
+        if (offenceCodes.length > 0) {
           try {
-            offenceMap = await manageOffencesService.getOffenceMap(uniqueOffenceCodes, user.token)
+            offenceMap = await manageOffencesService.getOffenceMap(offenceCodes, user.token)
             logger.debug(`Fetched descriptions for ${Object.keys(offenceMap).length} offence codes`)
           } catch (error) {
             logger.error('Error fetching offence descriptions from ManageOffencesService:', error)
