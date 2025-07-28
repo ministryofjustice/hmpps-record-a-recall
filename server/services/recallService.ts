@@ -6,6 +6,8 @@ import {
   ApiRecall,
   CreateRecall,
   CreateRecallResponse,
+  UpdateSentenceTypesRequest,
+  UpdateSentenceTypesResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { calculateUal } from '../utils/utils'
 import { getRecallType } from '../@types/recallTypes'

@@ -5,6 +5,7 @@ import RecallBaseController from './recallBaseController'
 import RemandAndSentencingApiClient from '../../api/remandAndSentencingApiClient'
 import { UpdateSentenceTypesRequest } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../../logger'
+import { dataAccess } from '../../data'
 
 export default class UpdateSentenceTypesSummaryController extends RecallBaseController {
   /**
@@ -32,7 +33,9 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       }
 
       const { user } = res.locals
-      const apiClient = new RemandAndSentencingApiClient(user.token)
+      const { hmppsAuthClient } = dataAccess()
+      const systemToken = await hmppsAuthClient.getSystemClientToken(user.username)
+      const apiClient = new RemandAndSentencingApiClient(systemToken)
       const response = await apiClient.updateSentenceTypes(courtCaseUuid, payload)
 
       logger.info('Successfully updated sentence types', {

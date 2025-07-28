@@ -8,6 +8,13 @@ import logger from '../../../logger'
 
 jest.mock('../../api/remandAndSentencingApiClient')
 jest.mock('../../../logger')
+jest.mock('../../data', () => ({
+  dataAccess: () => ({
+    hmppsAuthClient: {
+      getSystemClientToken: jest.fn(() => Promise.resolve('system-token')),
+    },
+  }),
+}))
 
 describe('UpdateSentenceTypesSummaryController', () => {
   let req: any
