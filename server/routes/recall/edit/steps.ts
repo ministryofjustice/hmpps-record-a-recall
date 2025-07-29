@@ -91,7 +91,7 @@ const steps = {
   },
   '/select-cases': {
     controller: SelectCourtCaseController,
-    fields: ['courtCases'],
+    fields: ['activeSentenceChoice'],
     template: 'select-court-case-details',
     next: 'check-sentences',
   },
