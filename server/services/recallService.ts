@@ -32,6 +32,8 @@ export default class RecallService {
   async getAllRecalls(nomsId: string, username: string): Promise<Recall[]> {
     const allApiRecalls = await (await this.getApiClient(username)).getAllRecalls(nomsId)
 
+    logger.info(`Fetched recalls for NOMS ID ${nomsId}:`, allApiRecalls)
+
     return allApiRecalls.map((apiRecall: ApiRecall): Recall => this.fromApiRecall(apiRecall))
   }
 
