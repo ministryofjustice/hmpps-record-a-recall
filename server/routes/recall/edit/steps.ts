@@ -92,7 +92,7 @@ const steps = {
   '/select-cases': {
     controller: SelectCourtCaseController,
     fields: ['courtCases'],
-    template: 'base-question',
+    template: 'select-court-case-details',
     next: 'check-sentences',
   },
   '/not-possible': {
