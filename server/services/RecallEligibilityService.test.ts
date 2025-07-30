@@ -21,6 +21,7 @@ describe('RecallEligibilityService', () => {
 
   const mockSdsSentence: RecallableCourtCaseSentence = {
     sentenceUuid: 'sent1',
+    sentenceTypeUuid: 'test-sentence-type-uuid-1',
     offenceCode: 'OFF001',
     offenceStartDate: '2023-01-01',
     offenceEndDate: '2023-01-02',
@@ -39,6 +40,7 @@ describe('RecallEligibilityService', () => {
 
   const mockNonSdsSentence: RecallableCourtCaseSentence = {
     sentenceUuid: 'sent2',
+    sentenceTypeUuid: 'test-sentence-type-uuid-2',
     offenceCode: 'OFF002',
     offenceStartDate: '2023-01-01',
     offenceEndDate: '2023-01-02',
@@ -57,6 +59,7 @@ describe('RecallEligibilityService', () => {
 
   const mockShortSentence: RecallableCourtCaseSentence = {
     sentenceUuid: 'sent3',
+    sentenceTypeUuid: 'test-sentence-type-uuid-3',
     offenceCode: 'OFF003',
     offenceStartDate: '2023-01-01',
     offenceEndDate: '2023-01-02',
@@ -909,6 +912,7 @@ describe('RecallEligibilityService', () => {
     it('should handle sentences with missing required fields', async () => {
       const incompleteSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sent1',
+        sentenceTypeUuid: 'test-sentence-type-uuid-incomplete',
         offenceCode: 'OFF001',
         outcomeDescription: 'Incomplete sentence',
         isRecallable: true,

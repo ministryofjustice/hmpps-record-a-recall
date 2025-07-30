@@ -16,6 +16,7 @@ import RecallBaseController from './recallBaseController'
 import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 
 // Type for the enhanced case with view-specific properties
 type EnhancedCourtCaseForView = CourtCase & {
@@ -149,6 +150,13 @@ export default class SelectCourtCaseController extends RecallBaseController {
             ]
           : []
 
+        const isUnknownSentenceType =
+          sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
+
+        const sentenceTypeDescription = isUnknownSentenceType
+          ? 'Required'
+          : sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'Not available'
+
         return {
           ...sentence,
           custodialTerm,
@@ -163,10 +171,10 @@ export default class SelectCourtCaseController extends RecallBaseController {
             ? formatDateStringToDDMMYYYY(sentence.convictionDate)
             : 'Not available',
           apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
-          sentenceTypeDescription:
-            sentence.sentenceType || sentence.sentenceLegacyData.sentenceTypeDesc || 'Not available',
+          sentenceTypeDescription,
+          isUnknownSentenceType,
           formattedOutcome:
-            sentence.outcomeDescription || sentence.chargeLegacyData.outcomeDescription || 'Not available',
+            sentence.outcomeDescription || sentence.chargeLegacyData?.outcomeDescription || 'Not available',
         }
       })
 

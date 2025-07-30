@@ -9,6 +9,7 @@ describe('CaseSentenceSummariser', () => {
       const mockRecallableSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-1',
         sentenceType: 'SDS',
+        sentenceTypeUuid: 'test-uuid-1',
         isRecallable: true,
         offenceCode: 'OFF001',
         outcomeDescription: 'Test offence 1',
@@ -22,6 +23,7 @@ describe('CaseSentenceSummariser', () => {
       const mockNonRecallableSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-2',
         sentenceType: 'IMPRISONMENT_IN_DEFAULT_OF_FINE',
+        sentenceTypeUuid: 'test-uuid-2',
         isRecallable: false,
         offenceCode: 'OFF002',
         outcomeDescription: 'Imprisonment in default of fine',
@@ -66,6 +68,7 @@ describe('CaseSentenceSummariser', () => {
       const mockRecallableSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-3',
         sentenceType: 'SDS',
+        sentenceTypeUuid: 'test-uuid-3',
         isRecallable: true,
         offenceCode: 'OFF003',
         outcomeDescription: 'Test offence 3',
@@ -79,6 +82,7 @@ describe('CaseSentenceSummariser', () => {
       const mockCivilImprisonment: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-4',
         sentenceType: 'CIVIL_IMPRISONMENT',
+        sentenceTypeUuid: 'test-uuid-4',
         isRecallable: false,
         offenceCode: 'OFF004',
         outcomeDescription: 'Civil imprisonment',
@@ -119,6 +123,7 @@ describe('CaseSentenceSummariser', () => {
         {
           sentenceUuid: 'sentence-5',
           sentenceType: 'SDS',
+          sentenceTypeUuid: 'test-uuid-5',
           isRecallable: true,
           offenceCode: 'OFF005',
           outcomeDescription: 'Test offence 5',
@@ -131,6 +136,7 @@ describe('CaseSentenceSummariser', () => {
         {
           sentenceUuid: 'sentence-6',
           sentenceType: 'SDS',
+          sentenceTypeUuid: 'test-uuid-6',
           isRecallable: true,
           offenceCode: 'OFF006',
           outcomeDescription: 'Test offence 6',
@@ -173,6 +179,7 @@ describe('CaseSentenceSummariser', () => {
       const mockSentence: RecallableCourtCaseSentence = {
         sentenceUuid: 'sentence-7',
         sentenceType: 'SDS', // Normally eligible for recall
+        sentenceTypeUuid: 'test-uuid-7',
         isRecallable: false, // But marked as non-recallable
         offenceCode: 'OFF007',
         outcomeDescription: 'SDS marked non-recallable',
