@@ -5,6 +5,7 @@ import { jest } from '@jest/globals'
 import UpdateSentenceTypesSummaryController from './updateSentenceTypesSummaryController'
 import RemandAndSentencingApiClient from '../../api/remandAndSentencingApiClient'
 import logger from '../../../logger'
+import * as formWizardHelper from '../../helpers/formWizardHelper'
 
 jest.mock('../../api/remandAndSentencingApiClient')
 jest.mock('../../../logger')
@@ -39,6 +40,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
     req = {
       sessionModel: {
         get: jest.fn(),
+        set: jest.fn(),
         unset: jest.fn(),
       },
       journeyModel: {
@@ -47,6 +49,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
         },
       },
       flash: jest.fn().mockReturnValue([]),
+      body: {},
     }
 
     // Setup response object
@@ -54,6 +57,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
       locals: {
         user: {
           token: 'test-token',
+          username: 'test-user',
         },
         nomisId: 'A1234BC',
       },
@@ -63,8 +67,14 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     controller = new UpdateSentenceTypesSummaryController({ route: '/update-sentence-types-summary' })
 
-    // Mock the parent class saveValues method
+    // Mock the parent class methods
     jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(controller)), 'saveValues').mockImplementation(async () => {
+      // Do nothing - just simulate parent method
+    })
+    jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(controller)), 'get').mockImplementation(async () => {
+      // Do nothing - just simulate parent method
+    })
+    jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(controller)), 'post').mockImplementation(async () => {
       // Do nothing - just simulate parent method
     })
   })
@@ -235,6 +245,145 @@ describe('UpdateSentenceTypesSummaryController', () => {
         courtCaseUuid,
       })
       expect(next).toHaveBeenCalledWith(error)
+    })
+  })
+
+  describe('get', () => {
+    const mockCourtCases = [
+      {
+        caseId: 'case-1',
+        courtName: 'Test Court',
+        location: 'Test Location',
+        date: '2024-01-01',
+        status: 'ACTIVE',
+        reference: 'REF001',
+        sentenced: true,
+        sentences: [
+          {
+            sentenceId: 'sentence-1',
+            sentenceTypeUuid: 'f9a1551e-86b1-425b-96f7-23465a0f05fc', // Unknown sentence
+            offenceCode: 'OFF001',
+            offenceDescription: 'Test Offence 1',
+          },
+          {
+            sentenceId: 'sentence-2',
+            sentenceTypeUuid: 'other-uuid',
+            offenceCode: 'OFF002',
+            offenceDescription: 'Test Offence 2',
+          },
+        ],
+      },
+      {
+        caseId: 'case-2',
+        courtName: 'Another Court',
+        location: 'Another Location',
+        date: '2024-02-01',
+        status: 'ACTIVE',
+        reference: 'REF002',
+        sentenced: true,
+        sentences: [
+          {
+            sentenceId: 'sentence-3',
+            sentenceTypeUuid: 'f9a1551e-86b1-425b-96f7-23465a0f05fc', // Unknown sentence
+            offenceCode: 'OFF003',
+            offenceDescription: 'Test Offence 3',
+          },
+        ],
+      },
+    ]
+
+    beforeEach(() => {
+      // Mock getCourtCaseOptions
+      jest.spyOn(formWizardHelper, 'getCourtCaseOptions').mockReturnValue(mockCourtCases)
+    })
+
+    it('should correctly identify and group court cases with unknown sentences', async () => {
+      // Arrange
+      req.sessionModel.get.mockImplementation((key: string) => {
+        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'SDS' }
+        return undefined
+      })
+
+      // Act
+      await controller.get(req, res, next)
+
+      // Assert
+      expect(res.locals.courtCasesWithUnknownSentences).toHaveLength(2)
+      expect(res.locals.totalUnknownSentences).toBe(2) // sentence-1 and sentence-3
+      expect(res.locals.totalUpdated).toBe(1) // only sentence-1 is updated
+      expect(res.locals.allComplete).toBe(false)
+      expect(req.sessionModel.set).toHaveBeenCalledWith('unknownSentencesToUpdate', ['sentence-1', 'sentence-3'])
+    })
+
+    it('should mark all complete when all sentences are updated', async () => {
+      // Arrange
+      req.sessionModel.get.mockImplementation((key: string) => {
+        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'SDS', 'sentence-3': 'EDS' }
+        return undefined
+      })
+
+      // Act
+      await controller.get(req, res, next)
+
+      // Assert
+      expect(res.locals.allComplete).toBe(true)
+    })
+
+    it('should handle errors gracefully', async () => {
+      // Arrange
+      const error = new Error('Test error')
+      req.sessionModel.get.mockImplementation(() => {
+        throw error
+      })
+
+      // Act
+      await controller.get(req, res, next)
+
+      // Assert
+      expect(next).toHaveBeenCalledWith(error)
+    })
+  })
+
+  describe('post', () => {
+    it('should allow continuation when all sentences are updated', async () => {
+      // Arrange
+      req.sessionModel.get.mockImplementation((key: string) => {
+        if (key === 'unknownSentencesToUpdate') return ['sentence-1', 'sentence-2']
+        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'SDS', 'sentence-2': 'EDS' }
+        return undefined
+      })
+
+      // Act
+      await controller.post(req, res, next)
+
+      // Assert
+      expect(req.sessionModel.set).not.toHaveBeenCalledWith('errors', expect.anything())
+      expect(Object.getPrototypeOf(Object.getPrototypeOf(controller)).post).toHaveBeenCalled()
+    })
+
+    it('should prevent continuation when not all sentences are updated', async () => {
+      // Arrange
+      req.sessionModel.get.mockImplementation((key: string) => {
+        if (key === 'unknownSentencesToUpdate') return ['sentence-1', 'sentence-2']
+        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'SDS' } // sentence-2 not updated
+        return undefined
+      })
+
+      // Mock the get method to be called
+      jest.spyOn(controller, 'get').mockImplementation(async () => {})
+
+      // Act
+      await controller.post(req, res, next)
+
+      // Assert
+      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', {
+        sentenceTypes: {
+          text: 'You must update all sentence types before continuing',
+        },
+      })
+      expect(res.locals.errors).toBeDefined()
+      expect(res.locals.errorSummary).toBeDefined()
+      expect(controller.get).toHaveBeenCalled()
     })
   })
 

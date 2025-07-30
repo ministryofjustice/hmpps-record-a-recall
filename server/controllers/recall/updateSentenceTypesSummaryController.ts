@@ -6,12 +6,101 @@ import RemandAndSentencingApiClient from '../../api/remandAndSentencingApiClient
 import { UpdateSentenceTypesRequest } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../../logger'
 import { dataAccess } from '../../data'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
 
 export default class UpdateSentenceTypesSummaryController extends RecallBaseController {
   /**
-   * Placeholder controller for RCLL-451 implementation
+   * Controller for RCLL-451 implementation
+   * Displays a summary of court cases with unknown sentence types and allows users to update them
    * This controller handles the persistence of sentence type updates via the RaS API
    */
+
+  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Get court cases from session
+      const courtCases = getCourtCaseOptions(req)
+      const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+
+      // Group court cases with unknown sentences
+      const courtCasesWithUnknownSentences = courtCases
+        .map(courtCase => {
+          const unknownSentences =
+            courtCase.sentences?.filter(
+              sentence => sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL,
+            ) || []
+
+          return {
+            ...courtCase,
+            unknownSentences,
+            hasUnknownSentences: unknownSentences.length > 0,
+            allSentencesUpdated: unknownSentences.every(
+              sentence => updatedSentenceTypes[sentence.sentenceId || sentence.sentenceUuid],
+            ),
+          }
+        })
+        .filter(courtCase => courtCase.hasUnknownSentences)
+
+      // Calculate progress
+      const totalUnknownSentences = courtCasesWithUnknownSentences.reduce(
+        (sum, courtCase) => sum + courtCase.unknownSentences.length,
+        0,
+      )
+      const totalUpdated = Object.keys(updatedSentenceTypes).length
+      const allComplete = totalUpdated === totalUnknownSentences && totalUnknownSentences > 0
+
+      // Store the list of unknown sentences for reference
+      const unknownSentenceIds = courtCasesWithUnknownSentences.flatMap(courtCase =>
+        courtCase.unknownSentences.map(s => s.sentenceId || s.sentenceUuid),
+      )
+      req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
+      req.sessionModel.set('selectedCourtCaseUuid', courtCasesWithUnknownSentences[0]?.caseId)
+
+      res.locals.courtCasesWithUnknownSentences = courtCasesWithUnknownSentences
+      res.locals.totalUnknownSentences = totalUnknownSentences
+      res.locals.totalUpdated = totalUpdated
+      res.locals.allComplete = allComplete
+      res.locals.updatedSentenceTypes = updatedSentenceTypes
+
+      super.get(req, res, next)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+    // Validate that all sentences have been updated
+    const unknownSentenceIds = (req.sessionModel.get('unknownSentencesToUpdate') || []) as string[]
+    const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+
+    const allUpdated = unknownSentenceIds.every(sentenceId => updatedSentenceTypes[sentenceId])
+
+    if (!allUpdated) {
+      // Set error and redisplay the page
+      req.sessionModel.set('errors', {
+        sentenceTypes: {
+          text: 'You must update all sentence types before continuing',
+        },
+      })
+
+      res.locals.errors = {
+        sentenceTypes: {
+          text: 'You must update all sentence types before continuing',
+        },
+      }
+      res.locals.errorSummary = [
+        {
+          text: 'You must update all sentence types before continuing',
+          href: '#sentence-types',
+        },
+      ]
+
+      return this.get(req, res, next)
+    }
+
+    // All validated, continue with the parent post method
+    return super.post(req, res, next)
+  }
 
   async saveValues(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
