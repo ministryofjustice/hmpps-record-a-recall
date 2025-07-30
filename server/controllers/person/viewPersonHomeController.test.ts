@@ -192,6 +192,7 @@ const mockRecallableCourtCases: RecallableCourtCasesResponse = {
       sentences: [
         {
           sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
+          sentenceTypeUuid: 'test-sentence-type-uuid',
           countNumber: '1',
           offenceCode: 'HA04005',
           sentenceType: 'EDS (Extended Determinate Sentence)',
