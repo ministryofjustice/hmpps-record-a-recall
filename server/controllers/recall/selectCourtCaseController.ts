@@ -150,7 +150,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
             ]
           : []
 
-        // Check if this is an unknown pre-recall sentence type using the UUID
         const isUnknownSentenceType =
           sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
 
