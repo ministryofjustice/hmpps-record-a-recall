@@ -43,7 +43,7 @@ export default function routes(services: Services): Router {
     populateNomisId(),
     populateRecallId(),
     loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
-    loadRecalls(services.recallService, services.prisonService, services.manageOffencesService),
+    loadRecalls(services.recallService, services.prisonService, services.manageOffencesService, services.courtService),
     editRecallRouter,
   )
   router.use(
@@ -51,7 +51,7 @@ export default function routes(services: Services): Router {
     populateEntrypoint(),
     populateNomisId(),
     loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
-    loadRecalls(services.recallService, services.prisonService, services.manageOffencesService),
+    loadRecalls(services.recallService, services.prisonService, services.manageOffencesService, services.courtService),
     newRecallRouter,
   )
   router.use('/bulk', bulkTestRouter(services))
