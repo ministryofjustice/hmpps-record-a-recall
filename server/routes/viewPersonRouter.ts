@@ -18,7 +18,7 @@ export default function personRouter(services: Services): Router {
     '/',
     setupCommonData(),
     loadPrisoner(services.prisonerService),
-    loadRecalls(services.recallService, services.prisonService, services.manageOffencesService),
+    loadRecalls(services.recallService, services.prisonService, services.manageOffencesService, services.courtService),
     loadServiceDefinitions(services.courtCasesReleaseDatesService),
     logPageView(services.auditService, Page.PERSON_HOME_PAGE),
     viewPersonHome,

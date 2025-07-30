@@ -1,110 +1,110 @@
 import { Request, Response, NextFunction } from 'express'
-// eslint-disable-next-line import/no-unresolved
-import { Recall } from 'models'
 import logger from '../../logger'
 import RecallService from '../services/recallService'
 import PrisonService from '../services/PrisonService'
 import ManageOffencesService from '../services/manageOffencesService'
+import CourtService from '../services/CourtService'
+import { Recall } from 'models'
 
-/**
- * Middleware to load recalls with location names and offence descriptions into res.locals
- */
 export default function loadRecalls(
   recallService: RecallService,
   prisonService: PrisonService,
   manageOffencesService: ManageOffencesService,
+  courtService: CourtService,
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const { nomisId, user } = res.locals
+    const { nomisId, user, recallableCourtCases } = res.locals
 
     if (!nomisId || !user?.username) {
       logger.warn('Missing nomisId or username in res.locals')
       return next()
     }
 
+    if (!recallableCourtCases || !Array.isArray(recallableCourtCases)) {
+      logger.warn('No recallableCourtCases in res.locals, skipping recall load')
+      res.locals.recalls = []
+      res.locals.latestRecallId = undefined
+      return next()
+    }
+
     try {
       const allRecalls = await recallService.getAllRecalls(nomisId, user.username)
+      const recalls = allRecalls?.filter(r => true) || []
 
-      // Filter out any recalls that might have a deleted status (defensively)
-      const recalls =
-        allRecalls?.filter(recall => {
-          return !('status' in recall && recall.status === 'DELETED')
-        }) || []
+      if (recalls.length === 0) {
+        res.locals.recalls = []
+        res.locals.latestRecallId = undefined
+        return next()
+      }
 
-      if (recalls && recalls.length > 0) {
-        // Get location names for all recalls
-        const locationIds = recalls.map(r => r.location)
-        const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
+      // Fetch prison names for recall locations
+      const locationIds = recalls.map(r => r.location).filter(Boolean)
+      const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
-        // Collect all offence codes from all recalls
-        const allOffenceCodes: string[] = []
-        recalls.forEach(recall => {
-          if (recall.sentences && Array.isArray(recall.sentences)) {
-            recall.sentences.forEach(sentence => {
-              if (sentence.offenceCode && typeof sentence.offenceCode === 'string') {
-                allOffenceCodes.push(sentence.offenceCode)
-              }
-            })
-          }
+      // before we were mapping through sentences inside the recall to get offence codes, but they are not in there
+      const offenceCodeSet = new Set<string>()
+      recallableCourtCases.forEach((courtCase: any) => {
+        courtCase.sentences?.forEach((sentence: any) => {
+          if (sentence.offenceCode) offenceCodeSet.add(sentence.offenceCode)
         })
+      })
+      const offenceCodes = [...offenceCodeSet].filter(Boolean)
 
-        // Fetch offence descriptions
-        let offenceMap: Record<string, string> = {}
-        // Remove duplicates and filter out falsy values
-        const offenceCodes = [...new Set(allOffenceCodes)].filter(Boolean)
-        if (offenceCodes.length > 0) {
-          try {
-            offenceMap = await manageOffencesService.getOffenceMap(offenceCodes, user.token)
-            logger.debug(`Fetched descriptions for ${Object.keys(offenceMap).length} offence codes`)
-          } catch (error) {
-            logger.error('Error fetching offence descriptions from ManageOffencesService:', error)
+      // Fetch offence descriptions map using ManageOffencesService
+      let offenceMap: Record<string, string> = {}
+      if (offenceCodes.length > 0) {
+        try {
+          offenceMap = await manageOffencesService.getOffenceMap(offenceCodes, user.token)
+          logger.debug(`[loadRecalls] Fetched offence descriptions for ${Object.keys(offenceMap).length} codes`)
+        } catch (error) {
+          logger.error('Error fetching offence descriptions:', error)
+        }
+      } else {
+        logger.debug('[loadRecalls] No offence codes found to fetch descriptions')
+      }
+      const courtCodeSet = new Set<string>()
+      recallableCourtCases.forEach((courtCase: any) => {
+        if (courtCase.courtCode) courtCodeSet.add(courtCase.courtCode)
+      })
+      const courtNamesMap = await courtService.getCourtNames([...courtCodeSet], user.username)
+
+      const enrichedRecalls = recalls.map(recall => {
+        const enhancedSentences = recall.sentences
+          ?.filter(sentence => sentence.status !== 'DELETED')
+          .map(sentence => ({
+            ...sentence,
+            offenceDescription: offenceMap[sentence.offenceCode || ''] || undefined,
+          }))
+
+        let courtName: string | undefined
+        for (const courtCaseId of recall.courtCaseIds || []) {
+          const matchedCourtCase = recallableCourtCases.find((c: any) => c.caseId === courtCaseId)
+          if (matchedCourtCase) {
+            courtName = courtNamesMap.get(matchedCourtCase.courtCode) || undefined
+            if (courtName) break
           }
         }
 
-        const recallsWithExtras = recalls.map(recall => {
-          const isFromNomis = recall.sentences?.some(isRecallFromNomis)
+        return {
+          ...recall,
+          locationName: prisonNames.get(recall.location),
+          courtName,
+          sentences: enhancedSentences || recall.sentences,
+        }
+      })
 
-          // Enhance sentences with offence descriptions and filter out deleted ones
-          const enhancedSentences = recall.sentences
-            ?.filter(sentence => {
-              // Filter out any sentences with deleted status (defensive)
-              return !('status' in sentence && sentence.status === 'DELETED')
-            })
-            ?.map(sentence => ({
-              ...sentence,
-              offenceDescription: offenceMap[sentence.offenceCode || ''] || undefined,
-            }))
-
-          return {
-            ...recall,
-            locationName: prisonNames.get(recall.location),
-            sentences: enhancedSentences || recall.sentences,
-            ...(isFromNomis ? { source: 'nomis' as const } : {}),
-          }
-        })
-
-        res.locals.recalls = recallsWithExtras
-        res.locals.latestRecallId = findLatestRecallId(recallsWithExtras)
-      } else {
-        res.locals.recalls = []
-        res.locals.latestRecallId = undefined
-      }
+      res.locals.recalls = enrichedRecalls
+      res.locals.latestRecallId = findLatestRecallId(enrichedRecalls)
     } catch (error) {
       logger.error(error, `Failed to load recalls for ${nomisId}`)
       res.locals.recalls = []
+      res.locals.latestRecallId = undefined
     }
 
     return next()
   }
 }
 
-export function isRecallFromNomis(recall: Recall): boolean {
-  return recall?.source === 'NOMIS'
-}
-
-/**
- * Find the latest recall by createdAt date
- */
 function findLatestRecallId(recalls: Recall[]): string | undefined {
   if (!recalls || recalls.length === 0) {
     return undefined
@@ -118,7 +118,7 @@ function findLatestRecallId(recalls: Recall[]): string | undefined {
       return current
     }
     return latest
-  }, null)
+  }, null as Recall | null)
 
   return latestRecall?.recallId
 }
