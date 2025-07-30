@@ -2,10 +2,8 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
-import RemandAndSentencingApiClient from '../../api/remandAndSentencingApiClient'
 import { UpdateSentenceTypesRequest } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../../logger'
-import { dataAccess } from '../../data'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
 
@@ -122,10 +120,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       }
 
       const { user } = res.locals
-      const { hmppsAuthClient } = dataAccess()
-      const systemToken = await hmppsAuthClient.getSystemClientToken(user.username)
-      const apiClient = new RemandAndSentencingApiClient(systemToken)
-      const response = await apiClient.updateSentenceTypes(courtCaseUuid, payload)
+      const response = await req.services.courtCaseService.updateSentenceTypes(courtCaseUuid, payload, user.username)
 
       logger.info('Successfully updated sentence types', {
         courtCaseUuid,

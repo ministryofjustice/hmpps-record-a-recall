@@ -1,40 +1,22 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { jest } from '@jest/globals'
 import UpdateSentenceTypesSummaryController from './updateSentenceTypesSummaryController'
-import RemandAndSentencingApiClient from '../../api/remandAndSentencingApiClient'
 import logger from '../../../logger'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
+import { UpdateSentenceTypesResponse } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
-jest.mock('../../api/remandAndSentencingApiClient')
 jest.mock('../../../logger')
-jest.mock('../../data', () => ({
-  dataAccess: () => ({
-    hmppsAuthClient: {
-      getSystemClientToken: jest.fn(() => Promise.resolve('system-token')),
-    },
-  }),
-}))
 
 describe('UpdateSentenceTypesSummaryController', () => {
   let req: any
   let res: any
   let next: jest.Mock
   let controller: UpdateSentenceTypesSummaryController
-  let mockApiClient: jest.Mocked<RemandAndSentencingApiClient>
 
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks()
-
-    // Mock API client
-    mockApiClient = {
-      updateSentenceTypes: jest.fn(),
-    } as any
-
-    // @ts-expect-error
-    RemandAndSentencingApiClient.mockImplementation(() => mockApiClient)
 
     // Setup request object
     req = {
@@ -50,6 +32,11 @@ describe('UpdateSentenceTypesSummaryController', () => {
       },
       flash: jest.fn().mockReturnValue([]),
       body: {},
+      services: {
+        courtCaseService: {
+          updateSentenceTypes: jest.fn() as jest.MockedFunction<any>,
+        },
+      },
     }
 
     // Setup response object
@@ -94,21 +81,25 @@ describe('UpdateSentenceTypesSummaryController', () => {
         return undefined
       })
 
-      const mockResponse = {
+      const mockResponse: UpdateSentenceTypesResponse = {
         updatedSentenceUuids: ['sentence-uuid-1', 'sentence-uuid-2'],
       }
-      mockApiClient.updateSentenceTypes.mockResolvedValue(mockResponse)
+      req.services.courtCaseService.updateSentenceTypes.mockResolvedValue(mockResponse)
 
       // Act
       await controller.saveValues(req, res, next)
 
       // Assert
-      expect(mockApiClient.updateSentenceTypes).toHaveBeenCalledWith(courtCaseUuid, {
-        updates: [
-          { sentenceUuid: 'sentence-uuid-1', sentenceTypeId: 'sds-type-uuid' },
-          { sentenceUuid: 'sentence-uuid-2', sentenceTypeId: 'eds-type-uuid' },
-        ],
-      })
+      expect(req.services.courtCaseService.updateSentenceTypes).toHaveBeenCalledWith(
+        courtCaseUuid,
+        {
+          updates: [
+            { sentenceUuid: 'sentence-uuid-1', sentenceTypeId: 'sds-type-uuid' },
+            { sentenceUuid: 'sentence-uuid-2', sentenceTypeId: 'eds-type-uuid' },
+          ],
+        },
+        'test-user',
+      )
 
       expect(req.sessionModel.unset).toHaveBeenCalledWith('updatedSentenceTypes')
       expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
@@ -131,7 +122,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
       await controller.saveValues(req, res, next)
 
       // Assert
-      expect(mockApiClient.updateSentenceTypes).not.toHaveBeenCalled()
+      expect(req.services.courtCaseService.updateSentenceTypes).not.toHaveBeenCalled()
       expect(req.sessionModel.unset).not.toHaveBeenCalled()
       expect(next).not.toHaveBeenCalled()
     })
@@ -148,7 +139,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
       await controller.saveValues(req, res, next)
 
       // Assert
-      expect(mockApiClient.updateSentenceTypes).not.toHaveBeenCalled()
+      expect(req.services.courtCaseService.updateSentenceTypes).not.toHaveBeenCalled()
       expect(next).not.toHaveBeenCalled()
     })
 
@@ -163,7 +154,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
       const error = new Error('Bad Request')
       ;(error as any).status = 400
-      mockApiClient.updateSentenceTypes.mockRejectedValue(error)
+      req.services.courtCaseService.updateSentenceTypes.mockRejectedValue(error)
 
       // Act
       await controller.saveValues(req, res, next)
@@ -187,7 +178,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
       const error = new Error('Not Found')
       ;(error as any).status = 404
-      mockApiClient.updateSentenceTypes.mockRejectedValue(error)
+      req.services.courtCaseService.updateSentenceTypes.mockRejectedValue(error)
 
       // Act
       await controller.saveValues(req, res, next)
@@ -211,7 +202,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
       const error = new Error('Unprocessable Entity')
       ;(error as any).status = 422
-      mockApiClient.updateSentenceTypes.mockRejectedValue(error)
+      req.services.courtCaseService.updateSentenceTypes.mockRejectedValue(error)
 
       // Act
       await controller.saveValues(req, res, next)
@@ -234,7 +225,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
       })
 
       const error = new Error('Server Error')
-      mockApiClient.updateSentenceTypes.mockRejectedValue(error)
+      req.services.courtCaseService.updateSentenceTypes.mockRejectedValue(error)
 
       // Act
       await controller.saveValues(req, res, next)
