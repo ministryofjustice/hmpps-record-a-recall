@@ -31,7 +31,9 @@ export default class BulkSentenceTypeController extends RecallBaseController {
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     // TODO: Implement for RCLL-453
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const selectedType = req.body.sentenceType
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { courtCaseId } = req.params
 
     // TODO: Get all sentence IDs for this court case
