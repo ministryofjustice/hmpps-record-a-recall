@@ -12,3 +12,5 @@ export type RecallableCourtCasesResponse = components['schemas']['RecallableCour
 export type SentenceTypeUpdate = components['schemas']['SentenceTypeUpdate']
 export type UpdateSentenceTypesRequest = components['schemas']['UpdateSentenceTypeRequest']
 export type UpdateSentenceTypesResponse = components['schemas']['UpdateSentenceTypeResponse']
+
+export type SentenceType = components['schemas']['SentenceType']
