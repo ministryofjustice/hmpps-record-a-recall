@@ -5,6 +5,7 @@ import logger from '../../logger'
 import RecallService from '../services/recallService'
 import PrisonService from '../services/PrisonService'
 import ManageOffencesService from '../services/manageOffencesService'
+import CourtCaseService from '../services/CourtCaseService'
 
 /**
  * Middleware to load recalls with location names and offence descriptions into res.locals
@@ -13,6 +14,7 @@ export default function loadRecalls(
   recallService: RecallService,
   prisonService: PrisonService,
   manageOffencesService: ManageOffencesService,
+  courtCaseService: CourtCaseService,
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { nomisId, user } = res.locals
@@ -36,13 +38,45 @@ export default function loadRecalls(
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
+        // Fetch court cases to get offence codes
+        let courtCasesResponse
+        let courtCasesFetchError = false
+        try {
+          courtCasesResponse = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
+        } catch (error) {
+          logger.error('Error fetching court cases for offence codes:', error)
+          courtCasesFetchError = true
+        }
+
+        const courtCases = courtCasesResponse?.cases || []
+
+        if (courtCasesFetchError) {
+          logger.warn(`Unable to fetch court cases for ${nomisId}, offence descriptions may be missing`)
+        }
+
+        // Create a map of sentenceId to offenceCode from court cases
+        const sentenceOffenceMap: Record<string, string> = {}
+        courtCases.forEach(courtCase => {
+          if (courtCase.sentences && Array.isArray(courtCase.sentences)) {
+            courtCase.sentences.forEach(sentence => {
+              if (sentence.sentenceUuid && sentence.offenceCode) {
+                sentenceOffenceMap[sentence.sentenceUuid] = sentence.offenceCode
+              }
+            })
+          }
+        })
+
         // Collect all offence codes from all recalls
         const allOffenceCodes: string[] = []
         recalls.forEach(recall => {
           if (recall.sentences && Array.isArray(recall.sentences)) {
             recall.sentences.forEach(sentence => {
+              // Try to get offence code from the sentence itself first
               if (sentence.offenceCode && typeof sentence.offenceCode === 'string') {
                 allOffenceCodes.push(sentence.offenceCode)
+              } else if (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) {
+                // Otherwise, get it from the court case mapping
+                allOffenceCodes.push(sentenceOffenceMap[sentence.sentenceUuid])
               }
             })
           }
@@ -64,16 +98,25 @@ export default function loadRecalls(
         const recallsWithExtras = recalls.map(recall => {
           const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
-          // Enhance sentences with offence descriptions and filter out deleted ones
-          const enhancedSentences = recall.sentences
-            ?.filter(sentence => {
-              // Filter out any sentences with deleted status (defensive)
-              return !('status' in sentence && sentence.status === 'DELETED')
-            })
-            ?.map(sentence => ({
+          // Enhance sentences with offence descriptions and filter out deleted ones in a single pass
+          const enhancedSentences = recall.sentences?.reduce((acc, sentence) => {
+            // Filter out any sentences with deleted status (defensive)
+            if ('status' in sentence && sentence.status === 'DELETED') {
+              return acc
+            }
+
+            // Get offence code either from sentence or from court case mapping
+            const offenceCode =
+              sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
+
+            acc.push({
               ...sentence,
-              offenceDescription: offenceMap[sentence.offenceCode || ''] || undefined,
-            }))
+              offenceCode, // Ensure offenceCode is populated
+              offenceDescription: offenceMap[offenceCode] || undefined,
+            })
+
+            return acc
+          }, [])
 
           return {
             ...recall,
@@ -111,14 +154,11 @@ function findLatestRecallId(recalls: Recall[]): string | undefined {
   }
 
   const latestRecall = recalls.reduce((latest, current) => {
-    if (
-      !latest ||
-      (current.createdAt && latest.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))
-    ) {
+    if (!latest.createdAt || (current.createdAt && new Date(current.createdAt) > new Date(latest.createdAt))) {
       return current
     }
     return latest
-  }, null)
+  }, recalls[0])
 
   return latestRecall?.recallId
 }
