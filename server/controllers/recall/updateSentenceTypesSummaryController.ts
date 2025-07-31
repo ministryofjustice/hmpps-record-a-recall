@@ -9,7 +9,6 @@ import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
 
 export default class UpdateSentenceTypesSummaryController extends RecallBaseController {
   /**
-   * Controller for RCLL-451 implementation
    * Displays a summary of court cases with unknown sentence types and allows users to update them
    * This controller handles the persistence of sentence type updates via the RaS API
    */
