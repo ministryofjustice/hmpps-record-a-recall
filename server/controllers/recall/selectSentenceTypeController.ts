@@ -127,7 +127,6 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     )
     const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
-    // Update session with selected type (both UUID and description)
     const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
       string,
       { uuid: string; description: string }

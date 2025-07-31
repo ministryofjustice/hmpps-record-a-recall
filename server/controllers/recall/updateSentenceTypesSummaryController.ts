@@ -68,21 +68,6 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       )
       req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
 
-      // TEMPORARY LOG: Show sentences that need updating
-      logger.info('TEMP DEBUG - Sentences needing update', {
-        totalUnknownSentences,
-        courtCasesWithUnknownSentences: courtCasesWithUnknownSentences.map(cc => ({
-          courtCaseUuid: cc.caseId,
-          courtCaseReference: cc.reference,
-          unknownSentences: cc.unknownSentences.map(s => ({
-            sentenceUuid: s.sentenceUuid,
-            offenceCode: s.offenceCode,
-            currentSentenceTypeUuid: s.sentenceTypeUuid,
-            isUpdated: !!updatedSentences[s.sentenceUuid],
-          })),
-        })),
-      })
-
       // Pre-process data for cleaner template logic
       const unupdatedCases = []
       const updatedCases = []
