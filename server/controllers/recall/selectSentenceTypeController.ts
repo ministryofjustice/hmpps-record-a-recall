@@ -51,7 +51,6 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       )
     } catch (error) {
       logger.error('Failed to fetch applicable sentence types', { error: error.message })
-      // propagate error
       throw error
     }
   }
