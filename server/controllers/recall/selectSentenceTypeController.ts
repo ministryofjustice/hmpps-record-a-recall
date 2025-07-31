@@ -1,94 +1,158 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
+import type { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import logger from '../../../logger'
+import { RecallableCourtCaseSentence, SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 
-/**
- * TODO: RCLL-452 Implement single sentence type selection controller
- *
- * This controller should:
- * 1. Display details of a single sentence that needs its type updated
- * 2. Show radio buttons for available sentence types (fetch from RaS API or static list?)
- * 3. Pre-populate if editing an already selected type
- * 4. Validate that a selection is made
- * 5. Update the session with the selected type mapping
- * 6. Navigate back to the update-sentence-types-summary page
- *
- * Session fields to use:
- * - updatedSentenceTypes: Record<string, string> - Map of sentenceId to selected type UUID
- * - Get sentence details from court cases in session
- *
- * Example implementation structure:
- *
- * async get(req, res, next) {
- *   const sentenceId = req.params.sentenceId
- *   const courtCases = getCourtCaseOptions(req)
- *   const sentence = findSentenceById(courtCases, sentenceId)
- *   const selectedType = req.sessionModel.get('updatedSentenceTypes')[sentenceId]
- *
- *   res.locals.sentence = sentence
- *   res.locals.selectedType = selectedType
- *   res.locals.sentenceTypeOptions = await getSentenceTypeOptions()
- *
- *   super.get(req, res, next)
- * }
- *
- * async post(req, res, next) {
- *   const sentenceId = req.params.sentenceId
- *   const selectedType = req.body.sentenceType
- *
- *   // Update session
- *   const updatedTypes = req.sessionModel.get('updatedSentenceTypes') || {}
- *   updatedTypes[sentenceId] = selectedType
- *   req.sessionModel.set('updatedSentenceTypes', updatedTypes)
- *
- *   super.post(req, res, next)
- * }
- */
 export default class SelectSentenceTypeController extends RecallBaseController {
+  middlewareSetup() {
+    super.middlewareSetup()
+    this.use(loadCourtCaseOptions)
+    this.use(this.setSentenceTypeFieldItems)
+  }
+
+  private findSentenceAndCourtCase(sentenceUuid: string, courtCases: CourtCase[]) {
+    for (const courtCase of courtCases) {
+      const sentence = courtCase.sentences?.find(s => s.sentenceUuid === sentenceUuid)
+      if (sentence) {
+        return { targetSentence: sentence, targetCourtCase: courtCase }
+      }
+    }
+    return { targetSentence: null, targetCourtCase: null }
+  }
+
+  private async getApplicableSentenceTypes(
+    req: FormWizard.Request,
+    sentence: RecallableCourtCaseSentence,
+    courtCase: CourtCase,
+    username: string,
+  ): Promise<SentenceType[]> {
+    try {
+      // Calculate age at conviction from prisoner details
+      const prisoner = req.sessionModel.get('prisoner') as { dateOfBirth: string }
+      const convictionDate = new Date(courtCase.date)
+      const dateOfBirth = new Date(prisoner.dateOfBirth)
+      const ageAtConviction = Math.floor(
+        (convictionDate.getTime() - dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+      )
+
+      return await req.services.courtCaseService.searchSentenceTypes(
+        {
+          age: ageAtConviction,
+          convictionDate: courtCase.date,
+          offenceDate: sentence.offenceStartDate || courtCase.date,
+          statuses: ['ACTIVE'],
+        },
+        username,
+      )
+    } catch (error) {
+      logger.error('Failed to fetch applicable sentence types', { error: error.message })
+      // propagate error
+      throw error
+    }
+  }
+
+  async setSentenceTypeFieldItems(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { sentenceUuid } = req.params
+      const courtCases = getCourtCaseOptions(req)
+
+      // Find the sentence and its court case
+      const { targetSentence, targetCourtCase } = this.findSentenceAndCourtCase(sentenceUuid, courtCases)
+
+      if (!targetSentence || !targetCourtCase) {
+        return next(new Error(`Sentence not found: ${sentenceUuid}`))
+      }
+
+      // Get applicable sentence types
+      const { user } = res.locals
+      const sentenceTypes = await this.getApplicableSentenceTypes(req, targetSentence, targetCourtCase, user.username)
+
+      // Set the field items
+      req.form.options.fields.sentenceType.items = sentenceTypes.map(type => ({
+        value: type.sentenceTypeUuid,
+        text: type.description,
+      }))
+
+      return next()
+    } catch (error) {
+      logger.error('Error setting sentence type field items', { error: error.message })
+      return next(error)
+    }
+  }
+
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    // TODO: Implement for RCLL-452
-    res.locals.placeholderMessage = 'RCLL-452: Single sentence type selection to be implemented'
-    super.get(req, res, next)
+    try {
+      const { sentenceUuid } = req.params
+      const courtCases = getCourtCaseOptions(req)
+
+      const { targetSentence, targetCourtCase } = this.findSentenceAndCourtCase(sentenceUuid, courtCases)
+
+      if (!targetSentence || !targetCourtCase) {
+        throw new Error(`Sentence not found: ${sentenceUuid}`)
+      }
+
+      // Check if sentence has already been updated
+      const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+        string,
+        { uuid: string; description: string }
+      >
+      const selectedType = updatedSentences[sentenceUuid]?.uuid
+
+      const sentenceTypes = req.form.options.fields.sentenceType.items.map((item: { value: string; text: string }) => ({
+        sentenceTypeUuid: item.value,
+        description: item.text,
+      }))
+
+      res.locals.sentence = targetSentence
+      res.locals.courtCase = targetCourtCase
+      res.locals.selectedType = selectedType
+      res.locals.sentenceTypes = sentenceTypes
+      res.locals.sentenceUuid = sentenceUuid
+
+      super.get(req, res, next)
+    } catch (error) {
+      logger.error('Error in SelectSentenceTypeController.get', { error: error.message })
+      next(error)
+    }
   }
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    // TODO: Implement for RCLL-452
-    const { sentenceId } = req.params
-    const selectedType = req.body.sentenceType
+    const { sentenceUuid } = req.params
+    const selectedTypeUuid = req.body.sentenceType
 
-    // Update session with selected type
-    const updatedTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
-    updatedTypes[sentenceId] = selectedType
-    req.sessionModel.set('updatedSentenceTypes', updatedTypes)
+    // Find the description for the selected type
+    const sentenceTypeItem = req.form.options.fields.sentenceType.items.find(
+      (item: { value: string; text: string }) => item.value === selectedTypeUuid,
+    )
+    const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
-    // Check if we're in individual selection mode
-    const sentencesInCurrentCase = req.sessionModel.get('sentencesInCurrentCase') as string[]
-    const currentIndex = req.sessionModel.get('currentSentenceIndex') as number
-
-    if (sentencesInCurrentCase && typeof currentIndex === 'number') {
-      // We're in individual selection mode, move to next sentence
-      const nextIndex = currentIndex + 1
-
-      if (nextIndex < sentencesInCurrentCase.length) {
-        // There are more sentences to update
-        req.sessionModel.set('currentSentenceIndex', nextIndex)
-        const nextSentenceId = sentencesInCurrentCase[nextIndex]
-
-        // Check if the next sentence is already updated
-        if (!updatedTypes[nextSentenceId]) {
-          // Navigate to next sentence
-          return res.redirect(`/recall/${res.locals.nomisId}/select-sentence-type/${nextSentenceId}`)
-        }
-      }
-
-      // All sentences in this case are done, clear the navigation state
-      req.sessionModel.unset('sentencesInCurrentCase')
-      req.sessionModel.unset('currentSentenceIndex')
-      req.sessionModel.unset('bulkUpdateMode')
+    // Update session with selected type (both UUID and description)
+    const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+      string,
+      { uuid: string; description: string }
+    >
+    updatedSentences[sentenceUuid] = {
+      uuid: selectedTypeUuid,
+      description: selectedTypeDescription,
     }
+    req.sessionModel.set('updatedSentences', updatedSentences)
 
-    // Navigate back to summary
-    return res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
+    // Always navigate back to summary page after updating
+    // The sequential flow will be implemented in RCLL-453
+    return super.post(req, res, next)
+  }
+
+  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+    const locals = super.locals(req, res)
+
+    return {
+      ...locals,
+      pageTitle: 'Select the sentence type',
+    }
   }
 }

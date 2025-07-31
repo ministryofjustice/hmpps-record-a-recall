@@ -150,7 +150,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
             ]
           : []
 
-        // Check if this is an unknown pre-recall sentence type using the UUID
         const isUnknownSentenceType =
           sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
 
@@ -437,6 +436,27 @@ export default class SelectCourtCaseController extends RecallBaseController {
           )
           // TODO should we be passing sentences and break downs?
           summarisedSentenceGroupsArray = summariseRasCases(caseDetails)
+
+          // Check for unknown sentences in selected cases
+          const unknownSentenceIds: string[] = []
+          selectedCases.forEach(courtCase => {
+            if (courtCase.sentences) {
+              courtCase.sentences.forEach(sentence => {
+                if (sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
+                  const { sentenceUuid } = sentence
+                  if (sentenceUuid) {
+                    unknownSentenceIds.push(sentenceUuid)
+                  }
+                }
+              })
+            }
+          })
+
+          // Set session data for unknown sentences
+          if (unknownSentenceIds.length > 0) {
+            req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
+            req.sessionModel.set('updatedSentenceTypes', {})
+          }
         }
       }
 

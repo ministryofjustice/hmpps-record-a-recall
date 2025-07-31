@@ -62,22 +62,23 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
     }
 
     // Get the first sentence that hasn't been updated yet
-    const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
-    const firstUnupdatedSentence = unknownSentences.find(
-      sentence => !updatedSentenceTypes[sentence.sentenceId || sentence.sentenceUuid],
-    )
+    const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+      string,
+      { uuid: string; description: string }
+    >
+    const firstUnupdatedSentence = unknownSentences.find(sentence => !updatedSentences[sentence.sentenceUuid])
 
     if (firstUnupdatedSentence) {
-      const firstSentenceId = firstUnupdatedSentence.sentenceId || firstUnupdatedSentence.sentenceUuid
+      const firstSentenceUuid = firstUnupdatedSentence.sentenceUuid
 
       // Store the list of sentences for this court case in session for navigation
-      const sentenceIds = unknownSentences.map(s => s.sentenceId || s.sentenceUuid)
-      req.sessionModel.set('sentencesInCurrentCase', sentenceIds)
+      const sentenceUuids = unknownSentences.map(s => s.sentenceUuid)
+      req.sessionModel.set('sentencesInCurrentCase', sentenceUuids)
       req.sessionModel.set('currentSentenceIndex', 0)
       req.sessionModel.set('bulkUpdateMode', false)
 
       // Navigate to the first sentence
-      return res.redirect(`/recall/${res.locals.nomisId}/select-sentence-type/${firstSentenceId}`)
+      return res.redirect(`/recall/${res.locals.nomisId}/select-sentence-type/${firstSentenceUuid}`)
     }
 
     // All sentences already updated, go back to summary

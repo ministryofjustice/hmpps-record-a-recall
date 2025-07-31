@@ -6,6 +6,7 @@ import { UpdateSentenceTypesRequest } from '../../@types/remandAndSentencingApi/
 import logger from '../../../logger'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 
 export default class UpdateSentenceTypesSummaryController extends RecallBaseController {
   /**
@@ -13,11 +14,26 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
    * This controller handles the persistence of sentence type updates via the RaS API
    */
 
+  middlewareSetup() {
+    super.middlewareSetup()
+    this.use(loadCourtCaseOptions)
+  }
+
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Get court cases from session
       const courtCases = getCourtCaseOptions(req)
-      const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+      const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+        string,
+        { uuid: string; description: string }
+      >
+      // Create compatibility maps for templates
+      const updatedSentenceTypes: Record<string, string> = {}
+      const updatedSentenceTypeDescriptions: Record<string, string> = {}
+      for (const [sentenceUuid, data] of Object.entries(updatedSentences)) {
+        updatedSentenceTypes[sentenceUuid] = data.uuid
+        updatedSentenceTypeDescriptions[sentenceUuid] = data.description
+      }
 
       // Group court cases with unknown sentences
       const courtCasesWithUnknownSentences = courtCases
@@ -32,7 +48,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
             unknownSentences,
             hasUnknownSentences: unknownSentences.length > 0,
             allSentencesUpdated: unknownSentences.every(
-              sentence => updatedSentenceTypes[sentence.sentenceId || sentence.sentenceUuid],
+              sentence => updatedSentences[sentence.sentenceUuid] !== undefined,
             ),
           }
         })
@@ -48,15 +64,55 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
       // Store the list of unknown sentences for reference
       const unknownSentenceIds = courtCasesWithUnknownSentences.flatMap(courtCase =>
-        courtCase.unknownSentences.map(s => s.sentenceId || s.sentenceUuid),
+        courtCase.unknownSentences.map(s => s.sentenceUuid),
       )
       req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
 
-      res.locals.courtCasesWithUnknownSentences = courtCasesWithUnknownSentences
+      // TEMPORARY LOG: Show sentences that need updating
+      logger.info('TEMP DEBUG - Sentences needing update', {
+        totalUnknownSentences,
+        courtCasesWithUnknownSentences: courtCasesWithUnknownSentences.map(cc => ({
+          courtCaseUuid: cc.caseId,
+          courtCaseReference: cc.reference,
+          unknownSentences: cc.unknownSentences.map(s => ({
+            sentenceUuid: s.sentenceUuid,
+            offenceCode: s.offenceCode,
+            currentSentenceTypeUuid: s.sentenceTypeUuid,
+            isUpdated: !!updatedSentences[s.sentenceUuid],
+          })),
+        })),
+      })
+
+      // Pre-process data for cleaner template logic
+      const unupdatedCases = []
+      const updatedCases = []
+
+      for (const courtCase of courtCasesWithUnknownSentences) {
+        const unupdatedSentences = courtCase.unknownSentences.filter(s => !updatedSentences[s.sentenceUuid])
+        const updatedSentencesList = courtCase.unknownSentences.filter(s => updatedSentences[s.sentenceUuid])
+
+        if (unupdatedSentences.length > 0) {
+          unupdatedCases.push({
+            ...courtCase,
+            sentences: unupdatedSentences,
+          })
+        }
+
+        if (updatedSentencesList.length > 0) {
+          updatedCases.push({
+            ...courtCase,
+            sentences: updatedSentencesList,
+          })
+        }
+      }
+
+      res.locals.unupdatedCases = unupdatedCases
+      res.locals.updatedCases = updatedCases
       res.locals.totalUnknownSentences = totalUnknownSentences
       res.locals.totalUpdated = totalUpdated
       res.locals.allComplete = allComplete
       res.locals.updatedSentenceTypes = updatedSentenceTypes
+      res.locals.updatedSentenceTypeDescriptions = updatedSentenceTypeDescriptions
 
       super.get(req, res, next)
     } catch (error) {
@@ -67,9 +123,12 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     // Validate that all sentences have been updated
     const unknownSentenceIds = (req.sessionModel.get('unknownSentencesToUpdate') || []) as string[]
-    const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+    const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+      string,
+      { uuid: string; description: string }
+    >
 
-    const allUpdated = unknownSentenceIds.every(sentenceId => updatedSentenceTypes[sentenceId])
+    const allUpdated = unknownSentenceIds.every(sentenceUuid => updatedSentences[sentenceUuid])
 
     if (!allUpdated) {
       // Set error and redisplay the page
@@ -100,11 +159,17 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
   async saveValues(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+      const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+        string,
+        { uuid: string; description: string }
+      >
       const courtCases = getCourtCaseOptions(req)
 
       // Check if there are any updates to persist
-      const sentenceUpdates = Object.entries(updatedSentenceTypes)
+      const sentenceUpdates = Object.entries(updatedSentences).map(([sentenceUuid, data]) => [
+        sentenceUuid,
+        data.uuid,
+      ]) as Array<[string, string]>
       if (sentenceUpdates.length === 0) {
         // No updates to persist, continue to next step
         return super.saveValues(req, res, next)
@@ -118,9 +183,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
         let foundCourtCase: string | null = null
 
         for (const courtCase of courtCases) {
-          const sentenceExists = courtCase.sentences?.some(
-            sentence => (sentence.sentenceId || sentence.sentenceUuid) === sentenceUuid,
-          )
+          const sentenceExists = courtCase.sentences?.some(sentence => sentence.sentenceUuid === sentenceUuid)
 
           if (sentenceExists) {
             foundCourtCase = courtCase.caseId
@@ -175,7 +238,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       })
 
       // Clear the temporary session data on success
-      req.sessionModel.unset('updatedSentenceTypes')
+      req.sessionModel.unset('updatedSentences')
       req.sessionModel.unset('unknownSentencesToUpdate')
 
       // Continue to the next step
@@ -206,15 +269,25 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    // TODO: Implement display logic for RCLL-451
-    // This will show the summary of sentences to update
-    const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+    const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+      string,
+      { uuid: string; description: string }
+    >
     const unknownSentences = (req.sessionModel.get('unknownSentencesToUpdate') || []) as string[]
 
+    // Create compatibility maps for templates
+    const updatedSentenceTypes: Record<string, string> = {}
+    const updatedSentenceTypeDescriptions: Record<string, string> = {}
+    for (const [sentenceUuid, data] of Object.entries(updatedSentences)) {
+      updatedSentenceTypes[sentenceUuid] = data.uuid
+      updatedSentenceTypeDescriptions[sentenceUuid] = data.description
+    }
+
     res.locals.updatedSentenceTypes = updatedSentenceTypes
+    res.locals.updatedSentenceTypeDescriptions = updatedSentenceTypeDescriptions
     res.locals.unknownSentences = unknownSentences
     res.locals.totalToUpdate = unknownSentences.length
-    res.locals.totalUpdated = Object.keys(updatedSentenceTypes).length
+    res.locals.totalUpdated = Object.keys(updatedSentences).length
 
     return super.locals(req, res)
   }
