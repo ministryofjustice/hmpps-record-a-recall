@@ -60,18 +60,15 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       const { sentenceUuid } = req.params
       const courtCases = getCourtCaseOptions(req)
 
-      // Find the sentence and its court case
       const { targetSentence, targetCourtCase } = this.findSentenceAndCourtCase(sentenceUuid, courtCases)
 
       if (!targetSentence || !targetCourtCase) {
         return next(new Error(`Sentence not found: ${sentenceUuid}`))
       }
 
-      // Get applicable sentence types
       const { user } = res.locals
       const sentenceTypes = await this.getApplicableSentenceTypes(req, targetSentence, targetCourtCase, user.username)
 
-      // Set the field items
       req.form.options.fields.sentenceType.items = sentenceTypes.map(type => ({
         value: type.sentenceTypeUuid,
         text: type.description,
