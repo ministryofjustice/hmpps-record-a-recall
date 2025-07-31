@@ -52,7 +52,6 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
         courtCase.unknownSentences.map(s => s.sentenceId || s.sentenceUuid),
       )
       req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
-      req.sessionModel.set('selectedCourtCaseUuid', courtCasesWithUnknownSentences[0]?.caseId)
 
       res.locals.courtCasesWithUnknownSentences = courtCasesWithUnknownSentences
       res.locals.totalUnknownSentences = totalUnknownSentences
@@ -102,29 +101,78 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
   async saveValues(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const courtCaseUuid = req.sessionModel.get('selectedCourtCaseUuid') as string
       const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+      const courtCases = getCourtCaseOptions(req)
 
       // Check if there are any updates to persist
       const sentenceUpdates = Object.entries(updatedSentenceTypes)
-      if (!courtCaseUuid || sentenceUpdates.length === 0) {
+      if (sentenceUpdates.length === 0) {
         // No updates to persist, continue to next step
         return super.saveValues(req, res, next)
       }
 
-      const payload: UpdateSentenceTypesRequest = {
-        updates: sentenceUpdates.map(([sentenceUuid, sentenceTypeId]) => ({
-          sentenceUuid,
-          sentenceTypeId,
-        })),
+      // Group sentence updates by their court case UUID
+      const updatesByCourtCase: Record<string, Array<{ sentenceUuid: string; sentenceTypeId: string }>> = {}
+
+      // Find which court case each sentence belongs to
+      for (const [sentenceUuid, sentenceTypeId] of sentenceUpdates) {
+        let foundCourtCase: string | null = null
+
+        for (const courtCase of courtCases) {
+          const sentenceExists = courtCase.sentences?.some(
+            sentence => (sentence.sentenceId || sentence.sentenceUuid) === sentenceUuid,
+          )
+
+          if (sentenceExists) {
+            foundCourtCase = courtCase.caseId
+            break
+          }
+        }
+
+        if (foundCourtCase) {
+          if (!updatesByCourtCase[foundCourtCase]) {
+            updatesByCourtCase[foundCourtCase] = []
+          }
+          updatesByCourtCase[foundCourtCase].push({ sentenceUuid, sentenceTypeId })
+        }
       }
 
       const { user } = res.locals
-      const response = await req.services.courtCaseService.updateSentenceTypes(courtCaseUuid, payload, user.username)
+      const allUpdatedUuids: string[] = []
 
-      logger.info('Successfully updated sentence types', {
-        courtCaseUuid,
-        updatedCount: response.updatedSentenceUuids.length,
+      // Make separate API calls for each court case
+      const updatePromises = Object.entries(updatesByCourtCase).map(async ([courtCaseUuid, updates]) => {
+        const payload: UpdateSentenceTypesRequest = { updates }
+
+        try {
+          const response = await req.services.courtCaseService.updateSentenceTypes(
+            courtCaseUuid,
+            payload,
+            user.username,
+          )
+
+          logger.info('Successfully updated sentence types for court case', {
+            courtCaseUuid,
+            updatedCount: response.updatedSentenceUuids.length,
+          })
+
+          return response.updatedSentenceUuids
+        } catch (error) {
+          logger.error('Failed to update sentence types for court case', {
+            error: error.message,
+            courtCaseUuid,
+          })
+          throw error
+        }
+      })
+
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises)
+      results.forEach(uuids => allUpdatedUuids.push(...uuids))
+
+      logger.info('Successfully updated all sentence types', {
+        totalCourtCases: Object.keys(updatesByCourtCase).length,
+        totalUpdatedSentences: allUpdatedUuids.length,
       })
 
       // Clear the temporary session data on success
@@ -136,7 +184,6 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
     } catch (error) {
       logger.error('Failed to update sentence types', {
         error: error.message,
-        courtCaseUuid: req.sessionModel.get('selectedCourtCaseUuid'),
       })
 
       if (error.status === 400) {

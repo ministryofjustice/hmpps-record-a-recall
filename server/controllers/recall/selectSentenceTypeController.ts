@@ -54,7 +54,41 @@ export default class SelectSentenceTypeController extends RecallBaseController {
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     // TODO: Implement for RCLL-452
-    // For now, just redirect back to summary
-    res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
+    const { sentenceId } = req.params
+    const selectedType = req.body.sentenceType
+
+    // Update session with selected type
+    const updatedTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+    updatedTypes[sentenceId] = selectedType
+    req.sessionModel.set('updatedSentenceTypes', updatedTypes)
+
+    // Check if we're in individual selection mode
+    const sentencesInCurrentCase = req.sessionModel.get('sentencesInCurrentCase') as string[]
+    const currentIndex = req.sessionModel.get('currentSentenceIndex') as number
+
+    if (sentencesInCurrentCase && typeof currentIndex === 'number') {
+      // We're in individual selection mode, move to next sentence
+      const nextIndex = currentIndex + 1
+
+      if (nextIndex < sentencesInCurrentCase.length) {
+        // There are more sentences to update
+        req.sessionModel.set('currentSentenceIndex', nextIndex)
+        const nextSentenceId = sentencesInCurrentCase[nextIndex]
+
+        // Check if the next sentence is already updated
+        if (!updatedTypes[nextSentenceId]) {
+          // Navigate to next sentence
+          return res.redirect(`/recall/${res.locals.nomisId}/select-sentence-type/${nextSentenceId}`)
+        }
+      }
+
+      // All sentences in this case are done, clear the navigation state
+      req.sessionModel.unset('sentencesInCurrentCase')
+      req.sessionModel.unset('currentSentenceIndex')
+      req.sessionModel.unset('bulkUpdateMode')
+    }
+
+    // Navigate back to summary
+    return res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
   }
 }

@@ -2,6 +2,8 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 
 /**
  * TODO: RCLL-453 Implement multiple sentence decision controller
@@ -36,13 +38,49 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
 
     if (sameSentenceType === 'yes') {
       // Navigate to bulk selection
-      res.redirect(`/recall/${res.locals.nomisId}/bulk-sentence-type/${courtCaseId}`)
-    } else {
-      // Set up for individual selection
-      // TODO: Get sentences for this court case
-      // TODO: Set CURRENT_SENTENCE_INDEX to 0
-      // TODO: Navigate to first sentence
-      res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
+      return res.redirect(`/recall/${res.locals.nomisId}/bulk-sentence-type/${courtCaseId}`)
     }
+
+    // Set up for individual selection
+    const courtCases = getCourtCaseOptions(req)
+    const currentCourtCase = courtCases.find(cc => cc.caseId === courtCaseId)
+
+    if (!currentCourtCase) {
+      // Handle error - court case not found
+      return res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
+    }
+
+    // Find all unknown sentences in this court case
+    const unknownSentences =
+      currentCourtCase.sentences?.filter(
+        sentence => sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL,
+      ) || []
+
+    if (unknownSentences.length === 0) {
+      // No unknown sentences found, go back to summary
+      return res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
+    }
+
+    // Get the first sentence that hasn't been updated yet
+    const updatedSentenceTypes = (req.sessionModel.get('updatedSentenceTypes') || {}) as Record<string, string>
+    const firstUnupdatedSentence = unknownSentences.find(
+      sentence => !updatedSentenceTypes[sentence.sentenceId || sentence.sentenceUuid],
+    )
+
+    if (firstUnupdatedSentence) {
+      const firstSentenceId = firstUnupdatedSentence.sentenceId || firstUnupdatedSentence.sentenceUuid
+
+      // Store the list of sentences for this court case in session for navigation
+      const sentenceIds = unknownSentences.map(s => s.sentenceId || s.sentenceUuid)
+      req.sessionModel.set('sentencesInCurrentCase', sentenceIds)
+      req.sessionModel.set('currentSentenceIndex', 0)
+      req.sessionModel.set('bulkUpdateMode', false)
+
+      // Navigate to the first sentence
+      return res.redirect(`/recall/${res.locals.nomisId}/select-sentence-type/${firstSentenceId}`)
+    }
+
+    // All sentences already updated, go back to summary
+    return res.redirect(`/recall/${res.locals.nomisId}/update-sentence-types-summary`)
   }
 }

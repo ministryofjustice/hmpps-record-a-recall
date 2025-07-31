@@ -7,6 +7,20 @@ import * as formWizardHelper from '../../helpers/formWizardHelper'
 import { UpdateSentenceTypesResponse } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 jest.mock('../../../logger')
+jest.mock('../../helpers/formWizardHelper', () => ({
+  getCourtCaseOptions: jest.fn(),
+  default: jest.fn(() => ({ isEdit: false, storedRecall: null })), // getJourneyDataFromRequest
+  getTemporaryCalc: jest.fn(() => null),
+  sessionModelFields: {
+    PRISONER: 'prisoner',
+    UNKNOWN_SENTENCES_TO_UPDATE: 'unknownSentencesToUpdate',
+    UPDATED_SENTENCE_TYPES: 'updatedSentenceTypes',
+  },
+}))
+
+const mockGetCourtCaseOptions = formWizardHelper.getCourtCaseOptions as jest.MockedFunction<
+  typeof formWizardHelper.getCourtCaseOptions
+>
 
 describe('UpdateSentenceTypesSummaryController', () => {
   let req: any
@@ -69,43 +83,75 @@ describe('UpdateSentenceTypesSummaryController', () => {
   describe('saveValues', () => {
     it('should successfully update sentence types and clear session data', async () => {
       // Arrange
-      const courtCaseUuid = 'court-case-uuid-123'
       const updatedSentenceTypes = {
-        'sentence-uuid-1': 'sds-type-uuid',
-        'sentence-uuid-2': 'eds-type-uuid',
+        'sentence-1': 'sds-type-uuid',
+        'sentence-3': 'eds-type-uuid',
       }
 
+      // Mock court cases with the sentences
+      const mockCourtCases: any[] = [
+        {
+          caseId: 'court-case-uuid-123',
+          status: 'ACTIVE',
+          date: '2024-01-01',
+          location: 'LOC1',
+          reference: 'REF1',
+          sentenced: true,
+          sentences: [{ sentenceId: 'sentence-1', sentenceUuid: 'sentence-1' }],
+        },
+        {
+          caseId: 'court-case-uuid-456',
+          status: 'ACTIVE',
+          date: '2024-01-02',
+          location: 'LOC2',
+          reference: 'REF2',
+          sentenced: true,
+          sentences: [{ sentenceId: 'sentence-3', sentenceUuid: 'sentence-3' }],
+        },
+      ]
+
+      mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
+
       req.sessionModel.get.mockImplementation((key: string) => {
-        if (key === 'selectedCourtCaseUuid') return courtCaseUuid
         if (key === 'updatedSentenceTypes') return updatedSentenceTypes
         return undefined
       })
 
       const mockResponse: UpdateSentenceTypesResponse = {
-        updatedSentenceUuids: ['sentence-uuid-1', 'sentence-uuid-2'],
+        updatedSentenceUuids: ['sentence-1'],
       }
-      req.services.courtCaseService.updateSentenceTypes.mockResolvedValue(mockResponse)
+      const mockResponse2: UpdateSentenceTypesResponse = {
+        updatedSentenceUuids: ['sentence-3'],
+      }
+      req.services.courtCaseService.updateSentenceTypes
+        .mockResolvedValueOnce(mockResponse)
+        .mockResolvedValueOnce(mockResponse2)
 
       // Act
       await controller.saveValues(req, res, next)
 
       // Assert
+      expect(req.services.courtCaseService.updateSentenceTypes).toHaveBeenCalledTimes(2)
       expect(req.services.courtCaseService.updateSentenceTypes).toHaveBeenCalledWith(
-        courtCaseUuid,
+        'court-case-uuid-123',
         {
-          updates: [
-            { sentenceUuid: 'sentence-uuid-1', sentenceTypeId: 'sds-type-uuid' },
-            { sentenceUuid: 'sentence-uuid-2', sentenceTypeId: 'eds-type-uuid' },
-          ],
+          updates: [{ sentenceUuid: 'sentence-1', sentenceTypeId: 'sds-type-uuid' }],
+        },
+        'test-user',
+      )
+      expect(req.services.courtCaseService.updateSentenceTypes).toHaveBeenCalledWith(
+        'court-case-uuid-456',
+        {
+          updates: [{ sentenceUuid: 'sentence-3', sentenceTypeId: 'eds-type-uuid' }],
         },
         'test-user',
       )
 
       expect(req.sessionModel.unset).toHaveBeenCalledWith('updatedSentenceTypes')
       expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
-      expect(logger.info).toHaveBeenCalledWith('Successfully updated sentence types', {
-        courtCaseUuid,
-        updatedCount: 2,
+      expect(logger.info).toHaveBeenCalledWith('Successfully updated all sentence types', {
+        totalCourtCases: 2,
+        totalUpdatedSentences: 2,
       })
       expect(next).not.toHaveBeenCalled()
     })
@@ -127,11 +173,15 @@ describe('UpdateSentenceTypesSummaryController', () => {
       expect(next).not.toHaveBeenCalled()
     })
 
-    it('should skip API call when no court case UUID exists', async () => {
+    it('should handle when sentence is not found in any court case', async () => {
       // Arrange
+      const updatedSentenceTypes = { 'sentence-1': 'type-1' }
+
+      // Mock empty court cases - sentence not found
+      mockGetCourtCaseOptions.mockReturnValue([])
+
       req.sessionModel.get.mockImplementation((key: string) => {
-        if (key === 'selectedCourtCaseUuid') return undefined
-        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'type-1' }
+        if (key === 'updatedSentenceTypes') return updatedSentenceTypes
         return undefined
       })
 
@@ -140,15 +190,31 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
       // Assert
       expect(req.services.courtCaseService.updateSentenceTypes).not.toHaveBeenCalled()
+      expect(req.sessionModel.unset).toHaveBeenCalledWith('updatedSentenceTypes')
+      expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
       expect(next).not.toHaveBeenCalled()
     })
 
     it('should handle 400 Bad Request error', async () => {
       // Arrange
-      const courtCaseUuid = 'court-case-uuid'
+      const updatedSentenceTypes = { 'sentence-1': 'type-1' }
+
+      // Mock court cases
+      const mockCourtCases: any[] = [
+        {
+          caseId: 'court-case-uuid',
+          status: 'ACTIVE',
+          date: '2024-01-01',
+          location: 'LOC1',
+          reference: 'REF1',
+          sentenced: true,
+          sentences: [{ sentenceId: 'sentence-1', sentenceUuid: 'sentence-1' }],
+        },
+      ]
+      mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
+
       req.sessionModel.get.mockImplementation((key: string) => {
-        if (key === 'selectedCourtCaseUuid') return courtCaseUuid
-        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'type-1' }
+        if (key === 'updatedSentenceTypes') return updatedSentenceTypes
         return undefined
       })
 
@@ -169,10 +235,24 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     it('should handle 404 Not Found error', async () => {
       // Arrange
-      const courtCaseUuid = 'court-case-uuid'
+      const updatedSentenceTypes = { 'sentence-1': 'type-1' }
+
+      // Mock court cases
+      const mockCourtCases: any[] = [
+        {
+          caseId: 'court-case-uuid',
+          status: 'ACTIVE',
+          date: '2024-01-01',
+          location: 'LOC1',
+          reference: 'REF1',
+          sentenced: true,
+          sentences: [{ sentenceId: 'sentence-1', sentenceUuid: 'sentence-1' }],
+        },
+      ]
+      mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
+
       req.sessionModel.get.mockImplementation((key: string) => {
-        if (key === 'selectedCourtCaseUuid') return courtCaseUuid
-        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'type-1' }
+        if (key === 'updatedSentenceTypes') return updatedSentenceTypes
         return undefined
       })
 
@@ -193,10 +273,24 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     it('should handle 422 Unprocessable Entity error', async () => {
       // Arrange
-      const courtCaseUuid = 'court-case-uuid'
+      const updatedSentenceTypes = { 'sentence-1': 'type-1' }
+
+      // Mock court cases
+      const mockCourtCases: any[] = [
+        {
+          caseId: 'court-case-uuid',
+          status: 'ACTIVE',
+          date: '2024-01-01',
+          location: 'LOC1',
+          reference: 'REF1',
+          sentenced: true,
+          sentences: [{ sentenceId: 'sentence-1', sentenceUuid: 'sentence-1' }],
+        },
+      ]
+      mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
+
       req.sessionModel.get.mockImplementation((key: string) => {
-        if (key === 'selectedCourtCaseUuid') return courtCaseUuid
-        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'type-1' }
+        if (key === 'updatedSentenceTypes') return updatedSentenceTypes
         return undefined
       })
 
@@ -217,10 +311,24 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     it('should handle generic API errors', async () => {
       // Arrange
-      const courtCaseUuid = 'court-case-uuid'
+      const updatedSentenceTypes = { 'sentence-1': 'type-1' }
+
+      // Mock court cases
+      const mockCourtCases: any[] = [
+        {
+          caseId: 'court-case-uuid',
+          status: 'ACTIVE',
+          date: '2024-01-01',
+          location: 'LOC1',
+          reference: 'REF1',
+          sentenced: true,
+          sentences: [{ sentenceId: 'sentence-1', sentenceUuid: 'sentence-1' }],
+        },
+      ]
+      mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
+
       req.sessionModel.get.mockImplementation((key: string) => {
-        if (key === 'selectedCourtCaseUuid') return courtCaseUuid
-        if (key === 'updatedSentenceTypes') return { 'sentence-1': 'type-1' }
+        if (key === 'updatedSentenceTypes') return updatedSentenceTypes
         return undefined
       })
 
@@ -233,7 +341,6 @@ describe('UpdateSentenceTypesSummaryController', () => {
       // Assert
       expect(logger.error).toHaveBeenCalledWith('Failed to update sentence types', {
         error: 'Server Error',
-        courtCaseUuid,
       })
       expect(next).toHaveBeenCalledWith(error)
     })
@@ -379,6 +486,10 @@ describe('UpdateSentenceTypesSummaryController', () => {
   })
 
   describe('locals', () => {
+    beforeEach(() => {
+      jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(controller)), 'locals').mockReturnValue({})
+    })
+
     it('should set correct locals for display', () => {
       // Arrange
       const updatedSentenceTypes = { 'sentence-1': 'type-1', 'sentence-2': 'type-2' }
@@ -391,13 +502,14 @@ describe('UpdateSentenceTypesSummaryController', () => {
       })
 
       // Act
-      controller.locals(req, res)
+      const result = controller.locals(req, res)
 
       // Assert
       expect(res.locals.updatedSentenceTypes).toEqual(updatedSentenceTypes)
       expect(res.locals.unknownSentences).toEqual(unknownSentences)
       expect(res.locals.totalToUpdate).toBe(3)
       expect(res.locals.totalUpdated).toBe(2)
+      expect(result).toEqual({})
     })
 
     it('should handle empty data gracefully', () => {
@@ -405,13 +517,14 @@ describe('UpdateSentenceTypesSummaryController', () => {
       req.sessionModel.get.mockReturnValue(undefined)
 
       // Act
-      controller.locals(req, res)
+      const result = controller.locals(req, res)
 
       // Assert
       expect(res.locals.updatedSentenceTypes).toEqual({})
       expect(res.locals.unknownSentences).toEqual([])
       expect(res.locals.totalToUpdate).toBe(0)
       expect(res.locals.totalUpdated).toBe(0)
+      expect(result).toEqual({})
     })
   })
 })
