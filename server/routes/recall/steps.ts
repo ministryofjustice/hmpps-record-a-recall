@@ -102,7 +102,7 @@ const steps = {
     controller: ManualRecallInterceptController,
     fields: ['manualRecallInterceptConfirmation'],
     noPost: false,
-    checkJourney: true,
+    checkJourney: false,
     next: 'select-cases',
   },
   '/recall-recorded': {
