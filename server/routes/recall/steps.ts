@@ -9,6 +9,10 @@ import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
 import ManualRecallInterceptController from '../../controllers/recall/ManualRecallInterceptController'
+import UpdateSentenceTypesSummaryController from '../../controllers/recall/updateSentenceTypesSummaryController'
+import SelectSentenceTypeController from '../../controllers/recall/selectSentenceTypeController'
+import MultipleSentenceDecisionController from '../../controllers/recall/multipleSentenceDecisionController'
+import BulkSentenceTypeController from '../../controllers/recall/bulkSentenceTypeController'
 import {
   getEligibleSentenceCount,
   isManualCaseSelection,
@@ -121,7 +125,48 @@ const steps = {
       ],
     },
     template: 'select-court-case-details.njk',
+    next: [
+      {
+        fn: (req: FormWizard.Request) => {
+          // Check if there are unknown sentences that need updating
+          const unknownSentenceIds = req.sessionModel.get('unknownSentencesToUpdate') as string[]
+          return unknownSentenceIds && unknownSentenceIds.length > 0
+        },
+        next: 'update-sentence-types-summary',
+      },
+      'check-sentences',
+    ],
+  },
+  '/update-sentence-types-summary': {
+    controller: UpdateSentenceTypesSummaryController,
+    template: 'update-sentence-types-summary.njk',
     next: 'check-sentences',
+  },
+  // TODO: RCLL-452 - Single sentence type selection route
+  '/select-sentence-type/:sentenceId': {
+    controller: SelectSentenceTypeController,
+    template: 'select-sentence-type',
+    fields: ['sentenceType'],
+    next: 'update-sentence-types-summary',
+  },
+  // TODO: RCLL-453 - Multiple sentence type selection routes
+  '/multiple-sentence-decision/:courtCaseId': {
+    controller: MultipleSentenceDecisionController,
+    template: 'multiple-sentence-decision',
+    fields: ['sameSentenceType'],
+    next: [
+      {
+        fn: (req: FormWizard.Request) => req.body.sameSentenceType === 'yes',
+        next: 'bulk-sentence-type/:courtCaseId',
+      },
+      'select-sentence-type/:sentenceId', // TODO - Will need to handle sequential selection
+    ],
+  },
+  '/bulk-sentence-type/:courtCaseId': {
+    controller: BulkSentenceTypeController,
+    template: 'bulk-sentence-type',
+    fields: ['sentenceType'],
+    next: 'update-sentence-types-summary',
   },
   '/not-possible': {
     controller: RecallBaseController,
