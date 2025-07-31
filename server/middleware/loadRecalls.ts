@@ -98,7 +98,6 @@ export default function loadRecalls(
         const recallsWithExtras = recalls.map(recall => {
           const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
-          // Enhance sentences with offence descriptions and filter out deleted ones in a single pass
           const enhancedSentences = recall.sentences?.reduce((acc, sentence) => {
             // Filter out any sentences with deleted status (defensive)
             if ('status' in sentence && sentence.status === 'DELETED') {
