@@ -40,7 +40,8 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
         .map(courtCase => {
           const unknownSentences =
             courtCase.sentences?.filter(
-              sentence => sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL,
+              sentence =>
+                sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL,
             ) || []
 
           return {

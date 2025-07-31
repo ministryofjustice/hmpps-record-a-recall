@@ -442,7 +442,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           selectedCases.forEach(courtCase => {
             if (courtCase.sentences) {
               courtCase.sentences.forEach(sentence => {
-                if (sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
+                if (sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
                   const { sentenceUuid } = sentence
                   if (sentenceUuid) {
                     unknownSentenceIds.push(sentenceUuid)

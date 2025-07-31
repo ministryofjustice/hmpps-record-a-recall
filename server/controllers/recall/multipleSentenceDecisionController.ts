@@ -53,7 +53,7 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
     // Find all unknown sentences in this court case
     const unknownSentences =
       currentCourtCase.sentences?.filter(
-        sentence => sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL,
+        sentence => sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL,
       ) || []
 
     if (unknownSentences.length === 0) {
