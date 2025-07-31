@@ -4,6 +4,8 @@ import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
   RecallableCourtCase,
   RecallableCourtCasesResponse,
+  UpdateSentenceTypesRequest,
+  UpdateSentenceTypesResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
@@ -16,6 +18,14 @@ export default class CourtCaseService {
 
   async getAllRecallableCourtCases(nomsId: string, username: string): Promise<RecallableCourtCasesResponse> {
     return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
+  }
+
+  async updateSentenceTypes(
+    courtCaseUuid: string,
+    payload: UpdateSentenceTypesRequest,
+    username: string,
+  ): Promise<UpdateSentenceTypesResponse> {
+    return (await this.getApiClient(username)).updateSentenceTypes(courtCaseUuid, payload)
   }
 
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {

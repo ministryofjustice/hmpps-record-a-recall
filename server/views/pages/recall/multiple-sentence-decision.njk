@@ -1,0 +1,48 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{# TODO: RCLL-453 - Implement multiple sentence decision page #}
+{# This page asks if the user wants to apply the same sentence type to all sentences in a court case #}
+
+{% block beforeContent %}
+    {{ super() }}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row govuk-!-margin-bottom-0">
+            <div class="govuk-grid-column-two-thirds">
+                <nav>
+                    {{ govukBackLink({
+                        text: "Back",
+                        href: backLink or '/recall/' + nomisId + '/update-sentence-types-summary'
+                    }) }}
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-xl">
+                    <span class="govuk-caption-xl">Record a recall</span>
+                    TODO: RCLL-453 - Do you want to apply the same sentence type to all sentences?
+                </h1>
+                
+                <p class="govuk-body">This page will ask if the user wants to apply the same sentence type to all sentences in this court case.</p>
+                
+                <p class="govuk-body">Options:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>Yes - navigate to bulk sentence type selection</li>
+                    <li>No - navigate to individual sentence type selection</li>
+                </ul>
+                
+                <p class="govuk-body govuk-!-font-weight-bold">Implementation pending for RCLL-453</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
