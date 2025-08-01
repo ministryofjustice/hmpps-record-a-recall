@@ -162,7 +162,7 @@ const steps = {
         fn: (req: FormWizard.Request) => req.body.sameSentenceType === 'yes',
         next: 'bulk-sentence-type/:courtCaseId',
       },
-      'select-sentence-type/:sentenceUuid', // TODO - Will need to handle sequential selection
+      'select-sentence-type/:sentenceUuid', // TODO: RCLL-453 - Sequential selection temporarily redirects to check-sentences
     ],
     checkJourney: false,
   },

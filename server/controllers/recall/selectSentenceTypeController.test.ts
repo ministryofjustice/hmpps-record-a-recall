@@ -8,6 +8,9 @@ import * as formWizardHelper from '../../helpers/formWizardHelper'
 jest.mock('../../../logger')
 jest.mock('../../helpers/formWizardHelper', () => ({
   getCourtCaseOptions: jest.fn(),
+  sessionModelFields: {
+    UPDATED_SENTENCE_TYPES: 'updatedSentences',
+  },
 }))
 
 const mockGetCourtCaseOptions = formWizardHelper.getCourtCaseOptions as jest.MockedFunction<
@@ -121,7 +124,7 @@ describe('SelectSentenceTypeController', () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
       ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
         if (key === 'prisoner') return { dateOfBirth: '1990-01-01' }
-        if (key === 'updatedSentenceTypes') return {}
+        if (key === 'updatedSentences') return {}
         return undefined
       })
     })

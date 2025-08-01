@@ -17,6 +17,10 @@ jest.mock('../../helpers/formWizardHelper', () => ({
   getCourtCaseOptions: jest.fn(),
   sessionModelFields: {
     PRISONER: 'prisoner',
+    UPDATED_SENTENCE_TYPES: 'updatedSentences',
+    UNKNOWN_SENTENCES_TO_UPDATE: 'unknownSentencesToUpdate',
+    COURT_CASE_OPTIONS: 'courtCaseOptions',
+    SUMMARISED_SENTENCES: 'summarisedSentenceGroups',
   },
   getTemporaryCalc: jest.fn().mockReturnValue(null),
 }))
@@ -139,6 +143,9 @@ describe('UpdateSentenceTypesSummaryController', () => {
         .mockResolvedValueOnce(mockResponse)
         .mockResolvedValueOnce(mockResponse2)
 
+      // Mock the parent class method to ensure it's called
+      const superSaveValuesSpy = jest.spyOn(RecallBaseController.prototype, 'saveValues').mockImplementation(() => {})
+
       // Act
       await controller.saveValues(req, res, next)
 
@@ -160,6 +167,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
       )
       expect(req.sessionModel.unset).toHaveBeenCalledWith('updatedSentences')
       expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
+      expect(superSaveValuesSpy).toHaveBeenCalledWith(req, res, next)
     })
 
     it('should skip sentences not found in any court case', async () => {
@@ -450,7 +458,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
         return undefined
       })
 
-      const getSpy = jest.spyOn(controller, 'get').mockImplementation(async () => {})
+      const superGetSpy = jest.spyOn(RecallBaseController.prototype, 'get').mockImplementation(async () => {})
 
       await controller.post(req, res, next)
 
@@ -459,7 +467,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
           text: 'You must update all sentence types before continuing',
         },
       })
-      expect(getSpy).toHaveBeenCalled()
+      expect(superGetSpy).toHaveBeenCalled()
     })
 
     it('should proceed when all sentences are updated', async () => {

@@ -98,7 +98,7 @@ export const sessionModelFields = {
   CURRENT_CASE_INDEX: 'currentCaseIndex',
   MANUAL_RECALL_DECISIONS: 'manualRecallDecisions',
   UNKNOWN_SENTENCES_TO_UPDATE: 'unknownSentencesToUpdate',
-  UPDATED_SENTENCE_TYPES: 'updatedSentenceTypes',
+  UPDATED_SENTENCE_TYPES: 'updatedSentences',
   SELECTED_COURT_CASE_UUID: 'selectedCourtCaseUuid',
   BULK_UPDATE_MODE: 'bulkUpdateMode',
   SENTENCES_IN_CURRENT_CASE: 'sentencesInCurrentCase',

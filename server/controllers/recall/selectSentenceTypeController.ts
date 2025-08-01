@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 
 import type { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
-import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import logger from '../../../logger'
 import { RecallableCourtCaseSentence, SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
@@ -93,7 +93,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       }
 
       // Check if sentence has already been updated
-      const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
         string,
         { uuid: string; description: string }
       >
@@ -127,7 +127,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     )
     const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
-    const updatedSentences = (req.sessionModel.get('updatedSentences') || {}) as Record<
+    const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
       string,
       { uuid: string; description: string }
     >
@@ -135,10 +135,23 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       uuid: selectedTypeUuid,
       description: selectedTypeDescription,
     }
-    req.sessionModel.set('updatedSentences', updatedSentences)
+    req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
 
-    // Always navigate back to summary page after updating
-    // The sequential flow will be implemented in RCLL-453
+    // Check if we're in individual update mode (not bulk)
+    const bulkUpdateMode = req.sessionModel.get(sessionModelFields.BULK_UPDATE_MODE)
+    const sentencesInCurrentCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as
+      | string[]
+      | undefined
+    const currentSentenceIndex = req.sessionModel.get(sessionModelFields.CURRENT_SENTENCE_INDEX) as number | undefined
+
+    if (bulkUpdateMode === false && sentencesInCurrentCase && typeof currentSentenceIndex === 'number') {
+      // TODO: RCLL-453 - Implement sequential sentence update flow
+      // For now, redirect to check sentences page when all sentences for this case are done
+      logger.info('Sequential sentence update flow not yet implemented, redirecting to check sentences')
+      return res.redirect(`/person/${res.locals.nomisId}/record-recall/check-sentences`)
+    }
+
+    // Default behavior: navigate back to summary page after updating
     return super.post(req, res, next)
   }
 

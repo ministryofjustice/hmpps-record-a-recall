@@ -454,8 +454,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
           // Set session data for unknown sentences
           if (unknownSentenceIds.length > 0) {
-            req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
-            req.sessionModel.set('updatedSentenceTypes', {})
+            req.sessionModel.set(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE, unknownSentenceIds)
+            req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, {})
           }
         }
       }
