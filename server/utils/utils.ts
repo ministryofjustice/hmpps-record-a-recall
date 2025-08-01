@@ -7,6 +7,7 @@ import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import logger from '../../logger'
+import config from '../config'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -106,6 +107,21 @@ export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): S
     return periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
   }
   return null
+}
+
+export const lowercaseFirstLetter = (s: string): string => {
+  return s ? s[0].toLowerCase() + s.slice(1) : ''
+}
+
+export const entrypointUrl = (entrypoint: string, nomisId: string): string => {
+  if (entrypoint === 'ccards') {
+    return `${config.applications.courtCasesReleaseDates.url}/prisoner/${nomisId}/overview`
+  }
+  if (entrypoint?.startsWith('adj_')) {
+    const adjustmentTypeUrl = entrypoint.substring(entrypoint.indexOf('_') + 1)
+    return `${config.applications.adjustments.url}/${nomisId}/${adjustmentTypeUrl}/view`
+  }
+  return `/person/${nomisId}`
 }
 
 export interface SentenceLength {

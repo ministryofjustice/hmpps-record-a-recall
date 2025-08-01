@@ -20,6 +20,7 @@ import {
   hasMultipleConflicting,
   hasMultipleUALTypeRecallConflicting,
 } from '../../helpers/formWizardHelper'
+import NotPossibleController from '../../controllers/recall/notPossibleController'
 
 const steps = {
   '/': {
@@ -174,7 +175,7 @@ const steps = {
     checkJourney: false,
   },
   '/not-possible': {
-    controller: RecallBaseController,
+    controller: NotPossibleController,
     noPost: true,
   },
   '/confirm-cancel': {

@@ -14,6 +14,7 @@ import {
   isRecallTypeMismatch,
 } from '../../../helpers/formWizardHelper'
 import SelectCourtCaseController from '../../../controllers/recall/selectCourtCaseController'
+import NotPossibleController from '../../../controllers/recall/notPossibleController'
 
 const steps = {
   '/': {
@@ -96,7 +97,7 @@ const steps = {
     next: 'check-sentences',
   },
   '/not-possible': {
-    controller: RecallBaseController,
+    controller: NotPossibleController,
     noPost: true,
     checkJourney: false,
   },
