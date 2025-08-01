@@ -6,6 +6,7 @@ import {
   RecallableCourtCasesResponse,
   UpdateSentenceTypesRequest,
   UpdateSentenceTypesResponse,
+  SentenceType,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
@@ -26,6 +27,18 @@ export default class CourtCaseService {
     username: string,
   ): Promise<UpdateSentenceTypesResponse> {
     return (await this.getApiClient(username)).updateSentenceTypes(courtCaseUuid, payload)
+  }
+
+  async searchSentenceTypes(
+    params: {
+      age: number
+      convictionDate: string
+      offenceDate: string
+      statuses?: ('ACTIVE' | 'INACTIVE')[]
+    },
+    username: string,
+  ): Promise<SentenceType[]> {
+    return (await this.getApiClient(username)).searchSentenceTypes(params)
   }
 
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {

@@ -442,10 +442,10 @@ export default class SelectCourtCaseController extends RecallBaseController {
           selectedCases.forEach(courtCase => {
             if (courtCase.sentences) {
               courtCase.sentences.forEach(sentence => {
-                if (sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
-                  const sentenceId = sentence.sentenceId || sentence.sentenceUuid
-                  if (sentenceId) {
-                    unknownSentenceIds.push(sentenceId)
+                if (sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
+                  const { sentenceUuid } = sentence
+                  if (sentenceUuid) {
+                    unknownSentenceIds.push(sentenceUuid)
                   }
                 }
               })
@@ -454,8 +454,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
           // Set session data for unknown sentences
           if (unknownSentenceIds.length > 0) {
-            req.sessionModel.set('unknownSentencesToUpdate', unknownSentenceIds)
-            req.sessionModel.set('updatedSentenceTypes', {})
+            req.sessionModel.set(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE, unknownSentenceIds)
+            req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, {})
           }
         }
       }

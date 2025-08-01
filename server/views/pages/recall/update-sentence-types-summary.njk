@@ -1,248 +1,130 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
-
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "govuk/components/tag/macro.njk" import govukTag %}
-{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-{% block head %}
-    {{ super() }}
-    <style>
-        .offence-card {
-            border: 1px solid #8D5D9E;
-            border-left: 5px solid #8D5D9E;
-            background-color: #ffffff;
-        }
-    </style>
-{% endblock %}
+{% block pageTitle %}Update sentence types{% endblock %}
 
-{% block beforeContent %}
-    {{ super() }}
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row govuk-!-margin-bottom-0">
-            <div class="govuk-grid-column-two-thirds">
-                <nav>
-                    {{ govukBackLink({
-                        text: "Back",
-                        href: backLink
-                    }) }}
-                </nav>
-                {% if errorSummary %}
-                    {{ govukErrorSummary({
-                        titleText: "There is a problem",
-                        errorList: errorSummary,
-                        classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0"
-                    }) }}
-                {% endif %}
-            </div>
+{# Macro for rendering sentence card #}
+{% macro sentenceCard(sentence, courtCase, updatedSentenceTypes, updatedSentenceTypeDescriptions, nomisId, isUpdated) %}
+    <div class="govuk-!-margin-bottom-3">
+        <div class="offence-card govuk-!-padding-4">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Count {{ sentence.countNumber or 1 }}</h3>
+            <p class="govuk-body govuk-!-margin-bottom-3">
+                {{ sentence.offenceCode or '' }}: {{ sentence.offenceDescription or 'Offence description not available' }}
+            </p>
+            
+            <dl class="govuk-summary-list govuk-summary-list--no-border">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Committed on</dt>
+                    <dd class="govuk-summary-list__value">{{ sentence.offenceStartDate | formatDate or 'Not entered' }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Outcome</dt>
+                    <dd class="govuk-summary-list__value">{{ sentence.outcomeDescription or 'Imprisonment' }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Conviction date</dt>
+                    <dd class="govuk-summary-list__value">{{ sentence.convictionDate | formatDate or 'Not available' }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Sentence type</dt>
+                    <dd class="govuk-summary-list__value">
+                        {% if isUpdated %}
+                            {{ updatedSentenceTypeDescriptions[sentence.sentenceUuid] or updatedSentenceTypes[sentence.sentenceUuid] }}
+                        {% else %}
+                            {% if courtCase.sentences.length === 1 %}
+                                <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/select-sentence-type/{{ sentence.sentenceUuid }}">
+                                    Update sentence type
+                                </a>
+                            {% else %}
+                                <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/multiple-sentence-decision/{{ courtCase.caseId }}">
+                                    Update sentence type
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Sentence date</dt>
+                    <dd class="govuk-summary-list__value">{{ sentence.sentenceDate | formatDate or 'Not available' }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Court</dt>
+                    <dd class="govuk-summary-list__value">{{ courtCase.locationName or 'Not available' }}</dd>
+                </div>
+            </dl>
         </div>
     </div>
-{% endblock %}
+{% endmacro %}
 
 {% block content %}
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <form method="post" action="">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {% if errorSummary %}
+                {{ govukErrorSummary(errorSummary) }}
+            {% endif %}
+
+            <h1 class="govuk-heading-xl">Update sentence types</h1>
+
+            {% if totalUnknownSentences === 0 %}
+                <p class="govuk-body">No sentences with unknown types found.</p>
+            {% else %}
+                <p class="govuk-body">Update the sentence types for all sentences below before continuing.</p>
+
+                <p class="govuk-body govuk-!-font-weight-bold">
+                    {% if totalUpdated === 0 %}
+                        {{ totalUnknownSentences }} sentence{{ 's' if totalUnknownSentences !== 1 }} to update
+                    {% else %}
+                        {{ totalUpdated }} of {{ totalUnknownSentences }} sentence{{ 's' if totalUnknownSentences !== 1 }} updated
+                    {% endif %}
+                </p>
+
+                <form method="post" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
-                    <h1 class="govuk-heading-xl">
-                        <span class="govuk-caption-xl">Record a recall</span>
-                        Update sentence types
-                    </h1>
-
-                    <p class="govuk-body">This is the sentence type from the original warrant.</p>
-
                     {# Sentences that have not been updated #}
-                    {% set notUpdatedCount = totalUnknownSentences - totalUpdated %}
-                    {% if notUpdatedCount > 0 %}
-                        <h2 class="govuk-heading-l">Sentences that have not been updated ({{ notUpdatedCount }})</h2>
+                    {% if unupdatedCases.length > 0 %}
+                        <h2 class="govuk-heading-l">Sentences that have not been updated ({{ totalUnknownSentences - totalUpdated }})</h2>
                         
-                        {% for courtCase in courtCasesWithUnknownSentences %}
-                            {% set hasUnupdatedSentences = false %}
-                            {% for sentence in courtCase.unknownSentences %}
-                                {% set sentenceId = sentence.sentenceId or sentence.sentenceUuid %}
-                                {% if not updatedSentenceTypes[sentenceId] %}
-                                    {% set hasUnupdatedSentences = true %}
-                                {% endif %}
-                            {% endfor %}
+                        {% for courtCase in unupdatedCases %}
+                            <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">
+                                {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or courtCase.location }} on {{ courtCase.date | formatDate }}
+                            </p>
                             
-                            {% if hasUnupdatedSentences %}
-                                <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">
-                                    {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or courtCase.location }} on {{ courtCase.date | formatDate }}
-                                </p>
-                                
-                                {% for sentence in courtCase.unknownSentences %}
-                                    {% set sentenceId = sentence.sentenceId or sentence.sentenceUuid %}
-                                    {% if not updatedSentenceTypes[sentenceId] %}
-                                        {# Use a custom card based on offenceCard pattern #}
-                                        <div class="govuk-!-margin-bottom-3">
-                                            <div class="offence-card govuk-!-padding-4">
-                                                <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Count {{ sentence.countNumber or 1 }}</h3>
-                                                <p class="govuk-body govuk-!-margin-bottom-3">
-                                                    {{ sentence.offenceCode or '' }}: {{ sentence.offenceDescription or 'Offence description not available' }}
-                                                </p>
-                                                
-                                                <dl class="govuk-summary-list govuk-summary-list--no-border">
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Committed on</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.offenceStartDate | formatDate or 'Not entered' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Outcome</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.outcomeDescription or 'Imprisonment' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Conviction date</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.convictionDate | formatDate or 'Not available' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Sentence type</dt>
-                                                        <dd class="govuk-summary-list__value">
-                                                            {% if courtCase.unknownSentences.length === 1 %}
-                                                                <a class="govuk-link" href="/recall/{{ nomisId }}/select-sentence-type/{{ sentenceId }}">
-                                                                    Update sentence type
-                                                                </a>
-                                                            {% else %}
-                                                                <a class="govuk-link" href="/recall/{{ nomisId }}/multiple-sentence-decision/{{ courtCase.caseId }}">
-                                                                    Update sentence type
-                                                                </a>
-                                                            {% endif %}
-                                                        </dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Sentence date</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.sentenceDate | formatDate or 'Not available' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Sentence length</dt>
-                                                        <dd class="govuk-summary-list__value">
-                                                            {% set sentenceLengths = sentence.periodLengths | periodLengthsToSentenceLengths %}
-                                                            {% if sentenceLengths and sentenceLengths.length > 0 %}
-                                                                {% for length in sentenceLengths %}
-                                                                    {{ length | formatLengths }}{% if not loop.last %}, {% endif %}
-                                                                {% endfor %}
-                                                            {% else %}
-                                                                Not available
-                                                            {% endif %}
-                                                        </dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Consecutive or concurrent</dt>
-                                                        <dd class="govuk-summary-list__value">{{ (sentence.sentenceServeType or 'CONCURRENT') | capitalize }}</dd>
-                                                    </div>
-                                                </dl>
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
+                            {% for sentence in courtCase.sentences %}
+                                {{ sentenceCard(sentence, courtCase, updatedSentenceTypes, updatedSentenceTypeDescriptions, nomisId, false) }}
+                            {% endfor %}
                         {% endfor %}
                     {% endif %}
 
-                    {# Sentences with updated sentence types #}
-                    <h2 class="govuk-heading-l govuk-!-margin-top-8">Sentences with updated sentence types ({{ totalUpdated }})</h2>
-                    
-                    {% if totalUpdated === 0 %}
-                        <p class="govuk-body">No sentence types have been updated yet.</p>
-                    {% else %}
-                        {% for courtCase in courtCasesWithUnknownSentences %}
-                            {% set hasUpdatedSentences = false %}
-                            {% for sentence in courtCase.unknownSentences %}
-                                {% set sentenceId = sentence.sentenceId or sentence.sentenceUuid %}
-                                {% if updatedSentenceTypes[sentenceId] %}
-                                    {% set hasUpdatedSentences = true %}
-                                {% endif %}
-                            {% endfor %}
+                    {# Sentences that have been updated #}
+                    {% if updatedCases.length > 0 %}
+                        <h2 class="govuk-heading-l">Sentences that have been updated ({{ totalUpdated }})</h2>
+                        
+                        {% for courtCase in updatedCases %}
+                            <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">
+                                {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or courtCase.location }} on {{ courtCase.date | formatDate }}
+                            </p>
                             
-                            {% if hasUpdatedSentences %}
-                                <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">
-                                    {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or courtCase.location }} on {{ courtCase.date | formatDate }}
-                                </p>
-                                
-                                {% for sentence in courtCase.unknownSentences %}
-                                    {% set sentenceId = sentence.sentenceId or sentence.sentenceUuid %}
-                                    {% if updatedSentenceTypes[sentenceId] %}
-                                        {# Use a custom card based on offenceCard pattern #}
-                                        <div class="govuk-!-margin-bottom-3">
-                                            <div class="offence-card govuk-!-padding-4">
-                                                <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Count {{ sentence.countNumber or 1 }}</h3>
-                                                <p class="govuk-body govuk-!-margin-bottom-3">
-                                                    {{ sentence.offenceCode or '' }}: {{ sentence.offenceDescription or 'Offence description not available' }}
-                                                </p>
-                                                
-                                                <dl class="govuk-summary-list govuk-summary-list--no-border">
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Committed on</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.offenceStartDate | formatDate or 'Not entered' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Outcome</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.outcomeDescription or 'Imprisonment' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Conviction date</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.convictionDate | formatDate or 'Not available' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Sentence type</dt>
-                                                        <dd class="govuk-summary-list__value">
-                                                            <strong class="govuk-tag govuk-tag--green">{{ updatedSentenceTypes[sentenceId] }}</strong>
-                                                        </dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Sentence date</dt>
-                                                        <dd class="govuk-summary-list__value">{{ sentence.sentenceDate | formatDate or 'Not available' }}</dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Sentence length</dt>
-                                                        <dd class="govuk-summary-list__value">
-                                                            {% set sentenceLengths = sentence.periodLengths | periodLengthsToSentenceLengths %}
-                                                            {% if sentenceLengths and sentenceLengths.length > 0 %}
-                                                                {% for length in sentenceLengths %}
-                                                                    {{ length | formatLengths }}{% if not loop.last %}, {% endif %}
-                                                                {% endfor %}
-                                                            {% else %}
-                                                                Not available
-                                                            {% endif %}
-                                                        </dd>
-                                                    </div>
-                                                    <div class="govuk-summary-list__row">
-                                                        <dt class="govuk-summary-list__key">Consecutive or concurrent</dt>
-                                                        <dd class="govuk-summary-list__value">{{ (sentence.sentenceServeType or 'CONCURRENT') | capitalize }}</dd>
-                                                    </div>
-                                                </dl>
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
+                            {% for sentence in courtCase.sentences %}
+                                {{ sentenceCard(sentence, courtCase, updatedSentenceTypes, updatedSentenceTypeDescriptions, nomisId, true) }}
+                            {% endfor %}
                         {% endfor %}
                     {% endif %}
 
-                    <div class="govuk-button-group">
+                    {# Continue button #}
+                    {% if allComplete %}
                         {{ govukButton({
                             text: "Continue",
-                            classes: "govuk-button",
-                            preventDoubleClick: true,
-                            type: "submit",
-                            attributes: {
-                                "data-qa": "continue-btn"
-                            }
+                            classes: "govuk-button"
                         }) }}
-
-                        {{ govukButton({
-                            text: "Cancel",
-                            classes: "govuk-button--secondary",
-                            preventDoubleClick: true,
-                            type: "reset",
-                            href: cancelLink
-                        }) }}
-                    </div>
+                    {% else %}
+                        <p class="govuk-body govuk-!-margin-top-6">
+                            You must update all sentence types before continuing.
+                        </p>
+                    {% endif %}
                 </form>
-            </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
