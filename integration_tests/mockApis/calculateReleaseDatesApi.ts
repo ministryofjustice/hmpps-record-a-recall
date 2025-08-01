@@ -1,7 +1,10 @@
 import { SuperAgentRequest } from 'superagent'
 import dayjs from 'dayjs'
 import { stubFor } from './wiremock'
-import { LatestCalculation } from '../../server/@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  LatestCalculation,
+  ValidationMessage,
+} from '../../server/@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default {
   stubRecordARecallCRDS: (): SuperAgentRequest => {
@@ -126,6 +129,22 @@ export default {
             sdsEarlyReleaseTranche: 'TRANCHE_1',
           },
           validationMessages: [],
+        },
+      },
+    })
+  },
+  stubRecordARecallCRDSWithValidationMessages: (messages: ValidationMessage[]): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPattern: `/calculate-release-dates/record-a-recall/([A-Z0-9]*)`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          calculatedReleaseDates: null,
+          validationMessages: messages,
         },
       },
     })

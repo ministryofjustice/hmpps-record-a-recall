@@ -2,8 +2,8 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
-import config from '../../config'
 import { getEntrypoint, sessionModelFields } from '../../helpers/formWizardHelper'
+import { entrypointUrl } from '../../utils/utils'
 
 export default class ConfirmCancelController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
@@ -27,13 +27,6 @@ export default class ConfirmCancelController extends RecallBaseController {
   }
 
   confirmCancelRedirect(entrypoint: string, nomisId: string) {
-    if (entrypoint === 'ccards') {
-      return `${config.applications.courtCasesReleaseDates.url}/prisoner/${nomisId}/overview`
-    }
-    if (entrypoint?.startsWith('adj_')) {
-      const adjustmentTypeUrl = entrypoint.substring(entrypoint.indexOf('_') + 1)
-      return `${config.applications.adjustments.url}/${nomisId}/${adjustmentTypeUrl}/view`
-    }
-    return `/person/${nomisId}`
+    return entrypointUrl(entrypoint, nomisId)
   }
 }
