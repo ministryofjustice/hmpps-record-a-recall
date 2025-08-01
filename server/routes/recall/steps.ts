@@ -69,6 +69,7 @@ const steps = {
     next: 'recall-type',
     controller: CheckSentencesController,
     editable: true,
+    checkJourney: false,
   },
   '/recall-type': {
     next: [
@@ -82,6 +83,7 @@ const steps = {
     controller: RecallTypeController,
     template: 'base-question',
     editable: true,
+    checkJourney: false,
   },
   '/recall-type-interrupt': {
     next: 'check-your-answers',
@@ -101,7 +103,7 @@ const steps = {
     controller: ManualRecallInterceptController,
     fields: ['manualRecallInterceptConfirmation'],
     noPost: false,
-    checkJourney: true,
+    checkJourney: false,
     next: 'select-cases',
   },
   '/recall-recorded': {
@@ -142,13 +144,14 @@ const steps = {
     controller: UpdateSentenceTypesSummaryController,
     template: 'update-sentence-types-summary.njk',
     next: 'check-sentences',
+    checkJourney: false,
   },
-  // TODO: RCLL-452 - Single sentence type selection route
-  '/select-sentence-type/:sentenceId': {
+  '/select-sentence-type/:sentenceUuid': {
     controller: SelectSentenceTypeController,
     template: 'select-sentence-type',
     fields: ['sentenceType'],
     next: 'update-sentence-types-summary',
+    checkJourney: false,
   },
   // TODO: RCLL-453 - Multiple sentence type selection routes
   '/multiple-sentence-decision/:courtCaseId': {
@@ -160,14 +163,16 @@ const steps = {
         fn: (req: FormWizard.Request) => req.body.sameSentenceType === 'yes',
         next: 'bulk-sentence-type/:courtCaseId',
       },
-      'select-sentence-type/:sentenceId', // TODO - Will need to handle sequential selection
+      'select-sentence-type/:sentenceUuid', // TODO: RCLL-453 - Sequential selection temporarily redirects to check-sentences
     ],
+    checkJourney: false,
   },
   '/bulk-sentence-type/:courtCaseId': {
     controller: BulkSentenceTypeController,
     template: 'bulk-sentence-type',
     fields: ['sentenceType'],
     next: 'update-sentence-types-summary',
+    checkJourney: false,
   },
   '/not-possible': {
     controller: NotPossibleController,
