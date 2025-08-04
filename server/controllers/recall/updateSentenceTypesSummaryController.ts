@@ -170,7 +170,6 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       // Group sentence updates by their court case UUID
       const updatesByCourtCase: Record<string, Array<{ sentenceUuid: string; sentenceTypeId: string }>> = {}
 
-      // Create a map for O(1) lookup of court case by sentence UUID
       const sentenceToCaseMap = createSentenceToCourtCaseMap(courtCases)
 
       for (const [sentenceUuid, sentenceTypeId] of sentenceUpdates) {
