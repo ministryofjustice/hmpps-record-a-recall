@@ -93,7 +93,7 @@ export default class RecallService {
       ual,
       ualString,
       location: apiRecall.createdByPrison,
-      sentenceIds: apiRecall.sentences.map(s => s.sentenceUuid),
+      sentenceIds: apiRecall.sentences?.map(s => s.sentenceUuid) ?? [],
       courtCaseIds: apiRecall.courtCaseIds,
       sentences: apiRecall.sentences,
       source: apiRecall.source,
