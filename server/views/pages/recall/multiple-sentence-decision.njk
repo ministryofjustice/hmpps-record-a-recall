@@ -4,9 +4,9 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-{# TODO: RCLL-453 - Implement multiple sentence decision page #}
-{# This page asks if the user wants to apply the same sentence type to all sentences in a court case #}
+{% set pageTitle = "Is the sentence type the same for all sentences in this court case?" %}
 
 {% block beforeContent %}
     {{ super() }}
@@ -16,7 +16,7 @@
                 <nav>
                     {{ govukBackLink({
                         text: "Back",
-                        href: backLink or '/recall/' + nomisId + '/update-sentence-types-summary'
+                        href: backLink or '/person/' + nomisId + '/record-recall/update-sentence-types-summary'
                     }) }}
                 </nav>
             </div>
@@ -26,22 +26,101 @@
 
 {% block content %}
     <div class="govuk-width-container">
+        {% if errors and errorSummary %}
+            {{ govukErrorSummary({
+                titleText: "There is a problem",
+                errorList: errorSummary
+            }) }}
+        {% endif %}
+
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-xl">
                     <span class="govuk-caption-xl">Record a recall</span>
-                    TODO: RCLL-453 - Do you want to apply the same sentence type to all sentences?
+                    Is the sentence type the same for all sentences in this court case?
                 </h1>
                 
-                <p class="govuk-body">This page will ask if the user wants to apply the same sentence type to all sentences in this court case.</p>
+                <p class="govuk-body">This is the sentence type from the original warrant.</p>
+
+                <form method="post" action="?" autocomplete="off" novalidate>
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+                    {{ govukRadios({
+                        idPrefix: "sameSentenceType",
+                        name: "sameSentenceType",
+                        fieldset: {
+                            legend: {
+                                text: "Is the sentence type the same for all " + sentenceCount + " sentences?",
+                                isPageHeading: false,
+                                classes: "govuk-visually-hidden"
+                            }
+                        },
+                        items: [
+                            {
+                                value: "yes",
+                                text: "Yes"
+                            },
+                            {
+                                value: "no",
+                                text: "No"
+                            }
+                        ],
+                        errorMessage: errors.sameSentenceType
+                    }) }}
+
+                    <div class="govuk-button-group">
+                        {{ govukButton({
+                            text: "Continue",
+                            type: "submit"
+                        }) }}
+                        <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/update-sentence-types-summary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="govuk-grid-column-one-third">
+                <h2 class="govuk-heading-m">Court case details</h2>
                 
-                <p class="govuk-body">Options:</p>
-                <ul class="govuk-list govuk-list--bullet">
-                    <li>Yes - navigate to bulk sentence type selection</li>
-                    <li>No - navigate to individual sentence type selection</li>
-                </ul>
-                
-                <p class="govuk-body govuk-!-font-weight-bold">Implementation pending for RCLL-453</p>
+                {% if courtCase %}
+                    {{ govukSummaryList({
+                        rows: [
+                            {
+                                key: {
+                                    text: "Case reference"
+                                },
+                                value: {
+                                    text: courtCase.reference
+                                }
+                            },
+                            {
+                                key: {
+                                    text: "Court name"
+                                },
+                                value: {
+                                    text: (courtCase.locationName or courtCase.location) | safe
+                                }
+                            },
+                            {
+                                key: {
+                                    text: "Warrant date"
+                                },
+                                value: {
+                                    text: courtCase.date | formatDate
+                                }
+                            },
+                            {
+                                key: {
+                                    text: "Overall case outcome"
+                                },
+                                value: {
+                                    text: "Imprisonment"
+                                }
+                            }
+                        ]
+                    }) }}
+                {% endif %}
             </div>
         </div>
     </div>
