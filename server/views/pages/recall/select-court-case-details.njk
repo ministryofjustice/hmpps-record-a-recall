@@ -35,7 +35,7 @@
         <span class="govuk-caption-l">Record a recall</span>
         {{ pageTitle }}
       </h1>
-      <p class="govuk-body">Relevant cases are those with sentences that were active when this person's licence was revoked.</p>
+      <p class="govuk-body">The sentence must have been active when the person's licence was revoked. Any missing sentence types can be added later.</p>
       <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
 
       {# Case Header Block #}
@@ -80,7 +80,7 @@
                   periodLengths: sentence.periodLengths | default([]),
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
-                  sentenceType: (sentence.sentenceTypeDescription | default("N/A")),
+                  sentenceType: '<strong class="govuk-tag govuk-tag--blue">Required</strong>' | safe,
                   fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
                   detailsClasses: 'govuk-!-padding-4',
                   actions: null,
