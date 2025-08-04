@@ -180,6 +180,10 @@ export default {
               },
               lineSequence: 2,
               caseSequence: 2,
+              externalSentenceId: {
+                bookingId: 1,
+                sentenceSequence: 2,
+              },
               caseReference: 'ABC123',
             },
             {
@@ -202,6 +206,10 @@ export default {
               },
               lineSequence: 4,
               caseSequence: 4,
+              externalSentenceId: {
+                bookingId: 1,
+                sentenceSequence: 4,
+              },
               caseReference: 'ABC234',
             },
           ],
@@ -232,6 +240,10 @@ export default {
                 sentenceLengthDays: 730,
                 consecutiveToLineSequence: null,
                 consecutiveToCaseSequence: null,
+                externalSentenceId: {
+                  bookingId: 1,
+                  sentenceSequence: 1,
+                },
               },
               {
                 lineSequence: 3,
@@ -241,6 +253,10 @@ export default {
                 sentenceLengthDays: 242,
                 consecutiveToLineSequence: 1,
                 consecutiveToCaseSequence: 1,
+                externalSentenceId: {
+                  bookingId: 1,
+                  sentenceSequence: 3,
+                },
               },
               {
                 lineSequence: 5,
@@ -250,6 +266,10 @@ export default {
                 sentenceLengthDays: 1095,
                 consecutiveToLineSequence: 3,
                 consecutiveToCaseSequence: 3,
+                externalSentenceId: {
+                  bookingId: 1,
+                  sentenceSequence: 5,
+                },
               },
             ],
           },

@@ -264,14 +264,33 @@ export default {
             prisonerId: 'A1234AB',
             revocationDate: '2018-03-03T00:00:00.000Z',
             returnToCustodyDate: null,
-            recallType: {
-              code: 'LR',
-              description: 'Standard',
-              fixedTerm: false,
-            },
+            recallType: 'LR',
             courtCaseIds: [],
+            createdAt: '2024-01-02T00:00:00.000Z',
           },
         ],
+      },
+    })
+  },
+  stubSingleRecall: (recallUuid: string): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/recall/${recallUuid}`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+
+        jsonBody: {
+          recallUuid,
+          prisonerId: 'A1234AB',
+          revocationDate: '2018-03-03T00:00:00.000Z',
+          returnToCustodyDate: null,
+          recallType: 'LR',
+          courtCaseIds: [],
+          createdAt: '2024-01-02T00:00:00.000Z',
+        },
       },
     })
   },
