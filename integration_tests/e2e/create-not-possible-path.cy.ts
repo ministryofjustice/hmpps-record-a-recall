@@ -18,6 +18,10 @@ context('Creating a recall is not possible path', () => {
     cy.task('stubRecallPerson', { sortBy: 'desc' })
     cy.task('stubRecallRecorded')
     cy.task('stubNomisMapping')
+    cy.task('getPrisonsByPrisonIds')
+    cy.task('getOffencesByCodes')
+    cy.task('getServiceDefinitions')
+    cy.task('getNoAdjustmentsForPrisoner')
   })
 
   it('should show "You cannot record a recall" with single validation message, go back to home page and also start again', () => {
@@ -39,7 +43,7 @@ context('Creating a recall is not possible path', () => {
       .click()
 
     // Step 2: You cannot record a recall page shown then go back
-    Page.verifyOnPage(RecallNotPossiblePage) //
+    Page.verifyOnPage(RecallNotPossiblePage, false) //
       .expectSingleErrorMessage('This is because some message about a missing offence date')
       .expectBackLink('/person/A1234AB')
       .clickBack()
@@ -50,7 +54,7 @@ context('Creating a recall is not possible path', () => {
       .click()
 
     // Step 4: Shown not possible page again, fix in NOMIS and click start again
-    const notPossiblePage = Page.verifyOnPage(RecallNotPossiblePage)
+    const notPossiblePage = Page.verifyOnPage(RecallNotPossiblePage, false)
     cy.task('stubRecordARecallCRDSNonManual') // fix in NOMIS
     notPossiblePage //
       .expectStartAgainLink('/person/A1234AB/record-recall?entrypoint=recalls')
@@ -85,7 +89,7 @@ context('Creating a recall is not possible path', () => {
       .click()
 
     // Step 2: You cannot record a recall page shown with multiple messages
-    Page.verifyOnPage(RecallNotPossiblePage) //
+    Page.verifyOnPage(RecallNotPossiblePage, false) //
       .expectHasMultipleErrorMessages()
       .expectMultiErrorMessage('Some message about a missing offence date', 1)
       .expectMultiErrorMessage('Another offence with a missing start date', 2)
@@ -108,7 +112,7 @@ context('Creating a recall is not possible path', () => {
     cy.visit(`/person/A1234AB/record-recall?entrypoint=ccards`)
 
     // Step 2: You cannot record a recall page shown, back link goes to CCARD and start again keeps the entrypoint
-    Page.verifyOnPage(RecallNotPossiblePage) //
+    Page.verifyOnPage(RecallNotPossiblePage, false) //
       .expectSingleErrorMessage('This is because some message about a missing offence date')
       .expectBackLink('https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk/prisoner/A1234AB/overview')
       .expectStartAgainLink('/person/A1234AB/record-recall?entrypoint=ccards')
@@ -132,7 +136,7 @@ context('Creating a recall is not possible path', () => {
     cy.visit(`/person/A1234AB/record-recall?entrypoint=adj_foo`)
 
     // Step 2: You cannot record a recall page shown, back link goes to CCARD and start again keeps the entrypoint
-    Page.verifyOnPage(RecallNotPossiblePage) //
+    Page.verifyOnPage(RecallNotPossiblePage, false) //
       .expectSingleErrorMessage('This is because some message about a missing offence date')
       .expectBackLink('https://adjustments-dev.hmpps.service.justice.gov.uk/A1234AB/foo/view')
       .expectStartAgainLink('/person/A1234AB/record-recall?entrypoint=adj_foo')

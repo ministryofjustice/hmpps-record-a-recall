@@ -37,14 +37,16 @@
             href: journeyBaseLink ~ "/confirm-cancel",
             attributes: {
               "data-prevent-double-click": true,
-              "role": "button" 
+              "role": "button"
             },
             classes: "govuk-button--secondary govuk-button--inverse govuk-!-margin-left-1"
           }
         }) -%}
           <p class="govuk-body">This service cannot determine which sentences are eligible for recall.</p>
-          <p class="govuk-body">To make sure the recall is recorded correctly, you must select all cases with sentences that were active when this person's licence was revoked.</p>
+          <p class="govuk-heading-m">What you need to do</p>
+          <p class="govuk-body">You must make sure the recall is recorded correctly, as per the original warrant. To do this, you must select all cases that include sentences that were active when the person's licence was revoked.</p>
         {%- endcall %}
+
       </form>
     </div>
   </div>
