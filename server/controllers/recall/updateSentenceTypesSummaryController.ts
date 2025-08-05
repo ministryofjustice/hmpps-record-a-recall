@@ -8,6 +8,7 @@ import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { createSentenceToCourtCaseMap } from '../../helpers/sentenceHelper'
 
 export default class UpdateSentenceTypesSummaryController extends RecallBaseController {
   /**
@@ -22,6 +23,11 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      // Clean up session state from any sub-flows
+      req.sessionModel.unset(sessionModelFields.BULK_UPDATE_MODE)
+      req.sessionModel.unset(sessionModelFields.SENTENCES_IN_CURRENT_CASE)
+      req.sessionModel.unset(sessionModelFields.CURRENT_SENTENCE_INDEX)
+
       // Get court cases from session
       const courtCases = getCourtCaseOptions(req)
       const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
@@ -164,19 +170,10 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       // Group sentence updates by their court case UUID
       const updatesByCourtCase: Record<string, Array<{ sentenceUuid: string; sentenceTypeId: string }>> = {}
 
-      // Find which court case each sentence belongs to
+      const sentenceToCaseMap = createSentenceToCourtCaseMap(courtCases)
+
       for (const [sentenceUuid, sentenceTypeId] of sentenceUpdates) {
-        let foundCourtCase: string | null = null
-
-        for (const courtCase of courtCases) {
-          const sentenceExists = courtCase.sentences?.some(sentence => sentence.sentenceUuid === sentenceUuid)
-
-          if (sentenceExists) {
-            foundCourtCase = courtCase.caseId
-            break
-          }
-        }
-
+        const foundCourtCase = sentenceToCaseMap.get(sentenceUuid)
         if (foundCourtCase) {
           if (!updatesByCourtCase[foundCourtCase]) {
             updatesByCourtCase[foundCourtCase] = []
@@ -253,7 +250,6 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, updatedCourtCases)
 
       // Clear the temporary session data on success
-      // TODO: doubel check this logic for bulk and multiple sentence type updates
       req.sessionModel.unset(sessionModelFields.UPDATED_SENTENCE_TYPES)
       req.sessionModel.unset(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE)
 
@@ -289,7 +285,8 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       string,
       { uuid: string; description: string }
     >
-    const unknownSentences = (req.sessionModel.get(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE) || []) as string[]
+    const unknownSentencesToUpdate = (req.sessionModel.get(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE) ||
+      []) as string[]
 
     // Create compatibility maps for templates
     const updatedSentenceTypes: Record<string, string> = {}
@@ -301,9 +298,8 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
     res.locals.updatedSentenceTypes = updatedSentenceTypes
     res.locals.updatedSentenceTypeDescriptions = updatedSentenceTypeDescriptions
-    res.locals.unknownSentences = unknownSentences
-    res.locals.totalToUpdate = unknownSentences.length
-    res.locals.totalUpdated = Object.keys(updatedSentences).length
+    res.locals.totalToUpdate = unknownSentencesToUpdate.length
+    res.locals.totalUpdated = Object.keys(updatedSentenceTypes).length
 
     return super.locals(req, res)
   }

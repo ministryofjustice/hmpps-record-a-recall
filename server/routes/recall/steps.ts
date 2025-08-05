@@ -150,27 +150,44 @@ const steps = {
     controller: SelectSentenceTypeController,
     template: 'select-sentence-type',
     fields: ['sentenceType'],
+    sentenceType: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select a sentence type',
+        },
+      ],
+    },
     next: 'update-sentence-types-summary',
     checkJourney: false,
   },
-  // TODO: RCLL-453 - Multiple sentence type selection routes
   '/multiple-sentence-decision/:courtCaseId': {
     controller: MultipleSentenceDecisionController,
     template: 'multiple-sentence-decision',
     fields: ['sameSentenceType'],
-    next: [
-      {
-        fn: (req: FormWizard.Request) => req.body.sameSentenceType === 'yes',
-        next: 'bulk-sentence-type/:courtCaseId',
-      },
-      'select-sentence-type/:sentenceUuid', // TODO: RCLL-453 - Sequential selection temporarily redirects to check-sentences
-    ],
+    sameSentenceType: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select yes if all sentences have the same type, or no to select individually',
+        },
+      ],
+    },
+    next: 'update-sentence-types-summary', // Fallback, controller will override with dynamic route
     checkJourney: false,
   },
   '/bulk-sentence-type/:courtCaseId': {
     controller: BulkSentenceTypeController,
     template: 'bulk-sentence-type',
     fields: ['sentenceType'],
+    sentenceType: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select a sentence type',
+        },
+      ],
+    },
     next: 'update-sentence-types-summary',
     checkJourney: false,
   },
