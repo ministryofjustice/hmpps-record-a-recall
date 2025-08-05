@@ -1,5 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import type { CourtCase } from 'models'
+import dayjs from 'dayjs'
 import { RecallableCourtCaseSentence, SentenceType } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 
@@ -28,11 +29,9 @@ export async function getApplicableSentenceTypes(
     if (!prisoner?.dateOfBirth) {
       throw new Error('Prisoner date of birth not found in session')
     }
-    const convictionDate = new Date(courtCase.date)
-    const dateOfBirth = new Date(prisoner.dateOfBirth)
-    const ageAtConviction = Math.floor(
-      (convictionDate.getTime() - dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
-    )
+    const convictionDate = dayjs(sentence.convictionDate)
+    const dateOfBirth = dayjs(prisoner.dateOfBirth)
+    const ageAtConviction = convictionDate.diff(dateOfBirth, 'year')
 
     return await req.services.courtCaseService.searchSentenceTypes(
       {
