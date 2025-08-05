@@ -36,7 +36,7 @@ export async function getApplicableSentenceTypes(
     return await req.services.courtCaseService.searchSentenceTypes(
       {
         age: ageAtConviction,
-        convictionDate: courtCase.date,
+        convictionDate: sentence.convictionDate,
         offenceDate: sentence.offenceStartDate || courtCase.date,
         statuses: ['ACTIVE'],
       },
