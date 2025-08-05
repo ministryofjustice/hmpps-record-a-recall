@@ -60,6 +60,7 @@
                 outcome: sentence.formattedOutcome | default("N/A"),
                 countNumber: loop.index,
                 convictionDate: sentence.formattedConvictionDate | default("N/A"),
+                sentenceDate: sentence.sentenceDate | default("N/A"),
                 terrorRelated: sentence.terrorRelated | default(false),
                 isSentenced: true,
                 periodLengths: sentence.periodLengths | default([]),
