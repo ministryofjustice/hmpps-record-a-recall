@@ -130,12 +130,15 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
           text: 'You must update all sentence types before continuing',
         },
       }
-      const errorSummary = [
-        {
-          text: 'You must update all sentence types before continuing',
-          href: '#sentence-types',
-        },
-      ]
+      const errorSummary = {
+        titleText: 'There is a problem',
+        errorList: [
+          {
+            text: 'You must update all sentence types before continuing',
+            href: '#sentence-types',
+          },
+        ],
+      }
 
       req.sessionModel.set('errors', errors)
       res.locals.errors = errors
