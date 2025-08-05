@@ -45,28 +45,34 @@
               {{ currentCase.courtName | default("N/A") }} on {{ currentCase.formattedOverallConvictionDate | default("N/A") }}
             </h2>
 
-            {% for sentence in currentCase.recallableSentences %}
-              {{ offenceCard({
-                  offenceCode: sentence.offenceCode | default("N/A"),
-                  offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
-                  offenceStartDate: sentence.offenceStartDate | default('N/A'),
-                  offenceEndDate: sentence.offenceEndDate | default(null),
-                  outcome: sentence.formattedOutcome | default("N/A"),
-                  countNumber: loop.index,
-                  convictionDate: sentence.formattedConvictionDate | default("N/A"),
-                  terrorRelated: sentence.terrorRelated | default(false),
-                  isSentenced: true,
-                  periodLengths: sentence.periodLengths | default([]),
-                  sentenceServeType: sentence.sentenceServeType | default(null),
-                  consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
-                  sentenceType: (sentence.sentenceTypeDescription | default("N/A")),,
-                  fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-                  detailsClasses: 'govuk-!-padding-4',
-                  actions: null,
-                  listItems: null
-              }) }}
-            {% endfor %}
-          {% endif %}
+      {% for sentence in currentCase.recallableSentences %}
+            {% if sentence.sentenceTypeDescription == 'Required' %}
+              {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
+            {% else %}
+              {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+            {% endif %}
+
+            {{ offenceCard({
+                offenceCode: sentence.offenceCode | default("N/A"),
+                offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+                offenceStartDate: sentence.offenceStartDate | default('N/A'),
+                offenceEndDate: sentence.offenceEndDate | default(null),
+                outcome: sentence.formattedOutcome | default("N/A"),
+                countNumber: loop.index,
+                convictionDate: sentence.formattedConvictionDate | default("N/A"),
+                terrorRelated: sentence.terrorRelated | default(false),
+                isSentenced: true,
+                periodLengths: sentence.periodLengths | default([]),
+                sentenceServeType: sentence.sentenceServeType | default(null),
+                consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+                sentenceType: sentenceTypeDisplay | safe,
+                fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+                detailsClasses: 'govuk-!-padding-4',
+                actions: null,
+                listItems: null
+            }) }}
+          {% endfor %}
+        {% endif %}
 
           {# Non-Recallable Sentences Dropdown #}
           {% if currentCase.hasNonRecallableSentences %}
