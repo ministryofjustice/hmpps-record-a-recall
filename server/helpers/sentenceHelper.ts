@@ -34,15 +34,18 @@ export async function getApplicableSentenceTypes(
       throw new Error(`Invalid prisoner dateOfBirth: ${prisoner.dateOfBirth}`)
     }
 
-    // let convictionDate = sentence.convictionDate ? dayjs(sentence.convictionDate) : null
-    // if (!convictionDate?.isValid()) {
-    //   logger.warn(`Missing or invalid convictionDate, using prisoner DOB ${prisoner.dateOfBirth}`)
-    // }
-
-    const convictionDate2 = new Date(prisoner.dateOfBirth) // fallback
-    const formatted = convictionDate2.toISOString().split('T')[0] // Format to make JS Date to string
-    // const formattedConvictionDate = convictionDate2.format('YYYY-MM-DD')
-    const ageAtConviction = dayjs().diff(dayjs(dateOfBirth), 'year')
+    let convictionDate
+    let ageAtConviction
+    if (sentence.convictionDate) {
+      const dateOfConviction = dayjs(sentence.convictionDate)
+      ageAtConviction = dateOfConviction.diff(dateOfBirth, 'year')
+      convictionDate = dayjs(sentence.convictionDate).format('YYYY-MM-DD')
+    } else {
+      // fallback to use DOB if there is no convictionDate
+      // Format to make JS Date to string
+      ;[convictionDate] = new Date(prisoner.dateOfBirth).toISOString().split('T')
+      ageAtConviction = dayjs().diff(dayjs(dateOfBirth), 'year')
+    }
 
     const offenceDate = sentence.offenceStartDate
       ? dayjs(sentence.offenceStartDate).format('YYYY-MM-DD')
@@ -51,8 +54,7 @@ export async function getApplicableSentenceTypes(
     return await req.services.courtCaseService.searchSentenceTypes(
       {
         age: ageAtConviction,
-        // convictionDate: formattedConvictionDate || dayjs().format('YYYY-MM-DD'), // guarantee fallback here too
-        convictionDate: formatted, // guarantee fallback here too
+        convictionDate,
         offenceDate,
         statuses: ['ACTIVE'] as ('ACTIVE' | 'INACTIVE')[],
       },
