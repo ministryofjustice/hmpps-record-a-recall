@@ -41,9 +41,10 @@ export async function getApplicableSentenceTypes(
       ageAtConviction = dateOfConviction.diff(dateOfBirth, 'year')
       convictionDate = dayjs(sentence.convictionDate).format('YYYY-MM-DD')
     } else {
-      // fallback to use DOB if there is no convictionDate
+      // fallback to use today's date if there is no convictionDate
       // Format to make JS Date to string
-      ;[convictionDate] = new Date(prisoner.dateOfBirth).toISOString().split('T')
+      // [convictionDate] = new Date(prisoner.dateOfBirth).toISOString().split('T') // here
+      convictionDate = dayjs().format('YYYY-MM-DD')
       ageAtConviction = dayjs().diff(dayjs(dateOfBirth), 'year')
     }
 
