@@ -39,7 +39,7 @@ export async function getApplicableSentenceTypes(
     if (sentence.convictionDate) {
       const dateOfConviction = dayjs(sentence.convictionDate)
       ageAtConviction = dateOfConviction.diff(dateOfBirth, 'year')
-      convictionDate = dayjs(sentence.convictionDate).format('YYYY-MM-DD')
+      convictionDate = dateOfConviction.format('YYY-MM-DD')
     } else {
       // fallback to use today's date if there is no convictionDate
       convictionDate = dayjs().format('YYYY-MM-DD')
