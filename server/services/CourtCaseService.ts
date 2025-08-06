@@ -50,6 +50,7 @@ export default class CourtCaseService {
   }
 
   fromRecallableCourtCase(recallableCase: RecallableCourtCase & { courtName?: string }): CourtCase {
+    console.log('recallablecase.sentences', JSON.stringify(recallableCase.sentences, undefined, 2))
     return {
       caseId: recallableCase.courtCaseUuid,
       status: recallableCase.status,
