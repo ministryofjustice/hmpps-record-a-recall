@@ -15,7 +15,7 @@ context('Creating a recall is not possible path', () => {
     cy.task('stubGetCalculationBreakdown')
     cy.task('stubGetCourtsByIds')
     cy.task('stubSearchCourtCases', { sortBy: 'desc' })
-    cy.task('stubRecallPerson', { sortBy: 'desc' })
+    cy.task('stubRecallPersonWithExistingRecall')
     cy.task('stubSingleRecall', 'ABC')
     cy.task('stubRecallRecorded')
     cy.task('stubNomisMapping')
@@ -39,9 +39,8 @@ context('Creating a recall is not possible path', () => {
     cy.task('stubRecordARecallCRDSWithValidationMessages', validationMessages)
 
     // Step 1: Start editing the recall
-    PersonHomePage.goTo('A1234AB') //
-      .clickEditLink('03 Mar 2018')
-      .click()
+    PersonHomePage.goTo('A1234AB')
+    cy.findByRole('link', { name: 'Edit recall recorded on 03 Mar 2018' }).click()
 
     // Step 2: You cannot record a recall page shown then go back
     Page.verifyOnPage(RecallNotPossiblePage, true) //
@@ -50,9 +49,8 @@ context('Creating a recall is not possible path', () => {
       .clickBack()
 
     // Step 3: Go back to home and start again
-    Page.verifyOnPage(PersonHomePage) //
-      .clickEditLink('03 Mar 2018')
-      .click()
+    Page.verifyOnPage(PersonHomePage)
+    cy.findByRole('link', { name: 'Edit recall recorded on 03 Mar 2018' }).click()
 
     // Step 4: Shown not possible page again, fix in NOMIS and click start again
     const notPossiblePage = Page.verifyOnPage(RecallNotPossiblePage, true)
