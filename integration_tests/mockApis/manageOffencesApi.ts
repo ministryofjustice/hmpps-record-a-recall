@@ -11,7 +11,11 @@ export default {
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: [{ code: '123', description: 'Doing a crime' }],
+        jsonBody: [
+          { code: '123', description: 'Doing a crime' },
+          { code: 'HA04005', description: 'Harassment - without violence' },
+          { code: 'COML017B', description: 'Common law offence' },
+        ],
       },
     })
   },
