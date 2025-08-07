@@ -35,59 +35,45 @@
         <span class="govuk-caption-l">Record a recall</span>
         {{ pageTitle }}
       </h1>
-      <p class="govuk-body">Relevant cases are those with sentences that were active when this person's licence was revoked.</p>
+      <p class="govuk-body">The sentence must have been active when the person's licence was revoked. Any missing sentence types can be added later.</p>
       <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
-
-      {# Case Header Block #}
-      <div class="govuk-summary-card govuk-!-margin-bottom-5">
-        <div class="govuk-summary-card__title-wrapper">
-          <h2 class="govuk-summary-card__title">{{ currentCase.courtCode | default("N/A") }}<span class="govuk-!-font-weight-regular"> at </span>{{ currentCase.courtName | default("N/A") }}</h2>
-        </div>
-        <div class="govuk-summary-card__content">
-          {{ govukSummaryList({
-              "rows": [
-                {
-                  "key": { "text": "Case references", "classes": "govuk-!-font-weight-bold" },
-                  "value": { "text": currentCase.caseReferences | default("Not available"), "classes": "govuk-!-font-weight-bold" }
-                },
-                {
-                  "key": { "text": "Overall sentence length", "classes": "govuk-!-font-weight-bold" },
-                  "value": { "text": currentCase.formattedOverallSentenceLength | default("Not available"), "classes": "govuk-!-font-weight-bold" }
-                },
-                {
-                  "key": { "text": "Conviction date", "classes": "govuk-!-font-weight-bold" },
-                  "value": { "text": currentCase.formattedOverallConvictionDate | default("Not available"), "classes": "govuk-!-font-weight-bold" }
-                }
-              ]
-          }) }}
-
-          <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-1">
 
           {# Recallable Offences Section #}
           {% if currentCase.recallableSentences and currentCase.recallableSentences.length > 0 %}
-            <h3 class="govuk-heading-s govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">Offences ({{ currentCase.recallableSentences.length }})</h3>
-            {% for sentence in currentCase.recallableSentences %}
-              {{ offenceCard({
-                  offenceCode: sentence.offenceCode | default("N/A"),
-                  offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
-                  offenceStartDate: sentence.offenceStartDate | default('N/A'),
-                  offenceEndDate: sentence.offenceEndDate | default(null),
-                  outcome: sentence.formattedOutcome | default("N/A"),
-                  countNumber: loop.index,
-                  convictionDate: sentence.formattedConvictionDate | default("N/A"),
-                  terrorRelated: sentence.terrorRelated | default(false),
-                  isSentenced: true,
-                  periodLengths: sentence.periodLengths | default([]),
-                  sentenceServeType: sentence.sentenceServeType | default(null),
-                  consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
-                  sentenceType: (sentence.sentenceTypeDescription | default("N/A")),
-                  fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-                  detailsClasses: 'govuk-!-padding-4',
-                  actions: null,
-                  listItems: null
-              }) }}
-            {% endfor %}
-          {% endif %}
+            <h2 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+            {% if currentCase.courtCode %}{{ currentCase.courtCode }} at {% endif %}
+              {{ currentCase.courtName | default("N/A") }} on {{ currentCase.formattedOverallConvictionDate | default("N/A") }}
+            </h2>
+
+      {% for sentence in currentCase.recallableSentences %}
+            {% if sentence.sentenceTypeDescription == 'Required' %}
+              {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
+            {% else %}
+              {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+            {% endif %}
+
+            {{ offenceCard({
+                offenceCode: sentence.offenceCode | default("N/A"),
+                offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+                offenceStartDate: sentence.offenceStartDate | default('N/A'),
+                offenceEndDate: sentence.offenceEndDate | default(null),
+                outcome: sentence.formattedOutcome | default("N/A"),
+                countNumber: loop.index,
+                convictionDate: sentence.formattedConvictionDate | default("N/A"),
+                sentenceDate: sentence.sentenceDate | default("N/A"),
+                terrorRelated: sentence.terrorRelated | default(false),
+                isSentenced: true,
+                periodLengths: sentence.periodLengths | default([]),
+                sentenceServeType: sentence.sentenceServeType | default(null),
+                consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+                sentenceType: sentenceTypeDisplay | safe,
+                fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+                detailsClasses: 'govuk-!-padding-4',
+                actions: null,
+                listItems: null
+            }) }}
+          {% endfor %}
+        {% endif %}
 
           {# Non-Recallable Sentences Dropdown #}
           {% if currentCase.hasNonRecallableSentences %}
@@ -122,8 +108,6 @@
               </div>
             </details>
           {% endif %}
-        </div> <!-- govuk-summary-card__content -->
-      </div> <!-- govuk-summary-card -->
 
       <form method="post" novalidate class="govuk-!-margin-top-6">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
