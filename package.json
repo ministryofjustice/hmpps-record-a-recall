@@ -122,7 +122,7 @@
     "express-session": "^1.18.1",
     "govuk-frontend": "^5.11.1",
     "helmet": "^8.1.0",
-    "hmpo-form-wizard": "^15.0.0",
+    "hmpo-form-wizard": "^15.0.1",
     "http-errors": "^2.0.0",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
