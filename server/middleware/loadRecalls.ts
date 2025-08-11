@@ -38,6 +38,16 @@ export default function loadRecalls(
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
+        // Fetch firstDayInCustody from searchCourtCases
+        let firstDayInCustody: string | null = null
+        try {
+          const courtCasesSearch = await recallService.searchCourtCases(nomisId, user.username)
+          firstDayInCustody = courtCasesSearch?.content?.[0]?.firstDayInCustody || null
+        } catch (err) {
+          logger.error(`Error fetching firstDayInCustody for ${nomisId}:`, err)
+        }
+        res.locals.firstDayInCustody = firstDayInCustody
+
         // Fetch court cases to get offence codes
         let courtCasesResponse
         let courtCasesFetchError = false
@@ -84,7 +94,6 @@ export default function loadRecalls(
 
         // Fetch offence descriptions
         let offenceMap: Record<string, string> = {}
-        // Remove duplicates and filter out falsy values
         const offenceCodes = [...new Set(allOffenceCodes)].filter(Boolean)
         if (offenceCodes.length > 0) {
           try {
@@ -99,18 +108,16 @@ export default function loadRecalls(
           const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
           const enhancedSentences = recall.sentences?.reduce((acc, sentence) => {
-            // Filter out any sentences with deleted status (defensive)
             if ('status' in sentence && sentence.status === 'DELETED') {
               return acc
             }
 
-            // Get offence code either from sentence or from court case mapping
             const offenceCode =
               sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
             acc.push({
               ...sentence,
-              offenceCode, // Ensure offenceCode is populated
+              offenceCode,
               offenceDescription: offenceMap[offenceCode] || undefined,
             })
 
@@ -130,10 +137,12 @@ export default function loadRecalls(
       } else {
         res.locals.recalls = []
         res.locals.latestRecallId = undefined
+        res.locals.firstDayInCustody = null
       }
     } catch (error) {
       logger.error(error, `Failed to load recalls for ${nomisId}`)
       res.locals.recalls = []
+      res.locals.firstDayInCustody = null
     }
 
     return next()
@@ -144,9 +153,6 @@ export function isRecallFromNomis(recall: Recall): boolean {
   return recall?.source === 'NOMIS'
 }
 
-/**
- * Find the latest recall by createdAt date
- */
 function findLatestRecallId(recalls: Recall[]): string | undefined {
   if (!recalls || recalls.length === 0) {
     return undefined

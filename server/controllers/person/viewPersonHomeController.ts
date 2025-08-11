@@ -19,6 +19,7 @@ export default async (req: Request, res: Response) => {
       serviceDefinitions,
       errorMessage,
       latestRecallId: res.locals.latestRecallId,
+      firstDayInCustody: res.locals.firstDayInCustody,
     })
   }
 

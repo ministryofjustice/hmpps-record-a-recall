@@ -40,7 +40,7 @@ export default class RecallService {
 
   async searchCourtCases(nomsId: string, username: string): Promise<PagePagedCourtCase> {
     const ble =  (await (this.getApiClient(username))).searchCourtCases(nomsId)
-    logger.info(`Fetched recalls for NOMS ID ${nomsId}:`, ble)
+    logger.info(`************************£$%^&U`, ble)
     return ble
   }
 
