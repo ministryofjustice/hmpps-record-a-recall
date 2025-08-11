@@ -8,6 +8,7 @@ import {
   UpdateSentenceTypesRequest,
   UpdateSentenceTypesResponse,
   SentenceType,
+  PagePagedCourtCase,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
@@ -57,6 +58,20 @@ export default class RemandAndSentencingApiClient {
     return this.restClient.get({
       path: `/court-case/${prisonerId}/recallable-court-cases`,
     }) as Promise<RecallableCourtCasesResponse>
+  }
+
+  // this endpoint is paginated FYI we may need to add pagination depending on how many cases we may get
+    async searchCourtCases(
+    prisonerId: string,
+  ): Promise<PagePagedCourtCase> {
+    return this.restClient.get(
+      {
+        path: `/court-case/paged/search`,
+        query: {
+          prisonerId,
+        },
+      },
+    ) as unknown as Promise<PagePagedCourtCase>
   }
 
   async updateSentenceTypes(
