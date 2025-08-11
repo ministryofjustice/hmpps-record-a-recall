@@ -6,6 +6,7 @@ import {
   ApiRecall,
   CreateRecall,
   CreateRecallResponse,
+  PagePagedCourtCase,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { calculateUal } from '../utils/utils'
 import { getRecallType } from '../@types/recallTypes'
@@ -35,6 +36,12 @@ export default class RecallService {
     logger.info(`Fetched recalls for NOMS ID ${nomsId}:`, allApiRecalls)
 
     return allApiRecalls.map((apiRecall: ApiRecall): Recall => this.fromApiRecall(apiRecall))
+  }
+
+  async searchCourtCases(nomsId: string, username: string): Promise<PagePagedCourtCase> {
+    const ble =  (await (this.getApiClient(username))).searchCourtCases(nomsId)
+    logger.info(`Fetched recalls for NOMS ID ${nomsId}:`, ble)
+    return ble
   }
 
   async deleteRecall(nomisId: string, recallId: string, username: string): Promise<void> {
@@ -75,7 +82,7 @@ export default class RecallService {
 
   private async getApiClient(username: string): Promise<RemandAndSentencingApiClient> {
     return new RemandAndSentencingApiClient(await this.getSystemClientToken(username))
-  }
+  } // here
 
   private async getSystemClientToken(username: string): Promise<string> {
     return this.hmppsAuthClient.getSystemClientToken(username)
