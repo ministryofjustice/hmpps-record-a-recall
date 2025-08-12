@@ -14,3 +14,5 @@ export type UpdateSentenceTypesRequest = components['schemas']['UpdateSentenceTy
 export type UpdateSentenceTypesResponse = components['schemas']['UpdateSentenceTypeResponse']
 
 export type SentenceType = components['schemas']['SentenceType']
+
+export type PagePagedCourtCase = components['schemas']['PagePagedCourtCase']

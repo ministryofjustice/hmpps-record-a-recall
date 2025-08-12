@@ -161,6 +161,7 @@
     convictionDate: convictionDate,
     periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
     sentenceServeType: sentence.sentenceServeType | default(null),
+    sentenceDate: firstDayInCustody | formatDate,
     sentenceType: sentence.sentenceType | default('N/A'),
     isSentenced: true,
     detailsClasses: 'govuk-!-padding-4'
