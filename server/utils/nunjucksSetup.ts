@@ -10,6 +10,7 @@ import {
   firstNameSpaceLastName,
   formatLengths,
   consecutiveToDetailsToDescription,
+  formatCountNumber, // NEW: pulled from design system utils
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import dayjs from 'dayjs'
 import { formatDate, initialiseName, lowercaseFirstLetter, periodLengthsToSentenceLengths } from './utils'
@@ -27,12 +28,9 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   app.locals.environmentNameColour = config.environmentName === 'PRE-PRODUCTION' ? 'govuk-tag--green' : ''
   app.locals.digitalPrisonServicesUrl = config.applications.digitalPrisonServices.url
 
-  // Cachebusting version string
   if (production) {
-    // Version only changes with new commits
     app.locals.version = applicationInfo.gitShortHash
   } else {
-    // Version changes every request
     app.use((req, res, next) => {
       res.locals.version = Date.now().toString()
       return next()
@@ -55,18 +53,16 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
 
   function callAsMacro(name: string) {
     const macro = this.ctx[name]
-
     if (!isFunction(macro)) {
-      // eslint-disable-next-line no-console
       console.log(`'${name}' macro does not exist`)
       return () => ''
     }
-
     return macro
   }
 
   njkEnv.addGlobal('callAsMacro', callAsMacro)
 
+  // Filters from utils
   njkEnv.addFilter('initialiseName', initialiseName)
   njkEnv.addFilter('personProfileName', personProfileName)
   njkEnv.addFilter('personDateOfBirth', personDateOfBirth)
@@ -82,23 +78,22 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatDate', formatDate)
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('lowercaseFirstLetter', lowercaseFirstLetter)
+  njkEnv.addFilter('formatCountNumber', formatCountNumber)
 
-  // Filter to pluralize a word based on a count. Adds 's' if count is not 1.
+  // Pluralize helper
   function pluralize(count: number): string {
     return count === 1 ? '' : 's'
   }
   njkEnv.addFilter('pluralize', pluralize)
 
-  // Filter to find a specific error message from an array of errors
+  // Error finder
   interface ErrorObject {
     name?: string
     text: string
     href?: string
   }
   function findError(errorsArray: ErrorObject[] | undefined, fieldName: string): ErrorObject | undefined {
-    if (!errorsArray) {
-      return undefined
-    }
+    if (!errorsArray) return undefined
     return errorsArray.find(error => error.name === fieldName)
   }
   njkEnv.addFilter('findError', findError)
