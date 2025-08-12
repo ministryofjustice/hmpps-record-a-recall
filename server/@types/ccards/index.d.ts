@@ -11,6 +11,7 @@ type offenceCard = {
   custodialSentenceLength?: termLength
   licencePeriodLength?: termLength
   sentenceServeType: 'CONSECUTIVE' | 'CONCURRENT' | 'FORTHWITH'
+  sentenceDate?: string
   consecutiveTo: string
   sentenceType: string
   actions?: {

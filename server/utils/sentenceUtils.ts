@@ -399,6 +399,7 @@ export type SummarisedSentence = {
   sentenceServeType?: string
   consecutiveTo?: string
   sentenceType?: string
+  sentenceDate?: string
 }
 
 export type SummarisedSentenceGroup = {
