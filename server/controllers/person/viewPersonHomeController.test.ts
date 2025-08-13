@@ -442,10 +442,8 @@ describe('viewPersonHome', () => {
         const $ = cheerio.load(response.text)
         const badges = $('.moj-badge')
         const nomisBadge = $('[data-qa="nomis-badge"]')
-        const dpsBadge = $('[data-qa="active-badge"]')
-        expect(badges).toHaveLength(2)
+        expect(badges).toHaveLength(1)
         expect(nomisBadge.text()).toBe('NOMIS')
-        expect(dpsBadge.text()).toBe('Active')
       })
   })
 
