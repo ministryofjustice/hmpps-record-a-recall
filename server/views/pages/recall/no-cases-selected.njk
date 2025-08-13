@@ -1,0 +1,35 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+
+{% block beforeContent %}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
+
+
+      {% call interruptionCard({
+        heading: "No cases have been selected",
+        primaryAction: {
+          text: "Check the date of revocation",
+          href: journeyBaseLink + "/revocation-date",
+          preventDoubleClick: true,
+          type: "submit"
+        },
+        secondaryAction: {
+          text: "Cancel recall",
+          href: cancelLink,
+          preventDoubleClick: true,
+          type: "reset",
+          style: "button"
+        }
+    }) -%}
+        <p>You must select at lease one active sentence that was relevant on the revocation date.</p>
+        <p>The revocation date entered is: <b>{{ revocationDate | eightDigitDate }}</b>.</p>
+        <h2 class="govuk-heading-m moj-interruption-card__heading">What to do next</h2>
+        <p>Check that the revocation date is correct, and if not, .</p>
+        <p>Go back through the court cases again and </p>
+      {%- endcall %}
+{% endblock %}
