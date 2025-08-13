@@ -158,8 +158,14 @@ export function getEligibleSentenceCount(req: FormWizard.Request): number {
   return get<number>(req, sessionModelFields.ELIGIBLE_SENTENCE_COUNT) || 0
 }
 
+// export function getSummarisedSentenceGroups(req: FormWizard.Request): SummarisedSentenceGroup[] {
+//   console.log('********************', req)
+//   return get<SummarisedSentenceGroup[]>(req, sessionModelFields.SUMMARISED_SENTENCES)
+// }
 export function getSummarisedSentenceGroups(req: FormWizard.Request): SummarisedSentenceGroup[] {
-  return get<SummarisedSentenceGroup[]>(req, sessionModelFields.SUMMARISED_SENTENCES)
+  const groups = get<SummarisedSentenceGroup[]>(req, sessionModelFields.SUMMARISED_SENTENCES)
+  console.log('Summarised groups:', JSON.stringify(groups, undefined, 2))
+  return groups || []
 }
 
 export function getTemporaryCalc(req: FormWizard.Request): CalculatedReleaseDates {

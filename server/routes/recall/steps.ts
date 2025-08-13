@@ -19,6 +19,7 @@ import {
   isRecallTypeMismatch,
   hasMultipleConflicting,
   hasMultipleUALTypeRecallConflicting,
+  getSummarisedSentenceGroups,
 } from '../../helpers/formWizardHelper'
 import NotPossibleController from '../../controllers/recall/notPossibleController'
 
@@ -136,6 +137,11 @@ const steps = {
           return unknownSentenceIds && unknownSentenceIds.length > 0
         },
         next: 'update-sentence-types-summary',
+      },
+    // here 
+      {
+      fn: (req: FormWizard.Request) => getSummarisedSentenceGroups(req).length === 0,
+      next: 'no-cases-selected',
       },
       'check-sentences',
     ],
