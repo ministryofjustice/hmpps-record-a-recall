@@ -138,10 +138,10 @@ const steps = {
         },
         next: 'update-sentence-types-summary',
       },
-    // here 
+      // here
       {
-      fn: (req: FormWizard.Request) => getSummarisedSentenceGroups(req).length === 0,
-      next: 'no-cases-selected',
+        fn: (req: FormWizard.Request) => getSummarisedSentenceGroups(req).length === 0,
+        next: 'no-cases-selected',
       },
       'check-sentences',
     ],
@@ -207,14 +207,7 @@ const steps = {
     checkJourney: false,
     fields: ['confirmCancel'],
   },
-  //   '/no-cases-selected': {
-  //   controller: RecallBaseController,
-  //   template: 'no-cases-selected.njk',
-  //   noPost: true,
-  //   checkJourney: false,
-  // },
-
-   '/no-cases-selected': {
+  '/no-cases-selected': {
     controller: RecallBaseController,
   },
 }

@@ -1,35 +1,51 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block beforeContent %}
   {{ super() }}
+  {% if errorlist.length %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: validationErrors
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
+  <h1 class="govuk-heading-xl">
+    <span class="govuk-caption-xl">Record a recall</span>
+    No cases have been selected
+  </h1>
 
+  <p class="govuk-body">
+    You must select at least one active sentence that was relevant on the revocation date.
+  </p>
 
-      {% call interruptionCard({
-        heading: "No cases have been selected",
-        primaryAction: {
-          text: "Check the date of revocation",
-          href: journeyBaseLink + "/revocation-date",
-          preventDoubleClick: true,
-          type: "submit"
-        },
-        secondaryAction: {
-          text: "Cancel recall",
-          href: cancelLink,
-          preventDoubleClick: true,
-          type: "reset",
-          style: "button"
-        }
-    }) -%}
-        <p>You must select at lease one active sentence that was relevant on the revocation date.</p>
-        <p>The revocation date entered is: <b>{{ revocationDate | eightDigitDate }}</b>.</p>
-        <h2 class="govuk-heading-m moj-interruption-card__heading">What to do next</h2>
-        <p>Check that the revocation date is correct, and if not, .</p>
-        <p>Go back through the court cases again and </p>
-      {%- endcall %}
+  <p class="govuk-body">
+    The revocation date entered is <strong>{{ revocationDate | date }}</strong>.
+  </p>
+
+  <h2 class="govuk-heading-m">What to do next</h2>
+
+  <p class="govuk-body">
+    Check the date of revocation is correct, and if not,
+    <a class="govuk-link" href="{{ journeyBaseLink }}/revocation-date">update the revocation date</a>.
+  </p>
+
+  <p class="govuk-body">
+    Go back through the court cases again and
+    <a class="govuk-link" href="{{ journeyBaseLink }}/select-cases">check for relevant sentences</a>.
+  </p>
+
+  <div class="govuk-button-group">
+    {{ govukButton({
+      text: "Cancel recall",
+      classes: "govuk-button--secondary",
+      preventDoubleClick: true,
+      type: "reset",
+      href: cancelLink
+    }) }}
+  </div>
 {% endblock %}
