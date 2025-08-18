@@ -192,6 +192,7 @@ const mockRecallableCourtCases: RecallableCourtCasesResponse = {
       sentences: [
         {
           sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
+          sentenceTypeUuid: 'test-sentence-type-uuid',
           countNumber: '1',
           offenceCode: 'HA04005',
           sentenceType: 'EDS (Extended Determinate Sentence)',
@@ -441,10 +442,8 @@ describe('viewPersonHome', () => {
         const $ = cheerio.load(response.text)
         const badges = $('.moj-badge')
         const nomisBadge = $('[data-qa="nomis-badge"]')
-        const dpsBadge = $('[data-qa="active-badge"]')
-        expect(badges).toHaveLength(2)
+        expect(badges).toHaveLength(1)
         expect(nomisBadge.text()).toBe('NOMIS')
-        expect(dpsBadge.text()).toBe('Active')
       })
   })
 

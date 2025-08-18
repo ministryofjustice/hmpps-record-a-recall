@@ -105,6 +105,22 @@ const fields = {
       { text: 'No, go back to the recall', value: 'false' },
     ],
   },
+  sentenceType: {
+    component: 'govukRadios',
+    validate: ['required'],
+    id: 'sentenceType',
+    name: 'sentenceType',
+    fieldset: {
+      legend: {
+        text: 'Select the sentence type',
+        classes: 'govuk-visually-hidden',
+      },
+    },
+    errorMessages: { required: 'Select a sentence type' },
+    nameForErrors: 'Sentence type',
+    // @ts-expect-error Items are set dynamically in the controller based on applicable sentence types
+    items: [],
+  },
 }
 
 export default fields

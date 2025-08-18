@@ -1,4 +1,4 @@
-import { convertToTitleCase, initialiseName } from './utils'
+import { convertToTitleCase, initialiseName, lowercaseFirstLetter } from './utils'
 
 describe('convert to title case', () => {
   it.each([
@@ -26,5 +26,18 @@ describe('initialise name', () => {
     ['Double barrelled', 'Robert-John Smith-Jones-Wilson', 'R. Smith-Jones-Wilson'],
   ])('%s initialiseName(%s, %s)', (_: string, a: string, expected: string) => {
     expect(initialiseName(a)).toEqual(expected)
+  })
+})
+
+describe('lowercaseFirstLetter', () => {
+  it.each([
+    [null, null, ''],
+    ['Empty string', '', ''],
+    ['Single letter', 'A', 'a'],
+    ['Already lowercase', 'this is all lowercase', 'this is all lowercase'],
+    ['Uppercase', 'THIS IS ALL UPPERCASE', 'tHIS IS ALL UPPERCASE'],
+    ['Sentence case', 'This is sentence case', 'this is sentence case'],
+  ])('%s lowercaseFirstLetter(%s) = %s', (_: string, s: string, expected: string) => {
+    expect(lowercaseFirstLetter(s)).toEqual(expected)
   })
 })

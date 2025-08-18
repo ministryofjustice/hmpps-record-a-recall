@@ -5,6 +5,9 @@ import {
   CreateRecall,
   CreateRecallResponse,
   RecallableCourtCasesResponse,
+  UpdateSentenceTypesRequest,
+  UpdateSentenceTypesResponse,
+  SentenceType,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class RemandAndSentencingApiClient {
@@ -54,5 +57,32 @@ export default class RemandAndSentencingApiClient {
     return this.restClient.get({
       path: `/court-case/${prisonerId}/recallable-court-cases`,
     }) as Promise<RecallableCourtCasesResponse>
+  }
+
+  async updateSentenceTypes(
+    courtCaseUuid: string,
+    data: UpdateSentenceTypesRequest,
+  ): Promise<UpdateSentenceTypesResponse> {
+    return this.restClient.post({
+      path: `/court-case/${courtCaseUuid}/sentences/update-types`,
+      data,
+    }) as Promise<UpdateSentenceTypesResponse>
+  }
+
+  async searchSentenceTypes(params: {
+    age: number
+    convictionDate: string
+    offenceDate: string
+    statuses?: ('ACTIVE' | 'INACTIVE')[]
+  }): Promise<SentenceType[]> {
+    return this.restClient.get({
+      path: `/sentence-type/search`,
+      query: {
+        age: params.age,
+        convictionDate: params.convictionDate,
+        offenceDate: params.offenceDate,
+        statuses: params.statuses,
+      },
+    }) as Promise<SentenceType[]>
   }
 }

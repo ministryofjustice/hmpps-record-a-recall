@@ -116,7 +116,7 @@
 {#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
-        {% for sentence in group.sentences %}
+        {% for sentence in group.eligibleSentences %}
             {{ sentenceCard(sentence, offenceNameMap) }}
         {% endfor %}
         {% from "govuk/components/details/macro.njk" import govukDetails %}
