@@ -207,6 +207,16 @@ const steps = {
     checkJourney: false,
     fields: ['confirmCancel'],
   },
+  //   '/no-cases-selected': {
+  //   controller: RecallBaseController,
+  //   template: 'no-cases-selected.njk',
+  //   noPost: true,
+  //   checkJourney: false,
+  // },
+
+   '/no-cases-selected': {
+    controller: RecallBaseController,
+  },
 }
 
 export default steps
