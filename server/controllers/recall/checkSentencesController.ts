@@ -19,10 +19,17 @@ export default class CheckSentencesController extends RecallBaseController {
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const eligibleSentenceCount = getEligibleSentenceCount(req)
-    const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
+    console.log('1************* isManualCaseSelection', isManualCaseSelection)
+    // const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
+    const manualJourney = isManualCaseSelection(req)
+
+    // flag for isManualCaseSelection here?
+    console.log('2************* isManualCaseSelection', isManualCaseSelection)
 
     const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
     const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
+
+    console.log('************* manualJourney', manualJourney)
 
     res.locals.latestSled = calculation.dates.SLED
     res.locals.manualJourney = manualJourney

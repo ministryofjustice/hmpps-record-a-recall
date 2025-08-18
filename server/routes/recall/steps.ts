@@ -23,6 +23,7 @@ import {
 } from '../../helpers/formWizardHelper'
 import NotPossibleController from '../../controllers/recall/notPossibleController'
 import NoCasesSelectedController from '../../controllers/recall/noCasesSelectedController'
+import ResetAndRedirectController from '../../controllers/recall/resetAndRedirectController'
 
 const steps = {
   '/': {
@@ -139,7 +140,6 @@ const steps = {
         },
         next: 'update-sentence-types-summary',
       },
-      // here
       {
         fn: (req: FormWizard.Request) => getSummarisedSentenceGroups(req).length === 0,
         next: 'no-cases-selected',
@@ -210,6 +210,10 @@ const steps = {
   },
   '/no-cases-selected': {
     controller: NoCasesSelectedController,
+  },
+  '/reset-to-manual-intercept': {
+    controller: ResetAndRedirectController,
+    noPost: true,
   },
 }
 
