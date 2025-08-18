@@ -1,18 +1,27 @@
-import dayjs from 'dayjs'
-import ReviewFormPage from './reviewFormPage'
+import Page from '../page'
 
-export default class RevocationDatePage extends ReviewFormPage {
-  constructor(title: string) {
-    super(title)
+export default class RevocationDatePage extends Page {
+  constructor() {
+    super('Enter the date of revocation')
   }
 
-  public enterRevocationDate = (date: string): void => {
-    const days = dayjs(date).get('date').toString()
-    const months = (dayjs(date).get('month') + 1).toString()
-    const years = dayjs(date).get('year').toString()
+  enterRevocationDate(date: string): this {
+    const [year, month, day] = date.split('-')
 
-    cy.get('[name=revocationDate-day]').type(days)
-    cy.get('[name=revocationDate-month]').type(months)
-    cy.get('[name=revocationDate-year]').type(years)
+    cy.get('[name=revocationDate-day]').clear()
+    cy.get('[name=revocationDate-day]').type(day)
+
+    cy.get('[name=revocationDate-month]').clear()
+    cy.get('[name=revocationDate-month]').type(month)
+
+    cy.get('[name=revocationDate-year]').clear()
+    cy.get('[name=revocationDate-year]').type(year)
+
+    return this
+  }
+
+  clickContinue(): this {
+    cy.get('[data-qa=continue-btn]').click()
+    return this
   }
 }

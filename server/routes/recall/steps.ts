@@ -9,6 +9,10 @@ import RecallBaseController from '../../controllers/recall/recallBaseController'
 import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
 import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
 import ManualRecallInterceptController from '../../controllers/recall/ManualRecallInterceptController'
+import UpdateSentenceTypesSummaryController from '../../controllers/recall/updateSentenceTypesSummaryController'
+import SelectSentenceTypeController from '../../controllers/recall/selectSentenceTypeController'
+import MultipleSentenceDecisionController from '../../controllers/recall/multipleSentenceDecisionController'
+import BulkSentenceTypeController from '../../controllers/recall/bulkSentenceTypeController'
 import {
   getEligibleSentenceCount,
   isManualCaseSelection,
@@ -16,6 +20,7 @@ import {
   hasMultipleConflicting,
   hasMultipleUALTypeRecallConflicting,
 } from '../../helpers/formWizardHelper'
+import NotPossibleController from '../../controllers/recall/notPossibleController'
 
 const steps = {
   '/': {
@@ -64,6 +69,7 @@ const steps = {
     next: 'recall-type',
     controller: CheckSentencesController,
     editable: true,
+    checkJourney: false,
   },
   '/recall-type': {
     next: [
@@ -77,6 +83,7 @@ const steps = {
     controller: RecallTypeController,
     template: 'base-question',
     editable: true,
+    checkJourney: false,
   },
   '/recall-type-interrupt': {
     next: 'check-your-answers',
@@ -96,7 +103,7 @@ const steps = {
     controller: ManualRecallInterceptController,
     fields: ['manualRecallInterceptConfirmation'],
     noPost: false,
-    checkJourney: true,
+    checkJourney: false,
     next: 'select-cases',
   },
   '/recall-recorded': {
@@ -121,10 +128,71 @@ const steps = {
       ],
     },
     template: 'select-court-case-details.njk',
+    next: [
+      {
+        fn: (req: FormWizard.Request) => {
+          // Check if there are unknown sentences that need updating
+          const unknownSentenceIds = req.sessionModel.get('unknownSentencesToUpdate') as string[]
+          return unknownSentenceIds && unknownSentenceIds.length > 0
+        },
+        next: 'update-sentence-types-summary',
+      },
+      'check-sentences',
+    ],
+  },
+  '/update-sentence-types-summary': {
+    controller: UpdateSentenceTypesSummaryController,
+    template: 'update-sentence-types-summary.njk',
     next: 'check-sentences',
+    checkJourney: false,
+  },
+  '/select-sentence-type/:sentenceUuid': {
+    controller: SelectSentenceTypeController,
+    template: 'select-sentence-type',
+    fields: ['sentenceType'],
+    sentenceType: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select a sentence type',
+        },
+      ],
+    },
+    next: 'update-sentence-types-summary',
+    checkJourney: false,
+  },
+  '/multiple-sentence-decision/:courtCaseId': {
+    controller: MultipleSentenceDecisionController,
+    template: 'multiple-sentence-decision',
+    fields: ['sameSentenceType'],
+    sameSentenceType: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select yes if all sentences have the same type, or no to select individually',
+        },
+      ],
+    },
+    next: 'update-sentence-types-summary', // Fallback, controller will override with dynamic route
+    checkJourney: false,
+  },
+  '/bulk-sentence-type/:courtCaseId': {
+    controller: BulkSentenceTypeController,
+    template: 'bulk-sentence-type',
+    fields: ['sentenceType'],
+    sentenceType: {
+      validate: [
+        {
+          type: 'required',
+          message: 'Select a sentence type',
+        },
+      ],
+    },
+    next: 'update-sentence-types-summary',
+    checkJourney: false,
   },
   '/not-possible': {
-    controller: RecallBaseController,
+    controller: NotPossibleController,
     noPost: true,
   },
   '/confirm-cancel': {

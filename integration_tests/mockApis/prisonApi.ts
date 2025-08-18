@@ -28,6 +28,32 @@ export default {
     })
   },
 
+  stubGetPrisonerDetailsTwo: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPattern: '/prison-api/api/offenders/BA1234AB',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          offenderNo: 'BA1234AB',
+          bookingId: '1234',
+          firstName: 'Mary',
+          lastName: 'Jones',
+          dateOfBirth: '1965-02-03',
+          agencyId: 'MDI',
+          imprisonmentStatusDescription: 'Some Status',
+          assignedLivingUnit: {
+            agencyName: 'Foo Prison (HMP)',
+            description: 'D-2-003',
+          },
+        },
+      },
+    })
+  },
+
   stubGetSentencesAndOffences: (): SuperAgentRequest => {
     return stubFor({
       request: {

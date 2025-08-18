@@ -60,6 +60,7 @@ export default function summariseSentencesGroups(
         sentenceServeType: sentence.sentenceServeType,
         consecutiveTo: sentence.consecutiveTo,
         sentenceType: sentence.sentenceType,
+        periodLengths: sentence.periodLengths,
       }
 
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
@@ -98,9 +99,18 @@ export function summariseCourtCase(courtCase: CourtCase, includeDate = true): Su
       summary: [],
       offenceCode: sentence.offenceCode,
       offenceDescription: sentence.offenceDescription,
+      offenceStartDate: sentence.offenceStartDate,
+      offenceEndDate: sentence.offenceEndDate,
+      convictionDate: sentence.convictionDate,
+      countNumber: sentence.countNumber,
+      sentenceType: sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'N/A',
+      sentenceServeType: sentence.sentenceServeType,
+      consecutiveTo: sentence.consecutiveToChargeNumber,
+      periodLengths: sentence.periodLengths,
+      outcome: sentence.outcomeDescription || sentence.chargeLegacyData?.outcomeDescription || 'N/A',
     }
 
-    if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
+    if (sentence.isRecallable === true && recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
       summarisedGroup.hasEligibleSentences = true
       summarisedGroup.eligibleSentences.push(summarisedSentence)
     } else {

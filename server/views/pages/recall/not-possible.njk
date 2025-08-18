@@ -12,10 +12,23 @@
                 href: backLink
             }) }}
           </nav>
-            <h1 class="govuk-heading-xl" id="not-possible-heading">Recall not possible</h1>
-            {% for error in crdsValidationErrors %}
-                <h2 class="govuk-heading-m" id="validation-fail-reason-{{loop.index}}">{{ error }}</h2>
-            {% endfor %}
+            {% if isEditRecall %}
+              <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot edit this recall</h1>
+            {% else %}
+              <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot record a recall</h1>
+            {% endif %}
+            {% if crdsValidationErrors.length == 1 %}
+              <p class="govuk-body" data-qa="single-validation-message">This is because {{ crdsValidationErrors | first | lowercaseFirstLetter}}</p>
+            {% else %}
+              <p class="govuk-body" data-qa="multi-validation-message-heading">This is because:</p>
+              <ul class="govuk-list govuk-list--bullet">
+                {% for error in crdsValidationErrors %}
+                  <li data-qa="multi-validation-message-{{loop.index}}">{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            <h2 class="govuk-heading-m">What you need to do</h2>
+            <p class="govuk-body">Update these details in NOMIS and <a class="govuk-link govuk-link--no-visited-state govuk-!-font-size-19" href="{{ reloadLink }}">start again</a>.</p>
         </div>
     </div>
 

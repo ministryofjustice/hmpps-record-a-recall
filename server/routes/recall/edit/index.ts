@@ -13,6 +13,7 @@ editRecallRouter.use(
     name: 'edit-recall',
     templatePath: 'pages/recall',
     csrf: false,
+    checkJourney: false,
   }),
 )
 export default editRecallRouter
