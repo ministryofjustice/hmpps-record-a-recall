@@ -14,6 +14,7 @@ import {
   isRecallTypeMismatch,
 } from '../../../helpers/formWizardHelper'
 import SelectCourtCaseController from '../../../controllers/recall/selectCourtCaseController'
+import NotPossibleController from '../../../controllers/recall/notPossibleController'
 
 const steps = {
   '/': {
@@ -91,12 +92,12 @@ const steps = {
   },
   '/select-cases': {
     controller: SelectCourtCaseController,
-    fields: ['courtCases'],
-    template: 'base-question',
+    fields: ['activeSentenceChoice'],
+    template: 'select-court-case-details',
     next: 'check-sentences',
   },
   '/not-possible': {
-    controller: RecallBaseController,
+    controller: NotPossibleController,
     noPost: true,
     checkJourney: false,
   },

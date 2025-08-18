@@ -1,7 +1,10 @@
 import { SuperAgentRequest } from 'superagent'
 import dayjs from 'dayjs'
 import { stubFor } from './wiremock'
-import { LatestCalculation } from '../../server/@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  LatestCalculation,
+  ValidationMessage,
+} from '../../server/@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default {
   stubRecordARecallCRDS: (): SuperAgentRequest => {
@@ -67,6 +70,85 @@ export default {
       },
     })
   },
+  stubRecordARecallCRDSNonManual: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPattern: `/calculate-release-dates/record-a-recall/([A-Z0-9]*)`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          calculatedReleaseDates: {
+            dates: {
+              conditionalReleaseDate: '2023-12-15',
+            },
+            calculationRequestId: 123456789,
+            bookingId: 12345678,
+            prisonerId: 'BA1234AB',
+            calculationStatus: 'CONFIRMED',
+            calculationFragments: null,
+            effectiveSentenceLength: {
+              years: 5,
+              months: 3,
+              days: 12,
+              zero: false,
+              negative: false,
+              units: [
+                {
+                  durationEstimated: true,
+                  duration: {
+                    seconds: 158112000,
+                    zero: false,
+                    nano: 0,
+                    negative: false,
+                    positive: true,
+                  },
+                  timeBased: true,
+                  dateBased: false,
+                },
+              ],
+              chronology: {
+                id: 'SENTENCE-1',
+                calendarType: 'ISO',
+                isoBased: true,
+              },
+            },
+            calculationType: 'CALCULATED',
+            approvedDates: {
+              homeDetentionCurfewEligibilityDate: '2023-11-15',
+              earliestReleaseDate: '2023-12-15',
+            },
+            calculationReference: '550e8400-e29b-41d4-a716-446655440000',
+            calculationReason: null,
+            otherReasonDescription: 'Good behavior adjustment',
+            calculationDate: '2023-10-20',
+            historicalTusedSource: 'NOMIS',
+            sdsEarlyReleaseAllocatedTranche: 'TRANCHE_1',
+            sdsEarlyReleaseTranche: 'TRANCHE_1',
+          },
+          validationMessages: [],
+        },
+      },
+    })
+  },
+  stubRecordARecallCRDSWithValidationMessages: (messages: ValidationMessage[]): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPattern: `/calculate-release-dates/record-a-recall/([A-Z0-9]*)`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          calculatedReleaseDates: null,
+          validationMessages: messages,
+        },
+      },
+    })
+  },
   stubGetCalculationBreakdown: (): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -98,6 +180,10 @@ export default {
               },
               lineSequence: 2,
               caseSequence: 2,
+              externalSentenceId: {
+                bookingId: 1,
+                sentenceSequence: 2,
+              },
               caseReference: 'ABC123',
             },
             {
@@ -120,6 +206,10 @@ export default {
               },
               lineSequence: 4,
               caseSequence: 4,
+              externalSentenceId: {
+                bookingId: 1,
+                sentenceSequence: 4,
+              },
               caseReference: 'ABC234',
             },
           ],
@@ -150,6 +240,10 @@ export default {
                 sentenceLengthDays: 730,
                 consecutiveToLineSequence: null,
                 consecutiveToCaseSequence: null,
+                externalSentenceId: {
+                  bookingId: 1,
+                  sentenceSequence: 1,
+                },
               },
               {
                 lineSequence: 3,
@@ -159,6 +253,10 @@ export default {
                 sentenceLengthDays: 242,
                 consecutiveToLineSequence: 1,
                 consecutiveToCaseSequence: 1,
+                externalSentenceId: {
+                  bookingId: 1,
+                  sentenceSequence: 3,
+                },
               },
               {
                 lineSequence: 5,
@@ -168,6 +266,10 @@ export default {
                 sentenceLengthDays: 1095,
                 consecutiveToLineSequence: 3,
                 consecutiveToCaseSequence: 3,
+                externalSentenceId: {
+                  bookingId: 1,
+                  sentenceSequence: 5,
+                },
               },
             ],
           },
@@ -257,6 +359,7 @@ export default {
       },
     })
   },
+
   stubGetLatestCalculation: (): SuperAgentRequest => {
     const latestCalculation: LatestCalculation = {
       prisonerId: 'A1234AB',

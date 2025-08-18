@@ -11,6 +11,7 @@ newRecallRouter.use(
     name: 'record-recall',
     templatePath: 'pages/recall',
     csrf: false,
+    checkJourney: false,
   }),
 )
 export default newRecallRouter
