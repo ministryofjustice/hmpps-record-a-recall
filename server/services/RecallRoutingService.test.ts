@@ -16,6 +16,7 @@ type ServiceAsAny = any
 // Create a sentence mock that matches both interfaces
 const createMockSentence = (overrides: Partial<RecallableCourtCaseSentence> = {}): RecallableCourtCaseSentence => ({
   sentenceUuid: 'sent1',
+  sentenceTypeUuid: 'test-sentence-type-uuid',
   offenceCode: 'OFF001',
   offenceStartDate: '2023-01-01',
   offenceEndDate: '2023-01-02',

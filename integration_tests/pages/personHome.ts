@@ -17,4 +17,8 @@ export default class PersonHome extends Page {
   public createNewRecallButton(): PageElement {
     return cy.get(`[data-qa=create-new-recall-btn]`)
   }
+
+  public clickEditLink(recvocationDate: string): PageElement {
+    return cy.findByRole('link', { name: `Edit recall recorded on ${recvocationDate}` })
+  }
 }
