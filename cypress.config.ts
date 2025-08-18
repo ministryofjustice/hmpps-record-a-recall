@@ -8,6 +8,10 @@ import remandAndSentencingApi from './integration_tests/mockApis/remandAndSenten
 import calculateReleaseDatesApi from './integration_tests/mockApis/calculateReleaseDatesApi'
 import courtRegister from './integration_tests/mockApis/courtRegisterApi'
 import nomisMapping from './integration_tests/mockApis/nomisMappingApi'
+import prisonRegisterApi from './integration_tests/mockApis/prisonRegisterApi'
+import manageOffencesApi from './integration_tests/mockApis/manageOffencesApi'
+import ccardApi from './integration_tests/mockApis/ccardApi'
+import adjustmentsApi from './integration_tests/mockApis/adjustmentsApi'
 
 export default defineConfig({
   chromeWebSecurity: false,
@@ -31,6 +35,10 @@ export default defineConfig({
         ...calculateReleaseDatesApi,
         ...courtRegister,
         ...nomisMapping,
+        ...prisonRegisterApi,
+        ...manageOffencesApi,
+        ...ccardApi,
+        ...adjustmentsApi,
       })
     },
     baseUrl: 'http://localhost:3007',

@@ -2,3 +2,12 @@
   min-height: 600px;
   padding-top: 10px;
 }
+
+.court-case-details {
+  border-top: 4px solid #1d70b8;
+  padding-top: 10px;
+  
+  .govuk-summary-list__row {
+    border-bottom: none;
+  }
+}

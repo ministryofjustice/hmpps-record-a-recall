@@ -12,7 +12,11 @@
                 href: backLink
             }) }}
           </nav>
-            <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot record a recall</h1>
+            {% if isEditRecall %}
+              <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot edit this recall</h1>
+            {% else %}
+              <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot record a recall</h1>
+            {% endif %}
             {% if crdsValidationErrors.length == 1 %}
               <p class="govuk-body" data-qa="single-validation-message">This is because {{ crdsValidationErrors | first | lowercaseFirstLetter}}</p>
             {% else %}

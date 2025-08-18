@@ -46,6 +46,7 @@ describe('SelectSentenceTypeController', () => {
           offenceStartDate: '2024-01-09',
           outcome: 'Burglary other than dwelling - theft',
           sentenceType: 'unknown pre-recall sentence',
+          convictionDate: '2024-01-15',
         },
       ],
     },

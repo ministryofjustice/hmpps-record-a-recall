@@ -37,9 +37,13 @@
                                     Update sentence type
                                 </a>
                             {% else %}
-                                <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/multiple-sentence-decision/{{ courtCase.caseId }}">
-                                    Update sentence type
-                                </a>
+                                {% if courtCase.caseId %}
+                                    <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/multiple-sentence-decision/{{ courtCase.caseId }}">
+                                        Update sentence type
+                                    </a>
+                                {% else %}
+                                    <span class="govuk-error-message">Court case ID not available</span>
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                     </dd>
@@ -84,7 +88,7 @@
 
                     {# Sentences that have not been updated #}
                     {% if unupdatedCases.length > 0 %}
-                        <h2 class="govuk-heading-l">Sentences that have not been updated ({{ totalUnknownSentences - totalUpdated }})</h2>
+                        <h2 class="govuk-heading-l" id="sentence-types">Sentences that have not been updated ({{ totalUnknownSentences - totalUpdated }})</h2>
                         
                         {% for courtCase in unupdatedCases %}
                             <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">

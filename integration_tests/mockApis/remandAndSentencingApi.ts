@@ -257,6 +257,19 @@ export default {
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: [],
+      },
+    })
+  },
+  stubRecallPersonWithExistingRecall: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
 
         jsonBody: [
           {
@@ -264,14 +277,33 @@ export default {
             prisonerId: 'A1234AB',
             revocationDate: '2018-03-03T00:00:00.000Z',
             returnToCustodyDate: null,
-            recallType: {
-              code: 'LR',
-              description: 'Standard',
-              fixedTerm: false,
-            },
+            recallType: 'LR',
             courtCaseIds: [],
+            createdAt: '2024-01-02T00:00:00.000Z',
           },
         ],
+      },
+    })
+  },
+  stubSingleRecall: (recallUuid: string): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/recall/${recallUuid}`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+
+        jsonBody: {
+          recallUuid,
+          prisonerId: 'A1234AB',
+          revocationDate: '2018-03-03T00:00:00.000Z',
+          returnToCustodyDate: null,
+          recallType: 'LR',
+          courtCaseIds: [],
+          createdAt: '2024-01-02T00:00:00.000Z',
+        },
       },
     })
   },
@@ -314,6 +346,230 @@ export default {
         jsonBody: {
           recallUuid: 'ABC',
         },
+      },
+    })
+  },
+  stubSearchCourtCasesWithSingleUnknownSentence: ({
+    prisonerId = 'A1234AB',
+  }: { prisonerId?: string } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          totalCases: 1,
+          cases: [
+            {
+              courtCaseUuid: 'test-case-123',
+              reference: 'CC123/2024',
+              courtCode: 'ABRYCT',
+              courtName: 'Aberystwyth Crown Court',
+              date: '2024-01-15',
+              status: 'ACTIVE',
+              isSentenced: true,
+              sentences: [
+                {
+                  sentenceUuid: 'sentence-456',
+                  offenceCode: 'HA04005',
+                  sentenceType: 'unknown pre-recall sentence',
+                  sentenceTypeUuid: 'f9a1551e-86b1-425b-96f7-23465a0f05fc',
+                  classification: 'UNKNOWN',
+                  systemOfRecord: 'RAS',
+                  periodLengths: [
+                    {
+                      years: 2,
+                      months: null,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'SENTENCE_LENGTH',
+                      legacyData: null,
+                      periodLengthUuid: 'period-789',
+                    },
+                  ],
+                  convictionDate: null,
+                  chargeLegacyData: {
+                    postedDate: '2024-01-15',
+                    nomisOutcomeCode: null,
+                    outcomeDescription: null,
+                    outcomeDispositionCode: null,
+                    outcomeConvictionFlag: true,
+                  },
+                  countNumber: null,
+                  sentenceServeType: 'CONCURRENT',
+                  sentenceLegacyData: {
+                    sentenceCalcType: null,
+                    sentenceCategory: null,
+                    sentenceTypeDesc: null,
+                    postedDate: '2024-01-15T10:00:00.000000',
+                    active: true,
+                    nomisLineReference: '1',
+                  },
+                  isRecallable: true,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    })
+  },
+  stubSearchCourtCasesWithUpdatedSentence: ({
+    prisonerId = 'A1234AB',
+    sentenceType = 'SDS (Standard Determinate Sentence)',
+    classification = 'STANDARD',
+  }: { prisonerId?: string; sentenceType?: string; classification?: string } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          totalCases: 1,
+          cases: [
+            {
+              courtCaseUuid: 'test-case-123',
+              reference: 'CC123/2024',
+              courtCode: 'ABRYCT',
+              courtName: 'Aberystwyth Crown Court',
+              date: '2024-01-15',
+              status: 'ACTIVE',
+              isSentenced: true,
+              sentences: [
+                {
+                  sentenceUuid: 'sentence-456',
+                  offenceCode: 'HA04005',
+                  sentenceType,
+                  classification,
+                  systemOfRecord: 'RAS',
+                  periodLengths: [
+                    {
+                      years: 2,
+                      months: null,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'SENTENCE_LENGTH',
+                      legacyData: null,
+                      periodLengthUuid: 'period-789',
+                    },
+                  ],
+                  convictionDate: null,
+                  chargeLegacyData: {
+                    postedDate: '2024-01-15',
+                    nomisOutcomeCode: null,
+                    outcomeDescription: null,
+                    outcomeDispositionCode: null,
+                    outcomeConvictionFlag: true,
+                  },
+                  countNumber: null,
+                  sentenceServeType: 'CONCURRENT',
+                  sentenceLegacyData: {
+                    sentenceCalcType: null,
+                    sentenceCategory: null,
+                    sentenceTypeDesc: null,
+                    postedDate: '2024-01-15T10:00:00.000000',
+                    active: true,
+                    nomisLineReference: '1',
+                  },
+                  isRecallable: true,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    })
+  },
+  stubUpdateSentenceTypes: ({
+    courtCaseUuid = 'test-case-123',
+    updates = [{ sentenceUuid: 'sentence-456', sentenceType: 'sds-uuid' }],
+  }: {
+    courtCaseUuid?: string
+    updates?: Array<{ sentenceUuid: string; sentenceType: string }>
+  } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPath: `/remand-and-sentencing-api/court-case/${courtCaseUuid}/sentences/update-types`,
+        bodyPatterns: [
+          {
+            equalToJson: JSON.stringify({ updates }),
+          },
+        ],
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          updatedSentenceUuids: updates.map(u => u.sentenceUuid),
+        },
+      },
+    })
+  },
+  stubUpdateSentenceTypesError: ({
+    courtCaseUuid = 'test-case-123',
+    status = 422,
+    errorMessage = 'Validation failed',
+  }: { courtCaseUuid?: string; status?: number; errorMessage?: string } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPath: `/remand-and-sentencing-api/court-case/${courtCaseUuid}/sentences/update-types`,
+      },
+      response: {
+        status,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          status,
+          userMessage: errorMessage,
+          developerMessage: errorMessage,
+        },
+      },
+    })
+  },
+  stubSearchSentenceTypes: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPath: '/remand-and-sentencing-api/sentence-type/search',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: [
+          {
+            sentenceTypeUuid: 'sds-uuid',
+            description: 'SDS (Standard Determinate Sentence)',
+            classification: 'STANDARD',
+            displayOrder: 1,
+          },
+          {
+            sentenceTypeUuid: 'eds-uuid',
+            description: 'EDS (Extended Determinate Sentence)',
+            classification: 'EXTENDED',
+            displayOrder: 2,
+          },
+          {
+            sentenceTypeUuid: 'sopc-uuid',
+            description: 'SOPC (Sentence of a particular concern)',
+            classification: 'INDETERMINATE',
+            displayOrder: 3,
+          },
+          {
+            sentenceTypeUuid: 'dto-uuid',
+            description: 'DTO (Detention and Training Order)',
+            classification: 'STANDARD',
+            displayOrder: 4,
+          },
+        ],
       },
     })
   },

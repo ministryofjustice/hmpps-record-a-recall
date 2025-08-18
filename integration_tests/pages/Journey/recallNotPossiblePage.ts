@@ -1,8 +1,8 @@
 import Page, { PageElement } from '../page'
 
 export default class RecallNotPossiblePage extends Page {
-  constructor() {
-    super('You cannot record a recall')
+  constructor(isEdit: boolean) {
+    super(isEdit ? 'You cannot edit this recall' : 'You cannot record a recall')
   }
 
   expectSingleErrorMessage(message: string): RecallNotPossiblePage {
