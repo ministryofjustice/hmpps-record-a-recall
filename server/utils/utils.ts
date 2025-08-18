@@ -90,7 +90,11 @@ export function createAnswerSummaryList(
       editLink('rtc-date'),
     ),
     journeyData.courtCaseCount
-      ? toSummaryListRow('Court cases', `${journeyData.courtCaseCount} ${cases}`, editLink('select-cases'))
+      ? toSummaryListRow(
+          'Court cases',
+          `${journeyData.courtCaseCount} ${cases}`,
+          journeyData.storedRecall?.recallType?.fixedTerm ? undefined : editLink('select-cases'),
+        )
       : null,
     toSummaryListRow(
       'Sentences',
