@@ -101,12 +101,12 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.799.0",
+    "@aws-sdk/client-sqs": "^3.839.0",
     "@ministryofjustice/frontend": "^4.0.2",
     "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.6.0",
     "@types/cookie-parser": "^1.4.8",
     "agentkeepalive": "^4.6.0",
-    "applicationinsights": "^2.9.7",
+    "applicationinsights": "^3.9.0",
     "body-parser": "^2.2.0",
     "bunyan": "^1.8.15",
     "bunyan-format": "^0.2.1",
@@ -122,7 +122,7 @@
     "express-session": "^1.18.1",
     "govuk-frontend": "^5.11.1",
     "helmet": "^8.1.0",
-    "hmpo-form-wizard": "^15.0.0",
+    "hmpo-form-wizard": "^15.0.1",
     "http-errors": "^2.0.0",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
@@ -131,7 +131,7 @@
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
     "redis": "^4.7.0",
-    "superagent": "^10.2.0",
+    "superagent": "^10.2.2",
     "url-value-parser": "^2.2.0",
     "uuid": "^11.1.0"
   },
