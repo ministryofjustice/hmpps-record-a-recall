@@ -22,6 +22,7 @@ import {
   getSummarisedSentenceGroups,
 } from '../../helpers/formWizardHelper'
 import NotPossibleController from '../../controllers/recall/notPossibleController'
+import NoCasesSelectedController from '../../controllers/recall/noCasesSelectedController'
 
 const steps = {
   '/': {
@@ -208,7 +209,7 @@ const steps = {
     fields: ['confirmCancel'],
   },
   '/no-cases-selected': {
-    controller: RecallBaseController,
+    controller: NoCasesSelectedController,
   },
 }
 
