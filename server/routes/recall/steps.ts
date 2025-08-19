@@ -19,8 +19,12 @@ import {
   isRecallTypeMismatch,
   hasMultipleConflicting,
   hasMultipleUALTypeRecallConflicting,
+  getSummarisedSentenceGroups,
 } from '../../helpers/formWizardHelper'
 import NotPossibleController from '../../controllers/recall/notPossibleController'
+import NoCasesSelectedController from '../../controllers/recall/noCasesSelectedController'
+import ResetAndRedirectToRevDateController from '../../controllers/recall/resetAndRedirectToRevDateController'
+import ResetAndRedirectToManualController from '../../controllers/recall/resetAndRedirectToManualInterceptController'
 
 const steps = {
   '/': {
@@ -137,6 +141,10 @@ const steps = {
         },
         next: 'update-sentence-types-summary',
       },
+      {
+        fn: (req: FormWizard.Request) => getSummarisedSentenceGroups(req).length === 0,
+        next: 'no-cases-selected',
+      },
       'check-sentences',
     ],
   },
@@ -200,6 +208,17 @@ const steps = {
     template: 'base-question',
     checkJourney: false,
     fields: ['confirmCancel'],
+  },
+  '/no-cases-selected': {
+    controller: NoCasesSelectedController,
+  },
+  '/reset-to-manual-intercept': {
+    controller: ResetAndRedirectToManualController,
+    noPost: true,
+  },
+  '/reset-to-revocation-date': {
+    controller: ResetAndRedirectToRevDateController,
+    noPost: true,
   },
 }
 

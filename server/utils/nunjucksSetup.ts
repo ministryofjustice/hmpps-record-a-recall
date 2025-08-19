@@ -29,10 +29,8 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
 
   // Cachebusting version string
   if (production) {
-    // Version only changes with new commits
     app.locals.version = applicationInfo.gitShortHash
   } else {
-    // Version changes every request
     app.use((req, res, next) => {
       res.locals.version = Date.now().toString()
       return next()
@@ -82,6 +80,16 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatDate', formatDate)
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('lowercaseFirstLetter', lowercaseFirstLetter)
+
+  njkEnv.addFilter('sortPeriodLengths', (periods: Array<{ length: number }>) => {
+    if (!Array.isArray(periods)) return []
+    return periods.slice().sort((a, b) => a.length - b.length)
+  })
+
+  njkEnv.addFilter('formatCountNumber', (value: number) => {
+    if (typeof value !== 'number') return ''
+    return value.toLocaleString('en-GB')
+  })
 
   // Filter to pluralize a word based on a count. Adds 's' if count is not 1.
   function pluralize(count: number): string {
