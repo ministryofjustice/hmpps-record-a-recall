@@ -103,6 +103,8 @@ export const sessionModelFields = {
   BULK_UPDATE_MODE: 'bulkUpdateMode',
   SENTENCES_IN_CURRENT_CASE: 'sentencesInCurrentCase',
   CURRENT_SENTENCE_INDEX: 'currentSentenceIndex',
+  ACTIVE_SENTENCE_CHOICE: 'activeSentenceChoice',
+  SENTENCE_GROUPS: 'sentenceGroups',
 }
 export function getStoredRecall(req: FormWizard.Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
@@ -243,6 +245,14 @@ export function getUalToEdit(req: FormWizard.Request): UAL {
 
 export function getEntrypoint(req: FormWizard.Request): string {
   return get<string>(req, sessionModelFields.ENTRYPOINT)
+}
+
+export function getActiveSentenceChoice(req: FormWizard.Request): string | undefined {
+  return get<string>(req, sessionModelFields.ACTIVE_SENTENCE_CHOICE)
+}
+
+export function getSentenceGroups(req: FormWizard.Request): SummarisedSentenceGroup[] {
+  return get<SummarisedSentenceGroup[]>(req, sessionModelFields.SENTENCE_GROUPS) || []
 }
 
 function get<T>(req: FormWizard.Request, key: string): T {

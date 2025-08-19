@@ -23,8 +23,10 @@ import {
 } from '../../helpers/formWizardHelper'
 import NotPossibleController from '../../controllers/recall/notPossibleController'
 import NoCasesSelectedController from '../../controllers/recall/noCasesSelectedController'
-import ResetAndRedirectToManualController from '../../controllers/recall/resetAndRedirectToManualController'
-import ResetAndRedirectToRevDateController from '../../controllers/recall/resetAndRedirectToRevDateController'
+import {
+  ResetAndRedirectToManualController,
+  ResetAndRedirectToRevDateController,
+} from '../../controllers/recall/resetAndRedirectControllers'
 
 const steps = {
   '/': {
