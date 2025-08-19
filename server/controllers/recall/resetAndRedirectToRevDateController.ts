@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 
-export default class ResetAndRedirectToManualController extends RecallBaseController {
+export default class ResetAndRedirectToRevDateController extends RecallBaseController {
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Reset case index and manual recall decisions
@@ -16,8 +16,8 @@ export default class ResetAndRedirectToManualController extends RecallBaseContro
       req.sessionModel.unset('unknownSentencesToUpdate')
       req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
 
-      // Redirect into manual recall intercept
-      res.redirect(`${req.baseUrl}/manual-recall-intercept`)
+      // Redirect to revocation date page
+      res.redirect(`${req.baseUrl}/revocation-date`)
     } catch (err) {
       next(err)
     }
