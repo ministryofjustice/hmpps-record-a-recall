@@ -3,6 +3,15 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+    {{ super() }}
+    {{ govukBackLink({
+        text: "Back",
+        href: backLink or journeyBaseLink + '/recall-type'
+    }) }}
+{% endblock %}
 
 {% block content %}
     {% set formMethod = options.method | default('post') %}

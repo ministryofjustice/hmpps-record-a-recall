@@ -2,9 +2,14 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% block beforeContent %}
   {{ super() }}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
 {% endblock %}
 
 {% block content %}
