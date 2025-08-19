@@ -112,7 +112,7 @@
     "bunyan-format": "^0.2.1",
     "compression": "^1.8.0",
     "connect-flash": "^0.1.1",
-    "connect-redis": "^8.0.3",
+    "connect-redis": "^9.0.0",
     "cookie-parser": "^1.4.7",
     "csrf-sync": "^4.2.0",
     "csv-stringify": "^6.5.2",
@@ -130,7 +130,7 @@
     "nunjucks": "^3.2.4",
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
-    "redis": "^4.7.0",
+    "redis": "^5.8.1",
     "superagent": "^10.2.2",
     "url-value-parser": "^2.2.0",
     "uuid": "^11.1.0"
