@@ -55,6 +55,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
     const macro = this.ctx[name]
 
     if (!isFunction(macro)) {
+      // eslint-disable-next-line no-console
       console.log(`'${name}' macro does not exist`)
       return () => ''
     }

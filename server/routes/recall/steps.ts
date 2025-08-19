@@ -219,13 +219,7 @@ const steps = {
   '/reset-to-revocation-date': {
     controller: ResetAndRedirectToRevDateController,
     noPost: true,
-    // resetJourney: true,
   },
-  //   '/reset-to-revocation-date': {
-  //   controller: ResetAndRedirectController,
-  //   noPost: true,
-  //   resetJourney: true,
-  // },
 }
 
 export default steps
