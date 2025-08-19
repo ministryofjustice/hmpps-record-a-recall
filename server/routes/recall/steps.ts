@@ -23,7 +23,7 @@ import {
 } from '../../helpers/formWizardHelper'
 import NotPossibleController from '../../controllers/recall/notPossibleController'
 import NoCasesSelectedController from '../../controllers/recall/noCasesSelectedController'
-import ResetAndRedirectController from '../../controllers/recall/resetAndRedirectController'
+import ResetAndRedirectController from '../../controllers/recall/resetAndRedirectToManualController'
 
 const steps = {
   '/': {
@@ -215,6 +215,12 @@ const steps = {
     controller: ResetAndRedirectController,
     noPost: true,
   },
+  '/reset-to-revocation-date': {
+  controller: ResetAndRedirectController,
+  noPost: true,
+  resetJourney: true,
+},
+
 }
 
 export default steps
