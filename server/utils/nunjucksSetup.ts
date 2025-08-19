@@ -81,7 +81,6 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('lowercaseFirstLetter', lowercaseFirstLetter)
 
-  // --- New filters ---
   njkEnv.addFilter('sortPeriodLengths', (periods: Array<{ length: number }>) => {
     if (!Array.isArray(periods)) return []
     return periods.slice().sort((a, b) => a.length - b.length)
