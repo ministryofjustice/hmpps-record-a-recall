@@ -1,8 +1,17 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% block pageTitle %}Update sentence types{% endblock %}
+
+{% block beforeContent %}
+    {{ super() }}
+    {{ govukBackLink({
+        text: "Back",
+        href: backLink or journeyBaseLink + '/select-cases'
+    }) }}
+{% endblock %}
 
 {# Macro for rendering sentence card #}
 {% macro sentenceCard(sentence, courtCase, updatedSentenceTypes, updatedSentenceTypeDescriptions, nomisId, isUpdated) %}
