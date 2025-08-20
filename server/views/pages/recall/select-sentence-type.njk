@@ -75,11 +75,16 @@
                     <div class="govuk-button-group">
                         {{ govukButton({
                             text: "Continue",
-                            type: "submit"
+                            type: "submit",
+                            attributes: { "data-qa": "continue-button" }
                         }) }}
-                        <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/update-sentence-types-summary">
-                            Cancel
-                        </a>
+                        
+                        {{ govukButton({
+                            text: "Cancel",
+                            classes: "govuk-button--secondary",
+                            href: cancelLink,
+                            attributes: { "data-qa": "cancel-link" }
+                        }) }}
                     </div>
                 </form>
             </div>

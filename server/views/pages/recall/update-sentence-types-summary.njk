@@ -127,14 +127,31 @@
 
                     {# Continue button #}
                     {% if allComplete %}
-                        {{ govukButton({
-                            text: "Continue",
-                            classes: "govuk-button"
-                        }) }}
+                        <div class="govuk-button-group">
+                            {{ govukButton({
+                                text: "Continue",
+                                classes: "govuk-button",
+                                attributes: { "data-qa": "continue-button" }
+                            }) }}
+                            
+                            {{ govukButton({
+                                text: "Cancel",
+                                classes: "govuk-button--secondary",
+                                href: cancelLink,
+                                attributes: { "data-qa": "cancel-link" }
+                            }) }}
+                        </div>
                     {% else %}
                         <p class="govuk-body govuk-!-margin-top-6">
                             You must update all sentence types before continuing.
                         </p>
+                        
+                        {{ govukButton({
+                            text: "Cancel",
+                            classes: "govuk-button--secondary",
+                            href: cancelLink,
+                            attributes: { "data-qa": "cancel-link" }
+                        }) }}
                     {% endif %}
                 </form>
             {% endif %}
