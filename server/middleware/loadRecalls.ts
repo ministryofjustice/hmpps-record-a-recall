@@ -38,7 +38,7 @@ export default function loadRecalls(
         const locationIds = recalls.map(r => r.location)
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
-        // Fetch court cases to get offence codes
+        // Fetch court cases to get offence codes and sentence details
         let courtCasesResponse
         let courtCasesFetchError = false
         try {
@@ -64,6 +64,16 @@ export default function loadRecalls(
               }
             })
           }
+        })
+
+        // Build a map of sentenceUuid to grab sentenceDate
+        const sentenceDetailsMap: Record<string, any> = {}
+        courtCases.forEach(courtCase => {
+          courtCase.sentences?.forEach(sentence => {
+            if (sentence.sentenceUuid) {
+              sentenceDetailsMap[sentence.sentenceUuid] = sentence
+            }
+          })
         })
 
         // Collect all offence codes from all recalls
@@ -104,7 +114,7 @@ export default function loadRecalls(
               return acc
             }
 
-            // Get offence code either from sentence or from court case mapping
+             // Get offence code either from sentence or from court case mapping
             const offenceCode =
               sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
@@ -112,6 +122,7 @@ export default function loadRecalls(
               ...sentence,
               offenceCode, // Ensure offenceCode is populated
               offenceDescription: offenceMap[offenceCode] || undefined,
+              sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
             })
 
             return acc
@@ -121,9 +132,12 @@ export default function loadRecalls(
             ...recall,
             locationName: prisonNames.get(recall.location),
             sentences: enhancedSentences || recall.sentences,
-            ...(isFromNomis ? { source: 'nomis' as const } : {}),
+            ...(isFromNomis ? { source: 'NOMIS' as const } : {}),
           }
         })
+
+        console.log('Enhanced sentences:', JSON.stringify(recallsWithExtras[0].sentences, null, 2))
+
 
         res.locals.recalls = recallsWithExtras
         res.locals.latestRecallId = findLatestRecallId(recallsWithExtras)
