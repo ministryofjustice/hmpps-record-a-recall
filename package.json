@@ -162,7 +162,7 @@
     "cheerio": "^1.1.0",
     "concurrently": "^9.1.2",
     "cookie-session": "^2.1.0",
-    "cypress": "^14.3.2",
+    "cypress": "^15.0.0",
     "cypress-multi-reporters": "^2.0.5",
     "dotenv": "^17.2.1",
     "husky": "^9.1.7",
