@@ -149,6 +149,7 @@ export default class CheckPossibleController extends RecallBaseController {
     req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
     req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
     req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, res.locals.summarisedSentenceGroups)
+    console.log('6 checkPossController', res.locals.summarisedSentenceGroups[0].sentences[0].sentenceDate)
 
     return { ...locals }
   }

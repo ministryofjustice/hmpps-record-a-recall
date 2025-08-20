@@ -302,6 +302,7 @@ export class RecallEligibilityService {
         summary: compact([]),
         offenceCode: sentence.offenceCode,
         offenceDescription: sentence.offenceDescription,
+        sentenceDate: sentence.sentenceDate ?? null,
       }
 
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
@@ -317,6 +318,7 @@ export class RecallEligibilityService {
 
     return summarisedGroup.sentences.length > 0 ? summarisedGroup : null
   }
+
 
   private determineCrdsRouting(validationMessages: ValidationMessage[]): RecallRoute {
     if (validationMessages && validationMessages.length === 0) {

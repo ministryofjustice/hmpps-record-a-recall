@@ -10,7 +10,7 @@ export default async (req: Request, res: Response) => {
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
 
-    console.log('£££££££', JSON.stringify(recalls, undefined, 2))
+    // console.log('£££££££', JSON.stringify(recalls, undefined, 2))
 
     return res.render('pages/person/home', {
       nomisId,

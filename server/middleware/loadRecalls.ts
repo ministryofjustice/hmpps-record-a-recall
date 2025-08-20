@@ -136,7 +136,7 @@ export default function loadRecalls(
           }
         })
 
-        console.log('Enhanced sentences:', JSON.stringify(recallsWithExtras[0].sentences, null, 2))
+        // console.log('Enhanced sentences:', JSON.stringify(recallsWithExtras[0].sentences, null, 2))
 
 
         res.locals.recalls = recallsWithExtras

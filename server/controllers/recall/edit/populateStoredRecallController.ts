@@ -99,6 +99,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
 
       const summarisedSentencesGroups = summariseRasCases(caseDetails)
       req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
+       console.log('3 populateStoredRecallController', summarisedSentencesGroups[0].sentences[0].sentenceDate)
     }
 
     return {

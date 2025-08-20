@@ -461,6 +461,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
       }
 
       req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroupsArray)
+       console.log('5 selectCourtCaseController', summarisedSentenceGroupsArray[0].sentences[0].sentenceDate)
       super.successHandler(req, res, next)
     }
   }
