@@ -7,6 +7,13 @@ import { getInvalidRecallTypes, getRecallTypeCode, sessionModelFields } from '..
 import config from '../../config'
 
 export default class RecallTypeController extends RecallBaseController {
+  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+    const locals = super.locals(req, res)
+    const { prisoner } = res.locals
+    const backLink = `/person/${prisoner.prisonerNumber}${locals.isEditRecall ? `/recall/${locals.recallId}/edit/edit-summary` : '/record-recall/check-sentences'}`
+    return { ...locals, backLink }
+  }
+
   configure(req: FormWizard.Request, res: Response, next: NextFunction) {
     const recallTypes = Object.values(RecallTypes)
     req.form.options.fields.recallType.items = Object.values(recallTypes).map(({ code, description }) => ({
