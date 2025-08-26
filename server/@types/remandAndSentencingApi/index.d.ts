@@ -1513,7 +1513,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1533,6 +1533,7 @@ export interface components {
       outcomeDescription?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
+      offenceDescription?: string
     }
     LegacyUpdateCharge: {
       /** Format: date */
@@ -1614,7 +1615,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -1643,6 +1644,7 @@ export interface components {
         | 'OVERALL_SENTENCE_LENGTH'
         | 'UNSUPPORTED'
       prisonId: string
+      legacyData?: components['schemas']['PeriodLengthLegacyData']
     }
     CreateSentence: {
       /** Format: uuid */
@@ -1975,6 +1977,7 @@ export interface components {
       /** Format: uuid */
       sentenceUuid: string
       countNumber?: string
+      chargeLegacyData?: components['schemas']['ChargeLegacyData']
     }
     SentenceConsecutiveToDetailsResponse: {
       sentences: components['schemas']['SentenceConsecutiveToDetails'][]
@@ -2029,6 +2032,7 @@ export interface components {
       /** Format: uuid */
       sentenceUuid: string
       countNumber?: string
+      chargeLegacyData?: components['schemas']['ChargeLegacyData']
     }
     SentencesToChainToResponse: {
       appearances: components['schemas']['AppearanceToChainTo'][]
@@ -2052,6 +2056,7 @@ export interface components {
       terrorRelated?: boolean
       sentence?: components['schemas']['Sentence']
       legacyData?: components['schemas']['ChargeLegacyData']
+      mergedFromCase?: components['schemas']['MergedFromCase']
     }
     ChargeOutcome: {
       /** Format: uuid */
@@ -2101,14 +2106,31 @@ export interface components {
       latestAppearance?: components['schemas']['CourtAppearance']
       appearances: components['schemas']['CourtAppearance'][]
       legacyData?: components['schemas']['CourtCaseLegacyData']
+      mergedToCaseDetails?: components['schemas']['MergedToCaseDetails']
     }
     CourtCases: {
       courtCases: components['schemas']['CourtCase'][]
     }
+    MergedFromCase: {
+      caseReference?: string
+      courtCode: string
+      /** Format: date */
+      warrantDate: string
+      /** Format: date */
+      mergedFromDate?: string
+    }
+    MergedToCaseDetails: {
+      /** Format: date */
+      mergedToDate?: string
+      caseReference?: string
+      courtCode?: string
+      /** Format: date */
+      warrantDate?: string
+    }
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2303,7 +2325,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -2311,7 +2333,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime?: string
       courtId: string
     }
@@ -2344,7 +2366,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -2362,7 +2384,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime?: string
       courtId: string
     }
@@ -2404,12 +2426,14 @@ export interface components {
       courtCaseUuid: string
       reference: string
       courtCode: string
-      /** Format: date */
-      date: string
       /** @enum {string} */
       status: 'ACTIVE' | 'INACTIVE' | 'EDITED' | 'DELETED' | 'DRAFT' | 'FUTURE' | 'MERGED' | 'MANY_CHARGES_DATA_FIX'
       isSentenced: boolean
       sentences: components['schemas']['RecallableCourtCaseSentence'][]
+      /** Format: date */
+      date: string
+      /** Format: date */
+      firstDayInCustody?: string
     }
     RecallableCourtCaseSentence: {
       /** Format: uuid */
@@ -2447,10 +2471,10 @@ export interface components {
       outcomeDescription?: string
       isRecallable: boolean
       sentenceTypeUuid: string
+      /** Format: date */
+      sentenceDate?: string
     }
     RecallableCourtCasesResponse: {
-      /** Format: int32 */
-      totalCases: number
       cases: components['schemas']['RecallableCourtCase'][]
     }
     CourtCaseCountNumber: {
@@ -2613,7 +2637,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:26:13.488146796 */
+      /** @example 09:36:55.454053095 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
@@ -5097,6 +5121,7 @@ export interface operations {
     parameters: {
       query: {
         beforeOrOnAppearanceDate: string
+        bookingId?: string
       }
       header?: never
       path: {
@@ -5179,6 +5204,7 @@ export interface operations {
     parameters: {
       query: {
         beforeOrOnAppearanceDate: string
+        bookingId?: string
       }
       header?: never
       path: {
