@@ -67,6 +67,28 @@ export default {
             active: true,
             buildings: [],
           },
+          {
+            courtId: 'ABRYCT',
+            courtName: 'Aberystwyth Crown Court',
+            courtDescription: 'Aberystwyth Crown Court',
+            type: {
+              courtType: 'CRW',
+              courtName: 'Crown',
+            },
+            active: true,
+            buildings: [],
+          },
+          {
+            courtId: 'ABDRCT',
+            courtName: 'Aberdeen Crown Court',
+            courtDescription: 'Aberdeen Crown Court',
+            type: {
+              courtType: 'CRW',
+              courtName: 'Crown',
+            },
+            active: true,
+            buildings: [],
+          },
         ],
       },
     })

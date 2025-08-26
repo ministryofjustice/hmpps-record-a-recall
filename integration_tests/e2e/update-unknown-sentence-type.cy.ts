@@ -45,7 +45,8 @@ context('Updating single unknown sentence type - Pragmatic Approach', () => {
 
     // Verify court case selection shows unknown sentence
     Page.verifyOnPage(SelectCourtCasesPage)
-    cy.get('h2.govuk-heading-m').should('contain', 'ABRYCT')
+    cy.get('h2.govuk-heading-m').should('contain', 'CC123/2024')
+    cy.get('h2.govuk-heading-m').should('contain', 'Aberystwyth Crown Court')
 
     // Verify sentence type shows as "Required"
     cy.get('.govuk-tag--blue').should('contain', 'Required')

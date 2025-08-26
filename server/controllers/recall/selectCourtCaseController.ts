@@ -108,9 +108,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
     currentCase.caseReferences = originalCase.reference || 'N/A'
     currentCase.courtName =
       (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
-      (originalCase as CourtCase & { courtCode?: string }).courtCode ||
       originalCase.locationName ||
-      'N/A'
+      'Court name not available'
 
     const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
     currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)

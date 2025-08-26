@@ -41,7 +41,7 @@
           {# Recallable Offences Section #}
           {% if currentCase.recallableSentences and currentCase.recallableSentences.length > 0 %}
             <h2 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-            {% if currentCase.courtCode %}{{ currentCase.courtCode }} at {% endif %}
+            {% if currentCase.caseReferences and currentCase.caseReferences != 'N/A' %}{{ currentCase.caseReferences }} at {% endif %}
               {{ currentCase.courtName | default("N/A") }} on {{ currentCase.formattedOverallConvictionDate | default("N/A") }}
             </h2>
 
