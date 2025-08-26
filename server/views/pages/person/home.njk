@@ -131,7 +131,6 @@
                 {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
                 {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
                 {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
-                {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not entered' %}
                 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}
 
                 {{ offenceCard({
@@ -143,7 +142,6 @@
                   hideOutcome: true,
                   outcome: sentence.outcome | default('Not entered'),
                   lineNumber: sentence.lineNumber | default('Not entered'),
-                  convictionDate: convictionDate,
                   periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),
