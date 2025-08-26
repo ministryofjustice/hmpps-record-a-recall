@@ -16,6 +16,13 @@ import getJourneyDataFromRequest, {
 import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
+  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+    const locals = super.locals(req, res)
+    const { prisoner } = res.locals
+    const backLink = `/person/${prisoner.prisonerNumber}${locals.isEditRecall ? `/recall/${locals.recallId}/edit/edit-summary` : '/record-recall/revocation-date'}`
+    return { ...locals, backLink }
+  }
+
   validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
     super.validateFields(req, res, errors => {
       const { values } = req.form

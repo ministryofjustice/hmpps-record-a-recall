@@ -29,7 +29,17 @@ export default class CheckSentencesController extends RecallBaseController {
     res.locals.summarisedSentencesGroups = summarisedSentenceGroups
     res.locals.casesWithEligibleSentences = eligibleSentenceCount
 
-    return super.locals(req, res)
+    const locals = super.locals(req, res)
+    const { prisoner } = res.locals
+
+    let backLink = `/person/${prisoner.prisonerNumber}/record-recall/rtc-date`
+    if (req.journeyModel.attributes.lastVisited?.includes('update-sentence-types-summary')) {
+      backLink = `/person/${prisoner.prisonerNumber}/record-recall/update-sentence-types-summary`
+    } else if (locals.isEditRecall) {
+      backLink = `/person/${prisoner.prisonerNumber}/recall/${locals.recallId}/edit/edit-summary`
+    }
+
+    return { ...locals, backLink }
   }
 
   async getOffenceNameTitle(req: FormWizard.Request, offenceCodes: string[]) {
