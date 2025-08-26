@@ -11,8 +11,10 @@ export default class ConfirmCancelController extends RecallBaseController {
     if (!req.journeyModel.attributes.lastVisited.includes('confirm-cancel')) {
       req.sessionModel.set(sessionModelFields.RETURN_TO, req.journeyModel.attributes.lastVisited)
     }
+    const backLink =
+      req.sessionModel.get<string>(sessionModelFields.RETURN_TO) || req.journeyModel.attributes.lastVisited
 
-    return { ...locals, hideCancel: true }
+    return { ...locals, hideCancel: true, backLink }
   }
 
   saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
