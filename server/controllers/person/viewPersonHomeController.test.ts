@@ -186,6 +186,7 @@ const mockRecallableCourtCases: RecallableCourtCasesResponse = {
       reference: '',
       courtCode: 'ABRYCT',
       date: '2017-06-12',
+      firstDayInCustody: '2024-09-22',
       status: 'ACTIVE',
       isSentenced: true,
       sentences: [
@@ -236,6 +237,7 @@ const mockRecallableCourtCases: RecallableCourtCasesResponse = {
             nomisLineReference: '2',
           },
           isRecallable: true,
+          sentenceDate: '2024-09-22',
         },
       ],
     },
