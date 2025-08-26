@@ -46,6 +46,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const lv = req.journeyModel.attributes.lastVisited
     if (lv?.includes('check-your-answers') || lv?.includes('edit-summary')) {
       res.locals.backLink = lv
+    } else if (!res.locals.backLink) {
+      res.locals.backLink = lv || journeyBaseLink
     }
 
     const action = req.flash('action')
@@ -62,7 +64,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       isEditRecall,
       action,
       selectedRecallType,
-      relevantAdjustments, // Full array of objects
+      relevantAdjustments,
       arrestDate,
       hasMultipleOverlappingUALTypeRecall,
     }

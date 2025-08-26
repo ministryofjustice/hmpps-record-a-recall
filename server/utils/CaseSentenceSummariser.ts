@@ -60,6 +60,7 @@ export default function summariseSentencesGroups(
         sentenceServeType: sentence.sentenceServeType,
         consecutiveTo: sentence.consecutiveTo,
         sentenceType: sentence.sentenceType,
+        sentenceDate: sentence.sentenceDate,
         periodLengths: sentence.periodLengths,
       }
 
@@ -104,6 +105,7 @@ export function summariseCourtCase(courtCase: CourtCase, includeDate = true): Su
       convictionDate: sentence.convictionDate,
       countNumber: sentence.countNumber,
       sentenceType: sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'N/A',
+      sentenceDate: sentence.sentenceDate || 'N/A',
       sentenceServeType: sentence.sentenceServeType,
       consecutiveTo: sentence.consecutiveToChargeNumber,
       periodLengths: sentence.periodLengths,

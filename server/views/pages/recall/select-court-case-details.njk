@@ -52,6 +52,8 @@
               {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
             {% endif %}
 
+            {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+
             {{ offenceCard({
                 offenceCode: sentence.offenceCode | default("N/A"),
                 offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
@@ -60,13 +62,13 @@
                 outcome: sentence.formattedOutcome | default("N/A"),
                 countNumber: loop.index,
                 convictionDate: sentence.formattedConvictionDate | default("N/A"),
-                sentenceDate: sentence.sentenceDate | default("N/A"),
                 terrorRelated: sentence.terrorRelated | default(false),
                 isSentenced: true,
                 periodLengths: sentence.periodLengths | default([]),
                 sentenceServeType: sentence.sentenceServeType | default(null),
                 consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
                 sentenceType: sentenceTypeDisplay | safe,
+                sentenceDate: sentenceDate,
                 fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
                 detailsClasses: 'govuk-!-padding-4',
                 actions: null,
@@ -85,6 +87,7 @@
               </summary>
               <div class="govuk-details__text">
                 {% for sentence in currentCase.nonRecallableSentences %}
+                {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
                   {{ offenceCard({
                       offenceCode: sentence.offenceCode | default("N/A"),
                       offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
@@ -99,6 +102,7 @@
                       sentenceServeType: sentence.sentenceServeType | default(null),
                       consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
                       sentenceType: (sentence.sentenceTypeDescription | default("N/A")),
+                      sentenceDate: sentenceDate,
                       fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
                       detailsClasses: 'govuk-!-padding-4',
                       actions: null,

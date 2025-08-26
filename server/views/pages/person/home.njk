@@ -132,6 +132,7 @@
                 {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
                 {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
                 {% set convictionDate = sentence.convictionDate | formatDate if sentence.convictionDate else 'Not entered' %}
+                {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}
 
                 {{ offenceCard({
                   countNumber: countNumber,
@@ -146,6 +147,7 @@
                   periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),
+                  sentenceDate: sentenceDate,
                   isSentenced: true,
                   detailsClasses: 'govuk-!-padding-4'
                 }) }}

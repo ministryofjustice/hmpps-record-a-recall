@@ -214,4 +214,8 @@ export default {
       ),
     },
   },
+  featureToggles: {
+    unexpectedRecallTypeCheckEnabled:
+      get('UNEXPECTED_RECALL_TYPE_CHECK_ENABLED', 'false', requiredInProduction) === 'true',
+  },
 }
