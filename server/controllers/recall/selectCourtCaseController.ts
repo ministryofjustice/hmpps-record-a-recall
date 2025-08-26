@@ -170,6 +170,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
           formattedConvictionDate: sentence.convictionDate
             ? formatDateStringToDDMMYYYY(sentence.convictionDate)
             : 'Not available',
+          offenceStartDate: sentence.offenceStartDate ? formatDateStringToDDMMYYYY(sentence.offenceStartDate) : null,
+          offenceEndDate: sentence.offenceEndDate ? formatDateStringToDDMMYYYY(sentence.offenceEndDate) : null,
+          sentenceDate: sentence.sentenceDate ? formatDateStringToDDMMYYYY(sentence.sentenceDate) : null,
           apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
           sentenceTypeDescription,
           isUnknownSentenceType,

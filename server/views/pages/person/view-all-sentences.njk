@@ -343,7 +343,7 @@
                         <td class="govuk-table__cell">{{ sentence.sentenceCalculationType }}</td>
                         <td class="govuk-table__cell">{{ sentence.sentenceCategory }}</td>
                         <td class="govuk-table__cell">{{ sentence.sentenceTypeDescription }}</td>
-                        <td class="govuk-table__cell">{{ sentence.sentenceDate }}</td>
+                        <td class="govuk-table__cell">{{ sentence.sentenceDate | formatDate }}</td>
                         <td class="govuk-table__cell">{{ sentence.caseReference }}</td>
                     </tbody>
                 </table>
@@ -389,8 +389,8 @@
                         <tbody class="govuk-table__body">
                         <tr class="govuk-table__row">
                             <td class="govuk-table__cell">{{ sentence.offence.offenderChargeId }}</td>
-                            <td class="govuk-table__cell">{{ sentence.offence.offenceStartDate }}</td>
-                            <td class="govuk-table__cell">{{ sentence.offence.offenceEndDate }}</td>
+                            <td class="govuk-table__cell">{{ sentence.offence.offenceStartDate | formatDate }}</td>
+                            <td class="govuk-table__cell">{{ sentence.offence.offenceEndDate | formatDate }}</td>
                             <td class="govuk-table__cell">{{ sentence.offence.offenceCode }}</td>
                             <td class="govuk-table__cell">{{ sentence.offence.offenceDescription }}</td>
                         </tr>
