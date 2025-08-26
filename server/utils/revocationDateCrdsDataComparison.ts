@@ -20,7 +20,6 @@ export default function revocationDateCrdsDataComparison(req: FormWizard.Request
     revocationDate,
   )
   req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroups)
-  console.log('1 revDateCrdsComparison', summarisedSentenceGroups[0].sentences[0].sentenceDate)
 
   const eligibleSentences = summarisedSentenceGroups.flatMap(g => g.eligibleSentences)
 
@@ -40,7 +39,6 @@ export default function revocationDateCrdsDataComparison(req: FormWizard.Request
   req.sessionModel.set(sessionModelFields.INVALID_RECALL_TYPES, invalidRecallTypes)
   res.locals.summarisedSentenceGroups = summarisedSentenceGroups
   req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroups)
-   console.log('2 revDateCrdsComparison', summarisedSentenceGroups[0].sentences[0].sentenceDate)
   res.locals.casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length
   const sentenceCount = summarisedSentenceGroups?.flatMap((g: SummarisedSentenceGroup) =>
     g.eligibleSentences.flatMap(s => s.sentenceId),

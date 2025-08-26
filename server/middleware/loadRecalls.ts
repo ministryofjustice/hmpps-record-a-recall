@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 // eslint-disable-next-line import/no-unresolved
-import { Recall } from 'models'
+import { Recall, SentenceWithDpsUuid } from 'models'
 import logger from '../../logger'
 import RecallService from '../services/recallService'
 import PrisonService from '../services/PrisonService'
@@ -67,7 +67,7 @@ export default function loadRecalls(
         })
 
         // Build a map of sentenceUuid to grab sentenceDate
-        const sentenceDetailsMap: Record<string, any> = {}
+        const sentenceDetailsMap: Record<string, SentenceWithDpsUuid> = {}
         courtCases.forEach(courtCase => {
           courtCase.sentences?.forEach(sentence => {
             if (sentence.sentenceUuid) {
@@ -114,7 +114,7 @@ export default function loadRecalls(
               return acc
             }
 
-             // Get offence code either from sentence or from court case mapping
+            // Get offence code either from sentence or from court case mapping
             const offenceCode =
               sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
@@ -135,9 +135,6 @@ export default function loadRecalls(
             ...(isFromNomis ? { source: 'NOMIS' as const } : {}),
           }
         })
-
-        // console.log('Enhanced sentences:', JSON.stringify(recallsWithExtras[0].sentences, null, 2))
-
 
         res.locals.recalls = recallsWithExtras
         res.locals.latestRecallId = findLatestRecallId(recallsWithExtras)

@@ -418,4 +418,3 @@ export interface GroupedSentences {
   courtName: string
   sentences: SentenceWithDpsUuid[]
 }
-

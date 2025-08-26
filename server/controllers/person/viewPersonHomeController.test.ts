@@ -180,7 +180,6 @@ const createMockRecallFromNomis = (recallId: string, createdAtArg: string | null
   }) as Recall
 
 const mockRecallableCourtCases: RecallableCourtCasesResponse = {
-  totalCases: 1,
   cases: [
     {
       courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',

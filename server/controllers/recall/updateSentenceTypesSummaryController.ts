@@ -250,7 +250,6 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       // Re-summarize the cases with updated sentence types
       const summarisedSentenceGroupsArray = summariseRasCases(updatedCourtCases)
       req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroupsArray)
-       console.log('4 updateSentenceTypeSummaryController', summarisedSentenceGroupsArray[0].sentences[0].sentenceDate)
       req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, updatedCourtCases)
 
       // Clear the temporary session data on success
