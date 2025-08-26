@@ -219,7 +219,6 @@ const mockRecallableCourtCases: RecallableCourtCasesResponse = {
               periodLengthUuid: '8c5ac995-db1e-4cdf-9acd-56aa6abc99f6',
             },
           ],
-          convictionDate: '2025-02-02',
           chargeLegacyData: {
             postedDate: '2025-06-12',
             nomisOutcomeCode: '',
