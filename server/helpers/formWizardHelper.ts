@@ -162,7 +162,6 @@ export function getEligibleSentenceCount(req: FormWizard.Request): number {
 
 export function getSummarisedSentenceGroups(req: FormWizard.Request): SummarisedSentenceGroup[] {
   const groups = get<SummarisedSentenceGroup[]>(req, sessionModelFields.SUMMARISED_SENTENCES)
-  console.log('----------', groups[0].sentences[0].sentenceDate)
   return groups || []
 }
 

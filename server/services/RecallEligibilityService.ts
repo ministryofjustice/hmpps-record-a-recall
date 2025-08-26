@@ -295,6 +295,8 @@ export class RecallEligibilityService {
     courtCase.sentences?.forEach(sentence => {
       if (!sentence) return
 
+      console.log('-------------->>1-----------', JSON.stringify(sentence, undefined, 2))
+
       const recallEligibility = this.assessRasSentenceEligibility(sentence)
       const summarisedSentence: SummarisedSentence = {
         sentenceId: sentence.sentenceUuid,

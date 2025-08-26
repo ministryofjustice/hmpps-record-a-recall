@@ -27,7 +27,8 @@ export default class CheckSentencesController extends RecallBaseController {
     res.locals.latestSled = calculation.dates.SLED
     res.locals.manualJourney = manualJourney
     res.locals.summarisedSentencesGroups = summarisedSentenceGroups
-    console.log('checkSetnencesCOntrolel', res.locals.summarisedSentences)
+    console.log('checkSetnencesCOntrolel', res.locals.summarisedSentenceGroups)
+    console.log('checkSetnencesCOntrolel', res.locals.summarisedSentenceGroups[0].sentences[0].sentenceDate)
     res.locals.casesWithEligibleSentences = eligibleSentenceCount
 
     return super.locals(req, res)
