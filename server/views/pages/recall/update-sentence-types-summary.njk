@@ -101,7 +101,7 @@
                         
                         {% for courtCase in unupdatedCases %}
                             <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">
-                                {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or courtCase.location }} on {{ courtCase.date | formatDate }}
+                                {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or "Court name not available" }} on {{ courtCase.date | formatDate }}
                             </p>
                             
                             {% for sentence in courtCase.sentences %}
@@ -116,7 +116,7 @@
                         
                         {% for courtCase in updatedCases %}
                             <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">
-                                {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or courtCase.location }} on {{ courtCase.date | formatDate }}
+                                {% if courtCase.reference %}{{ courtCase.reference }} at {% endif %}{{ courtCase.locationName or "Court name not available" }} on {{ courtCase.date | formatDate }}
                             </p>
                             
                             {% for sentence in courtCase.sentences %}

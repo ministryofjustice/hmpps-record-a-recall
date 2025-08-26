@@ -112,7 +112,7 @@
                                 text: "Court name"
                             },
                             value: {
-                                text: (courtCase.locationName or courtCase.location) | safe
+                                text: (courtCase.locationName or "Court name not available") | safe
                             }
                         }), rows) %}
                         
