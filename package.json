@@ -103,7 +103,7 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.839.0",
     "@ministryofjustice/frontend": "^4.0.2",
-    "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.6.0",
+    "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.8.0",
     "@types/cookie-parser": "^1.4.9",
     "agentkeepalive": "^4.6.0",
     "applicationinsights": "^3.9.0",
