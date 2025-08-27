@@ -4,10 +4,43 @@ import { NextFunction, Response } from 'express'
 import FormInitialStep from '../base/formInitialStep'
 import { sanitizeString } from '../../utils/utils'
 import logger from '../../../logger'
+import config from '../../config'
 
 export default class PersonSearchController extends FormInitialStep {
   middlewareSetup() {
     super.middlewareSetup()
+    // Add middleware to check for redirect before processing the form
+    this.use(this.checkForRedirect.bind(this))
+  }
+
+  checkForRedirect(req: FormWizard.Request, res: Response, next: NextFunction): void {
+    // Check if not in local development and redirect to DPS home
+    const isLocalDevelopment = config.domain.includes('localhost') || config.domain.includes('127.0.0.1')
+
+    if (!isLocalDevelopment) {
+      // Determine the DPS URL based on the environment
+      const { urls } = config.applications.digitalPrisonServices
+
+      // Extract environment from the current domain
+      let dpsUrl = urls.dev // default to dev
+
+      if (config.domain.includes('-dev.')) {
+        dpsUrl = urls.dev
+      } else if (config.domain.includes('-preprod.')) {
+        dpsUrl = urls.preprod
+      } else if (
+        !config.domain.includes('-dev.') &&
+        !config.domain.includes('-preprod.') &&
+        config.domain.includes('hmpps.service.justice.gov.uk')
+      ) {
+        dpsUrl = urls.prod
+      }
+
+      res.redirect(dpsUrl)
+      return
+    }
+
+    next()
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
