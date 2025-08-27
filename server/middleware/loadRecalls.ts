@@ -118,13 +118,42 @@ export default function loadRecalls(
             const offenceCode =
               sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
-            acc.push({
+            // Check if sentenceType description contains "EDS"
+            const isEds = sentence.sentenceType?.description?.toUpperCase().includes('EDS')
+
+            let sentenceForUi: any = {
               ...sentence,
               offenceCode, // Ensure offenceCode is populated
               offenceDescription: offenceMap[offenceCode] || undefined,
-              sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
-            })
+            }
 
+            if (isEds) {
+              sentenceForUi = {
+                ...sentenceForUi,
+                sentenceDate: null,
+                periodLengths: [
+                  {
+                    description: 'Custodial term',
+                    ...(sentence.custodialTerm || {}),
+                    periodOrder: 'years,months,weeks,days',
+                  },
+                  {
+                    description: 'Licence period',
+                    ...(sentence.licencePeriod || {}),
+                    periodOrder: 'years,months,weeks,days',
+                  },
+                ].filter(pl => pl.years || pl.months || pl.weeks || pl.days), // drop empty ones
+              }
+            } else {
+              // Non-EDS: pass through sentenceDate and any existing sentence length
+              sentenceForUi = {
+                ...sentenceForUi,
+                sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
+                periodLengths: sentence.periodLengths || [],
+              }
+            }
+
+            acc.push(sentenceForUi)
             return acc
           }, [])
 
@@ -172,3 +201,23 @@ function findLatestRecallId(recalls: Recall[]): string | undefined {
 
   return latestRecall?.recallId
 }
+
+
+// /**
+//  * Extracts all sentence classifications and descriptions from a recall.
+//  */
+// export function extractSentenceTypes(recall: Recall): { classification: string; description: string }[] {
+//   if (!recall?.sentences || !Array.isArray(recall.sentences)) {
+//     return []
+//   }
+
+//   return recall.sentences
+//     .filter(sentence => sentence.sentenceType) // make sure sentenceType exists
+//     .map(sentence => {
+//       return {
+//         classification: sentence.sentenceType.classification,
+//         description: sentence.sentenceType.description,
+//       }
+//     })
+// }
+
