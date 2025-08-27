@@ -8,6 +8,9 @@ export declare module 'express-session' {
     returnTo: string
     nowInMinutes: number
     recalls: Map<string, Recall>
+    formErrors?: Record<string, { type: string; message: string }>
+    formValues?: Record<string, unknown>
+    formData?: Record<string, unknown>
   }
 }
 
