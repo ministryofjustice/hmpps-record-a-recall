@@ -5,7 +5,6 @@ type offenceCard = {
   offenceEndDate?: string
   outcome: string
   countNumber: string
-  convictionDate: string
   terrorRelated: boolean
   isSentenced: boolean
   custodialSentenceLength?: termLength
@@ -13,6 +12,7 @@ type offenceCard = {
   sentenceServeType: 'CONSECUTIVE' | 'CONCURRENT' | 'FORTHWITH'
   consecutiveTo: string
   sentenceType: string
+  sentenceDate?: string
   actions?: {
     items: actionItem[]
   }

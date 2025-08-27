@@ -281,10 +281,16 @@ export class RecallEligibilityService {
   }
 
   private processCourtCase(courtCase: CourtCase): SummarisedSentenceGroup | null {
+    const courtName = courtCase.locationName || 'Court name not available'
+    const caseRefAndCourt =
+      courtName === 'Court name not available'
+        ? 'Court name not available'
+        : `Case ${courtCase.reference ?? 'held'} at ${courtName} on ${courtCase.date}`
+
     const summarisedGroup: SummarisedSentenceGroup = {
-      caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location} on ${courtCase.date}`,
+      caseRefAndCourt,
       caseReference: courtCase.reference ?? 'Unknown',
-      courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
+      courtName,
       ineligibleSentences: [],
       hasIneligibleSentences: false,
       eligibleSentences: [],
@@ -302,6 +308,7 @@ export class RecallEligibilityService {
         summary: compact([]),
         offenceCode: sentence.offenceCode,
         offenceDescription: sentence.offenceDescription,
+        sentenceDate: sentence.sentenceDate ?? null,
       }
 
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {

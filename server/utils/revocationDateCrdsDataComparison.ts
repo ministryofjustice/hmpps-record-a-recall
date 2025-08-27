@@ -20,6 +20,7 @@ export default function revocationDateCrdsDataComparison(req: FormWizard.Request
     revocationDate,
   )
   req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroups)
+
   const eligibleSentences = summarisedSentenceGroups.flatMap(g => g.eligibleSentences)
 
   const casesWithEligibleSentences = summarisedSentenceGroups.filter(group => group.hasEligibleSentences).length

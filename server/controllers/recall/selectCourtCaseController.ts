@@ -108,9 +108,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
     currentCase.caseReferences = originalCase.reference || 'N/A'
     currentCase.courtName =
       (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
-      (originalCase as CourtCase & { courtCode?: string }).courtCode ||
       originalCase.locationName ||
-      'N/A'
+      'Court name not available'
 
     const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
     currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
@@ -170,6 +169,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
           formattedConvictionDate: sentence.convictionDate
             ? formatDateStringToDDMMYYYY(sentence.convictionDate)
             : 'Not available',
+          offenceStartDate: sentence.offenceStartDate ? formatDateStringToDDMMYYYY(sentence.offenceStartDate) : null,
+          offenceEndDate: sentence.offenceEndDate ? formatDateStringToDDMMYYYY(sentence.offenceEndDate) : null,
+          sentenceDate: sentence.sentenceDate ? formatDateStringToDDMMYYYY(sentence.sentenceDate) : null,
           apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
           sentenceTypeDescription,
           isUnknownSentenceType,

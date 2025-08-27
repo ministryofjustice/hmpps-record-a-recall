@@ -54,12 +54,12 @@ export default function summariseSentencesGroups(
         outcome: sentence.outcome,
         outcomeUpdated: sentence.outcomeUpdated,
         countNumber: sentence.countNumber,
-        convictionDate: sentence.convictionDate,
         terrorRelated: sentence.terrorRelated,
         isSentenced: sentence.isSentenced,
         sentenceServeType: sentence.sentenceServeType,
         consecutiveTo: sentence.consecutiveTo,
         sentenceType: sentence.sentenceType,
+        sentenceDate: sentence.sentenceDate,
         periodLengths: sentence.periodLengths,
       }
 
@@ -78,10 +78,16 @@ export default function summariseSentencesGroups(
 
 export function summariseCourtCase(courtCase: CourtCase, includeDate = true): SummarisedSentenceGroup {
   const dateString = includeDate ? ` on ${courtCase.date}` : ''
+  const courtName = courtCase.locationName || 'Court name not available'
+  const caseRefAndCourt =
+    courtName === 'Court name not available'
+      ? 'Court name not available'
+      : `Case ${courtCase.reference ?? 'held'} at ${courtName}${dateString}`
+
   const summarisedGroup: SummarisedSentenceGroup = {
-    caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location}${dateString}`,
+    caseRefAndCourt,
     caseReference: courtCase.reference ?? 'Unknown',
-    courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
+    courtName,
     ineligibleSentences: [],
     hasIneligibleSentences: false,
     eligibleSentences: [],
@@ -101,9 +107,9 @@ export function summariseCourtCase(courtCase: CourtCase, includeDate = true): Su
       offenceDescription: sentence.offenceDescription,
       offenceStartDate: sentence.offenceStartDate,
       offenceEndDate: sentence.offenceEndDate,
-      convictionDate: sentence.convictionDate,
       countNumber: sentence.countNumber,
       sentenceType: sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'N/A',
+      sentenceDate: sentence.sentenceDate || 'N/A',
       sentenceServeType: sentence.sentenceServeType,
       consecutiveTo: sentence.consecutiveToChargeNumber,
       periodLengths: sentence.periodLengths,
