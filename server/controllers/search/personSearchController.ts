@@ -4,10 +4,24 @@ import { NextFunction, Response } from 'express'
 import FormInitialStep from '../base/formInitialStep'
 import { sanitizeString } from '../../utils/utils'
 import logger from '../../../logger'
+import config from '../../config'
 
 export default class PersonSearchController extends FormInitialStep {
   middlewareSetup() {
     super.middlewareSetup()
+    this.use(this.checkForRedirect.bind(this))
+  }
+
+  checkForRedirect(req: FormWizard.Request, res: Response, next: NextFunction): void {
+    // Check if not in local development and redirect to DPS home
+    const isLocalDevelopment = config.domain.includes('localhost') || config.domain.includes('127.0.0.1')
+
+    if (!isLocalDevelopment) {
+      res.redirect(config.applications.digitalPrisonServices.url)
+      return
+    }
+
+    next()
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
