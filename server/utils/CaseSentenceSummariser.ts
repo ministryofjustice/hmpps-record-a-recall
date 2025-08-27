@@ -78,10 +78,16 @@ export default function summariseSentencesGroups(
 
 export function summariseCourtCase(courtCase: CourtCase, includeDate = true): SummarisedSentenceGroup {
   const dateString = includeDate ? ` on ${courtCase.date}` : ''
+  const courtName = courtCase.locationName || 'Court name not available'
+  const caseRefAndCourt =
+    courtName === 'Court name not available'
+      ? 'Court name not available'
+      : `Case ${courtCase.reference ?? 'held'} at ${courtName}${dateString}`
+
   const summarisedGroup: SummarisedSentenceGroup = {
-    caseRefAndCourt: `Case ${courtCase.reference ?? 'held'} at ${courtCase.locationName || courtCase.location}${dateString}`,
+    caseRefAndCourt,
     caseReference: courtCase.reference ?? 'Unknown',
-    courtName: courtCase.locationName || courtCase.location || 'Unknown Court',
+    courtName,
     ineligibleSentences: [],
     hasIneligibleSentences: false,
     eligibleSentences: [],
