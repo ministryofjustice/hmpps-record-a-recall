@@ -199,11 +199,6 @@ export default {
     },
     digitalPrisonServices: {
       url: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
-      urls: {
-        dev: 'https://dps-dev.prison.service.justice.gov.uk/',
-        preprod: 'https://dps-preprod.prison.service.justice.gov.uk/',
-        prod: 'https://dps.prison.service.justice.gov.uk/',
-      },
     },
     adjustments: {
       url: get('ADJUSTMENTS_URL', 'https://adjustments-dev.hmpps.service.justice.gov.uk', requiredInProduction),

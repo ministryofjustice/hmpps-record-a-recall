@@ -17,25 +17,7 @@ export default class PersonSearchController extends FormInitialStep {
     const isLocalDevelopment = config.domain.includes('localhost') || config.domain.includes('127.0.0.1')
 
     if (!isLocalDevelopment) {
-      // Determine the DPS URL based on the environment
-      const { urls } = config.applications.digitalPrisonServices
-
-      // Extract environment from the current domain
-      let dpsUrl = urls.dev // default to dev
-
-      if (config.domain.includes('-dev.')) {
-        dpsUrl = urls.dev
-      } else if (config.domain.includes('-preprod.')) {
-        dpsUrl = urls.preprod
-      } else if (
-        !config.domain.includes('-dev.') &&
-        !config.domain.includes('-preprod.') &&
-        config.domain.includes('hmpps.service.justice.gov.uk')
-      ) {
-        dpsUrl = urls.prod
-      }
-
-      res.redirect(dpsUrl)
+      res.redirect(config.applications.digitalPrisonServices.url)
       return
     }
 
