@@ -41,7 +41,6 @@ type EnhancedCourtCaseForView = CourtCase & {
     formattedOffenceDate?: string
     formattedConvictionDate?: string
     apiOffenceDescription?: string
-    formattedOutcome?: string
   })[]
   nonRecallableSentences?: (RecallableCourtCaseSentence & {
     formattedSentenceLength?: string
@@ -57,7 +56,6 @@ type EnhancedCourtCaseForView = CourtCase & {
     formattedOffenceDate?: string
     formattedConvictionDate?: string
     apiOffenceDescription?: string
-    formattedOutcome?: string
   })[]
   sentences?: (RecallableCourtCaseSentence & {
     formattedSentenceLength?: string
@@ -165,8 +163,6 @@ const periodLengths = sentence.periodLengths || []
           apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
           sentenceTypeDescription,
           isUnknownSentenceType,
-          formattedOutcome:
-            sentence.outcomeDescription || sentence.chargeLegacyData?.outcomeDescription || 'Not available',
         }
       })
 
