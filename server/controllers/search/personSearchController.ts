@@ -9,7 +9,6 @@ import config from '../../config'
 export default class PersonSearchController extends FormInitialStep {
   middlewareSetup() {
     super.middlewareSetup()
-    // Add middleware to check for redirect before processing the form
     this.use(this.checkForRedirect.bind(this))
   }
 
