@@ -11,6 +11,7 @@ export declare module 'express-session' {
     formErrors?: Record<string, { type: string; message: string }>
     formValues?: Record<string, unknown>
     formData?: Record<string, unknown>
+    journeyHistory?: string[]
   }
 }
 
@@ -26,6 +27,7 @@ export declare global {
       verified?: boolean
       id: string
       services?: Services
+      validatedData?: unknown
       logout(done: (err: unknown) => void): void
       flash(type: string, message: Array<Record<string, string>>): number
       flash(message: 'errors'): Array<Record<string, string>>
