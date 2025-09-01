@@ -433,8 +433,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
           }
         })
         if (selectedCases.length > 0) {
-          // Use the selected cases directly which already have court names
-          // Instead of filtering from getCourtCaseOptions which may not have court names
           summarisedSentenceGroupsArray = summariseRasCases(selectedCases)
 
           // Check for unknown sentences in selected cases
