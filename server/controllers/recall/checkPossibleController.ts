@@ -53,10 +53,29 @@ export default class CheckPossibleController extends RecallBaseController {
         }),
       ])
 
+      // Enhance court cases with court names
+      let enhancedCases = cases
+      if (cases && cases.length > 0) {
+        try {
+          const courtCodes = [...new Set(cases.map(c => c.location).filter(Boolean))]
+          if (courtCodes.length > 0) {
+            const courtNamesMap = await req.services.courtService.getCourtNames(courtCodes, username)
+            enhancedCases = cases.map(courtCase => ({
+              ...courtCase,
+              locationName:
+                courtNamesMap.get(courtCase.location) || courtCase.locationName || 'Court name not available',
+            }))
+          }
+        } catch (error) {
+          logger.error('Error fetching court names:', error)
+          // Continue with original cases if court name fetching fails
+        }
+      }
+
       // Use routing service for smart filtering and routing decisions
       const routingResponse = await this.recallRoutingService.routeRecallWithSmartFiltering(
         nomisId,
-        cases,
+        enhancedCases,
         existingAdjustments,
         existingRecalls,
         breakdown,
