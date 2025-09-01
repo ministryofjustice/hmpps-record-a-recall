@@ -14,6 +14,7 @@ import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { COURT_MESSAGES } from '../../utils/courtConstants'
 
 export default class CheckPossibleController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
@@ -63,11 +64,11 @@ export default class CheckPossibleController extends RecallBaseController {
             enhancedCases = cases.map(courtCase => ({
               ...courtCase,
               locationName:
-                courtNamesMap.get(courtCase.location) || courtCase.locationName || 'Court name not available',
+                courtNamesMap.get(courtCase.location) || courtCase.locationName || COURT_MESSAGES.NAME_NOT_AVAILABLE,
             }))
           }
         } catch (error) {
-          logger.error('Error fetching court names:', error)
+          logger.error(`Error fetching court names for nomisId ${nomisId}:`, error)
           // Continue with original cases if court name fetching fails
         }
       }
