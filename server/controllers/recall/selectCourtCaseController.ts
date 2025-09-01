@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/formWizardHelper'
 import {
   calculateOverallSentenceLength,
   formatSentenceServeType,
@@ -433,11 +433,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           }
         })
         if (selectedCases.length > 0) {
-          const caseDetails = getCourtCaseOptions(req).filter((detail: CourtCase) =>
-            selectedCases.map(c => c.caseId).includes(detail.caseId),
-          )
-          // TODO should we be passing sentences and break downs?
-          summarisedSentenceGroupsArray = summariseRasCases(caseDetails)
+          summarisedSentenceGroupsArray = summariseRasCases(selectedCases)
 
           // Check for unknown sentences in selected cases
           const unknownSentenceIds: string[] = []
