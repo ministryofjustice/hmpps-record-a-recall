@@ -1,6 +1,7 @@
 import FormWizard from 'hmpo-form-wizard'
 import { Response } from 'express'
 
+import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import {
@@ -24,7 +25,7 @@ export default class CheckSentencesController extends RecallBaseController {
     const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
     const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
 
-    res.locals.latestSled = calculation.dates.SLED
+    res.locals.latestSled = calculation?.dates?.SLED || null
     res.locals.manualJourney = manualJourney
     res.locals.summarisedSentencesGroups = summarisedSentenceGroups
     res.locals.casesWithEligibleSentences = eligibleSentenceCount
@@ -62,8 +63,7 @@ export default class CheckSentencesController extends RecallBaseController {
       }
       next()
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error loading offence names:', error)
+      logger.error('Error loading offence names:', error)
       res.locals.offenceNameMap = {}
       next()
     }

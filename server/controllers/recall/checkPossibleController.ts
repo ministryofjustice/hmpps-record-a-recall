@@ -27,18 +27,42 @@ export default class CheckPossibleController extends RecallBaseController {
   async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
-      // Get calculation result and validation messages
-      const calculationResult: RecordARecallCalculationResult =
-        await req.services.calculationService.getTemporaryCalculation(nomisId, username)
-
-      const errors: ValidationMessage[] = calculationResult.validationMessages
-      res.locals.validationResponse = errors
-
-      // Get breakdown immediately if we have calculation results
+      let calculationResult: RecordARecallCalculationResult = null
       let breakdown = null
-      if (calculationResult.calculatedReleaseDates) {
-        const tempCalcReqId = calculationResult.calculatedReleaseDates.calculationRequestId
-        breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
+      let errors: ValidationMessage[] = []
+      let forceManualRoute = false
+
+      try {
+        // Get calculation result and validation messages
+        calculationResult = await req.services.calculationService.getTemporaryCalculation(nomisId, username)
+        errors = calculationResult.validationMessages || []
+        res.locals.validationResponse = errors
+
+        // Get breakdown immediately if we have calculation results
+        if (calculationResult.calculatedReleaseDates) {
+          const tempCalcReqId = calculationResult.calculatedReleaseDates.calculationRequestId
+          breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
+        }
+      } catch (calculationError) {
+        // Check if this is the STANDARD_RECALL_255 error
+        const errorCode = calculationError.data?.errorCode || calculationError.data?.developerMessage
+        const errorText = calculationError.text || JSON.stringify(calculationError.data || '')
+        const isStandardRecall255Error =
+          calculationError.status === 500 &&
+          (errorCode?.includes('STANDARD_RECALL_255') || errorText?.includes('STANDARD_RECALL_255'))
+
+        if (isStandardRecall255Error) {
+          logger.warn(`STANDARD_RECALL_255 error for nomisId ${nomisId}, routing to manual journey`)
+          forceManualRoute = true
+          // Set minimal calculation result to prevent null errors
+          calculationResult = {
+            calculatedReleaseDates: null,
+            validationMessages: [],
+          }
+        } else {
+          // Re-throw if it's a different error
+          throw calculationError
+        }
       }
 
       // Get court cases, adjustments, and existing recalls in parallel
@@ -83,17 +107,23 @@ export default class CheckPossibleController extends RecallBaseController {
         errors,
       )
 
+      // Override to manual route if STANDARD_RECALL_255 error occurred
+      if (forceManualRoute) {
+        res.locals.manualCaseSelection = true
+        res.locals.forceManualRoute = true
+      }
+
       res.locals.recallEligibility = routingResponse.eligibility
       res.locals.courtCases = routingResponse.casesToUse
       res.locals.smartOverrideApplied = routingResponse.smartOverrideApplied
       res.locals.wereCasesFilteredOut = routingResponse.wereCasesFilteredOut
-      res.locals.routingResponse = routingResponse // Store for locals method
+      res.locals.routingResponse = routingResponse
 
       // Generate summarized sentence groups from the court cases
       const summarisedSentenceGroups = summariseRasCases(routingResponse.casesToUse)
       res.locals.summarisedSentenceGroups = summarisedSentenceGroups
 
-      if (calculationResult.calculatedReleaseDates && routingResponse.casesToUse.length > 0) {
+      if (calculationResult && calculationResult.calculatedReleaseDates && routingResponse.casesToUse.length > 0) {
         const newCalc = calculationResult.calculatedReleaseDates
         res.locals.temporaryCalculation = newCalc
         res.locals.calcReqId = newCalc.calculationRequestId
@@ -130,6 +160,15 @@ export default class CheckPossibleController extends RecallBaseController {
         }))
 
         res.locals.breakdown = breakdown
+      } else {
+        // When calculation failed or manual route, use RAS sentences directly
+        const sentencesFromRasCases = routingResponse.casesToUse.flatMap(caseItem => caseItem.sentences || [])
+        res.locals.rasSentences = sentencesFromRasCases.map(sentence => ({
+          ...sentence,
+          dpsSentenceUuid: sentence.sentenceUuid,
+        }))
+        res.locals.crdsSentences = []
+        res.locals.dpsSentenceIds = []
       }
 
       res.locals.existingAdjustments = existingAdjustments
@@ -146,6 +185,11 @@ export default class CheckPossibleController extends RecallBaseController {
 
     req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     req.sessionModel.set(sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
+
+    // Set manual route if STANDARD_RECALL_255 error occurred
+    if (res.locals.forceManualRoute) {
+      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+    }
 
     const { routingResponse } = res.locals
     if (routingResponse) {
@@ -186,6 +230,11 @@ export default class CheckPossibleController extends RecallBaseController {
   }
 
   recallPossible(req: FormWizard.Request, res: Response) {
+    // Check if we should go to manual route due to STANDARD_RECALL_255
+    if (res.locals.forceManualRoute) {
+      // We still return true to allow the recall, but the manual flag will route it correctly later
+      return true
+    }
     return getRecallRoute(req) && getRecallRoute(req) !== 'NOT_POSSIBLE'
   }
 
