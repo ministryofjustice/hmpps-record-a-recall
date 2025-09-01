@@ -1,14 +1,15 @@
-import FormWizard from 'hmpo-form-wizard'
+import { Request } from 'express'
 import { sessionModelFields } from './formWizardHelper'
+import { setSessionValue, unsetSessionValue } from './sessionHelper'
 
-export default function resetRecallSession(req: FormWizard.Request): void {
+export default function resetRecallSession(req: Request | any): void {
   // Reset case index and manual recall decisions
-  req.sessionModel.set(sessionModelFields.CURRENT_CASE_INDEX, 0)
-  req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, [])
+  setSessionValue(req, sessionModelFields.CURRENT_CASE_INDEX, 0)
+  setSessionValue(req, sessionModelFields.MANUAL_RECALL_DECISIONS, [])
 
   // Reset sentence-related state
-  req.sessionModel.unset(sessionModelFields.ACTIVE_SENTENCE_CHOICE)
-  req.sessionModel.unset(sessionModelFields.SENTENCE_GROUPS)
-  req.sessionModel.unset(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE)
-  req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+  unsetSessionValue(req, sessionModelFields.ACTIVE_SENTENCE_CHOICE)
+  unsetSessionValue(req, sessionModelFields.SENTENCE_GROUPS)
+  unsetSessionValue(req, sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE)
+  setSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION, true)
 }

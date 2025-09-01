@@ -1,0 +1,36 @@
+{% extends "../../../partials/prisonerBannerLayout.njk" %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% block pageTitle %}Edit Recall - {{ applicationName }}{% endblock %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-xl">Recorded on 02 Jan 2024</h1>
+            
+            <h2 class="govuk-heading-m">Check your answers</h2>
+            
+            {% if answerSummaryList %}
+                {{ govukSummaryList(answerSummaryList) }}
+            {% endif %}
+            
+            <form method="post">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                
+                <div class="govuk-button-group">
+                    {{ govukButton({
+                        text: "Save changes",
+                        type: "submit"
+                    }) }}
+                    
+                    {{ govukBackLink({
+                        text: "Cancel",
+                        href: backLink
+                    }) }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,22 +1,22 @@
-import FormWizard from 'hmpo-form-wizard'
+import { Field } from '../../controllers/base/ExpressBaseController'
 import reduceDependentFields from './reduceDependentFields'
 import { FieldEntry } from './renderConditionalFields'
 
 describe('Field helpers', () => {
   describe('#reduceDependentFields', () => {
-    const mockAccumulator: { [key: string]: FormWizard.Field } = {
+    const mockAccumulator: { [key: string]: Field } = {
       foo: {
         name: 'foo',
       },
-    } as { [key: string]: FormWizard.Field }
-    const mockAllFields: { [key: string]: FormWizard.Field } = {
+    }
+    const mockAllFields: { [key: string]: Field } = {
       conditionalField1: {
         name: 'conditionalField1',
       },
       conditionalField2: {
         name: 'conditionalField2',
       },
-    } as { [key: string]: FormWizard.Field }
+    }
 
     describe('when field does not have items', () => {
       it('should not add to accumulator', () => {

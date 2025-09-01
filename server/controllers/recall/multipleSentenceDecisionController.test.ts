@@ -1,11 +1,14 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import type { CourtCase } from 'models'
 import MultipleSentenceDecisionController from './multipleSentenceDecisionController'
+import { ExtendedRequest } from '../base/ExpressBaseController'
+import { createExtendedRequestMock } from '../../test-utils/extendedRequestMock'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
+import * as sessionHelper from '../../helpers/sessionHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 
 jest.mock('../../../logger')
+jest.mock('../../helpers/sessionHelper')
 jest.mock('../../helpers/urlHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({}),
@@ -35,7 +38,7 @@ const mockGetCourtCaseOptions = formWizardHelper.getCourtCaseOptions as jest.Moc
 
 describe('MultipleSentenceDecisionController', () => {
   let controller: MultipleSentenceDecisionController
-  let req: FormWizard.Request
+  let req: ExtendedRequest
   let res: Response
   let next: NextFunction
 
@@ -91,7 +94,7 @@ describe('MultipleSentenceDecisionController', () => {
   beforeEach(() => {
     controller = new MultipleSentenceDecisionController({ route: '/multiple-sentence-decision' })
 
-    req = {
+    req = createExtendedRequestMock({
       params: { courtCaseId: 'court-case-1' },
       sessionModel: {
         get: jest.fn() as jest.MockedFunction<(key: string) => unknown>,
@@ -108,9 +111,10 @@ describe('MultipleSentenceDecisionController', () => {
       form: {
         options: {
           next: undefined,
+          fields: {},
         },
       },
-    } as unknown as FormWizard.Request
+    })
 
     res = {
       locals: {
@@ -133,11 +137,16 @@ describe('MultipleSentenceDecisionController', () => {
 
       await controller.setSentencesInCase(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE, [
-        { sentenceUuid: 'sentence-1', isUnknownSentenceType: true },
-        { sentenceUuid: 'sentence-2', isUnknownSentenceType: true },
-      ])
-      expect(req.sessionModel.set).toHaveBeenCalledWith(
+      expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
+        req,
+        formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE,
+        [
+          { sentenceUuid: 'sentence-1', isUnknownSentenceType: true },
+          { sentenceUuid: 'sentence-2', isUnknownSentenceType: true },
+        ],
+      )
+      expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
+        req,
         formWizardHelper.sessionModelFields.SELECTED_COURT_CASE_UUID,
         'court-case-1',
       )
@@ -170,7 +179,7 @@ describe('MultipleSentenceDecisionController', () => {
   describe('get', () => {
     it('should render the page when sentences are in session', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue([
+      ;(sessionHelper.getSessionValue as jest.Mock).mockReturnValue([
         { sentenceUuid: 'sentence-1', isUnknownSentenceType: true },
         { sentenceUuid: 'sentence-2', isUnknownSentenceType: true },
       ])
@@ -190,7 +199,7 @@ describe('MultipleSentenceDecisionController', () => {
     })
 
     it('should redirect when no sentences in session', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue(null)
+      ;(sessionHelper.getSessionValue as jest.Mock).mockReturnValue(null)
 
       await controller.get(req, res, next)
 
@@ -212,13 +221,17 @@ describe('MultipleSentenceDecisionController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.BULK_UPDATE_MODE, true)
+      expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
+        req,
+        formWizardHelper.sessionModelFields.BULK_UPDATE_MODE,
+        true,
+      )
       expect(superPostSpy).toHaveBeenCalled()
     })
 
     it('should set up individual flow when user selects no', async () => {
       req.body.sameSentenceType = 'no'
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue([
+      ;(sessionHelper.getSessionValue as jest.Mock).mockReturnValue([
         { sentenceUuid: 'sentence-1', isUnknownSentenceType: true },
         { sentenceUuid: 'sentence-2', isUnknownSentenceType: true },
       ])
@@ -233,9 +246,17 @@ describe('MultipleSentenceDecisionController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.BULK_UPDATE_MODE, false)
-      expect(req.sessionModel.set).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.CURRENT_SENTENCE_INDEX, 0)
-      expect(req.form.options.next).toBe('/person/A1234BC/record-recall/select-sentence-type/sentence-1')
+      expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
+        req,
+        formWizardHelper.sessionModelFields.BULK_UPDATE_MODE,
+        false,
+      )
+      expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
+        req,
+        formWizardHelper.sessionModelFields.CURRENT_SENTENCE_INDEX,
+        0,
+      )
+      expect((req.form.options as any).next).toBe('/person/A1234BC/record-recall/select-sentence-type/sentence-1')
       expect(superPostSpy).toHaveBeenCalled()
     })
   })

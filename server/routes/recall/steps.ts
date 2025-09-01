@@ -1,225 +1,110 @@
-import FormWizard from 'hmpo-form-wizard'
-import RevocationDateController from '../../controllers/recall/revocationDateController'
-import ReturnToCustodyDateController from '../../controllers/recall/returnToCustodyDateController'
-import CheckYourAnswersController from '../../controllers/recall/checkYourAnswersController'
-import RecallTypeController from '../../controllers/recall/recallTypeController'
-import CheckSentencesController from '../../controllers/recall/checkSentencesController'
-import CheckPossibleController from '../../controllers/recall/checkPossibleController'
-import RecallBaseController from '../../controllers/recall/recallBaseController'
-import ConfirmCancelController from '../../controllers/recall/confirmCancelController'
-import SelectCourtCaseController from '../../controllers/recall/selectCourtCaseController'
-import ManualRecallInterceptController from '../../controllers/recall/ManualRecallInterceptController'
-import UpdateSentenceTypesSummaryController from '../../controllers/recall/updateSentenceTypesSummaryController'
-import SelectSentenceTypeController from '../../controllers/recall/selectSentenceTypeController'
-import MultipleSentenceDecisionController from '../../controllers/recall/multipleSentenceDecisionController'
-import BulkSentenceTypeController from '../../controllers/recall/bulkSentenceTypeController'
-import {
-  getEligibleSentenceCount,
-  isManualCaseSelection,
-  isRecallTypeMismatch,
-  hasMultipleConflicting,
-  hasMultipleUALTypeRecallConflicting,
-  getSummarisedSentenceGroups,
-} from '../../helpers/formWizardHelper'
-import NotPossibleController from '../../controllers/recall/notPossibleController'
-import NoCasesSelectedController from '../../controllers/recall/noCasesSelectedController'
-import ResetAndRedirectToRevDateController from '../../controllers/recall/resetAndRedirectToRevDateController'
-import ResetAndRedirectToManualController from '../../controllers/recall/resetAndRedirectToManualInterceptController'
+// Journey flow configuration for recall process
+// This file provides the step definitions used by journey-resolver
+// NOTE: Required for backward compatibility with existing controllers that use journey validation
+// Will be deprecated once all controllers are fully migrated to Express routing patterns
 
-const steps = {
+export default {
   '/': {
     entryPoint: true,
-    reset: true,
     resetJourney: true,
-    skip: true,
-    controller: CheckPossibleController,
-    next: [
-      {
-        fn: 'recallPossible',
-        next: 'revocation-date',
-      },
-      'not-possible',
-    ],
+    next: '/revocation-date',
   },
   '/revocation-date': {
     fields: ['revocationDate'],
-    next: 'rtc-date',
-    template: 'base-question',
-    controller: RevocationDateController,
-    editable: false,
+    next: '/rtc-date',
+    template: 'revocation-date',
   },
   '/rtc-date': {
-    fields: ['inPrisonAtRecall', 'returnToCustodyDate'],
-    next: [
-      {
-        fn: (req: FormWizard.Request) => hasMultipleUALTypeRecallConflicting(req) || hasMultipleConflicting(req),
-        next: 'conflicting-adjustments-interrupt',
-      },
-      {
-        fn: (req: FormWizard.Request) => isManualCaseSelection(req),
-        next: 'manual-recall-intercept',
-      },
-      {
-        fn: (req: FormWizard.Request) => getEligibleSentenceCount(req) === 0,
-        next: 'no-sentences-interrupt',
-      },
-      'check-sentences',
-    ],
-    template: 'base-question',
-    controller: ReturnToCustodyDateController,
-    editable: false,
+    fields: ['returnToCustodyDate'],
+    next: '/check-sentences',
+    template: 'rtc-date',
   },
   '/check-sentences': {
-    next: 'recall-type',
-    controller: CheckSentencesController,
-    editable: true,
-    checkJourney: false,
+    next: '/recall-type',
+    template: 'check-sentences',
   },
   '/recall-type': {
+    fields: ['recallType'],
     next: [
       {
-        fn: (req: FormWizard.Request) => isRecallTypeMismatch(req),
-        next: 'recall-type-interrupt',
+        fn: (req: any) => {
+          // In manual case selection, court cases are already selected before recall-type
+          // So we should go to check-your-answers, not back to select-court-case
+          const manualCaseSelection = req.session?.formData?.manualCaseSelection === true
+          const courtCasesAlreadySelected = req.session?.formData?.courtCaseIds?.length > 0
+          
+          // If manual journey and court cases already selected, go to check-your-answers
+          if (manualCaseSelection && courtCasesAlreadySelected) {
+            return true
+          }
+          return false
+        },
+        next: '/check-your-answers',
       },
-      'check-your-answers',
+      {
+        fn: (req: any) => {
+          // If manual journey but no court cases selected yet (shouldn't happen in normal flow)
+          const manualCaseSelection = req.session?.formData?.manualCaseSelection === true
+          const courtCasesAlreadySelected = req.session?.formData?.courtCaseIds?.length > 0
+          
+          if (manualCaseSelection && !courtCasesAlreadySelected) {
+            return true
+          }
+          return false
+        },
+        next: '/select-court-case',
+      },
+      // Default path for automatic case selection
+      '/check-possible',
     ],
-    fields: ['recallType'],
-    controller: RecallTypeController,
-    template: 'base-question',
-    editable: true,
-    checkJourney: false,
+    template: 'recall-type',
   },
-  '/recall-type-interrupt': {
-    next: 'check-your-answers',
-    controller: RecallBaseController,
+  '/select-court-case': {
+    fields: ['courtCase'],
+    next: '/check-sentences',
+    template: 'select-court-case',
   },
-  '/no-sentences-interrupt': {
-    controller: RecallBaseController,
+  '/select-sentence-type': {
+    fields: ['sentenceType'],
+    next: '/check-your-answers',
+    template: 'select-sentence-type',
   },
-  '/conflicting-adjustments-interrupt': {
-    controller: RecallBaseController,
+  '/bulk-sentence-type': {
+    fields: ['bulkSentenceType'],
+    next: '/check-your-answers',
+    template: 'bulk-sentence-type',
+  },
+  '/multiple-sentence-decision': {
+    fields: ['multipleSentenceDecision'],
+    next: '/check-your-answers',
+    template: 'multiple-sentence-decision',
+  },
+  '/check-possible': {
+    next: '/check-your-answers',
+    template: 'check-possible',
   },
   '/check-your-answers': {
-    controller: CheckYourAnswersController,
-    next: 'recall-recorded',
-  },
-  '/manual-recall-intercept': {
-    controller: ManualRecallInterceptController,
-    fields: ['manualRecallInterceptConfirmation'],
-    noPost: false,
-    checkJourney: false,
-    next: 'select-cases',
-  },
-  '/recall-recorded': {
-    controller: RecallBaseController,
-    noPost: true,
-    resetJourney: true,
-    checkJourney: false,
-  },
-  '/manual-recall': {
-    controller: RecallBaseController,
-    noPost: true,
-  },
-  '/select-cases': {
-    controller: SelectCourtCaseController,
-    fields: ['activeSentenceChoice'],
-    activeSentenceChoice: {
-      validate: [
-        {
-          type: 'required',
-          message: 'Select whether this case had an active sentence at the point of recall',
-        },
-      ],
-    },
-    template: 'select-court-case-details.njk',
-    next: [
-      {
-        fn: (req: FormWizard.Request) => {
-          // Check if there are unknown sentences that need updating
-          const unknownSentenceIds = req.sessionModel.get('unknownSentencesToUpdate') as string[]
-          return unknownSentenceIds && unknownSentenceIds.length > 0
-        },
-        next: 'update-sentence-types-summary',
-      },
-      {
-        fn: (req: FormWizard.Request) => getSummarisedSentenceGroups(req).length === 0,
-        next: 'no-cases-selected',
-      },
-      'check-sentences',
-    ],
-  },
-  '/update-sentence-types-summary': {
-    controller: UpdateSentenceTypesSummaryController,
-    template: 'update-sentence-types-summary.njk',
-    next: 'check-sentences',
-    checkJourney: false,
-  },
-  '/select-sentence-type/:sentenceUuid': {
-    controller: SelectSentenceTypeController,
-    template: 'select-sentence-type',
-    fields: ['sentenceType'],
-    sentenceType: {
-      validate: [
-        {
-          type: 'required',
-          message: 'Select a sentence type',
-        },
-      ],
-    },
-    next: 'update-sentence-types-summary',
-    checkJourney: false,
-  },
-  '/multiple-sentence-decision/:courtCaseId': {
-    controller: MultipleSentenceDecisionController,
-    template: 'multiple-sentence-decision',
-    fields: ['sameSentenceType'],
-    sameSentenceType: {
-      validate: [
-        {
-          type: 'required',
-          message: 'Select yes if all sentences have the same type, or no to select individually',
-        },
-      ],
-    },
-    next: 'update-sentence-types-summary', // Fallback, controller will override with dynamic route
-    checkJourney: false,
-  },
-  '/bulk-sentence-type/:courtCaseId': {
-    controller: BulkSentenceTypeController,
-    template: 'bulk-sentence-type',
-    fields: ['sentenceType'],
-    sentenceType: {
-      validate: [
-        {
-          type: 'required',
-          message: 'Select a sentence type',
-        },
-      ],
-    },
-    next: 'update-sentence-types-summary',
-    checkJourney: false,
+    next: '/complete',
+    template: 'check-your-answers',
   },
   '/not-possible': {
-    controller: NotPossibleController,
-    noPost: true,
+    template: 'not-possible',
   },
   '/confirm-cancel': {
-    controller: ConfirmCancelController,
-    template: 'base-question',
-    checkJourney: false,
     fields: ['confirmCancel'],
+    template: 'confirm-cancel',
+  },
+  '/manual-recall-intercept': {
+    template: 'manual-recall-intercept',
+  },
+  '/update-sentence-types-summary': {
+    template: 'update-sentence-types-summary',
+    next: '/check-sentences',
   },
   '/no-cases-selected': {
-    controller: NoCasesSelectedController,
+    template: 'no-cases-selected',
   },
-  '/reset-to-manual-intercept': {
-    controller: ResetAndRedirectToManualController,
-    noPost: true,
-  },
-  '/reset-to-revocation-date': {
-    controller: ResetAndRedirectToRevDateController,
-    noPost: true,
+  '/complete': {
+    template: 'complete',
   },
 }
-
-export default steps

@@ -1,10 +1,15 @@
-import { NextFunction, Response } from 'express'
-import FormWizard from 'hmpo-form-wizard'
+import { NextFunction, Request, Response } from 'express'
 import type { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from './loadCourtCases'
+import { getSessionValue, setSessionValue } from '../helpers/sessionHelper'
 
-export default function loadCourtCaseOptions(req: FormWizard.Request, res: Response, next: NextFunction) {
+export default function loadCourtCaseOptions(req: Request | any, res: Response, next: NextFunction) {
+  // Use new session helper if sessionModel isn't available
+  const existingOptions = req.sessionModel
+    ? getSessionValue(req, 'courtCaseOptions')
+    : getSessionValue(req as Request, 'courtCaseOptions')
+
   // Return early if already populated
-  if (req.sessionModel.get('courtCaseOptions')) {
+  if (existingOptions) {
     return next()
   }
 
@@ -28,7 +33,12 @@ export default function loadCourtCaseOptions(req: FormWizard.Request, res: Respo
         })),
       }))
 
-    req.sessionModel.set('courtCaseOptions', courtCaseOptions)
+    // Use new session helper if sessionModel isn't available
+    if (req.sessionModel) {
+      setSessionValue(req, 'courtCaseOptions', courtCaseOptions)
+    } else {
+      setSessionValue(req as Request, 'courtCaseOptions', courtCaseOptions)
+    }
   }
 
   return next()

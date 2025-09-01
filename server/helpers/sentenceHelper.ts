@@ -1,7 +1,8 @@
-import FormWizard from 'hmpo-form-wizard'
+import { Request } from 'express'
 import type { CourtCase } from 'models'
 import dayjs from 'dayjs'
 import { RecallableCourtCaseSentence, SentenceType } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { getSessionValue } from './sessionHelper'
 import logger from '../../logger'
 
 export function findSentenceAndCourtCase(
@@ -18,13 +19,13 @@ export function findSentenceAndCourtCase(
 }
 
 export async function getApplicableSentenceTypes(
-  req: FormWizard.Request,
+  req: Request | any,
   sentence: RecallableCourtCaseSentence,
   courtCase: CourtCase,
   username: string,
 ): Promise<SentenceType[]> {
   try {
-    const prisoner = req.sessionModel.get('prisoner') as { dateOfBirth: string } | undefined
+    const prisoner = getSessionValue(req, 'prisoner') as { dateOfBirth: string } | undefined
     if (!prisoner?.dateOfBirth) {
       throw new Error('Prisoner date of birth not found in session')
     }

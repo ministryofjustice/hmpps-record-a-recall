@@ -1,7 +1,7 @@
-import FormWizard from 'hmpo-form-wizard'
 import { Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 import RevocationDateController from './revocationDateController'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import getJourneyDataFromRequest, { RecallJourneyData } from '../../helpers/formWizardHelper'
@@ -19,9 +19,9 @@ jest.mock('../../helpers/formWizardHelper', () => {
 })
 
 describe('RevocationDateController', () => {
-  let req: FormWizard.Request
+  let req: ExtendedRequest
   let res: Response
-  const controller = new RevocationDateController({ route: '/revocation-date' } as FormWizard.Controller.Options)
+  const controller = new RevocationDateController({ route: '/revocation-date' })
 
   const recallId = 'RECALL_123'
   const nomsId = 'A1234BC'
@@ -41,8 +41,7 @@ describe('RevocationDateController', () => {
       flash: jest.fn(),
       isEditing: false,
       journeyModel: { get: jest.fn(), set: jest.fn(), load: jest.fn(), reset: jest.fn(), data: {} },
-      sessionModel: { get: jest.fn(), set: jest.fn(), reset: jest.fn(), data: {} },
-    } as unknown as FormWizard.Request
+    } as unknown as ExtendedRequest
 
     res = {
       locals: {
@@ -164,7 +163,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, FormWizard.Controller.Error>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
           'mustBeAfterEarliestSentenceDate',
         )
         done()
@@ -192,7 +191,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, FormWizard.Controller.Error>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()
@@ -207,7 +206,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, FormWizard.Controller.Error>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()
@@ -222,7 +221,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, FormWizard.Controller.Error>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()
@@ -237,7 +236,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, FormWizard.Controller.Error>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()

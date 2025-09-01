@@ -1,29 +1,23 @@
 import express from 'express'
-import wizard from 'hmpo-form-wizard'
-
-import steps from './steps'
-import populateRecallId from '../../../middleware/populateRecallId'
-import editFields from './fields'
-import populateStoredRecallRouter from './migrated/populate-stored-recall'
+import populateStoredRecallRouter from './populate-stored-recall'
+import editSummaryRouter from './edit-summary'
+import notPossibleRouter from '../not-possible'
 
 const editRecallRouter = express.Router({ mergeParams: true })
 
-// Feature flag for Phase 7 - Edit Form Migration
-const USE_MIGRATED_EDIT_ROUTES = process.env.USE_MIGRATED_EDIT_ROUTES === 'true'
+// Handle base route - redirect to populate-stored-recall
+editRecallRouter.get('/', (req, res) => {
+  // Redirect to the populate-stored-recall step which loads the recall data
+  res.redirect(`${req.baseUrl}/populate-stored-recall`)
+})
 
-editRecallRouter.use(populateRecallId())
+// Mount edit routes
+editRecallRouter.use(notPossibleRouter)
+editRecallRouter.use(populateStoredRecallRouter)
+editRecallRouter.use(editSummaryRouter)
 
-if (USE_MIGRATED_EDIT_ROUTES) {
-  // Mount migrated edit routes first - they take precedence
-  editRecallRouter.use(populateStoredRecallRouter)
-}
+// NOTE: Edit routes are progressively being migrated from HMPO form-wizard to Zod validation
+// Currently migrated: populate-stored-recall, edit-summary
+// Future migration: Form field editing routes will be added as needed
 
-editRecallRouter.use(
-  wizard(steps, editFields, {
-    name: 'edit-recall',
-    templatePath: 'pages/recall',
-    csrf: false,
-    checkJourney: false,
-  }),
-)
 export default editRecallRouter

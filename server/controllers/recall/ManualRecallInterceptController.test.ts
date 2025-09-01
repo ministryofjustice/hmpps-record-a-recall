@@ -8,6 +8,7 @@ const set = jest.fn()
 
 type MockReq = {
   body: Record<string, unknown>
+  session: { formData: Record<string, any> }
   sessionModel: { set: jest.Mock }
   baseUrl: string
 }
@@ -26,6 +27,7 @@ describe('ManualRecallInterceptController', () => {
     jest.clearAllMocks()
     req = {
       body: {},
+      session: { formData: {} },
       sessionModel: { set },
       baseUrl: '/recall',
     }
@@ -48,16 +50,16 @@ describe('ManualRecallInterceptController', () => {
   describe('post', () => {
     it('sets session and calls super.post when continue is in body', async () => {
       req.body.continue = '1'
-      const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockResolvedValue(undefined)
+      const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockImplementation(() => undefined)
       // @ts-expect-error: partial mock is sufficient for controller unit test
       await controller.post(req as unknown as import('express').Request, res, next)
-      expect(set).toHaveBeenCalledWith('select-court-case-details.njk', 'confirmed')
+      expect(req.session.formData['select-court-case-details.njk']).toBe('confirmed')
       expect(superSpy).toHaveBeenCalledWith(req, res, next)
     })
 
     it('redirects to confirm-cancel if cancel is in body', async () => {
       req.body.cancel = '1'
-      const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockResolvedValue(undefined)
+      const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockImplementation(() => undefined)
       // @ts-expect-error: partial mock is sufficient for controller unit test
       await controller.post(req as unknown as import('express').Request, res, next)
       expect(res.redirect).toHaveBeenCalledWith(303, '/recall/confirm-cancel')
@@ -65,7 +67,7 @@ describe('ManualRecallInterceptController', () => {
     })
 
     it('calls super.post if neither continue nor cancel', async () => {
-      const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockResolvedValue(undefined)
+      const superSpy = jest.spyOn(RecallBaseController.prototype, 'post').mockImplementation(() => undefined)
       // @ts-expect-error: partial mock is sufficient for controller unit test
       await controller.post(req as unknown as import('express').Request, res, next)
       expect(superSpy).toHaveBeenCalledWith(req, res, next)

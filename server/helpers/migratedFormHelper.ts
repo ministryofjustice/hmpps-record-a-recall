@@ -44,7 +44,7 @@ export function getEligibleSentenceCountFromSession(req: Request): number {
 
 export function getAdjustmentsToConsiderForValidationFromSession(
   journeyData: Record<string, any>,
-  allExistingAdjustments: AdjustmentDto[]
+  allExistingAdjustments: AdjustmentDto[],
 ): AdjustmentDto[] {
   // For now, return all adjustments. In future, may filter based on journey data
   return allExistingAdjustments

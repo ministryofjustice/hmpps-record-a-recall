@@ -1,10 +1,11 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import { isBefore, isAfter, isEqual } from 'date-fns'
 import _ from 'lodash'
 import type { UAL } from 'models'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 import RecallBaseController from './recallBaseController'
 import { calculateUal } from '../../utils/utils'
+import { setSessionValue, unsetSessionValue } from '../../helpers/sessionHelper'
 import getJourneyDataFromRequest, {
   getAdjustmentsToConsiderForValidation,
   getExistingAdjustments,
@@ -16,14 +17,21 @@ import getJourneyDataFromRequest, {
 import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
     const { prisoner } = res.locals
     const backLink = `/person/${prisoner.prisonerNumber}${locals.isEditRecall ? `/recall/${locals.recallId}/edit/edit-summary` : '/record-recall/revocation-date'}`
     return { ...locals, backLink }
   }
 
-  validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
+  validateFields(req: any, res: any, callback?: (errors: any) => void): any {
+    // Support both callback and non-callback style
+    if (!callback) {
+      // Return empty errors for new style
+      return {}
+    }
+
+    // Original callback-based implementation
     super.validateFields(req, res, errors => {
       const { values } = req.form
       const revocationDate = getRevocationDate(req)
@@ -94,7 +102,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
   }
 
   validateAgainstExistingRecallUalAdjustments(
-    req: FormWizard.Request,
+    req: ExtendedRequest,
     proposedUal: UAL,
     existingAdjustments: AdjustmentDto[],
   ) {
@@ -109,16 +117,16 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       return true
     }
     if (conflictingRecallUALAdjustments.length > 1) {
-      req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
+      setSessionValue(req, sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
     } else {
-      req.sessionModel.unset(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL)
+      unsetSessionValue(req, sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL)
       return true
     }
     return false
   }
 
   validateAgainstExistingNonRecallUalAdjustments(
-    req: FormWizard.Request,
+    req: ExtendedRequest,
     proposedUal: UAL,
     existingAdjustments: AdjustmentDto[],
   ) {
@@ -131,15 +139,15 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
 
     if (conflictingNonRecallUALAdjustments.length > 0) {
-      req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, conflictingNonRecallUALAdjustments)
+      setSessionValue(req, sessionModelFields.RELEVANT_ADJUSTMENTS, conflictingNonRecallUALAdjustments)
     } else {
-      req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
+      unsetSessionValue(req, sessionModelFields.RELEVANT_ADJUSTMENTS)
       return true
     }
     return false
   }
 
-  saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
+  saveValues(req: ExtendedRequest, res: Response, next: NextFunction) {
     const { values } = req.form
     const { nomisId } = res.locals
     const prisonerDetails = getPrisoner(req)
@@ -169,7 +177,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
     const hasConflicts = !hasNoRecallUalConflicts || !hasNoOtherAdjustmentConflicts
 
-    req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, hasConflicts)
+    setSessionValue(req, sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, hasConflicts)
 
     if (ual && !hasConflicts) {
       const ualToSave: UAL = {
@@ -189,12 +197,12 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         .filter(adj => this.isRelevantAdjustment(adj).isRelevant)
         .filter((adj, index, self) => index === self.findIndex(t => t.id === adj.id))
 
-      req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflictingAdjustments)
+      setSessionValue(req, sessionModelFields.CONFLICTING_ADJUSTMENTS, conflictingAdjustments)
 
       if (relevantAdjustments.length === 0) {
         if (Object.values(conflictingAdjustments).every(arr => arr.length === 0)) {
-          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-          req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
+          setSessionValue(req, sessionModelFields.UAL_TO_CREATE, ualToSave)
+          unsetSessionValue(req, sessionModelFields.UAL_TO_EDIT)
         } else if (conflictingAdjustments.exact.length === 1 || conflictingAdjustments.within.length === 1) {
           const existingAdjustment = _.first([...conflictingAdjustments.exact, ...conflictingAdjustments.within])
           const updatedUal: UAL = {
@@ -204,8 +212,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             lastDay: ual.lastDay,
             nomisId: existingAdjustment.person,
           }
-          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-          req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+          setSessionValue(req, sessionModelFields.UAL_TO_EDIT, updatedUal)
+          unsetSessionValue(req, sessionModelFields.UAL_TO_CREATE)
         } else {
           const existingAdj = _.first(conflictingAdjustments.overlap)
           const updatedUal: UAL = {
@@ -215,16 +223,16 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             lastDay: existingAdj.toDate,
             nomisId: existingAdj.person,
           }
-          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+          setSessionValue(req, sessionModelFields.UAL_TO_CREATE, ualToSave)
+          setSessionValue(req, sessionModelFields.UAL_TO_EDIT, updatedUal)
         }
 
-        req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
-        req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
+        setSessionValue(req, sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
+        unsetSessionValue(req, sessionModelFields.RELEVANT_ADJUSTMENTS)
       }
     } else if (!ual) {
-      req.sessionModel.unset(sessionModelFields.UAL)
-      req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+      unsetSessionValue(req, sessionModelFields.UAL)
+      unsetSessionValue(req, sessionModelFields.UAL_TO_CREATE)
     }
 
     if (isInPrisonAtRecall) {

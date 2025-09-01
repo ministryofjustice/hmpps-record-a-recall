@@ -31,7 +31,14 @@ const getSignInUrl = (): Promise<string> =>
     urlPath: '/auth/oauth/authorize',
   }).then(data => {
     const { requests } = data.body
-    const stateValue = requests[requests.length - 1].queryParams.state.values[0]
+    // Handle case where no requests have been made yet
+    if (!requests || requests.length === 0) {
+      // Return a default sign-in URL with a state parameter
+      return `/sign-in/callback?code=codexxxx&state=defaultState`
+    }
+    const lastRequest = requests[requests.length - 1]
+    // Safely access queryParams with fallback
+    const stateValue = lastRequest?.queryParams?.state?.values?.[0] || 'defaultState'
     return `/sign-in/callback?code=codexxxx&state=${stateValue}`
   })
 
@@ -108,6 +115,11 @@ const token = (userToken: UserToken) =>
     request: {
       method: 'POST',
       urlPattern: '/auth/oauth/token',
+      bodyPatterns: [
+        {
+          contains: 'grant_type=authorization_code',
+        },
+      ],
     },
     response: {
       status: 200,
@@ -126,10 +138,39 @@ const token = (userToken: UserToken) =>
     },
   })
 
+const systemToken = () =>
+  stubFor({
+    request: {
+      method: 'POST',
+      urlPattern: '/auth/oauth/token',
+      bodyPatterns: [
+        {
+          contains: 'grant_type=client_credentials',
+        },
+      ],
+    },
+    response: {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+      },
+      jsonBody: {
+        access_token: createToken({ roles: ['ROLE_SYSTEM'] }),
+        token_type: 'bearer',
+        expires_in: 3600,
+        scope: 'read write',
+        sub: 'hmpps-record-a-recall',
+        auth_source: 'none',
+        jti: 'system-token-jti',
+      },
+    },
+  })
+
 export default {
   getSignInUrl,
   stubAuthPing: ping,
   stubAuthManageDetails: manageDetails,
+  stubSystemToken: systemToken,
   stubSignIn: (
     userToken: UserToken = {
       roles: [
@@ -139,6 +180,6 @@ export default {
         'ROLE_RECALL_MAINTAINER',
       ],
     },
-  ): Promise<[Response, Response, Response, Response, Response]> =>
-    Promise.all([favicon(), redirect(), signOut(), token(userToken), tokenVerification.stubVerifyToken()]),
+  ): Promise<[Response, Response, Response, Response, Response, Response]> =>
+    Promise.all([favicon(), redirect(), signOut(), token(userToken), tokenVerification.stubVerifyToken(), systemToken()]),
 }

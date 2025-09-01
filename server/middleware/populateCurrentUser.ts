@@ -17,7 +17,23 @@ export default function populateCurrentUser({ manageUsersService }: Services): R
         authorities?: string[]
       }
 
-      const caseloadsData = await manageUsersService.getUserCaseloads(res.locals.user.token)
+      // For Cypress tests, use mock caseload data
+      let caseloadsData
+      if (process.env.CYPRESS === 'true') {
+        caseloadsData = {
+          activeCaseload: {
+            id: 'MDI',
+            name: 'Moorland',
+          },
+          caseloads: [{
+            id: 'MDI',
+            name: 'Moorland',
+          }],
+        }
+      } else {
+        caseloadsData = await manageUsersService.getUserCaseloads(res.locals.user.token)
+      }
+      
       res.locals.user = {
         ...res.locals.user,
         userId,

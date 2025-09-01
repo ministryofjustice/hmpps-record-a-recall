@@ -3,6 +3,7 @@ import RevocationDatePage from '../pages/Journey/revocationDatePage'
 import WasInPrisonQuestionPage from '../pages/Journey/wasInPrisonQuestionPage'
 import CheckSentencesPage from '../pages/Journey/checkSentencesPage'
 import SelectRecallTypePage from '../pages/Journey/selectRecallTypePage'
+import CheckPossiblePage from '../pages/Journey/checkPossiblePage'
 import CheckYourAnswersPage from '../pages/Journey/checkYourAnswersPage'
 import ConfirmationPage from '../pages/Journey/confirmationPage'
 import Page from '../pages/page'
@@ -13,6 +14,8 @@ context('Create recall happy path | NON-MANUAL', () => {
     cy.task('stubSignIn')
     cy.task('stubManageUsersMeCaseloads')
     cy.task('stubPrisonerSearchNonManual')
+    cy.task('stubGetPrisonerDetailsTwo') // Add Prison API stub for A1234AB
+    cy.task('getServiceDefinitionsNonManual') // Add CCRD API stub for A1234AB
     cy.task('stubRecordARecallCRDSNonManual')
     cy.task('stubSentencesAndOffences')
 
@@ -28,7 +31,7 @@ context('Create recall happy path | NON-MANUAL', () => {
     cy.signIn()
 
     // Step 1: Go to person and start recall
-    PersonHomePage.goTo('BA1234AB').createNewRecallButton().click()
+    PersonHomePage.goTo('A1234AB').createNewRecallButton().click()
 
     // Step 2: Revocation date
     Page.verifyOnPage(RevocationDatePage).enterRevocationDate('2021-04-04').clickContinue()
@@ -42,7 +45,10 @@ context('Create recall happy path | NON-MANUAL', () => {
     // Step 5: Select recall type
     Page.verifyOnPage(SelectRecallTypePage).selectRecallType().clickContinue()
 
-    // Step 6: Check your answers
+    // Step 6: Check if recall can proceed
+    Page.verifyOnPage(CheckPossiblePage).confirmRecallCanProceed().clickContinue()
+
+    // Step 7: Check your answers
     Page.verifyOnPage(CheckYourAnswersPage).confirmRecall()
 
     // Final Step: Confirmation

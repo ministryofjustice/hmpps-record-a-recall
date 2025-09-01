@@ -1,13 +1,14 @@
-import FormWizard from 'hmpo-form-wizard'
+import { Request } from 'express'
+import { Field } from '../../controllers/base/ExpressBaseController'
 import { FieldEntry } from './renderConditionalFields'
 
-export default function reduceDependentFields(allFields: { [key: string]: FormWizard.Field } = {}) {
-  return function reducer(accumulator: { [key: string]: FormWizard.Field }, [key, field]: FieldEntry) {
+export default function reduceDependentFields(allFields: { [key: string]: Field } = {}) {
+  return function reducer(accumulator: { [key: string]: Field }, [key, field]: FieldEntry) {
     if (!field.items) {
       return accumulator
     }
 
-    field.items.forEach(item => {
+    field.items.forEach((item: any) => {
       const conditionals = [item.conditional || []].flat()
       const dependentOptions = {
         // tell form wizard to not render field at top level
@@ -19,10 +20,8 @@ export default function reduceDependentFields(allFields: { [key: string]: FormWi
         },
       }
 
-      conditionals.forEach((conditional: FormWizard.Field['items'][0]['conditional']) => {
-        const conditionalField = (
-          conditional instanceof Object ? conditional : allFields[conditional]
-        ) as FormWizard.Field
+      conditionals.forEach((conditional: Field['items'][0]['conditional']) => {
+        const conditionalField = (conditional instanceof Object ? conditional : allFields[conditional]) as Field
         if (!conditionalField) {
           return
         }

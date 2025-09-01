@@ -10,6 +10,8 @@ export const checkSentencesSchema = z
     // No user input fields required for this step
     // This is primarily a display/confirmation page
     // Navigation is handled through buttons that just trigger POST without data
+    // Allow _csrf field which is sent automatically by forms
+    _csrf: z.string().optional(),
   })
   .strict()
 

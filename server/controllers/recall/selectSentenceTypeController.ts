@@ -1,8 +1,9 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 
 import RecallBaseController from './recallBaseController'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getSessionValue, setSessionValue, unsetSessionValue } from '../../helpers/sessionHelper'
 import logger from '../../../logger'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { findSentenceAndCourtCase, getApplicableSentenceTypes } from '../../helpers/sentenceHelper'
@@ -14,7 +15,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     this.use(this.setSentenceTypeFieldItems)
   }
 
-  async setSentenceTypeFieldItems(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async setSentenceTypeFieldItems(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { sentenceUuid } = req.params
       const courtCases = getCourtCaseOptions(req)
@@ -40,7 +41,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     }
   }
 
-  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async get(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { sentenceUuid } = req.params
       const courtCases = getCourtCaseOptions(req)
@@ -52,7 +53,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       }
 
       // Check if sentence has already been updated
-      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
+      const updatedSentences = (getSessionValue(req, sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
         string,
         { uuid: string; description: string }
       >
@@ -76,7 +77,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     }
   }
 
-  async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async post(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     const { sentenceUuid } = req.params
     const selectedTypeUuid = req.body.sentenceType
 
@@ -86,7 +87,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     )
     const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
-    const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
+    const updatedSentences = (getSessionValue(req, sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
       string,
       { uuid: string; description: string }
     >
@@ -94,25 +95,25 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       uuid: selectedTypeUuid,
       description: selectedTypeDescription,
     }
-    req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
+    setSessionValue(req, sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
 
     // Check if we're in individual update mode (not bulk)
-    const bulkUpdateMode = req.sessionModel.get(sessionModelFields.BULK_UPDATE_MODE)
+    const bulkUpdateMode = getSessionValue(req, sessionModelFields.BULK_UPDATE_MODE)
 
     if (bulkUpdateMode === false) {
       // We're in individual update mode
-      const sentencesInCurrentCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as
+      const sentencesInCurrentCase = getSessionValue(req, sessionModelFields.SENTENCES_IN_CURRENT_CASE) as
         | Array<{
             sentenceUuid: string
             isUnknownSentenceType: boolean
           }>
         | undefined
-      let currentSentenceIndex = req.sessionModel.get(sessionModelFields.CURRENT_SENTENCE_INDEX) as number | undefined
+      let currentSentenceIndex = getSessionValue(req, sessionModelFields.CURRENT_SENTENCE_INDEX) as number | undefined
 
       if (sentencesInCurrentCase && typeof currentSentenceIndex === 'number') {
         // Move to the next sentence
         currentSentenceIndex += 1
-        req.sessionModel.set(sessionModelFields.CURRENT_SENTENCE_INDEX, currentSentenceIndex)
+        setSessionValue(req, sessionModelFields.CURRENT_SENTENCE_INDEX, currentSentenceIndex)
 
         if (currentSentenceIndex < sentencesInCurrentCase.length) {
           // There are more sentences to update
@@ -129,9 +130,9 @@ export default class SelectSentenceTypeController extends RecallBaseController {
         logger.info('Completed individual sentence update flow', {
           totalSentences: sentencesInCurrentCase.length,
         })
-        req.sessionModel.unset(sessionModelFields.BULK_UPDATE_MODE)
-        req.sessionModel.unset(sessionModelFields.SENTENCES_IN_CURRENT_CASE)
-        req.sessionModel.unset(sessionModelFields.CURRENT_SENTENCE_INDEX)
+        unsetSessionValue(req, sessionModelFields.BULK_UPDATE_MODE)
+        unsetSessionValue(req, sessionModelFields.SENTENCES_IN_CURRENT_CASE)
+        unsetSessionValue(req, sessionModelFields.CURRENT_SENTENCE_INDEX)
       }
     }
 
@@ -139,7 +140,7 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     return super.post(req, res, next)
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
 
     return {

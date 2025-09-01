@@ -1,15 +1,14 @@
-import FormWizard from 'hmpo-form-wizard'
 import { Response } from 'express'
-
 import RecallBaseController from './recallBaseController'
 import { entrypointUrl } from '../../utils/utils'
 import { getEntrypoint } from '../../helpers/formWizardHelper'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 
 export default class NotPossibleController extends RecallBaseController {
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
     const { nomisId, recallId } = res.locals
-    const entrypoint = getEntrypoint(req)
+    const entrypoint = getEntrypoint(req as any)
     const backLink = entrypointUrl(entrypoint, nomisId)
     // We can't use the journey fields as we check recalls are possible before loading the recall being edited.
     const isEditRecall = !!recallId

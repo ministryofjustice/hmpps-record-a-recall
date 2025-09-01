@@ -1,5 +1,5 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+import { ExtendedRequest } from '../../base/ExpressBaseController'
 import logger from '../../../../logger'
 
 import RecallBaseController from '../recallBaseController'
@@ -9,12 +9,13 @@ import getJourneyDataFromRequest, {
   sessionModelFields,
   getPrisoner,
 } from '../../../helpers/formWizardHelper'
+import { setSessionValue } from '../../../helpers/sessionHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class EditSummaryController extends RecallBaseController {
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const { recallId, nomisId } = res.locals
-    req.sessionModel.set(sessionModelFields.IS_EDIT, true)
+    setSessionValue(req, sessionModelFields.IS_EDIT, true)
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
@@ -28,7 +29,7 @@ export default class EditSummaryController extends RecallBaseController {
     }
   }
 
-  async saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
+  async saveValues(req: ExtendedRequest, res: Response, next: NextFunction) {
     try {
       const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
       const { nomisId, recallId } = res.locals
@@ -42,7 +43,7 @@ export default class EditSummaryController extends RecallBaseController {
         // Find existing UAL adjustments for this recall
         const existingAdjustments = await req.services.adjustmentsService.searchUal(nomisId, username, recallId)
         const ualAdjustments = existingAdjustments.filter(
-          adj => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
+          (adj: any) => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
         )
 
         const prisonerDetails = getPrisoner(req)
@@ -57,7 +58,7 @@ export default class EditSummaryController extends RecallBaseController {
             // Delete the duplicate UAL adjustments (keep the first one)
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
-              duplicateAdjustments.map(async duplicateUal => {
+              duplicateAdjustments.map(async (duplicateUal: any) => {
                 await req.services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
                 logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
               }),
@@ -117,9 +118,9 @@ export default class EditSummaryController extends RecallBaseController {
     }
   }
 
-  successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
+  successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
-    req.sessionModel.set(sessionModelFields.JOURNEY_COMPLETE, true)
+    setSessionValue(req, sessionModelFields.JOURNEY_COMPLETE, true)
     return super.successHandler(req, res, next)
   }
 }

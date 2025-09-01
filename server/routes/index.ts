@@ -18,6 +18,8 @@ import populateRecallId from '../middleware/populateRecallId'
 import deleteRecallRouter from './recall/deleteRecall'
 import loadCourtCases from '../middleware/loadCourtCases'
 import loadRecalls from '../middleware/loadRecalls'
+import loadPrisoner from '../middleware/loadPrisoner'
+import checkCrdsValidation from '../middleware/checkCrdsValidation'
 
 export default function routes(services: Services): Router {
   const router = Router()
@@ -42,6 +44,9 @@ export default function routes(services: Services): Router {
     populateEntrypoint(),
     populateNomisId(),
     populateRecallId(),
+    addServicesToRequest(services),
+    loadPrisoner(services.prisonerService),
+    checkCrdsValidation(services.calculationService),
     loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
     loadRecalls(
       services.recallService,
@@ -55,6 +60,9 @@ export default function routes(services: Services): Router {
     '/person/:nomisId/record-recall',
     populateEntrypoint(),
     populateNomisId(),
+    addServicesToRequest(services),
+    loadPrisoner(services.prisonerService),
+    checkCrdsValidation(services.calculationService),
     loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
     loadRecalls(
       services.recallService,

@@ -1,9 +1,9 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import { format } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
+import { ExtendedRequest } from '../../base/ExpressBaseController'
 import RecallBaseController from '../recallBaseController'
 import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
 
@@ -15,6 +15,7 @@ import {
   isManualCaseSelection,
   sessionModelFields,
 } from '../../../helpers/formWizardHelper'
+import { setSessionValue } from '../../../helpers/sessionHelper'
 import revocationDateCrdsDataComparison from '../../../utils/revocationDateCrdsDataComparison'
 import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'
 import getCourtCaseOptionsFromRas from '../../../utils/rasCourtCasesUtils'
@@ -25,13 +26,13 @@ export default class PopulateStoredRecallController extends RecallBaseController
     this.use(this.setCourtCaseItems)
   }
 
-  async setCourtCaseItems(req: FormWizard.Request, res: Response, next: NextFunction) {
+  async setCourtCaseItems(req: ExtendedRequest, res: Response, next: NextFunction) {
     const courtCaseOptions = await getCourtCaseOptionsFromRas(req, res)
-    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, courtCaseOptions)
+    setSessionValue(req, sessionModelFields.COURT_CASE_OPTIONS, courtCaseOptions)
     return next()
   }
 
-  async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async configure(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     const { username, recallId, nomisId } = res.locals
     try {
       // Load the stored recall
@@ -57,8 +58,8 @@ export default class PopulateStoredRecallController extends RecallBaseController
     return super.configure(req, res, next)
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
+    setSessionValue(req, sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
     const { storedRecall, recallId } = res.locals
     const { recallType } = storedRecall
     const revocationDate = format(new Date(storedRecall.revocationDate), 'yyyy-MM-dd')
@@ -66,20 +67,21 @@ export default class PopulateStoredRecallController extends RecallBaseController
       ? format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
       : null
     storedRecall.ual = calculateUal(revocationDate, returnToCustodyDate)
-    req.sessionModel.set(sessionModelFields.STORED_RECALL, storedRecall)
-    req.sessionModel.set(sessionModelFields.RECALL_ID, recallId)
-    req.sessionModel.set(sessionModelFields.IS_EDIT, true)
-    req.sessionModel.set(sessionModelFields.REVOCATION_DATE, revocationDate)
-    req.sessionModel.set(sessionModelFields.RECALL_TYPE, recallType.code)
-    req.sessionModel.set(sessionModelFields.RTC_DATE, returnToCustodyDate)
-    req.sessionModel.set(
+    setSessionValue(req, sessionModelFields.STORED_RECALL, storedRecall)
+    setSessionValue(req, sessionModelFields.RECALL_ID, recallId)
+    setSessionValue(req, sessionModelFields.IS_EDIT, true)
+    setSessionValue(req, sessionModelFields.REVOCATION_DATE, revocationDate)
+    setSessionValue(req, sessionModelFields.RECALL_TYPE, recallType.code)
+    setSessionValue(req, sessionModelFields.RTC_DATE, returnToCustodyDate)
+    setSessionValue(
+      req,
       sessionModelFields.IN_PRISON_AT_RECALL,
       this.getBooleanAsFormValue(!storedRecall.returnToCustodyDate),
     )
-    req.sessionModel.set(sessionModelFields.COURT_CASES, storedRecall.courtCaseIds)
+    setSessionValue(req, sessionModelFields.COURT_CASES, storedRecall.courtCaseIds)
 
     // Store existing adjustments in session for the edit flow
-    req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
+    setSessionValue(req, sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
 
     // We do a crds comparison here to figure out if it was a manual recall
     // If it was, we replace the sentence info with RaS data
@@ -90,7 +92,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
     const eligibleCount = getEligibleSentenceCount(req)
 
     if (manualSelection || eligibleCount === 0) {
-      req.sessionModel.set(sessionModelFields.ELIGIBLE_SENTENCE_COUNT, storedRecall.sentenceIds.length)
+      setSessionValue(req, sessionModelFields.ELIGIBLE_SENTENCE_COUNT, storedRecall.sentenceIds.length)
       const allCourtCaseOptions = getCourtCaseOptions(req)
 
       const caseDetails = allCourtCaseOptions.filter((detail: CourtCase) =>
@@ -98,7 +100,7 @@ export default class PopulateStoredRecallController extends RecallBaseController
       )
 
       const summarisedSentencesGroups = summariseRasCases(caseDetails)
-      req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
+      setSessionValue(req, sessionModelFields.SUMMARISED_SENTENCES, summarisedSentencesGroups)
     }
 
     return {

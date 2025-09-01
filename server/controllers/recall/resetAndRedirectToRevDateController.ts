@@ -1,12 +1,12 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 import resetRecallSession from '../../helpers/resetSessionHelper'
 
 export default class ResetAndRedirectToRevDateController extends RecallBaseController {
-  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async get(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      resetRecallSession(req)
+      resetRecallSession(req as any)
       res.redirect(`${req.baseUrl}/revocation-date`)
     } catch (err) {
       next(err)

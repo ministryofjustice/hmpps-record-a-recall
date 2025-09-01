@@ -1,44 +1,64 @@
 import express from 'express'
-import wizard from 'hmpo-form-wizard'
-
-import steps from './steps'
-import fields from './fields'
-import notPossibleRouter from './migrated/not-possible'
-import confirmCancelRouter from './migrated/confirm-cancel'
-import revocationDateRouter from './migrated/revocation-date'
-import rtcDateRouter from './migrated/rtc-date'
-import checkSentencesRouter from './migrated/check-sentences'
+import notPossibleRouter from './not-possible'
+import confirmCancelRouter from './confirm-cancel'
+import revocationDateRouter from './revocation-date'
+import rtcDateRouter from './rtc-date'
+import checkSentencesRouter from './check-sentences'
+import recallTypeRouter from './recall-type'
+import selectCourtCaseRouter from './select-court-case'
+import checkYourAnswersRouter from './check-your-answers'
+import manualRecallInterceptRouter from './manual-recall-intercept'
+import selectSentenceTypeRouter from './select-sentence-type'
+import bulkSentenceTypeRouter from './bulk-sentence-type'
+import multipleSentenceDecisionRouter from './multiple-sentence-decision'
+import checkPossibleRouter from './check-possible'
+import updateSentenceTypesSummaryRouter from './update-sentence-types-summary'
+import noCasesSelectedRouter from './no-cases-selected'
+import noSentencesInterruptRouter from './no-sentences-interrupt'
+import conflictingAdjustmentsInterruptRouter from './conflicting-adjustments-interrupt'
+import completeRouter from './complete'
+import resetRecallSession from '../../helpers/resetSessionHelper'
+import logger from '../../../logger'
 
 const newRecallRouter = express.Router({ mergeParams: true })
 
-// Feature flag for gradual migration rollout
-const USE_MIGRATED_ROUTES = process.env.USE_MIGRATED_ROUTES === 'true'
-const USE_MIGRATED_DATE_ROUTES = process.env.USE_MIGRATED_DATE_ROUTES === 'true'
-const USE_MIGRATED_COMPLEX_ROUTES = process.env.USE_MIGRATED_COMPLEX_ROUTES === 'true'
+// Handle base route - reset session and redirect to first step
+newRecallRouter.get('/', (req: any, res: any) => {
+  // Reset the recall session for a new recall
+  resetRecallSession(req)
+  
+  // Store entrypoint if provided
+  const entrypoint = req.query.entrypoint as string | undefined
+  if (entrypoint && req.session.formData) {
+    req.session.formData.entrypoint = entrypoint
+  } else if (entrypoint) {
+    req.session.formData = { entrypoint }
+  }
+  
+  // The checkCrdsValidation middleware will handle validation check before getting here
+  // If there were validation errors, it would have redirected to /not-possible already
+  // So if we're here, it's safe to proceed to the first step
+  res.redirect(`${req.baseUrl}/revocation-date`)
+})
 
-if (USE_MIGRATED_ROUTES) {
-  // Mount migrated routes first - they take precedence
-  newRecallRouter.use(notPossibleRouter)
-  newRecallRouter.use(confirmCancelRouter)
-}
+// Mount all routes
+newRecallRouter.use(notPossibleRouter)
+newRecallRouter.use(confirmCancelRouter)
+newRecallRouter.use(revocationDateRouter)
+newRecallRouter.use(rtcDateRouter)
+newRecallRouter.use(checkSentencesRouter)
+newRecallRouter.use(recallTypeRouter)
+newRecallRouter.use(selectCourtCaseRouter)
+newRecallRouter.use(checkYourAnswersRouter)
+newRecallRouter.use(manualRecallInterceptRouter)
+newRecallRouter.use(selectSentenceTypeRouter)
+newRecallRouter.use(bulkSentenceTypeRouter)
+newRecallRouter.use(multipleSentenceDecisionRouter)
+newRecallRouter.use(checkPossibleRouter)
+newRecallRouter.use(updateSentenceTypesSummaryRouter)
+newRecallRouter.use(noCasesSelectedRouter)
+newRecallRouter.use(noSentencesInterruptRouter)
+newRecallRouter.use(conflictingAdjustmentsInterruptRouter)
+newRecallRouter.use(completeRouter)
 
-if (USE_MIGRATED_DATE_ROUTES) {
-  // Mount migrated date input routes - Phase 5
-  newRecallRouter.use(revocationDateRouter)
-  newRecallRouter.use(rtcDateRouter)
-}
-
-if (USE_MIGRATED_COMPLEX_ROUTES) {
-  // Mount migrated complex business logic routes - Phase 6
-  newRecallRouter.use(checkSentencesRouter)
-}
-
-newRecallRouter.use(
-  wizard(steps, fields, {
-    name: 'record-recall',
-    templatePath: 'pages/recall',
-    csrf: false,
-    checkJourney: false,
-  }),
-)
 export default newRecallRouter

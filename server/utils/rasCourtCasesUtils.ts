@@ -1,11 +1,10 @@
-import { Response } from 'express'
-import FormWizard from 'hmpo-form-wizard'
-// eslint-disable-next-line import/no-unresolved
+import { Request, Response } from 'express'
 import { CourtCase } from 'models'
+
 import { getCourtCaseOptions } from '../helpers/formWizardHelper'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../middleware/loadCourtCases'
 
-export default function getCourtCaseOptionsFromRas(req: FormWizard.Request, res: Response): CourtCase[] {
+export default function getCourtCaseOptionsFromRas(req: Request | any, res: Response): CourtCase[] {
   const sessionCases = getCourtCaseOptions(req)
   if (sessionCases) {
     return sessionCases

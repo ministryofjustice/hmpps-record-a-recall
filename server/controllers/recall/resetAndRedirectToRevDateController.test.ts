@@ -2,16 +2,25 @@
 import { jest } from '@jest/globals'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
 import ResetAndRedirectToRevDateController from './resetAndRedirectToRevDateController'
+import * as sessionHelper from '../../helpers/sessionHelper'
+
+// Mock sessionHelper instead of resetSessionHelper
+jest.mock('../../helpers/sessionHelper', () => ({
+  setSessionValue: jest.fn(),
+  unsetSessionValue: jest.fn(),
+  getSessionValue: jest.fn(),
+}))
 
 jest.mock('../../helpers/resetSessionHelper', () => ({
   __esModule: true,
   default: jest.fn((req: any) => {
-    req.sessionModel.set(sessionModelFields.CURRENT_CASE_INDEX, 0)
-    req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, [])
-    req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
-    req.sessionModel.unset('activeSentenceChoice')
-    req.sessionModel.unset('sentenceGroups')
-    req.sessionModel.unset('unknownSentencesToUpdate')
+    const helpers = require('../../helpers/sessionHelper')
+    helpers.setSessionValue(req, sessionModelFields.CURRENT_CASE_INDEX, 0)
+    helpers.setSessionValue(req, sessionModelFields.MANUAL_RECALL_DECISIONS, [])
+    helpers.setSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION, true)
+    helpers.unsetSessionValue(req, sessionModelFields.ACTIVE_SENTENCE_CHOICE)
+    helpers.unsetSessionValue(req, sessionModelFields.SENTENCE_GROUPS)
+    helpers.unsetSessionValue(req, sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE)
   }),
 }))
 
@@ -23,9 +32,8 @@ describe('ResetAndRedirectToRevDateController', () => {
 
   beforeEach(() => {
     req = {
-      sessionModel: {
-        set: jest.fn(),
-        unset: jest.fn(),
+      session: {
+        formData: {},
       },
       baseUrl: '/base-url',
     }
@@ -39,23 +47,27 @@ describe('ResetAndRedirectToRevDateController', () => {
     controller = new ResetAndRedirectToRevDateController({ route: '/reset-rev-date' })
   })
 
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('resets session state and redirects to revocation date', async () => {
     await controller.get(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.CURRENT_CASE_INDEX, 0)
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.MANUAL_RECALL_DECISIONS, [])
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.MANUAL_CASE_SELECTION, true)
-    expect(req.sessionModel.unset).toHaveBeenCalledWith('activeSentenceChoice')
-    expect(req.sessionModel.unset).toHaveBeenCalledWith('sentenceGroups')
-    expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
+    expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(req, sessionModelFields.CURRENT_CASE_INDEX, 0)
+    expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(req, sessionModelFields.MANUAL_RECALL_DECISIONS, [])
+    expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(req, sessionModelFields.MANUAL_CASE_SELECTION, true)
+    expect(sessionHelper.unsetSessionValue).toHaveBeenCalledWith(req, sessionModelFields.ACTIVE_SENTENCE_CHOICE)
+    expect(sessionHelper.unsetSessionValue).toHaveBeenCalledWith(req, sessionModelFields.SENTENCE_GROUPS)
+    expect(sessionHelper.unsetSessionValue).toHaveBeenCalledWith(req, sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE)
 
     expect(res.redirect).toHaveBeenCalledWith('/base-url/revocation-date')
     expect(next).not.toHaveBeenCalled()
   })
 
-  it('calls next with error if sessionModel.set throws', async () => {
+  it('calls next with error if setSessionValue throws', async () => {
     const error = new Error('Test error')
-    req.sessionModel.set.mockImplementation(() => {
+    ;(sessionHelper.setSessionValue as jest.Mock).mockImplementation(() => {
       throw error
     })
 

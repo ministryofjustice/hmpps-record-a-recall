@@ -5,7 +5,7 @@ export default function flattenConditionalFields([key, field]: FieldEntry) {
     return [key, field]
   }
 
-  const items = field.items.map(item => {
+  const items = field.items.map((item: any) => {
     if (!item.conditional) {
       return item
     }
