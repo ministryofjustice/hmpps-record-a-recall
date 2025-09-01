@@ -14,6 +14,7 @@ import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { COURT_MESSAGES } from '../../utils/courtConstants'
 
 export default class CheckPossibleController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
@@ -53,10 +54,29 @@ export default class CheckPossibleController extends RecallBaseController {
         }),
       ])
 
+      // Enhance court cases with court names
+      let enhancedCases = cases
+      if (cases && cases.length > 0) {
+        try {
+          const courtCodes = [...new Set(cases.map(c => c.location).filter(Boolean))]
+          if (courtCodes.length > 0) {
+            const courtNamesMap = await req.services.courtService.getCourtNames(courtCodes, username)
+            enhancedCases = cases.map(courtCase => ({
+              ...courtCase,
+              locationName:
+                courtNamesMap.get(courtCase.location) || courtCase.locationName || COURT_MESSAGES.NAME_NOT_AVAILABLE,
+            }))
+          }
+        } catch (error) {
+          logger.error(`Error fetching court names for nomisId ${nomisId}:`, error)
+          // Continue with original cases if court name fetching fails
+        }
+      }
+
       // Use routing service for smart filtering and routing decisions
       const routingResponse = await this.recallRoutingService.routeRecallWithSmartFiltering(
         nomisId,
-        cases,
+        enhancedCases,
         existingAdjustments,
         existingRecalls,
         breakdown,
