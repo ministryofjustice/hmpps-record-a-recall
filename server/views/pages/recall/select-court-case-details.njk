@@ -62,7 +62,7 @@
                 countNumber: loop.index,
                 terrorRelated: sentence.terrorRelated | default(false),
                 isSentenced: true,
-                periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
+                periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
                 sentenceServeType: sentence.sentenceServeType | default(null),
                 consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
                 sentenceType: sentenceTypeDisplay | safe,

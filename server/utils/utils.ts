@@ -129,6 +129,9 @@ export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): S
   })
 }
 
+export const lowercaseFirstLetter = (s: string): string => {
+  return s ? s[0].toLowerCase() + s.slice(1) : ''
+}
 
 export const entrypointUrl = (entrypoint: string, nomisId: string): string => {
   if (entrypoint === 'ccards') {

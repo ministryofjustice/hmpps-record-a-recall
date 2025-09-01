@@ -123,19 +123,18 @@ export default class SelectCourtCaseController extends RecallBaseController {
             'periodLengthType' in p &&
             (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
         )
-      
+
         const custodialTerm = custodialPeriod
-  ? {
-      years: custodialPeriod.years || 0,
-      months: custodialPeriod.months || 0,
-      weeks: custodialPeriod.weeks || 0,
-      days: custodialPeriod.days || 0,
-    }
-  : undefined
+          ? {
+              years: custodialPeriod.years || 0,
+              months: custodialPeriod.months || 0,
+              weeks: custodialPeriod.weeks || 0,
+              days: custodialPeriod.days || 0,
+            }
+          : undefined
 
-// Keep the raw periodLengths from the API so the filter can transform them later
-const periodLengths = sentence.periodLengths || []
-
+        // Keep the raw periodLengths from the API so the filter can transform them later
+        const periodLengths = sentence.periodLengths || []
 
         const isUnknownSentenceType =
           sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
