@@ -18,8 +18,25 @@ import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 
-// Type for the enhanced case with view-specific properties
-type EnhancedCourtCaseForView = CourtCase & {
+export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
+  formattedSentenceLength?: string
+  periodLengths?: {
+    description: string
+    years?: number
+    months?: number
+    weeks?: number
+    days?: number
+    periodOrder: string[]
+  }[]
+  formattedConsecutiveOrConcurrent?: string
+  formattedOffenceDate?: string
+  formattedConvictionDate?: string
+  apiOffenceDescription?: string
+  formattedOutcome?: string
+}
+
+// Enhanced case with view-specific properties
+export type EnhancedCourtCaseForView = CourtCase & {
   caseNumber?: string
   caseReferences?: string
   courtName?: string
@@ -27,54 +44,9 @@ type EnhancedCourtCaseForView = CourtCase & {
   formattedOverallConvictionDate?: string
   hasNonRecallableSentences?: boolean
   hasMixedSentenceTypes?: boolean
-  recallableSentences?: (RecallableCourtCaseSentence & {
-    formattedSentenceLength?: string
-    periodLengths?: {
-      description: string
-      years?: number
-      months?: number
-      weeks?: number
-      days?: number
-      periodOrder: string[]
-    }[]
-    formattedConsecutiveOrConcurrent?: string
-    formattedOffenceDate?: string
-    formattedConvictionDate?: string
-    apiOffenceDescription?: string
-    formattedOutcome?: string
-  })[]
-  nonRecallableSentences?: (RecallableCourtCaseSentence & {
-    formattedSentenceLength?: string
-    periodLengths?: {
-      description: string
-      years?: number
-      months?: number
-      weeks?: number
-      days?: number
-      periodOrder: string[]
-    }[]
-    formattedConsecutiveOrConcurrent?: string
-    formattedOffenceDate?: string
-    formattedConvictionDate?: string
-    apiOffenceDescription?: string
-    formattedOutcome?: string
-  })[]
-  sentences?: (RecallableCourtCaseSentence & {
-    formattedSentenceLength?: string
-    periodLengths?: {
-      description: string
-      years?: number
-      months?: number
-      weeks?: number
-      days?: number
-      periodOrder: string[]
-    }[]
-    formattedConsecutiveOrConcurrent?: string
-    formattedOffenceDate?: string
-    formattedConvictionDate?: string
-    apiOffenceDescription?: string
-    formattedOutcome?: string
-  })[]
+  recallableSentences?: EnhancedSentenceForView[]
+  nonRecallableSentences?: EnhancedSentenceForView[]
+  sentences?: EnhancedSentenceForView[]
 }
 
 export default class SelectCourtCaseController extends RecallBaseController {
@@ -125,29 +97,18 @@ export default class SelectCourtCaseController extends RecallBaseController {
             'periodLengthType' in p &&
             (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
         )
+
         const custodialTerm = custodialPeriod
           ? {
-              years: (custodialPeriod as { years?: number }).years || 0,
-              months: (custodialPeriod as { months?: number }).months || 0,
-              weeks: (custodialPeriod as { weeks?: number }).weeks || 0,
-              days: (custodialPeriod as { days?: number }).days || 0,
+              years: custodialPeriod.years || 0,
+              months: custodialPeriod.months || 0,
+              weeks: custodialPeriod.weeks || 0,
+              days: custodialPeriod.days || 0,
             }
           : undefined
 
-        const periodLengths = custodialTerm
-          ? [
-              {
-                description: 'Sentence length',
-                years: custodialTerm.years,
-                months: custodialTerm.months,
-                weeks: custodialTerm.weeks,
-                days: custodialTerm.days,
-                periodOrder: (['years', 'months', 'weeks', 'days'] as const).filter(
-                  p => typeof custodialTerm[p] === 'number' && custodialTerm[p] > 0,
-                ),
-              },
-            ]
-          : []
+        // Keep the raw periodLengths from the API so the filter can transform them later
+        const periodLengths = sentence.periodLengths || []
 
         const isUnknownSentenceType =
           sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
@@ -175,8 +136,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
           apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
           sentenceTypeDescription,
           isUnknownSentenceType,
-          formattedOutcome:
-            sentence.outcomeDescription || sentence.chargeLegacyData?.outcomeDescription || 'Not available',
         }
       })
 
