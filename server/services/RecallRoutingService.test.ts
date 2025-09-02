@@ -502,7 +502,7 @@ describe('RecallRoutingService', () => {
 
       it('should return CRITICAL_VALIDATION_FAIL for critical errors', () => {
         const criticalMessage: ValidationMessage = {
-          code: 'UNSUPPORTED_SENTENCE_TYPE' as const,
+          code: 'ZERO_IMPRISONMENT_TERM' as const,
           message: 'Critical error',
           arguments: [] as string[],
           type: 'VALIDATION' as const,
