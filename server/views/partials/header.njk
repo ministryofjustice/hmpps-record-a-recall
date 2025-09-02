@@ -1,4 +1,5 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "hmpps/components/court-cases-release-dates/service-header/macro.njk" import serviceHeader %}
 <header class="hmpps-header" role="banner">
   <div class="hmpps-header__container">
     <div class="hmpps-header__title">
@@ -42,3 +43,10 @@
     </nav>
   </div>
 </header>
+
+{% if prisoner and prisoner.prisonerNumber %}
+  {{ serviceHeader({
+    environment: environmentName | default('dev'),
+    prisonNumber: prisoner.prisonerNumber
+  }) }}
+{% endif %}

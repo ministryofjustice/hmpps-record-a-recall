@@ -251,7 +251,7 @@ describe('RecallEligibilityService', () => {
 
     it('should handle critical validation messages', async () => {
       const criticalValidation: ValidationMessage = {
-        code: 'UNSUPPORTED_SENTENCE_TYPE',
+        code: 'ZERO_IMPRISONMENT_TERM',
         message: 'Critical validation error',
         arguments: [],
         type: 'VALIDATION',
