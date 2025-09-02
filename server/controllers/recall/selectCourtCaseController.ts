@@ -18,8 +18,25 @@ import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 
-// Type for the enhanced case with view-specific properties
-type EnhancedCourtCaseForView = CourtCase & {
+export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
+  formattedSentenceLength?: string
+  periodLengths?: {
+    description: string
+    years?: number
+    months?: number
+    weeks?: number
+    days?: number
+    periodOrder: string[]
+  }[]
+  formattedConsecutiveOrConcurrent?: string
+  formattedOffenceDate?: string
+  formattedConvictionDate?: string
+  apiOffenceDescription?: string
+  formattedOutcome?: string
+}
+
+// Enhanced case with view-specific properties
+export type EnhancedCourtCaseForView = CourtCase & {
   caseNumber?: string
   caseReferences?: string
   courtName?: string
@@ -27,52 +44,9 @@ type EnhancedCourtCaseForView = CourtCase & {
   formattedOverallConvictionDate?: string
   hasNonRecallableSentences?: boolean
   hasMixedSentenceTypes?: boolean
-  recallableSentences?: (RecallableCourtCaseSentence & {
-    formattedSentenceLength?: string
-    periodLengths?: {
-      description: string
-      years?: number
-      months?: number
-      weeks?: number
-      days?: number
-      periodOrder: string[]
-    }[]
-    formattedConsecutiveOrConcurrent?: string
-    formattedOffenceDate?: string
-    formattedConvictionDate?: string
-    apiOffenceDescription?: string
-  })[]
-  nonRecallableSentences?: (RecallableCourtCaseSentence & {
-    formattedSentenceLength?: string
-    periodLengths?: {
-      description: string
-      years?: number
-      months?: number
-      weeks?: number
-      days?: number
-      periodOrder: string[]
-    }[]
-    formattedConsecutiveOrConcurrent?: string
-    formattedOffenceDate?: string
-    formattedConvictionDate?: string
-    apiOffenceDescription?: string
-  })[]
-  sentences?: (RecallableCourtCaseSentence & {
-    formattedSentenceLength?: string
-    periodLengths?: {
-      description: string
-      years?: number
-      months?: number
-      weeks?: number
-      days?: number
-      periodOrder: string[]
-    }[]
-    formattedConsecutiveOrConcurrent?: string
-    formattedOffenceDate?: string
-    formattedConvictionDate?: string
-    apiOffenceDescription?: string
-    formattedOutcome?: string
-  })[]
+  recallableSentences?: EnhancedSentenceForView[]
+  nonRecallableSentences?: EnhancedSentenceForView[]
+  sentences?: EnhancedSentenceForView[]
 }
 
 export default class SelectCourtCaseController extends RecallBaseController {
