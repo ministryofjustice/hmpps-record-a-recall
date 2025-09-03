@@ -162,7 +162,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
       currentCase.hasNonRecallableSentences = nonRecallableSentences.length > 0
       currentCase.hasMixedSentenceTypes = recallableSentences.length > 0 && nonRecallableSentences.length > 0
     }
-
+    console.log('non-recallable sentences', JSON.stringify(currentCase.nonRecallableSentences, undefined, 2))
     return currentCase
   }
 
