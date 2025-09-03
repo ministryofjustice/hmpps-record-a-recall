@@ -17,6 +17,8 @@ import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
+import { COURT_MESSAGES } from '../../utils/courtConstants'
+import logger from '../../../logger'
 
 export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
   formattedSentenceLength?: string
@@ -76,8 +78,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
     // Create a mutable copy for the view
     const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
 
-    currentCase.caseNumber = originalCase.reference || 'N/A'
-    currentCase.caseReferences = originalCase.reference || 'N/A'
+    currentCase.caseNumber = originalCase.reference?.trim() || ''
+    currentCase.caseReferences = originalCase.reference?.trim() || ''
     currentCase.courtName =
       (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
       originalCase.locationName ||
@@ -211,7 +213,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
           reviewableCases = enhancedCases
             .filter(c => c.status !== 'DRAFT' && c.isSentenced)
             .map(recallableCase => {
-              const caseReference = recallableCase.reference?.trim() || 'N/A'
+              const caseReference = recallableCase.reference?.trim() || ''
 
               return {
                 caseId: recallableCase.courtCaseUuid,
@@ -363,7 +365,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
     }
   }
 
-  successHandler(req: FormWizard.Request, res: Response, next: NextFunction): void {
+  async successHandler(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     const reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[]
     const currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number
 
@@ -392,7 +394,25 @@ export default class SelectCourtCaseController extends RecallBaseController {
           }
         })
         if (selectedCases.length > 0) {
-          summarisedSentenceGroupsArray = summariseRasCases(selectedCases)
+          // Enhance selected cases with court names
+          let enhancedSelectedCases = selectedCases
+          try {
+            const courtCodes = [...new Set(selectedCases.map(c => c.location).filter(Boolean))]
+            if (courtCodes.length > 0) {
+              const { username } = req.user
+              const courtNamesMap = await req.services.courtService.getCourtNames(courtCodes, username)
+              enhancedSelectedCases = selectedCases.map(courtCase => ({
+                ...courtCase,
+                locationName:
+                  courtNamesMap.get(courtCase.location) || courtCase.locationName || COURT_MESSAGES.NAME_NOT_AVAILABLE,
+              }))
+            }
+          } catch (error) {
+            logger.error('Error fetching court names for manual journey:', error)
+            // Continue with original cases if court name fetching fails
+          }
+
+          summarisedSentenceGroupsArray = summariseRasCases(enhancedSelectedCases)
 
           // Check for unknown sentences in selected cases
           const unknownSentenceIds: string[] = []
