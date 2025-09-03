@@ -164,6 +164,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
       currentCase.hasNonRecallableSentences = nonRecallableSentences.length > 0
       currentCase.hasMixedSentenceTypes = recallableSentences.length > 0 && nonRecallableSentences.length > 0
     }
+
     return currentCase
   }
 
