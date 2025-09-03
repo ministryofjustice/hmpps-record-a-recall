@@ -63,7 +63,11 @@
                                 Check that the sentences and offences are correct
                             </h1>
                           <p>
-                              The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
+                              {% if latestSled %}
+                                The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
+                              {% else %}
+                                The SLED (Sentence and licence expiry date) is not available.
+                              {% endif %}
                           </p>
                           <h2 class="govuk-heading-l">
                               Court cases with sentences eligible for recall ({{ summarisedSentencesGroups.length }})
