@@ -390,6 +390,7 @@ export type SummarisedSentence = {
   offenceStartDate?: string
   offenceEndDate?: string
   outcome?: string
+  fineAmount?: number
   outcomeUpdated?: string
   countNumber?: string
   convictionDate?: string
