@@ -16,6 +16,8 @@ import setUpStaticResources from './middleware/setUpStaticResources'
 import setUpWebRequestParsing from './middleware/setupRequestParsing'
 import setUpWebSecurity from './middleware/setUpWebSecurity'
 import setUpWebSession from './middleware/setUpWebSession'
+import getFrontendComponents from './middleware/getFrontendComponents'
+import setUpEnvironmentName from './middleware/setUpEnvironmentName'
 
 import routes from './routes'
 import type { Services } from './services'
@@ -34,12 +36,14 @@ export default function createApp(services: Services): express.Application {
   app.use(setUpWebSession())
   app.use(setUpWebRequestParsing())
   app.use(setUpStaticResources())
+  setUpEnvironmentName(app)
   nunjucksSetup(app, services.applicationInfo)
   app.use(setUpAuthentication())
   app.use(authorisationMiddleware(['RECALL_MAINTAINER']))
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services))
 
+  app.get('*', getFrontendComponents(services))
   app.use(routes(services))
 
   app.use((req, res, next) => next(createError(404, 'Not found')))

@@ -107,10 +107,26 @@ export function createAnswerSummaryList(
 }
 
 export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): SentenceLength[] => {
-  if (periodLengths) {
-    return periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+  if (!periodLengths) return null
+
+  const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+
+  // enforce order: Sentence Length first, then Licence Period, then everything else
+  const order = {
+    SENTENCE_LENGTH: 1,
+    LICENCE_PERIOD: 2,
+    CUSTODIAL_TERM: 3,
+    TARIFF_LENGTH: 4,
+    TERM_LENGTH: 5,
+    OVERALL_SENTENCE_LENGTH: 6,
+    UNSUPPORTED: 99,
   }
-  return null
+
+  return mapped.sort((a, b) => {
+    const aRank = order[a.periodLengthType] || 50
+    const bRank = order[b.periodLengthType] || 50
+    return aRank - bRank
+  })
 }
 
 export const lowercaseFirstLetter = (s: string): string => {
