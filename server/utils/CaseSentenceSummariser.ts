@@ -124,11 +124,6 @@ export function summariseCourtCase(courtCase: CourtCase, includeDate = true): Su
       summarisedGroup.eligibleSentences.push(summarisedSentence)
     } else {
       summarisedGroup.hasIneligibleSentences = true
-       console.log(
-    `[summariseSentencesGroups] Ineligible sentence ${sentence.sentenceUuid} has fineAmount:`,
-    sentence.fineAmount
-  )
-  console.log('*****************************case sentence summariser')
       summarisedGroup.ineligibleSentences.push(summarisedSentence)
     }
 

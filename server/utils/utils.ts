@@ -189,7 +189,7 @@ const getDisplayDescription = (type: PeriodLength['periodLengthType']): string =
 
 export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLength => {
   if (periodLength) {
-   const test =  {
+    const test = {
       description: getDisplayDescription(periodLength.periodLengthType),
       ...(typeof periodLength.days === 'number' ? { days: String(periodLength.days) } : {}),
       ...(typeof periodLength.weeks === 'number' ? { weeks: String(periodLength.weeks) } : {}),
@@ -199,8 +199,7 @@ export const periodLengthToSentenceLength = (periodLength: PeriodLength): Senten
       periodLengthType: periodLength.periodLengthType,
       uuid: periodLength.periodLengthUuid,
     } as SentenceLength
-    // console.log('********-----------', test)
-    return test;
+    return test
   }
   return null
 }

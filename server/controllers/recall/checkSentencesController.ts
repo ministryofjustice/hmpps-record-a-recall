@@ -30,10 +30,6 @@ export default class CheckSentencesController extends RecallBaseController {
     res.locals.summarisedSentencesGroups = summarisedSentenceGroups
     res.locals.casesWithEligibleSentences = eligibleSentenceCount
 
-    console.log('[CheckSentencesController] Ineligible sentences being passed to template:', 
-  JSON.stringify(summarisedSentenceGroups.flatMap(g => g.ineligibleSentences), null, 2))
-
-
     const locals = super.locals(req, res)
     const { prisoner } = res.locals
 
