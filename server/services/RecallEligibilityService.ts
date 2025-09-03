@@ -309,6 +309,7 @@ export class RecallEligibilityService {
         offenceCode: sentence.offenceCode,
         offenceDescription: sentence.offenceDescription,
         sentenceDate: sentence.sentenceDate ?? null,
+        fineAmount: sentence.fineAmount ?? null,
       }
 
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
