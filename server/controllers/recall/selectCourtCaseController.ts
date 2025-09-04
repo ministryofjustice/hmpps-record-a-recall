@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 import { CourtCase } from 'models'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/formWizardHelper'
 import { getSessionValue, setSessionValue } from '../../helpers/sessionHelper'
 import {
   calculateOverallSentenceLength,
