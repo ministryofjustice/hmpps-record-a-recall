@@ -154,12 +154,12 @@ function combineDateParts(req: Request, res: Response, next: NextFunction) {
   const day = req.body['returnToCustodyDate-day']
   const month = req.body['returnToCustodyDate-month']
   const year = req.body['returnToCustodyDate-year']
-  
+
   if (day && month && year) {
     // Convert to YYYY-MM-DD format expected by the schema
     req.body.returnToCustodyDate = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
   }
-  
+
   next()
 }
 
@@ -241,7 +241,7 @@ router.post(
           const ualToSave: UAL = {
             ...ual,
             nomisId: prisoner.prisonerNumber,
-            bookingId: prisonerDetails?.bookingId,
+            bookingId: (prisonerDetails as any)?.bookingId,
           }
 
           const conflictingAdjustments = identifyConflictingAdjustments(proposedUal, adjustmentsToConsider)
@@ -318,12 +318,12 @@ router.post(
       }
 
       // Ensure session is saved before redirecting
-      req.session.save((err) => {
+      req.session.save(err => {
         if (err) {
           logger.error('Error saving session:', err)
           return next(err)
         }
-        res.redirect(nextStep)
+        return res.redirect(nextStep)
       })
     } catch (error) {
       logger.error('Error processing RTC date:', error)

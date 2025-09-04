@@ -1,19 +1,19 @@
-import { FieldEntry } from './renderConditionalFields'
+import { FieldEntry } from '../../types/field.types'
 
 export default function flattenConditionalFields([key, field]: FieldEntry) {
   if (!field.items) {
     return [key, field]
   }
 
-  const items = field.items.map((item: any) => {
+  const items = field.items.map((item: { conditional?: unknown }) => {
     if (!item.conditional) {
       return item
     }
 
     const conditionals = [item.conditional || []].flat()
     const conditionalKeys = conditionals.map(conditional => {
-      if (conditional instanceof Object) {
-        return conditional.name
+      if (conditional instanceof Object && typeof conditional === 'object' && 'name' in conditional) {
+        return (conditional as any).name
       }
 
       return conditional

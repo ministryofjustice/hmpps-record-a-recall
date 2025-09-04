@@ -10,17 +10,15 @@ import { Request, Response } from 'express'
 export function getFullRecallPath(path: string, req: Request, res: Response): string {
   const prisoner = res.locals.prisoner || {}
   const prisonerId = prisoner.prisonerNumber || req.params.nomisId || req.params.prisonerId
-  
-  console.log('getFullRecallPath - prisoner:', prisoner)
-  console.log('getFullRecallPath - prisonerId:', prisonerId)
-  console.log('getFullRecallPath - path:', path)
-  
+
+  // Removed console.log statements for production
+
   // Remove leading slash if present to avoid double slashes
   const cleanPath = path.startsWith('/') ? path.substring(1) : path
-  
+
   const fullPath = `/person/${prisonerId}/record-recall/${cleanPath}`
-  console.log('getFullRecallPath - fullPath:', fullPath)
-  
+  // Removed console.log for production
+
   return fullPath
 }
 
@@ -35,9 +33,9 @@ export function getFullEditRecallPath(path: string, req: Request, res: Response)
   const prisoner = res.locals.prisoner || {}
   const prisonerId = prisoner.prisonerNumber || req.params.prisonerId
   const recallId = res.locals.recallId || req.params.recallId || req.session.formData?.recallId
-  
+
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.substring(1) : path
-  
+
   return `/person/${prisonerId}/recall/${recallId}/edit/${cleanPath}`
 }

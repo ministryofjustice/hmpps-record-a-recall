@@ -1,12 +1,12 @@
 import { Request } from 'express'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
-export function getCrdsSentencesFromSession(req: Request): any[] {
+export function getCrdsSentencesFromSession(req: Request): unknown[] {
   const sentences = req.session.formData?.crdsSentences
   return Array.isArray(sentences) ? sentences : []
 }
 
-export function getCourtCaseOptionsFromSession(req: Request): any[] {
+export function getCourtCaseOptionsFromSession(req: Request): unknown[] {
   const courtCases = req.session.formData?.courtCases
   return Array.isArray(courtCases) ? courtCases : []
 }
@@ -21,7 +21,7 @@ export function getRevocationDateFromSession(req: Request): Date {
   return revocationDate ? new Date(revocationDate as string) : new Date()
 }
 
-export function getPrisonerFromSession(req: Request): any {
+export function getPrisonerFromSession(req: Request): unknown {
   return req.session.formData?.prisoner || {}
 }
 
@@ -43,7 +43,7 @@ export function getEligibleSentenceCountFromSession(req: Request): number {
 }
 
 export function getAdjustmentsToConsiderForValidationFromSession(
-  journeyData: Record<string, any>,
+  journeyData: Record<string, unknown>,
   allExistingAdjustments: AdjustmentDto[],
 ): AdjustmentDto[] {
   // For now, return all adjustments. In future, may filter based on journey data

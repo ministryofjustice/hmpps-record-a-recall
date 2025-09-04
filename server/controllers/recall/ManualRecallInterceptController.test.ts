@@ -8,7 +8,7 @@ const set = jest.fn()
 
 type MockReq = {
   body: Record<string, unknown>
-  session: { formData: Record<string, any> }
+  session: { formData: Record<string, unknown> }
   sessionModel: { set: jest.Mock }
   baseUrl: string
 }

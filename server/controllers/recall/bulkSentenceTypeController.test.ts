@@ -5,7 +5,7 @@ import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSente
 import * as formWizardHelper from '../../helpers/formWizardHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { ExtendedRequest } from '../base/ExpressBaseController'
-import { createExtendedRequestMock } from '../../test-utils/extendedRequestMock'
+import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
 
 jest.mock('../../../logger')
 jest.mock('../../helpers/urlHelper', () => ({
@@ -105,21 +105,17 @@ describe('BulkSentenceTypeController', () => {
     req = createExtendedRequestMock({
       params: { courtCaseId: 'court-case-1' },
       session: {
-        formData: {} as Record<string, any>,
-      },
+        formData: {} as Record<string, unknown>,
+      } as any,
       services: {
         courtCaseService: {
           searchSentenceTypes: jest.fn().mockResolvedValue(mockSentenceTypes),
-        },
-      },
-      journeyModel: {
-        attributes: {
-          lastVisited: '/previous-page',
-        },
-      },
+        } as any,
+      } as any,
       flash: jest.fn().mockReturnValue([]),
       body: {},
       form: {
+        values: {},
         options: {
           fields: {
             sentenceType: {

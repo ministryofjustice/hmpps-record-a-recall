@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express'
+import { Session } from 'express-session'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
@@ -18,11 +19,11 @@ export default class CheckSentencesController extends RecallBaseController {
   }
 
   locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
-    const eligibleSentenceCount = getEligibleSentenceCount(req as any)
+    const eligibleSentenceCount = getEligibleSentenceCount(req as ExtendedRequest & { sessionModel?: unknown })
     const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
 
-    const calculation: CalculatedReleaseDates = getTemporaryCalc(req as any)
-    const summarisedSentenceGroups = getSummarisedSentenceGroups(req as any)
+    const calculation: CalculatedReleaseDates = getTemporaryCalc(req as ExtendedRequest & { sessionModel?: unknown })
+    const summarisedSentenceGroups = getSummarisedSentenceGroups(req as ExtendedRequest & { sessionModel?: unknown })
 
     res.locals.latestSled = calculation?.dates?.SLED || null
     res.locals.manualJourney = manualJourney
@@ -33,7 +34,7 @@ export default class CheckSentencesController extends RecallBaseController {
     const { prisoner } = res.locals
 
     let backLink = `/person/${prisoner.prisonerNumber}/record-recall/rtc-date`
-    const lastVisited = (req.session as any)?.lastVisited || ''
+    const lastVisited = (req.session as Session & { lastVisited?: string })?.lastVisited || ''
     if (lastVisited.includes('update-sentence-types-summary')) {
       backLink = `/person/${prisoner.prisonerNumber}/record-recall/update-sentence-types-summary`
     } else if (locals.isEditRecall) {
@@ -44,12 +45,12 @@ export default class CheckSentencesController extends RecallBaseController {
   }
 
   async getOffenceNameTitle(req: ExtendedRequest, offenceCodes: string[]) {
-    return new ManageOffencesService().getOffenceMap(offenceCodes, (req as any).user?.token)
+    return new ManageOffencesService().getOffenceMap(offenceCodes, (req as Express.Request).user?.token)
   }
 
   async loadOffenceNames(req: ExtendedRequest, res: Response, next: NextFunction) {
     try {
-      const summarisedSentenceGroups = getSummarisedSentenceGroups(req as any)
+      const summarisedSentenceGroups = getSummarisedSentenceGroups(req as ExtendedRequest & { sessionModel?: unknown })
       const offenceCodes = summarisedSentenceGroups
         .flatMap(group => group.sentences || [])
         .map(charge => charge.offenceCode)

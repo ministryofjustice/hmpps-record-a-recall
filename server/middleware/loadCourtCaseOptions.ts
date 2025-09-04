@@ -2,7 +2,11 @@ import { NextFunction, Request, Response } from 'express'
 import type { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from './loadCourtCases'
 import { getSessionValue, setSessionValue } from '../helpers/sessionHelper'
 
-export default function loadCourtCaseOptions(req: Request | any, res: Response, next: NextFunction) {
+export default function loadCourtCaseOptions(
+  req: Request & { sessionModel?: { get: (key: string) => unknown; set: (key: string, value: unknown) => void } },
+  res: Response,
+  next: NextFunction,
+) {
   // Use new session helper if sessionModel isn't available
   const existingOptions = req.sessionModel
     ? getSessionValue(req, 'courtCaseOptions')

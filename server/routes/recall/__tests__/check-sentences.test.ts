@@ -125,7 +125,7 @@ describe('Check Sentences Route', () => {
         .send({}) // Empty body as this is a confirmation page
         .expect(302)
 
-      expect(response.headers.location).toBe('/recall-type')
+      expect(response.headers.location).toBe('/person/A1234BC/record-recall/recall-type')
     })
 
     it('should track journey history', async () => {

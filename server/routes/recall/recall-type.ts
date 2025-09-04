@@ -11,9 +11,6 @@ import logger from '../../../logger'
 const router = Router()
 
 router.get('/recall-type', (req: Request, res: Response) => {
-  console.log('Recall-type GET handler called')
-  console.log('Session formData:', req.session?.formData)
-  
   const { prisoner } = res.locals
   const isEditRecall = res.locals.isEditRecall || false
   const { recallId } = res.locals
@@ -63,9 +60,11 @@ router.post(
       // Check for recall type mismatch if feature is enabled
       let recallTypeMismatch = false
       if (config.featureToggles.unexpectedRecallTypeCheckEnabled) {
-        const invalidRecallTypes = getInvalidRecallTypes(req as any)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recallTypeMismatch = invalidRecallTypes?.map((t: any) => t.code).includes(validatedData.recallType) || false
+        const invalidRecallTypes = getInvalidRecallTypes(
+          req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
+        )
+        recallTypeMismatch =
+          invalidRecallTypes?.map((t: { code: string }) => t.code).includes(validatedData.recallType) || false
       }
 
       // Save validated data to session

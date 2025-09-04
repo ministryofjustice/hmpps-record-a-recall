@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express'
+import { Session } from 'express-session'
 import PrisonerDetailsExpressController from './PrisonerDetailsExpressController'
 import { ExtendedRequest } from './ExpressBaseController'
 import getServiceUrls from '../../helpers/urlHelper'
@@ -34,7 +35,9 @@ export default class RecallBaseExpressController extends PrisonerDetailsExpressC
       reset: () => {},
       save: () => {},
     }
-    const mockReq = { ...req, sessionModel: mockSessionModel } as any
+    const mockReq = { ...req, sessionModel: mockSessionModel } as ExtendedRequest & {
+      sessionModel: typeof mockSessionModel
+    }
 
     const journeyData = getJourneyDataFromRequest(mockReq)
     const isEditRecall = journeyData.isEdit
@@ -57,7 +60,7 @@ export default class RecallBaseExpressController extends PrisonerDetailsExpressC
     const cancelLink = `${journeyBaseLink}/confirm-cancel`
 
     // Handle back link logic
-    const lastVisited = (req.session as any)?.lastVisited
+    const lastVisited = (req.session as Session & { lastVisited?: string })?.lastVisited
     if (lastVisited?.includes('check-your-answers') || lastVisited?.includes('edit-summary')) {
       res.locals.backLink = lastVisited
     } else if (!res.locals.backLink) {

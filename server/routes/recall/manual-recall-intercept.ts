@@ -22,30 +22,27 @@ router.get('/manual-recall-intercept', (req: Request, res: Response) => {
   delete req.session.formErrors
 })
 
-router.post(
-  '/manual-recall-intercept',
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { prisoner } = res.locals
+router.post('/manual-recall-intercept', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { prisoner } = res.locals
 
-      // Track journey history
-      if (!req.session.journeyHistory) {
-        req.session.journeyHistory = []
-      }
-      if (!req.session.journeyHistory.includes(req.path)) {
-        req.session.journeyHistory.push(req.path)
-      }
-
-      // For manual recall intercept, we continue with manual case selection
-      // The user has been informed they need to select all relevant cases
-      const nextStep = `/person/${prisoner.prisonerNumber}/record-recall/select-court-case`
-
-      res.redirect(nextStep)
-    } catch (error) {
-      logger.error('Error processing manual recall intercept:', error)
-      next(error)
+    // Track journey history
+    if (!req.session.journeyHistory) {
+      req.session.journeyHistory = []
     }
-  },
-)
+    if (!req.session.journeyHistory.includes(req.path)) {
+      req.session.journeyHistory.push(req.path)
+    }
+
+    // For manual recall intercept, we continue with manual case selection
+    // The user has been informed they need to select all relevant cases
+    const nextStep = `/person/${prisoner.prisonerNumber}/record-recall/select-court-case`
+
+    res.redirect(nextStep)
+  } catch (error) {
+    logger.error('Error processing manual recall intercept:', error)
+    next(error)
+  }
+})
 
 export default router

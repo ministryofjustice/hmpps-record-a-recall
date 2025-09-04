@@ -28,10 +28,9 @@ export default class RecallTypeController extends RecallBaseController {
   successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {
     let recallTypeMismatch = false
     if (config.featureToggles.unexpectedRecallTypeCheckEnabled) {
-      const selectedType = getRecallTypeCode(req as any)
-      const invalidRecallTypes = getInvalidRecallTypes(req as any)
-      // @ts-expect-error Type will be correct
-      recallTypeMismatch = invalidRecallTypes?.map(t => t.code).includes(selectedType) || false
+      const selectedType = getRecallTypeCode(req as ExtendedRequest & { sessionModel?: unknown })
+      const invalidRecallTypes = getInvalidRecallTypes(req as ExtendedRequest & { sessionModel?: unknown })
+      recallTypeMismatch = invalidRecallTypes?.map((t: { code: string }) => t.code).includes(selectedType) || false
     }
     setSessionValue(req, sessionModelFields.RECALL_TYPE_MISMATCH, recallTypeMismatch)
     return super.successHandler(req, res, next)

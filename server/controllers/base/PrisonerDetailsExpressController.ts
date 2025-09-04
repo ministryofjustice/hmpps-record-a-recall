@@ -39,7 +39,7 @@ export default class PrisonerDetailsExpressController extends ExpressBaseControl
 
         // Store in session
         if (!req.session) {
-          req.session = {} as any
+          req.session = {} as Express.Request['session']
         }
         if (!req.session.formData) {
           req.session.formData = {}

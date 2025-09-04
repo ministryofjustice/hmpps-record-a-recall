@@ -1,6 +1,5 @@
-import { Field } from '../../controllers/base/ExpressBaseController'
+import { Field, FieldEntry } from '../../types/field.types'
 import reduceDependentFields from './reduceDependentFields'
-import { FieldEntry } from './renderConditionalFields'
 
 describe('Field helpers', () => {
   describe('#reduceDependentFields', () => {

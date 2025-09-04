@@ -10,7 +10,7 @@ import { Request } from 'express'
  * Replaces: req.sessionModel.get(key)
  * With: getSessionValue(req, key)
  */
-export function getSessionValue<T = any>(req: Request, key: string): T | undefined {
+export function getSessionValue<T = unknown>(req: Request, key: string): T | undefined {
   if (!req.session?.formData) {
     return undefined
   }
@@ -22,7 +22,7 @@ export function getSessionValue<T = any>(req: Request, key: string): T | undefin
  * Replaces: req.sessionModel.set(key, value)
  * With: setSessionValue(req, key, value)
  */
-export function setSessionValue(req: Request, key: string, value: any): void {
+export function setSessionValue(req: Request, key: string, value: unknown): void {
   if (!req.session) {
     throw new Error('Session not initialized')
   }
@@ -59,7 +59,7 @@ export function resetSessionData(req: Request): void {
  * Replaces: req.sessionModel.toJSON()
  * With: getSessionJSON(req)
  */
-export function getSessionJSON(req: Request): Record<string, any> {
+export function getSessionJSON(req: Request): Record<string, unknown> {
   return req.session?.formData || {}
 }
 
@@ -68,7 +68,7 @@ export function getSessionJSON(req: Request): Record<string, any> {
  * Replaces: req.sessionModel.save(callback)
  * With: saveSession(req, callback)
  */
-export function saveSession(req: Request, callback?: (err?: any) => void): void {
+export function saveSession(req: Request, callback?: (err?: unknown) => void): void {
   if (req.session && typeof req.session.save === 'function') {
     req.session.save(callback)
   } else if (callback) {
@@ -81,7 +81,7 @@ export function saveSession(req: Request, callback?: (err?: any) => void): void 
  * Batch update multiple session values
  * Helper for updating multiple values at once
  */
-export function updateSessionValues(req: Request, updates: Record<string, any>): void {
+export function updateSessionValues(req: Request, updates: Record<string, unknown>): void {
   if (!req.session) {
     throw new Error('Session not initialized')
   }
@@ -103,12 +103,12 @@ export function hasSessionValue(req: Request, key: string): boolean {
  * Get multiple session values at once
  * Helper for retrieving multiple values
  */
-export function getSessionValues<T extends Record<string, any>>(req: Request, keys: string[]): Partial<T> {
+export function getSessionValues<T extends Record<string, unknown>>(req: Request, keys: string[]): Partial<T> {
   const result: Partial<T> = {}
   if (req.session?.formData) {
     keys.forEach(key => {
       if (req.session.formData![key] !== undefined) {
-        ;(result as any)[key] = req.session.formData![key]
+        ;(result as Record<string, unknown>)[key] = req.session.formData![key]
       }
     })
   }

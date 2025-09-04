@@ -18,10 +18,12 @@ const sameSentenceTypeSchema = z.object({
 router.get(
   '/multiple-sentence-decision/:courtCaseId',
   loadCourtCaseOptions,
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { courtCaseId } = req.params
-      const courtCases = getCourtCaseOptions(req as any) as CourtCase[]
+      const courtCases = getCourtCaseOptions(
+        req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
+      ) as CourtCase[]
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {
@@ -81,9 +83,10 @@ router.get(
       })
 
       delete req.session.formErrors
+      return undefined
     } catch (error) {
       logger.error('Error in multiple sentence decision GET', { error: error.message })
-      next(error)
+      return next(error)
     }
   },
 )

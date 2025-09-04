@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import notPossibleRouter from './not-possible'
 import confirmCancelRouter from './confirm-cancel'
 import revocationDateRouter from './revocation-date'
@@ -18,15 +18,15 @@ import noSentencesInterruptRouter from './no-sentences-interrupt'
 import conflictingAdjustmentsInterruptRouter from './conflicting-adjustments-interrupt'
 import completeRouter from './complete'
 import resetRecallSession from '../../helpers/resetSessionHelper'
-import logger from '../../../logger'
+// import logger from '../../../logger' // Unused import
 
 const newRecallRouter = express.Router({ mergeParams: true })
 
 // Handle base route - reset session and redirect to first step
-newRecallRouter.get('/', (req: any, res: any) => {
+newRecallRouter.get('/', (req: Request, res: Response) => {
   // Reset the recall session for a new recall
   resetRecallSession(req)
-  
+
   // Store entrypoint if provided
   const entrypoint = req.query.entrypoint as string | undefined
   if (entrypoint && req.session.formData) {
@@ -34,7 +34,7 @@ newRecallRouter.get('/', (req: any, res: any) => {
   } else if (entrypoint) {
     req.session.formData = { entrypoint }
   }
-  
+
   // The checkCrdsValidation middleware will handle validation check before getting here
   // If there were validation errors, it would have redirected to /not-possible already
   // So if we're here, it's safe to proceed to the first step

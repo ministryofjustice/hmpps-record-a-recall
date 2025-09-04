@@ -217,7 +217,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
       // Wait for all updates to complete
       const results = await Promise.all(updatePromises)
-      results.forEach((uuids: any) => allUpdatedUuids.push(...uuids))
+      results.forEach((uuids: string[]) => allUpdatedUuids.push(...uuids))
 
       logger.info('Successfully updated all sentence types', {
         totalCourtCases: Object.keys(updatesByCourtCase).length,

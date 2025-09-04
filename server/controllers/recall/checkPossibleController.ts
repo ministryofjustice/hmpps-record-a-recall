@@ -6,6 +6,7 @@ import { ExtendedRequest } from '../base/ExpressBaseController'
 import {
   RecordARecallCalculationResult,
   ValidationMessage,
+  SentenceAndOffenceWithReleaseArrangements,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
@@ -20,7 +21,7 @@ import { COURT_MESSAGES } from '../../utils/courtConstants'
 export default class CheckPossibleController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
 
-  constructor(options?: any) {
+  constructor(options?: unknown) {
     super(options)
     this.recallRoutingService = new RecallRoutingService()
   }
@@ -133,7 +134,7 @@ export default class CheckPossibleController extends RecallBaseController {
 
         const sentences = await this.getCrdsSentences(req, res)
 
-        const nomisSentenceInformation = sentences.map((sentence: any) => {
+        const nomisSentenceInformation = sentences.map((sentence: SentenceAndOffenceWithReleaseArrangements) => {
           return {
             nomisSentenceSequence: sentence.sentenceSequence,
             nomisBookingId: sentence.bookingId,
@@ -144,16 +145,16 @@ export default class CheckPossibleController extends RecallBaseController {
 
         res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
-        const matchedRaSSentences = sentencesFromRasCases.filter((sentence: any) =>
+        const matchedRaSSentences = sentencesFromRasCases.filter((sentence: { sentenceUuid?: string }) =>
           dpsSentenceSequenceIds.some(mapping => mapping.dpsSentenceId === sentence.sentenceUuid),
         )
 
-        res.locals.rasSentences = matchedRaSSentences.map((sentence: any) => ({
+        res.locals.rasSentences = matchedRaSSentences.map((sentence: { sentenceUuid?: string }) => ({
           ...sentence,
           dpsSentenceUuid: sentence.sentenceUuid,
         }))
 
-        res.locals.crdsSentences = sentences.map((sentence: any) => ({
+        res.locals.crdsSentences = sentences.map((sentence: SentenceAndOffenceWithReleaseArrangements) => ({
           ...sentence,
           dpsSentenceUuid: dpsSentenceSequenceIds.find(
             mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,

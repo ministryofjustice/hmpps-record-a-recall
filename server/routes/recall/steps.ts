@@ -27,12 +27,12 @@ export default {
     fields: ['recallType'],
     next: [
       {
-        fn: (req: any) => {
+        fn: (req: { session?: { formData?: Record<string, unknown> } }) => {
           // In manual case selection, court cases are already selected before recall-type
           // So we should go to check-your-answers, not back to select-court-case
           const manualCaseSelection = req.session?.formData?.manualCaseSelection === true
-          const courtCasesAlreadySelected = req.session?.formData?.courtCaseIds?.length > 0
-          
+          const courtCasesAlreadySelected = (req.session?.formData?.courtCaseIds as any)?.length > 0
+
           // If manual journey and court cases already selected, go to check-your-answers
           if (manualCaseSelection && courtCasesAlreadySelected) {
             return true
@@ -42,11 +42,11 @@ export default {
         next: '/check-your-answers',
       },
       {
-        fn: (req: any) => {
+        fn: (req: { session?: { formData?: Record<string, unknown> } }) => {
           // If manual journey but no court cases selected yet (shouldn't happen in normal flow)
           const manualCaseSelection = req.session?.formData?.manualCaseSelection === true
-          const courtCasesAlreadySelected = req.session?.formData?.courtCaseIds?.length > 0
-          
+          const courtCasesAlreadySelected = (req.session?.formData?.courtCaseIds as any)?.length > 0
+
           if (manualCaseSelection && !courtCasesAlreadySelected) {
             return true
           }

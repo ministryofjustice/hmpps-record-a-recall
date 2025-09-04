@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 import type { CourtCase } from 'models'
 import SelectSentenceTypeController from './selectSentenceTypeController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
-import { createExtendedRequestMock } from '../../test-utils/extendedRequestMock'
+import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
 import * as sessionHelper from '../../helpers/sessionHelper'
@@ -78,26 +78,17 @@ describe('SelectSentenceTypeController', () => {
     req = createExtendedRequestMock({
       params: { sentenceUuid: 'sentence-1' },
       session: {
-        formData: {} as Record<string, any>,
-      },
-      sessionModel: {
-        get: jest.fn(),
-        set: jest.fn(),
-        unset: jest.fn(),
-      },
+        formData: {} as Record<string, unknown>,
+      } as any,
       services: {
         courtCaseService: {
           searchSentenceTypes: jest.fn().mockResolvedValue(mockSentenceTypes),
-        },
-      },
-      journeyModel: {
-        attributes: {
-          lastVisited: '/previous-page',
-        },
-      },
+        } as any,
+      } as any,
       flash: jest.fn().mockReturnValue([]),
       body: {},
       form: {
+        values: {},
         options: {
           fields: {
             sentenceType: {
@@ -131,7 +122,7 @@ describe('SelectSentenceTypeController', () => {
   describe('get', () => {
     beforeEach(() => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((req, key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         if (key === 'prisoner') return { dateOfBirth: '1990-01-01' }
         if (key === 'updatedSentences') return {}
         return undefined
@@ -177,7 +168,7 @@ describe('SelectSentenceTypeController', () => {
       req.session.formData.updatedSentences = {
         'sentence-1': { uuid: 'sds-uuid', description: 'Standard Determinate Sentence (SDS)' },
       }
-      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((req, key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         return req.session.formData[key]
       })
 
@@ -217,11 +208,12 @@ describe('SelectSentenceTypeController', () => {
     beforeEach(() => {
       req.body = { sentenceType: 'sds-uuid' }
       req.session.formData.updatedSentences = {}
-      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((req, key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         return req.session.formData[key]
       })
-      ;(sessionHelper.setSessionValue as jest.Mock).mockImplementation((req, key: string, value: any) => {
-        req.session.formData[key] = value
+      ;(sessionHelper.setSessionValue as jest.Mock).mockImplementation((reqParam, key: string, value: unknown) => {
+        // eslint-disable-next-line no-param-reassign
+        reqParam.session.formData[key] = value
       })
     })
 
@@ -237,7 +229,7 @@ describe('SelectSentenceTypeController', () => {
       req.session.formData.updatedSentences = {}
       req.session.formData.sentencesInCurrentCase = ['sentence-1', 'sentence-2', 'sentence-3']
       req.session.formData.currentSentenceIndex = 0
-      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((req, key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         return req.session.formData[key]
       })
 
@@ -252,7 +244,7 @@ describe('SelectSentenceTypeController', () => {
       req.session.formData.updatedSentences = {}
       req.session.formData.sentencesInCurrentCase = ['sentence-1']
       req.session.formData.currentSentenceIndex = 0
-      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((req, key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         return req.session.formData[key]
       })
 
@@ -272,7 +264,7 @@ describe('SelectSentenceTypeController', () => {
       }
       req.session.formData.sentencesInCurrentCase = ['sentence-1', 'sentence-2', 'sentence-3']
       req.session.formData.currentSentenceIndex = 0
-      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((req, key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         return req.session.formData[key]
       })
 

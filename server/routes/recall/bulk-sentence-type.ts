@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import type { CourtCase } from 'models'
 import { sentenceTypeSchema } from '../../schemas/recall/sentence-type.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
-import { resolveNextStep } from '../../helpers/journey-resolver'
+// import { resolveNextStep } from '../../helpers/journey-resolver' // Unused import
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
 import { findSentenceAndCourtCase, getApplicableSentenceTypes } from '../../helpers/sentenceHelper'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
@@ -25,7 +25,12 @@ async function getCommonApplicableSentenceTypes(
       if (!targetSentence) {
         throw new Error(`Sentence not found: ${sentenceUuid}`)
       }
-      return getApplicableSentenceTypes(req as any, targetSentence, targetCase, username)
+      return getApplicableSentenceTypes(
+        req as Request & { services?: unknown; sessionModel?: unknown },
+        targetSentence,
+        targetCase,
+        username,
+      )
     })
 
     const allApplicableTypes = await Promise.all(allApplicableTypesPromises)
@@ -59,7 +64,9 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { courtCaseId } = req.params
-      const courtCases = getCourtCaseOptions(req as any)
+      const courtCases = getCourtCaseOptions(
+        req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
+      )
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {
@@ -118,9 +125,10 @@ router.get(
       })
 
       delete req.session.formErrors
+      return undefined
     } catch (error) {
       logger.error('Error getting bulk sentence type selection', { error: error.message })
-      next(error)
+      return next(error)
     }
   },
 )
@@ -136,7 +144,9 @@ router.post(
       const selectedTypeUuid = validatedData.sentenceType
 
       // Get court cases to validate
-      const courtCases = getCourtCaseOptions(req as any)
+      const courtCases = getCourtCaseOptions(
+        req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
+      )
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {

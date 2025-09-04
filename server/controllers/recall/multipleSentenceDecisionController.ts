@@ -90,7 +90,7 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
         // For bulk flow, navigate to bulk sentence type page
         const { courtCaseId } = req.params
         if (req.form && req.form.options) {
-          ;(req.form.options as any).next =
+          ;(req.form.options as { next?: string }).next =
             `/person/${res.locals.nomisId}/record-recall/bulk-sentence-type/${courtCaseId}`
         }
       } else {
@@ -106,7 +106,7 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
         if (sentencesInCase && sentencesInCase.length > 0) {
           // Set the next step dynamically
           if (req.form && req.form.options) {
-            ;(req.form.options as any).next =
+            ;(req.form.options as { next?: string }).next =
               `/person/${res.locals.nomisId}/record-recall/select-sentence-type/${sentencesInCase[0].sentenceUuid}`
           }
         }

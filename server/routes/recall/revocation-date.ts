@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { min } from 'date-fns'
 import { revocationDateSchema } from '../../schemas/recall/dates.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
-import { resolveNextStep } from '../../helpers/journey-resolver'
+// import { resolveNextStep } from '../../helpers/journey-resolver' // Unused import
 
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import { sessionModelFields } from '../../helpers/formWizardHelper'
@@ -45,7 +45,7 @@ router.get('/revocation-date', (req: Request, res: Response) => {
           },
           {
             name: 'month',
-            classes: 'govuk-input--width-2', 
+            classes: 'govuk-input--width-2',
             value: req.session.formData?.['revocationDate-month'],
           },
           {
@@ -71,12 +71,12 @@ function combineDateParts(req: Request, res: Response, next: NextFunction) {
   const day = req.body['revocationDate-day']
   const month = req.body['revocationDate-month']
   const year = req.body['revocationDate-year']
-  
+
   if (day && month && year) {
     // Convert to YYYY-MM-DD format expected by the schema
     req.body.revocationDate = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
   }
-  
+
   next()
 }
 
@@ -93,7 +93,7 @@ router.post(
       const sentences = getCrdsSentencesFromSession(req) || []
 
       if (sentences.length) {
-        const earliestSentenceDate = min(sentences.map(s => new Date(s.sentenceDate)))
+        const earliestSentenceDate = min(sentences.map(s => new Date((s as any).sentenceDate)))
         if (revocationDate < earliestSentenceDate) {
           req.session.formErrors = {
             revocationDate: {
@@ -116,21 +116,34 @@ router.post(
           // Load court cases from res.locals for Cypress tests
           const enhancedCases = res.locals.recallableCourtCases
           courtCases = enhancedCases
-            .filter((c: any) => c.status !== 'DRAFT' && c.isSentenced)
-            .map((recallableCase: any) => ({
-              caseId: recallableCase.courtCaseUuid,
-              status: recallableCase.status,
-              date: recallableCase.date,
-              location: recallableCase.courtCode,
-              locationName: recallableCase.courtName,
-              reference: recallableCase.reference,
-              sentenced: recallableCase.isSentenced,
-              sentences: (recallableCase.sentences || []).map((sentence: any) => ({
-                ...sentence,
-                sentenceUuid: sentence.sentenceUuid,
-                offenceDescription: sentence.offenceDescription,
-              })),
-            }))
+            .filter((c: { status: string; isSentenced: boolean }) => c.status !== 'DRAFT' && c.isSentenced)
+            .map(
+              (recallableCase: {
+                courtCaseUuid: string
+                status: string
+                date: string
+                courtCode: string
+                courtName: string
+                reference: string
+                isSentenced: boolean
+                sentences?: unknown[]
+              }) => ({
+                caseId: recallableCase.courtCaseUuid,
+                status: recallableCase.status,
+                date: recallableCase.date,
+                location: recallableCase.courtCode,
+                locationName: recallableCase.courtName,
+                reference: recallableCase.reference,
+                sentenced: recallableCase.isSentenced,
+                sentences: (recallableCase.sentences || []).map(
+                  (sentence: { sentenceUuid: string; offenceCode?: string; offenceDescription?: string }) => ({
+                    ...sentence,
+                    sentenceUuid: sentence.sentenceUuid,
+                    offenceDescription: sentence.offenceDescription,
+                  }),
+                ),
+              }),
+            )
           // Save to session for later use
           if (!req.session.formData) {
             req.session.formData = {}
@@ -138,35 +151,33 @@ router.post(
           req.session.formData.courtCaseOptions = courtCases
           req.session.formData.courtCases = courtCases
         }
-        
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        courtCases = courtCases.filter((c: any) => c.status !== 'DRAFT')
-        
+
+        courtCases = courtCases.filter((c: { status: string }) => c.status !== 'DRAFT')
+
         const adjustments = getExistingAdjustmentsFromSession(req) || res.locals.adjustments || []
         const existingRecalls = res.locals.recalls || []
 
-        logger.info(`Routing recall with ${courtCases.length} court cases`, { 
+        logger.info(`Routing recall with ${courtCases.length} court cases`, {
           prisonerNumber: prisoner.prisonerNumber,
           courtCasesCount: courtCases.length,
           hasAdjustments: adjustments.length > 0,
-          hasExistingRecalls: existingRecalls.length > 0
+          hasExistingRecalls: existingRecalls.length > 0,
         })
 
         const journeyData = {
           ...req.session.formData,
           revocationDate: validatedData.revocationDate,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any
+        } as unknown
 
         const routingResponse = await recallRoutingService.routeRecall({
           nomsId: prisoner.prisonerNumber,
           revocationDate,
-          courtCases,
+          courtCases: courtCases as any,
           adjustments,
           existingRecalls,
           calculationBreakdown: null,
           validationMessages: [],
-          journeyData,
+          journeyData: journeyData as any,
         })
 
         if (routingResponse.validationMessages.length > 0) {
@@ -203,7 +214,7 @@ router.post(
           routingResponse.eligibilityDetails.eligibleSentenceCount
         req.session.formData[sessionModelFields.MANUAL_CASE_SELECTION] =
           routingResponse.eligibilityDetails.hasNonSdsSentences
-        
+
         // Debug logging for manual recall test
         logger.info('Revocation date routing decision:', {
           prisonerNumber: prisoner.prisonerNumber,
@@ -212,9 +223,9 @@ router.post(
           routing: routingResponse.routing,
           eligibleSentenceCount: routingResponse.eligibilityDetails.eligibleSentenceCount,
         })
-        
+
         req.session.formData.routingResponse = routingResponse
-        
+
         // Store additional data that might be needed later
         if (courtCases && courtCases.length > 0) {
           req.session.formData.courtCases = courtCases
@@ -233,14 +244,14 @@ router.post(
 
       // Navigate to the rtc-date page
       const nextStep = `/person/${prisoner.prisonerNumber}/record-recall/rtc-date`
-      
+
       // Ensure session is saved before redirecting
-      req.session.save((err) => {
+      req.session.save(err => {
         if (err) {
           logger.error('Error saving session:', err)
           return next(err)
         }
-        res.redirect(nextStep)
+        return res.redirect(nextStep)
       })
     } catch (error) {
       logger.error('Error processing revocation date:', error)

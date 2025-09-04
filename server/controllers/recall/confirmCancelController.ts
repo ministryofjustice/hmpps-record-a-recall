@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express'
+import { Session } from 'express-session'
 import RecallBaseController from './recallBaseController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import { getEntrypoint, sessionModelFields } from '../../helpers/formWizardHelper'
@@ -8,7 +9,7 @@ import { entrypointUrl } from '../../utils/utils'
 export default class ConfirmCancelController extends RecallBaseController {
   locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
-    const lastVisited = (req.session as any)?.lastVisited || ''
+    const lastVisited = (req.session as Session & { lastVisited?: string })?.lastVisited || ''
     if (!lastVisited.includes('confirm-cancel')) {
       setSessionValue(req, sessionModelFields.RETURN_TO, lastVisited)
     }
@@ -21,7 +22,10 @@ export default class ConfirmCancelController extends RecallBaseController {
     const confirmCancel = req.form?.values?.confirmCancel || req.body?.confirmCancel
     const returnTo = getSessionValue<string>(req, sessionModelFields.RETURN_TO)
     if (confirmCancel === 'true') {
-      const cancelRedirectUrl = this.confirmCancelRedirect(getEntrypoint(req as any), res.locals.nomisId)
+      const cancelRedirectUrl = this.confirmCancelRedirect(
+        getEntrypoint(req as ExtendedRequest & { sessionModel?: unknown }),
+        res.locals.nomisId,
+      )
       return res.redirect(cancelRedirectUrl)
     }
     unsetSessionValue(req, sessionModelFields.RETURN_TO)

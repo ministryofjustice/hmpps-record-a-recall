@@ -4,7 +4,10 @@ import { CourtCase } from 'models'
 import { getCourtCaseOptions } from '../helpers/formWizardHelper'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../middleware/loadCourtCases'
 
-export default function getCourtCaseOptionsFromRas(req: Request | any, res: Response): CourtCase[] {
+export default function getCourtCaseOptionsFromRas(
+  req: Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
+  res: Response,
+): CourtCase[] {
   const sessionCases = getCourtCaseOptions(req)
   if (sessionCases) {
     return sessionCases

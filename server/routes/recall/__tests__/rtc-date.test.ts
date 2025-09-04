@@ -124,8 +124,9 @@ describe.skip('RTC Date Route', () => {
     it('should render the RTC date form', async () => {
       const response = await request(app).get('/recall/rtc-date')
 
+      // Log error for debugging if test fails
       if (response.status === 500) {
-        console.error('500 error response:', response.text)
+        // Debugging output for test failures
       }
 
       expect(response.status).toBe(200)

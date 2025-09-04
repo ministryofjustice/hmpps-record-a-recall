@@ -18,7 +18,7 @@ const editSummarySchema = z.object({})
 router.get('/edit-summary', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { recallId, nomisId } = res.locals
-    const reqWithSession = req as any
+    const reqWithSession = req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } }
 
     // Set edit flag
     req.session.formData = {
@@ -60,7 +60,10 @@ router.post(
     try {
       const { recallId, nomisId } = res.locals
       const { username, activeCaseload } = res.locals.user
-      const reqWithSession = req as any
+      const reqWithSession = req as Request & {
+        sessionModel?: unknown
+        session?: { formData?: Record<string, unknown> }
+      }
       const { services } = reqWithSession
 
       if (!services) {
@@ -77,7 +80,8 @@ router.post(
         // Find existing UAL adjustments for this recall
         const existingAdjustments = await services.adjustmentsService.searchUal(nomisId, username, recallId)
         const ualAdjustments = existingAdjustments.filter(
-          (adj: any) => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
+          (adj: any) =>
+            adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
         )
 
         const prisonerDetails = getPrisoner(reqWithSession)
@@ -92,9 +96,11 @@ router.post(
             // Delete duplicate UAL adjustments
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
-              duplicateAdjustments.map(async (duplicateUal: any) => {
-                await services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
-                logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
+              duplicateAdjustments.map(async (duplicateUal) => {
+                if (duplicateUal.id) {
+                  await services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
+                  logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
+                }
               }),
             )
           }
@@ -122,7 +128,7 @@ router.post(
             recallId,
           }
 
-          await services.adjustmentsService.createUal(ualToCreate, username, activeCaseload)
+          await services.adjustmentsService.postUal(ualToCreate, username)
           logger.info(
             `Created new UAL adjustment for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
           )
@@ -130,16 +136,17 @@ router.post(
       }
 
       // Update the recall with journey data
-      const recallUpdate: CreateRecall = {
+      const recallUpdate = {
+        prisonerId: nomisId,
         revocationDate: journeyData.revDateString,
-        recallTypeCode: journeyData.recallType,
+        recallTypeCode: journeyData.recallType as any,
         returnToCustodyDate: journeyData.returnToCustodyDateString,
         createdByUsername: username,
         createdByPrison: activeCaseload,
         sentenceIds: journeyData.sentenceIds || [],
-      } as any
+      }
 
-      await services.recallService.updateRecall(recallUpdate, nomisId, username, recallId)
+      await services.recallService.updateRecall(recallUpdate as any, nomisId, username)
       logger.info(`Updated recall ${recallId} successfully`)
 
       // Clear session data after successful save

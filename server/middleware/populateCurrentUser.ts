@@ -25,15 +25,17 @@ export default function populateCurrentUser({ manageUsersService }: Services): R
             id: 'MDI',
             name: 'Moorland',
           },
-          caseloads: [{
-            id: 'MDI',
-            name: 'Moorland',
-          }],
+          caseloads: [
+            {
+              id: 'MDI',
+              name: 'Moorland',
+            },
+          ],
         }
       } else {
         caseloadsData = await manageUsersService.getUserCaseloads(res.locals.user.token)
       }
-      
+
       res.locals.user = {
         ...res.locals.user,
         userId,

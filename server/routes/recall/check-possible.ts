@@ -22,7 +22,14 @@ async function configureCheckPossible(req: Request, res: Response, next: NextFun
 
   try {
     // Get services from req (these should be injected by middleware)
-    const { services } = req as any
+    const { services } = req as Request & {
+      services?: {
+        calculationService?: {
+          getTemporaryCalculation: (nomisId: string, username: string) => Promise<unknown>
+          getBreakdown: (id: number, username: string) => Promise<unknown>
+        }
+      }
+    }
     if (!services) {
       logger.error('Services not available on request')
       return next(new Error('Services not configured'))
@@ -43,11 +50,11 @@ async function configureCheckPossible(req: Request, res: Response, next: NextFun
     // Get court cases, adjustments, and existing recalls in parallel
     const [cases, existingAdjustments, existingRecalls] = await Promise.all([
       services.courtCaseService.getAllCourtCases(nomisId, user.username),
-      services.adjustmentsService.searchUal(nomisId, user.username).catch((e: Error): any[] => {
+      services.adjustmentsService.searchUal(nomisId, user.username).catch((e: Error): unknown[] => {
         logger.error('Error loading adjustments:', e.message)
         return []
       }),
-      services.recallService.getAllRecalls(nomisId, user.username).catch((e: Error): any[] => {
+      services.recallService.getAllRecalls(nomisId, user.username).catch((e: Error): unknown[] => {
         logger.error('Error loading existing recalls:', e.message)
         return []
       }),
@@ -58,8 +65,8 @@ async function configureCheckPossible(req: Request, res: Response, next: NextFun
     const routingResponse = await recallRoutingService.routeRecallWithSmartFiltering(
       nomisId,
       cases,
-      existingAdjustments,
-      existingRecalls,
+      existingAdjustments as any,
+      existingRecalls as any,
       breakdown,
       errors,
     )
@@ -102,20 +109,20 @@ async function configureCheckPossible(req: Request, res: Response, next: NextFun
       })
     }
 
-    next()
+    return next()
   } catch (error) {
     logger.error('Error configuring check-possible:', error)
-    next(error)
+    return next(error)
   }
 }
 
 router.get('/check-possible', configureCheckPossible, (req: Request, res: Response) => {
   const { prisoner } = res.locals
-  const isEditRecall = res.locals.isEditRecall || false
-  const { recallId } = res.locals
 
   // Check if recall is possible
-  const recallRoute = getRecallRoute(req as any)
+  const recallRoute = getRecallRoute(
+    req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
+  )
   const recallPossible = recallRoute && recallRoute !== 'NOT_POSSIBLE'
 
   const backLink = `/person/${prisoner.prisonerNumber}/record-recall/revocation-date`

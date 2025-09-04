@@ -24,7 +24,11 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     return { ...locals, backLink }
   }
 
-  validateFields(req: any, res: any, callback?: (errors: any) => void): any {
+  validateFields(
+    req: ExtendedRequest,
+    res: Response,
+    callback?: (errors: Record<string, unknown>) => void,
+  ): Record<string, unknown> | void {
     // Support both callback and non-callback style
     if (!callback) {
       // Return empty errors for new style
@@ -36,8 +40,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       const { values } = req.form
       const revocationDate = getRevocationDate(req)
 
-      /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-      const validationErrors: any = {}
+      const validationErrors: Record<string, unknown> = {}
 
       if (values.inPrisonAtRecall === 'false') {
         if (isBefore(values.returnToCustodyDate as string, revocationDate)) {
@@ -46,6 +49,7 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       }
       callback({ ...errors, ...validationErrors })
     })
+    return undefined
   }
 
   isRelevantAdjustment(adjustment: AdjustmentDto): { isRelevant: boolean; type?: string; ualType?: string } {

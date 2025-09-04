@@ -16,7 +16,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { sentenceUuid } = req.params
-      const courtCases = getCourtCaseOptions(req as any)
+      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
 
       const { targetSentence, targetCourtCase } = findSentenceAndCourtCase(sentenceUuid, courtCases)
 
@@ -25,7 +25,12 @@ router.get(
       }
 
       const { user } = res.locals
-      const sentenceTypes = await getApplicableSentenceTypes(req as any, targetSentence, targetCourtCase, user.username)
+      const sentenceTypes = await getApplicableSentenceTypes(
+        req as Request & { sessionModel?: unknown; session?: unknown },
+        targetSentence,
+        targetCourtCase,
+        user.username,
+      )
 
       // Check if sentence has already been updated
       const updatedSentences = (req.session.formData?.[sessionModelFields.UPDATED_SENTENCE_TYPES] || {}) as Record<
@@ -79,14 +84,14 @@ router.post(
   '/select-sentence-type/:sentenceUuid',
   validateWithZod(sentenceTypeSchema),
   loadCourtCaseOptions,
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { sentenceUuid } = req.params
       const validatedData = req.validatedData as { sentenceType: string }
       const selectedTypeUuid = validatedData.sentenceType
 
       // Get the court cases to find the sentence description
-      const courtCases = getCourtCaseOptions(req as any)
+      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
       const { targetSentence, targetCourtCase } = findSentenceAndCourtCase(sentenceUuid, courtCases)
 
       if (!targetSentence || !targetCourtCase) {
@@ -95,7 +100,12 @@ router.post(
 
       // Get the sentence types to find the description
       const { user } = res.locals
-      const sentenceTypes = await getApplicableSentenceTypes(req as any, targetSentence, targetCourtCase, user.username)
+      const sentenceTypes = await getApplicableSentenceTypes(
+        req as Request & { sessionModel?: unknown; session?: unknown },
+        targetSentence,
+        targetCourtCase,
+        user.username,
+      )
       const sentenceTypeItem = sentenceTypes.find(type => type.sentenceTypeUuid === selectedTypeUuid)
       const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.description : selectedTypeUuid
 
@@ -169,10 +179,10 @@ router.post(
       // Determine next step - typically back to summary page
       const nextStep = resolveNextStep(currentPath, req.session.formData)
       const fullPath = getFullRecallPath(nextStep, req, res)
-      res.redirect(fullPath)
+      return res.redirect(fullPath)
     } catch (error) {
       logger.error('Error processing sentence type selection', { error: error.message })
-      next(error)
+      return next(error)
     }
   },
 )

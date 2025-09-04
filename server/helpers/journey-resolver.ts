@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, no-continue, global-require, @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-explicit-any, no-continue, @typescript-eslint/no-require-imports */
 import type { Request } from 'express'
+import logger from '../../logger'
 
 // Use require to avoid TypeScript import issues with the steps config
 const stepsModule = require('../routes/recall/steps')
+
 const steps = (stepsModule.default || stepsModule) as Record<string, any>
 
 type StepConfig = {
@@ -19,18 +21,18 @@ type StepConfig = {
 }
 
 export function resolveNextStep(currentPath: string, formData: Record<string, unknown>, req?: Request): string {
-  console.log('Resolving next step for:', currentPath)
-  console.log('Form data:', formData)
-  
+  logger.debug('Resolving next step for:', currentPath)
+  logger.debug('Form data:', formData)
+
   const stepConfig = steps[currentPath] as StepConfig
   if (!stepConfig) {
-    console.log('No step config found for:', currentPath)
+    logger.warn('No step config found for:', currentPath)
     return '/error'
   }
 
   // Handle simple string next
   if (typeof stepConfig.next === 'string') {
-    console.log('Simple next step:', stepConfig.next)
+    logger.debug('Simple next step:', stepConfig.next)
     return stepConfig.next
   }
 
@@ -39,7 +41,7 @@ export function resolveNextStep(currentPath: string, formData: Record<string, un
     for (const rule of stepConfig.next) {
       // Simple string fallback
       if (typeof rule === 'string') {
-        console.log('Fallback next step:', rule)
+        logger.debug('Fallback next step:', rule)
         return rule
       }
 
@@ -51,7 +53,7 @@ export function resolveNextStep(currentPath: string, formData: Record<string, un
         if (typeof rule.fn === 'string') {
           // This would need to be resolved from the controller
           // For now, we'll skip string function names
-          console.log('Skipping string function name:', rule.fn)
+          logger.debug('Skipping string function name:', rule.fn)
           continue
         }
 
@@ -71,11 +73,11 @@ export function resolveNextStep(currentPath: string, formData: Record<string, un
             } as any)
 
           shouldNavigate = rule.fn(mockReq)
-          console.log('Function condition result:', shouldNavigate, 'for next:', rule.next)
+          logger.debug('Function condition result:', shouldNavigate, 'for next:', rule.next)
         }
 
         if (shouldNavigate) {
-          console.log('Navigating to:', rule.next)
+          logger.debug('Navigating to:', rule.next)
           return rule.next
         }
       }
@@ -83,7 +85,7 @@ export function resolveNextStep(currentPath: string, formData: Record<string, un
   }
 
   // No next step defined or no conditions met
-  console.log('No next step found or no conditions met, returning error')
+  logger.warn('No next step found or no conditions met, returning error')
   return '/error'
 }
 

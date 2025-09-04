@@ -70,7 +70,6 @@ router.post(
       try {
         // For now, just save to session until createRecall is implemented
         ;(req.session as any).savedRecall = recallData
-        const savedRecallId = `temp-${Date.now()}`
 
         // Clear recall session data
         delete req.session.formData
@@ -84,7 +83,7 @@ router.post(
           delete (req.session as any)[sessionModelFields.RAS_SENTENCES]
         }
         if ('adjustments' in req.session) {
-          delete (req.session as any).adjustments
+          delete req.session.adjustments
         }
 
         // Redirect to complete page

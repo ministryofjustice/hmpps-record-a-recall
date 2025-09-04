@@ -20,7 +20,7 @@ router.get('/no-sentences-interrupt', (req: Request, res: Response) => {
 
 router.post('/no-sentences-interrupt', (req: Request, res: Response) => {
   const { prisoner } = res.locals
-  
+
   // Redirect to person home or back to revocation date to try again
   res.redirect(`/person/${prisoner.prisonerNumber}`)
 })

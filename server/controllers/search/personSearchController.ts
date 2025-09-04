@@ -25,13 +25,17 @@ export default class PersonSearchController extends FormInitialStep {
     next()
   }
 
-  locals(req: any, res: any): Record<string, any> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     res.locals.errorMessage = req.flash('errorMessage')
 
     return super.locals(req, res)
   }
 
-  validateFields(req: any, res: any, callback?: (errors: any) => void): any {
+  validateFields(
+    req: ExtendedRequest,
+    res: Response,
+    callback?: (errors: Record<string, unknown>) => void,
+  ): Record<string, unknown> | void {
     if (!callback) {
       return {}
     }
@@ -44,8 +48,7 @@ export default class PersonSearchController extends FormInitialStep {
       if (errors.nomisId) {
         return callback({ ...errors })
       }
-      /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-      const validationErrors: any = {}
+      const validationErrors: Record<string, unknown> = {}
       let prisoner
       try {
         prisoner = await prisonerService.getPrisonerDetails(nomisId, username)
@@ -58,6 +61,7 @@ export default class PersonSearchController extends FormInitialStep {
       res.locals.nomisId = nomisId
       return callback({ ...errors, ...validationErrors })
     })
+    return undefined
   }
 
   successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {

@@ -8,7 +8,7 @@ export default class NotPossibleController extends RecallBaseController {
   locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
     const { nomisId, recallId } = res.locals
-    const entrypoint = getEntrypoint(req as any)
+    const entrypoint = getEntrypoint(req as ExtendedRequest & { sessionModel?: unknown })
     const backLink = entrypointUrl(entrypoint, nomisId)
     // We can't use the journey fields as we check recalls are possible before loading the recall being edited.
     const isEditRecall = !!recallId

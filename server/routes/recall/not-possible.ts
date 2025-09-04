@@ -28,7 +28,7 @@ router.get('/not-possible', (req: Request, res: Response) => {
   // Get base locals that would normally come from the parent controller
   const journeyBaseLink = `/person/${nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
   const cancelLink = `${journeyBaseLink}/confirm-cancel`
-  
+
   // Get CRDS validation errors from session
   const crdsValidationErrors = req.session.formData?.crdsValidationErrors || []
 

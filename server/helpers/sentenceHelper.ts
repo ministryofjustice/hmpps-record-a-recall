@@ -19,7 +19,11 @@ export function findSentenceAndCourtCase(
 }
 
 export async function getApplicableSentenceTypes(
-  req: Request | any,
+  req: Request & {
+    services?: {
+      courtCaseService?: { searchSentenceTypes: (params: unknown, username: string) => Promise<SentenceType[]> }
+    }
+  },
   sentence: RecallableCourtCaseSentence,
   courtCase: CourtCase,
   username: string,

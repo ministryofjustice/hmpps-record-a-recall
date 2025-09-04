@@ -2,6 +2,8 @@ import type { Router } from 'express'
 import express from 'express'
 import passport from 'passport'
 import flash from 'connect-flash'
+import superagent from 'superagent'
+import jwt from 'jsonwebtoken'
 import config from '../config'
 import auth from '../authentication/auth'
 import { HmppsUser } from '../interfaces/hmppsUser'
@@ -27,7 +29,7 @@ export default function setUpAuth(): Router {
       return res.send('<html><body><h1>Sign in</h1></body></html>')
     }
     // Normal flow: redirect to OAuth2 provider
-    passport.authenticate('oauth2')(req, res, next)
+    return passport.authenticate('oauth2')(req, res, next)
   })
 
   router.get('/sign-in/callback', async (req, res, next) => {
@@ -35,36 +37,39 @@ export default function setUpAuth(): Router {
     if (process.env.CYPRESS === 'true') {
       try {
         // Fetch the token from the stubbed auth endpoint
-        const superagent = require('superagent')
         const tokenResponse = await superagent
           .post(`${config.apis.hmppsAuth.url}/oauth/token`)
           .send('grant_type=authorization_code&client_id=test&client_secret=test&redirect_uri=test&code=test')
           .set('Content-Type', 'application/x-www-form-urlencoded')
-        
+
         const accessToken = tokenResponse.body.access_token
-        
+
         // Decode the token to get user details
-        const jwt = require('jsonwebtoken')
-        const decoded = jwt.decode(accessToken) as any
-        
+        const decoded = jwt.decode(accessToken) as { name?: string; user_name?: string; auth_source?: string } | null
+
+        if (!decoded) {
+          throw new Error('Failed to decode access token')
+        }
+
         // Extract the name and format it for display
         const fullName = decoded.name || 'john smith'
         const nameParts = fullName.split(' ')
-        const displayName = nameParts.length > 1 
-          ? `${nameParts[0][0].toUpperCase()}. ${nameParts[nameParts.length - 1].charAt(0).toUpperCase() + nameParts[nameParts.length - 1].slice(1)}`
-          : fullName
-        
+        const displayName =
+          nameParts.length > 1
+            ? `${nameParts[0][0].toUpperCase()}. ${nameParts[nameParts.length - 1].charAt(0).toUpperCase() + nameParts[nameParts.length - 1].slice(1)}`
+            : fullName
+
         req.user = {
           token: accessToken,
           username: decoded.user_name || 'TEST_USER',
           authSource: decoded.auth_source || 'nomis',
           name: fullName,
-          displayName: displayName,
+          displayName,
           userId: decoded.user_name || 'test-user-id',
         } as Express.User
-        
+
         // Mark the user as authenticated
-        req.login(req.user, (err) => {
+        return req.login(req.user, err => {
           if (err) return next(err)
           return res.redirect(req.session.returnTo || '/')
         })
@@ -72,10 +77,9 @@ export default function setUpAuth(): Router {
         logger.error('Error during Cypress authentication:', error)
         return res.redirect('/sign-in')
       }
-      return
     }
-    
-    passport.authenticate('oauth2', {
+
+    return passport.authenticate('oauth2', {
       successReturnToOrRedirect: req.session.returnTo || '/',
       failureRedirect: '/autherror',
     })(req, res, next)

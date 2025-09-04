@@ -1,7 +1,7 @@
 import type { Response } from 'express'
 import type { HmppsUser } from '../../interfaces/hmppsUser'
 import { ExtendedRequest } from '../base/ExpressBaseController'
-import { createExtendedRequestMock } from '../../test-utils/extendedRequestMock'
+import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
 import type { UpdateSentenceTypesResponse } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import UpdateSentenceTypesSummaryController from './updateSentenceTypesSummaryController'
 import RecallBaseController from './recallBaseController'
@@ -39,22 +39,17 @@ describe('UpdateSentenceTypesSummaryController', () => {
     controller = new UpdateSentenceTypesSummaryController({ route: '/update-sentence-types-summary' })
     req = createExtendedRequestMock({
       session: {
-        formData: {} as Record<string, any>,
-      },
+        formData: {} as Record<string, unknown>,
+      } as any,
       services: {
         courtCaseService: {
           updateSentenceTypes: jest.fn(),
-        },
-      },
+        } as any,
+      } as any,
       form: {
         values: {},
         options: {
           fields: {},
-        },
-      },
-      journeyModel: {
-        attributes: {
-          lastVisited: '',
         },
       },
       flash: jest.fn().mockReturnValue([]),

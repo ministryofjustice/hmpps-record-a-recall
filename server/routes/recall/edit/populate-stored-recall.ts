@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import PopulateStoredRecallController from '../../../controllers/recall/edit/populateStoredRecallController'
 import getCourtCaseOptionsFromRas from '../../../utils/rasCourtCasesUtils'
 import { sessionModelFields } from '../../../helpers/formWizardHelper'
@@ -6,9 +6,14 @@ import { setSessionValue } from '../../../helpers/sessionHelper'
 
 const router = Router()
 
-router.get('/populate-stored-recall', async (req, res, next) => {
+router.get('/populate-stored-recall', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const reqAsAny = req as any
+    const reqAsAny = req as Request & {
+      sessionModel?: unknown
+      session?: { formData?: Record<string, unknown> }
+      services?: unknown
+      user?: unknown
+    }
     const controller = new PopulateStoredRecallController({ route: '/populate-stored-recall' })
 
     // First, set up court case items as the controller's middleware does

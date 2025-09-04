@@ -163,7 +163,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: unknown }>).revocationDate.type).toBe(
           'mustBeAfterEarliestSentenceDate',
         )
         done()
@@ -191,7 +191,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: unknown }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()
@@ -206,7 +206,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: unknown }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()
@@ -221,7 +221,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: unknown }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()
@@ -236,7 +236,7 @@ describe('RevocationDateController', () => {
       ])
 
       controller.validateFields(req, res, errors => {
-        expect((errors as Record<string, { type: string; args?: any }>).revocationDate.type).toBe(
+        expect((errors as Record<string, { type: string; args?: unknown }>).revocationDate.type).toBe(
           'cannotBeWithinAdjustmentPeriod',
         )
         done()

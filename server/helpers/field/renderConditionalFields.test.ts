@@ -1,5 +1,6 @@
-import { ExtendedRequest, Field } from '../../controllers/base/ExpressBaseController'
-import renderConditionalFields, { FieldEntry } from './renderConditionalFields'
+import { Field, FieldEntry } from '../../types/field.types'
+import { ExtendedRequest } from '../../controllers/base/ExpressBaseController'
+import renderConditionalFields from './renderConditionalFields'
 import FeComponentsService from '../../services/feComponentsService'
 
 const feComponentsService = jest.mocked(new FeComponentsService(null))

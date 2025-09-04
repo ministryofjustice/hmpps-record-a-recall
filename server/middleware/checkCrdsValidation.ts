@@ -22,51 +22,52 @@ export default function checkCrdsValidation(calculationService: CalculationServi
 
     try {
       logger.info('Checking CRDS validation for recall', { nomisId, recallId, path: req.path })
-      
+
       // Check if recall is possible by calling CRDS
       const result = await calculationService.getTemporaryCalculation(nomisId, user.username)
-      
+
       logger.info('CRDS validation result', {
         nomisId,
         hasValidationMessages: !!result?.validationMessages,
-        validationMessageCount: result?.validationMessages?.length || 0
+        validationMessageCount: result?.validationMessages?.length || 0,
       })
-      
+
       // If there are validation messages, store them and redirect to not-possible page
       if (result.validationMessages && result.validationMessages.length > 0) {
         // Store validation errors in session for not-possible page
         if (!req.session.formData) {
           req.session.formData = {}
         }
-        req.session.formData.crdsValidationErrors = result.validationMessages.map((msg: any) => msg.message)
-        
+        req.session.formData.crdsValidationErrors = result.validationMessages.map(
+          (msg: { message: string }) => msg.message,
+        )
+
         // Store entrypoint if provided
         const entrypoint = req.query.entrypoint as string | undefined
         if (entrypoint) {
           req.session.formData.entrypoint = entrypoint
         }
-        
+
         // Store recallId if we're in an edit flow
         if (recallId) {
           req.session.formData.recallId = recallId
         }
-        
+
         logger.info('Recall not possible due to CRDS validation errors, redirecting to not-possible', {
           nomisId,
           errors: result.validationMessages,
-          redirectUrl: `${req.baseUrl}/not-possible`
+          redirectUrl: `${req.baseUrl}/not-possible`,
         })
-        
+
         // Save session and redirect to not-possible page
-        req.session.save((err: any) => {
+        return req.session.save((err: unknown) => {
           if (err) {
             logger.error('Error saving session:', err)
           }
           res.redirect(`${req.baseUrl}/not-possible`)
         })
-        return // Don't call next()
       }
-      
+
       // No validation errors, continue
       return next()
     } catch (error) {

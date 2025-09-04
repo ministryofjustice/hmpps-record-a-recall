@@ -9,7 +9,7 @@ import { ExtendedRequest } from '../controllers/base/ExpressBaseController'
  * Creates a mock ExtendedRequest object for testing
  * Ensures form.options.fields is properly typed
  */
-export function createExtendedRequestMock(overrides: any = {}): ExtendedRequest {
+export default function createExtendedRequestMock(overrides: Partial<ExtendedRequest> = {}): ExtendedRequest {
   const defaultReq = {
     params: {},
     session: {
@@ -34,15 +34,15 @@ export function createExtendedRequestMock(overrides: any = {}): ExtendedRequest 
   }
 
   // Deep merge overrides with defaults
-  const mergeDeep = (target: any, source: any) => {
-    const output = { ...target }
+  const mergeDeep = (target: unknown, source: unknown): unknown => {
+    const output = { ...(target as object) } as any
     if (isObject(target) && isObject(source)) {
       Object.keys(source).forEach(key => {
         if (isObject(source[key])) {
           if (!(key in target)) {
             Object.assign(output, { [key]: source[key] })
           } else {
-            output[key] = mergeDeep(target[key], source[key])
+            output[key] = mergeDeep((target as any)[key], source[key])
           }
         } else {
           Object.assign(output, { [key]: source[key] })
@@ -52,7 +52,7 @@ export function createExtendedRequestMock(overrides: any = {}): ExtendedRequest 
     return output
   }
 
-  const isObject = (item: any) => {
+  const isObject = (item: unknown): item is Record<string, unknown> => {
     return item && typeof item === 'object' && !Array.isArray(item)
   }
 

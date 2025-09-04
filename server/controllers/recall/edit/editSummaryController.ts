@@ -43,7 +43,8 @@ export default class EditSummaryController extends RecallBaseController {
         // Find existing UAL adjustments for this recall
         const existingAdjustments = await req.services.adjustmentsService.searchUal(nomisId, username, recallId)
         const ualAdjustments = existingAdjustments.filter(
-          (adj: any) => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
+          (adj: { adjustmentType: string; unlawfullyAtLarge?: { type?: string } }) =>
+            adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
         )
 
         const prisonerDetails = getPrisoner(req)
@@ -58,9 +59,11 @@ export default class EditSummaryController extends RecallBaseController {
             // Delete the duplicate UAL adjustments (keep the first one)
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
-              duplicateAdjustments.map(async (duplicateUal: any) => {
-                await req.services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
-                logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
+              duplicateAdjustments.map(async (duplicateUal) => {
+                if (duplicateUal.id) {
+                  await req.services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
+                  logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
+                }
               }),
             )
           }

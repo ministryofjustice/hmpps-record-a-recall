@@ -6,7 +6,7 @@ import resetRecallSession from '../../helpers/resetSessionHelper'
 export default class ResetAndRedirectToManualController extends RecallBaseController {
   async get(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      resetRecallSession(req as any)
+      resetRecallSession(req as ExtendedRequest & { sessionModel?: unknown; session?: unknown })
       res.redirect(`${req.baseUrl}/manual-recall-intercept`)
     } catch (err) {
       next(err)

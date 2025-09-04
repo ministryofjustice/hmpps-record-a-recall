@@ -17,7 +17,7 @@ export default function authorisationMiddleware(authorisedRoles: string[] = []):
       }
       // User is not authenticated, fall through to normal auth flow
     }
-    
+
     // authorities in the user token will always be prefixed by ROLE_.
     // Convert roles that are passed into this function without the prefix so that we match correctly.
     const authorisedAuthorities = authorisedRoles.map(role => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))

@@ -6,7 +6,7 @@ import summariseSentencesGroups from './CaseSentenceSummariser'
 import { RecallType } from '../@types/recallTypes'
 import { determineInvalidRecallTypes } from './RecallEligiblityCalculator'
 
-export default function revocationDateCrdsDataComparison(req: Request | any, res: Response) {
+export default function revocationDateCrdsDataComparison(req: Request, res: Response) {
   const sentences = getCrdsSentences(req) || []
   const breakdown = getBreakdown(req)
   const revocationDate = getRevocationDate(req)

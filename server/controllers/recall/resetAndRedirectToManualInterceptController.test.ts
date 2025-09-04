@@ -14,7 +14,7 @@ jest.mock('../../helpers/sessionHelper', () => ({
 jest.mock('../../helpers/resetSessionHelper', () => ({
   __esModule: true,
   default: jest.fn((req: any) => {
-    const helpers = require('../../helpers/sessionHelper')
+    const helpers = sessionHelper as typeof import('../../helpers/sessionHelper')
     helpers.setSessionValue(req, sessionModelFields.CURRENT_CASE_INDEX, 0)
     helpers.setSessionValue(req, sessionModelFields.MANUAL_RECALL_DECISIONS, [])
     helpers.setSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION, true)

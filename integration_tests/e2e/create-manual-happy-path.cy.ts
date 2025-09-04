@@ -41,9 +41,11 @@ context('Create recall happy path | MANUAL', () => {
     cy.url().then(url => {
       cy.log('Current URL after RTC date:', url)
     })
-    cy.get('h1, legend').first().then($el => {
-      cy.log('Page heading:', $el.text())
-    })
+    cy.get('h1, legend')
+      .first()
+      .then($el => {
+        cy.log('Page heading:', $el.text())
+      })
 
     // Step 4: Manual recall intercept
     Page.verifyOnPage<ManualInterceptPage>(ManualInterceptPage).verifyInstructions().clickContinue()

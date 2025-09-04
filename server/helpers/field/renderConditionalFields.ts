@@ -1,10 +1,11 @@
 import { Request } from 'express'
-import { Field } from '../../controllers/base/ExpressBaseController'
+import { Field, FieldEntry } from '../../types/field.types'
 
-export type FieldEntry = [string, Field]
+// Re-export FieldEntry for backward compatibility
+export type { FieldEntry }
 
 export default function renderConditionalFields(
-  req: Request | any,
+  req: Request & { services?: { feComponentsService?: { getComponent: (component: string, field: Field) => string } } },
   [key, field]: FieldEntry,
   allFieldsEntries: FieldEntry[],
 ) {
@@ -18,7 +19,7 @@ export default function renderConditionalFields(
     key,
     {
       ...field,
-      items: field.items.map((item: any) => {
+      items: field.items.map((item: { conditional?: unknown }) => {
         const conditionalFields = [item.conditional || []].flat()
         const components = conditionalFields.map(conditionalFieldKey => {
           const conditionalField = field.prefix

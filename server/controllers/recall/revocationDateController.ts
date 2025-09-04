@@ -18,7 +18,7 @@ import { getSessionValue, setSessionValue } from '../../helpers/sessionHelper'
 export default class RevocationDateController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
 
-  constructor(options?: any) {
+  constructor(options?: unknown) {
     super(options)
     this.recallRoutingService = new RecallRoutingService()
   }
@@ -31,12 +31,16 @@ export default class RevocationDateController extends RecallBaseController {
     return { ...locals, backLink }
   }
 
-  validateFields(req: any, res: any, callback?: (errors: any) => void): any {
+  validateFields(
+    req: ExtendedRequest,
+    res: Response,
+    callback?: (errors: Record<string, unknown>) => void,
+  ): Record<string, unknown> | void {
     if (!callback) {
       return {}
     }
     super.validateFields(req as ExtendedRequest, res as Response, async errorsParam => {
-      const validationErrors = { ...(errorsParam || {}) } as Record<string, any>
+      const validationErrors = { ...(errorsParam || {}) } as Record<string, unknown>
       const { values } = req.form
       const sentences = getCrdsSentences(req) || []
 
@@ -88,6 +92,7 @@ export default class RevocationDateController extends RecallBaseController {
 
       callback(validationErrors)
     })
+    return undefined
   }
 
   async successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {

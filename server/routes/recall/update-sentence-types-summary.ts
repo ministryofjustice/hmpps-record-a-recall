@@ -1,6 +1,4 @@
 import { Router, Request, Response, NextFunction } from 'express'
-import { z } from 'zod'
-import { validateWithZod } from '../../middleware/validation-middleware'
 import { resolveNextStep } from '../../helpers/journey-resolver'
 import { getFullRecallPath } from '../../helpers/routeHelper'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
@@ -14,7 +12,7 @@ import logger from '../../../logger'
 const router = Router()
 
 // Schema for the confirmation step (empty as it's just a continue button)
-const updateSentenceTypesSummarySchema = z.object({})
+// const updateSentenceTypesSummarySchema = z.object({})
 
 router.get(
   '/update-sentence-types-summary',
@@ -27,7 +25,7 @@ router.get(
       delete req.session.formData?.[sessionModelFields.CURRENT_SENTENCE_INDEX]
 
       // Get court cases from session
-      const courtCases = getCourtCaseOptions(req as any)
+      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
       const updatedSentences = (req.session.formData?.[sessionModelFields.UPDATED_SENTENCE_TYPES] || {}) as Record<
         string,
         { uuid: string; description: string }
@@ -150,13 +148,13 @@ router.post(
             type: 'error',
             message: 'You must update all sentence types before continuing',
           },
-        } as any
+        }
 
         return res.redirect(req.path)
       }
 
       // Get court cases for updating
-      const courtCases = getCourtCaseOptions(req as any)
+      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
 
       // Check if there are any updates to persist
       const sentenceUpdates = Object.entries(updatedSentences).map(([sentenceUuid, data]) => [
@@ -213,7 +211,7 @@ router.post(
 
         // Wait for all updates to complete
         const results = await Promise.all(updatePromises)
-        results.forEach(uuids => allUpdatedUuids.push(...uuids))
+        results.forEach((uuids: any) => allUpdatedUuids.push(...uuids))
 
         logger.info('Successfully updated all sentence types', {
           totalCourtCases: Object.keys(updatesByCourtCase).length,
@@ -269,22 +267,23 @@ router.post(
       // Determine next step
       const nextStep = resolveNextStep('/update-sentence-types-summary', req.session.formData)
       const fullPath = getFullRecallPath(nextStep, req, res)
-      res.redirect(fullPath)
+      return res.redirect(fullPath)
     } catch (error) {
       logger.error('Error processing update sentence types summary', { error })
 
-      if ((error as any).status === 400) {
-        req.session.formErrors = { api: { type: 'error', message: 'Invalid sentence type update request' } } as any
-      } else if ((error as any).status === 404) {
-        req.session.formErrors = { api: { type: 'error', message: 'Court case or sentence not found' } } as any
-      } else if ((error as any).status === 422) {
+      const errorWithStatus = error as { status?: number }
+      if (errorWithStatus.status === 400) {
+        req.session.formErrors = { api: { type: 'error', message: 'Invalid sentence type update request' } }
+      } else if (errorWithStatus.status === 404) {
+        req.session.formErrors = { api: { type: 'error', message: 'Court case or sentence not found' } }
+      } else if (errorWithStatus.status === 422) {
         req.session.formErrors = {
           api: { type: 'error', message: 'Unable to update sentence types - business rule violation' },
-        } as any
+        }
       } else {
         req.session.formErrors = {
           api: { type: 'error', message: 'Failed to update sentence types. Please try again.' },
-        } as any
+        }
       }
 
       return res.redirect(req.path)

@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 import type { CourtCase } from 'models'
 import MultipleSentenceDecisionController from './multipleSentenceDecisionController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
-import { createExtendedRequestMock } from '../../test-utils/extendedRequestMock'
+import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
 import * as sessionHelper from '../../helpers/sessionHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
@@ -96,21 +96,11 @@ describe('MultipleSentenceDecisionController', () => {
 
     req = createExtendedRequestMock({
       params: { courtCaseId: 'court-case-1' },
-      sessionModel: {
-        get: jest.fn() as jest.MockedFunction<(key: string) => unknown>,
-        set: jest.fn(),
-        unset: jest.fn(),
-      },
-      journeyModel: {
-        attributes: {
-          lastVisited: '/previous-page',
-        },
-      },
       flash: jest.fn().mockReturnValue([]),
       body: {},
       form: {
+        values: {},
         options: {
-          next: undefined,
           fields: {},
         },
       },
@@ -256,7 +246,9 @@ describe('MultipleSentenceDecisionController', () => {
         formWizardHelper.sessionModelFields.CURRENT_SENTENCE_INDEX,
         0,
       )
-      expect((req.form.options as any).next).toBe('/person/A1234BC/record-recall/select-sentence-type/sentence-1')
+      expect((req.form.options as { next?: string }).next).toBe(
+        '/person/A1234BC/record-recall/select-sentence-type/sentence-1',
+      )
       expect(superPostSpy).toHaveBeenCalled()
     })
   })

@@ -1,5 +1,5 @@
 import request from 'supertest'
-import express, { Express, Response } from 'express'
+import express, { Express } from 'express'
 import session from 'express-session'
 import nunjucks from 'nunjucks'
 import path from 'path'

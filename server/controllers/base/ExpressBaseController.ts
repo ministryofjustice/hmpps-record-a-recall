@@ -13,22 +13,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { flattenConditionalFields, reduceDependentFields, renderConditionalFields } from '../../helpers/field'
 import validateDateInput from '../../helpers/field/validateDateInput'
-import type { FieldEntry } from '../../helpers/field/renderConditionalFields'
-
-export interface Field {
-  id?: string
-  component?: string
-  value?: any
-  label?: { text: string }
-  nameForErrors?: string
-  errorMessages?: Record<string, string>
-  items?: any[]
-  [key: string]: any
-}
-
-export interface Fields {
-  [fieldName: string]: Field
-}
+import type { Field, Fields, FieldEntry } from '../../types/field.types'
 
 export interface FormOptions {
   fields: Fields
@@ -320,3 +305,6 @@ export default class ExpressBaseController {
     return this.validateDateInputFields(req, fields)
   }
 }
+
+// Re-export types for backward compatibility
+export type { Field, Fields, FieldEntry } from '../../types/field.types'

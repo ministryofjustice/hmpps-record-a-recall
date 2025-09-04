@@ -13,7 +13,9 @@ import logger from '../../../logger'
 export default class CheckYourAnswersController extends RecallBaseController {
   locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const { nomisId } = res.locals
-    const journeyData: RecallJourneyData = getJourneyDataFromRequest(req as any)
+    const journeyData: RecallJourneyData = getJourneyDataFromRequest(
+      req as ExtendedRequest & { sessionModel?: unknown },
+    )
 
     const editLink = (step: string) => `/person/${nomisId}/record-recall/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
@@ -27,7 +29,9 @@ export default class CheckYourAnswersController extends RecallBaseController {
 
   async saveValues(req: ExtendedRequest, res: Response, next: NextFunction) {
     try {
-      const journeyData: RecallJourneyData = getJourneyDataFromRequest(req as any)
+      const journeyData: RecallJourneyData = getJourneyDataFromRequest(
+        req as ExtendedRequest & { sessionModel?: unknown },
+      )
       const { nomisId } = res.locals
       const { username, activeCaseload } = res.locals.user
 
@@ -41,25 +45,23 @@ export default class CheckYourAnswersController extends RecallBaseController {
         sentenceIds: journeyData.sentenceIds,
       }
 
-      const createResponse = await (req as any).services.recallService.postRecall(recallToSave, username)
+      const createResponse = await req.services?.recallService.postRecall(recallToSave, username)
 
-      const ualToEdit = getUalToEdit(req as any) ?? null
-      const ualToCreate = getUalToCreate(req as any) ?? null
+      const ualToEdit = getUalToEdit(req as ExtendedRequest & { sessionModel?: unknown }) ?? null
+      const ualToCreate = getUalToCreate(req as ExtendedRequest & { sessionModel?: unknown }) ?? null
 
       if (ualToCreate !== null) {
         ualToCreate.recallId = createResponse.recallUuid
-        await (req as any).services.adjustmentsService.postUal(ualToCreate, username).catch(() => {
+        await req.services?.adjustmentsService.postUal(ualToCreate, username).catch(() => {
           logger.error('Error while posting UAL to adjustments API')
         })
       }
 
       if (ualToEdit !== null) {
         ualToEdit.recallId = ualToCreate === null ? createResponse.recallUuid : null
-        await (req as any).services.adjustmentsService
-          .updateUal(ualToEdit, username, ualToEdit.adjustmentId)
-          .catch(() => {
-            logger.error('Error while updating UAL in adjustments API')
-          })
+        await req.services?.adjustmentsService.updateUal(ualToEdit, username, ualToEdit.adjustmentId).catch(() => {
+          logger.error('Error while updating UAL in adjustments API')
+        })
       }
 
       return next()
@@ -69,7 +71,7 @@ export default class CheckYourAnswersController extends RecallBaseController {
   }
 
   successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {
-    ;(req as any).flash('action', `recorded`)
+    req.flash?.('action', `recorded`)
     return super.successHandler(req, res, next)
   }
 }

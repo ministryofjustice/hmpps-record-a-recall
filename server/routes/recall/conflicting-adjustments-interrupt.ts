@@ -20,7 +20,7 @@ router.get('/conflicting-adjustments-interrupt', (req: Request, res: Response) =
 
 router.post('/conflicting-adjustments-interrupt', (req: Request, res: Response) => {
   const { prisoner } = res.locals
-  
+
   // Continue to manual recall process
   res.redirect(`/person/${prisoner.prisonerNumber}/record-recall/manual-recall-intercept`)
 })

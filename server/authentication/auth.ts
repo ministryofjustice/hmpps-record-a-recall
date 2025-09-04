@@ -31,14 +31,14 @@ const authenticationMiddleware: AuthenticationMiddleware = verifyToken => {
         // Token verification failed, clear session and redirect
         req.logout(() => {
           req.session.destroy(() => {
-            return res.redirect('/sign-in')
+            res.redirect('/sign-in')
           })
         })
-        return
+        return undefined
       }
       // User not authenticated, fall through to normal redirect
     }
-    
+
     if (req.isAuthenticated() && (await verifyToken(req))) {
       return next()
     }
