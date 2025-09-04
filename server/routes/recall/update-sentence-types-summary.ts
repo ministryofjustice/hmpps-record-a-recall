@@ -8,6 +8,7 @@ import { createSentenceToCourtCaseMap } from '../../helpers/sentenceHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { UpdateSentenceTypesRequest } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../../logger'
+import { Services } from '../../services'
 
 const router = Router()
 
@@ -182,7 +183,7 @@ router.post(
         const allUpdatedUuids: string[] = []
 
         // Get services from req
-        const { services } = req as any
+        const { services } = req as Request & { services: Services }
         if (!services?.courtCaseService) {
           throw new Error('Court case service not available')
         }
@@ -211,7 +212,7 @@ router.post(
 
         // Wait for all updates to complete
         const results = await Promise.all(updatePromises)
-        results.forEach((uuids: any) => allUpdatedUuids.push(...uuids))
+        results.forEach((uuids: string[]) => allUpdatedUuids.push(...uuids))
 
         logger.info('Successfully updated all sentence types', {
           totalCourtCases: Object.keys(updatesByCourtCase).length,

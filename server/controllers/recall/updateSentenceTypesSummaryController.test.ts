@@ -2,6 +2,7 @@ import type { Response } from 'express'
 import type { HmppsUser } from '../../interfaces/hmppsUser'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
+import { Services } from '../../services'
 import type { UpdateSentenceTypesResponse } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import UpdateSentenceTypesSummaryController from './updateSentenceTypesSummaryController'
 import RecallBaseController from './recallBaseController'
@@ -40,12 +41,12 @@ describe('UpdateSentenceTypesSummaryController', () => {
     req = createExtendedRequestMock({
       session: {
         formData: {} as Record<string, unknown>,
-      } as any,
+      } as unknown as Express.Request['session'],
       services: {
         courtCaseService: {
           updateSentenceTypes: jest.fn(),
-        } as any,
-      } as any,
+        } as unknown as Services['courtCaseService'],
+      } as unknown as Services,
       form: {
         values: {},
         options: {

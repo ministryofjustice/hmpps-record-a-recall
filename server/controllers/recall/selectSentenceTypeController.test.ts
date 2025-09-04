@@ -3,6 +3,7 @@ import type { CourtCase } from 'models'
 import SelectSentenceTypeController from './selectSentenceTypeController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
+import { Services } from '../../services'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
 import * as sessionHelper from '../../helpers/sessionHelper'
@@ -79,12 +80,12 @@ describe('SelectSentenceTypeController', () => {
       params: { sentenceUuid: 'sentence-1' },
       session: {
         formData: {} as Record<string, unknown>,
-      } as any,
+      } as unknown as Express.Request['session'],
       services: {
         courtCaseService: {
           searchSentenceTypes: jest.fn().mockResolvedValue(mockSentenceTypes),
-        } as any,
-      } as any,
+        } as unknown as Services['courtCaseService'],
+      } as unknown as Services,
       flash: jest.fn().mockReturnValue([]),
       body: {},
       form: {

@@ -12,6 +12,8 @@ import {
 import ManageOffencesService from '../../services/manageOffencesService'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
+import { SummarisedSentence, SummarisedSentenceGroup } from '../../utils/sentenceUtils'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 const router = Router()
 
@@ -80,12 +82,12 @@ router.get('/check-sentences', async (req: Request, res: Response, next: NextFun
         caseRefAndCourt: `Case ${caseId}`,
         caseReference: caseId,
         courtName: 'Unknown court',
-        eligibleSentences: [] as any[],
-        ineligibleSentences: [] as any[],
+        eligibleSentences: [] as SummarisedSentence[],
+        ineligibleSentences: [] as SummarisedSentence[],
         hasEligibleSentences: true,
         hasIneligibleSentences: false,
-        sentences: [] as any[],
-      })) as any
+        sentences: [] as RecallableCourtCaseSentence[],
+      })) as SummarisedSentenceGroup[]
     }
 
     // Load offence names

@@ -1,11 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { min } from 'date-fns'
+// eslint-disable-next-line import/no-unresolved
+import { CourtCase } from 'models'
 import { revocationDateSchema } from '../../schemas/recall/dates.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 // import { resolveNextStep } from '../../helpers/journey-resolver' // Unused import
 
 import { RecallRoutingService } from '../../services/RecallRoutingService'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields, RecallJourneyData } from '../../helpers/formWizardHelper'
 import {
   getCrdsSentencesFromSession,
   getCourtCaseOptionsFromSession,
@@ -93,7 +95,7 @@ router.post(
       const sentences = getCrdsSentencesFromSession(req) || []
 
       if (sentences.length) {
-        const earliestSentenceDate = min(sentences.map(s => new Date((s as any).sentenceDate)))
+        const earliestSentenceDate = min(sentences.map(s => new Date((s as { sentenceDate: string }).sentenceDate)))
         if (revocationDate < earliestSentenceDate) {
           req.session.formErrors = {
             revocationDate: {
@@ -172,12 +174,12 @@ router.post(
         const routingResponse = await recallRoutingService.routeRecall({
           nomsId: prisoner.prisonerNumber,
           revocationDate,
-          courtCases: courtCases as any,
+          courtCases: courtCases as CourtCase[],
           adjustments,
           existingRecalls,
           calculationBreakdown: null,
           validationMessages: [],
-          journeyData: journeyData as any,
+          journeyData: journeyData as RecallJourneyData,
         })
 
         if (routingResponse.validationMessages.length > 0) {

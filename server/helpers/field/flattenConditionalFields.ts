@@ -13,7 +13,7 @@ export default function flattenConditionalFields([key, field]: FieldEntry) {
     const conditionals = [item.conditional || []].flat()
     const conditionalKeys = conditionals.map(conditional => {
       if (conditional instanceof Object && typeof conditional === 'object' && 'name' in conditional) {
-        return (conditional as any).name
+        return (conditional as { name: string }).name
       }
 
       return conditional

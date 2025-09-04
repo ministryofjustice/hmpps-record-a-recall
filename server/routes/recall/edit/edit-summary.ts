@@ -8,7 +8,8 @@ import getJourneyDataFromRequest, {
   sessionModelFields,
   getPrisoner,
 } from '../../../helpers/formWizardHelper'
-import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { RecallType } from '../../../@types/recallTypes'
 
 const router = Router()
 
@@ -80,7 +81,7 @@ router.post(
         // Find existing UAL adjustments for this recall
         const existingAdjustments = await services.adjustmentsService.searchUal(nomisId, username, recallId)
         const ualAdjustments = existingAdjustments.filter(
-          (adj: any) =>
+          (adj: AdjustmentDto) =>
             adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
         )
 
@@ -96,7 +97,7 @@ router.post(
             // Delete duplicate UAL adjustments
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
-              duplicateAdjustments.map(async (duplicateUal) => {
+              duplicateAdjustments.map(async duplicateUal => {
                 if (duplicateUal.id) {
                   await services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
                   logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
@@ -139,14 +140,18 @@ router.post(
       const recallUpdate = {
         prisonerId: nomisId,
         revocationDate: journeyData.revDateString,
-        recallTypeCode: journeyData.recallType as any,
+        recallTypeCode: journeyData.recallType as RecallType,
         returnToCustodyDate: journeyData.returnToCustodyDateString,
         createdByUsername: username,
         createdByPrison: activeCaseload,
         sentenceIds: journeyData.sentenceIds || [],
       }
 
-      await services.recallService.updateRecall(recallUpdate as any, nomisId, username)
+      await services.recallService.updateRecall(
+        recallUpdate as unknown as Parameters<typeof services.recallService.updateRecall>[0],
+        nomisId,
+        username,
+      )
       logger.info(`Updated recall ${recallId} successfully`)
 
       // Clear session data after successful save

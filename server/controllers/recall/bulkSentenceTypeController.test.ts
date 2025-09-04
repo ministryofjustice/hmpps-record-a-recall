@@ -6,6 +6,7 @@ import * as formWizardHelper from '../../helpers/formWizardHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
+import { Services } from '../../services'
 
 jest.mock('../../../logger')
 jest.mock('../../helpers/urlHelper', () => ({
@@ -106,12 +107,12 @@ describe('BulkSentenceTypeController', () => {
       params: { courtCaseId: 'court-case-1' },
       session: {
         formData: {} as Record<string, unknown>,
-      } as any,
+      } as unknown as Express.Request['session'],
       services: {
         courtCaseService: {
           searchSentenceTypes: jest.fn().mockResolvedValue(mockSentenceTypes),
-        } as any,
-      } as any,
+        } as unknown as Services['courtCaseService'],
+      } as unknown as Services,
       flash: jest.fn().mockReturnValue([]),
       body: {},
       form: {

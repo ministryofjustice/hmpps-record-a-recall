@@ -21,8 +21,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
   }
 
   checkJourneyProgress(req: ExtendedRequest, res: Response, next: NextFunction) {
-    const isEdit = getSessionValue(req as any, sessionModelFields.IS_EDIT)
-    const journeyComplete = getSessionValue(req as any, sessionModelFields.JOURNEY_COMPLETE)
+    const isEdit = getSessionValue(req, sessionModelFields.IS_EDIT)
+    const journeyComplete = getSessionValue(req, sessionModelFields.JOURNEY_COMPLETE)
 
     if (!isEdit || journeyComplete) {
       super.checkJourneyProgress(req as ExtendedRequest, res, next)
@@ -36,14 +36,16 @@ export default class RecallBaseController extends PrisonerDetailsController {
   locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req as ExtendedRequest, res)
     const mockSessionModel = {
-      get: (key: string) => getSessionValue(req as any, key),
+      get: (key: string) => getSessionValue(req, key),
       set: () => {},
       unset: () => {},
       toJSON: () => req.session?.formData || {},
       reset: () => {},
       save: () => {},
     }
-    const mockReq = { ...req, sessionModel: mockSessionModel } as any
+    const mockReq = { ...req, sessionModel: mockSessionModel } as unknown as Parameters<
+      typeof getJourneyDataFromRequest
+    >[0]
 
     const journeyData = getJourneyDataFromRequest(mockReq)
     const isEditRecall = journeyData.isEdit
@@ -53,7 +55,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const crdsValidationErrors = mockSessionModel.get(sessionModelFields.CRDS_ERRORS)
     const autoRecallFailErrors = mockSessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
     const selectedRecallType = journeyData.recallType
-    const relevantAdjustments: AdjustmentDto[] = (mockSessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) || []) as AdjustmentDto[]
+    const relevantAdjustments: AdjustmentDto[] = (mockSessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) ||
+      []) as AdjustmentDto[]
     const arrestDate: Date = journeyData.returnToCustodyDate
 
     const hasMultipleOverlappingUALTypeRecall: boolean =

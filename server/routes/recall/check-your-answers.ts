@@ -69,7 +69,7 @@ router.post(
 
       try {
         // For now, just save to session until createRecall is implemented
-        ;(req.session as any).savedRecall = recallData
+        ;(req.session as unknown as Record<string, unknown>).savedRecall = recallData
 
         // Clear recall session data
         delete req.session.formData
@@ -77,10 +77,10 @@ router.post(
         delete req.session.formErrors
         // Clear other session fields if they exist
         if (sessionModelFields.COURT_CASE_OPTIONS in req.session) {
-          delete (req.session as any)[sessionModelFields.COURT_CASE_OPTIONS]
+          delete (req.session as unknown as Record<string, unknown>)[sessionModelFields.COURT_CASE_OPTIONS]
         }
         if (sessionModelFields.RAS_SENTENCES in req.session) {
-          delete (req.session as any)[sessionModelFields.RAS_SENTENCES]
+          delete (req.session as unknown as Record<string, unknown>)[sessionModelFields.RAS_SENTENCES]
         }
         if ('adjustments' in req.session) {
           delete req.session.adjustments

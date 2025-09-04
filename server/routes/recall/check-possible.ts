@@ -1,4 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express'
+// eslint-disable-next-line import/no-unresolved
+import { Recall } from 'models'
 import { checkPossibleSchema } from '../../schemas/recall/check-possible.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 import { resolveNextStep } from '../../helpers/journey-resolver'
@@ -7,6 +9,7 @@ import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelp
 import logger from '../../../logger'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 const router = Router()
 
@@ -65,8 +68,8 @@ async function configureCheckPossible(req: Request, res: Response, next: NextFun
     const routingResponse = await recallRoutingService.routeRecallWithSmartFiltering(
       nomisId,
       cases,
-      existingAdjustments as any,
-      existingRecalls as any,
+      existingAdjustments as AdjustmentDto[],
+      existingRecalls as Recall[],
       breakdown,
       errors,
     )

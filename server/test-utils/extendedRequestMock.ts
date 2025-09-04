@@ -35,14 +35,14 @@ export default function createExtendedRequestMock(overrides: Partial<ExtendedReq
 
   // Deep merge overrides with defaults
   const mergeDeep = (target: unknown, source: unknown): unknown => {
-    const output = { ...(target as object) } as any
+    const output = { ...(target as object) } as Record<string, unknown>
     if (isObject(target) && isObject(source)) {
       Object.keys(source).forEach(key => {
         if (isObject(source[key])) {
           if (!(key in target)) {
             Object.assign(output, { [key]: source[key] })
           } else {
-            output[key] = mergeDeep((target as any)[key], source[key])
+            output[key] = mergeDeep((target as Record<string, unknown>)[key], source[key])
           }
         } else {
           Object.assign(output, { [key]: source[key] })

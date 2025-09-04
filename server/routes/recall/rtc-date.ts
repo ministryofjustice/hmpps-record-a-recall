@@ -241,7 +241,7 @@ router.post(
           const ualToSave: UAL = {
             ...ual,
             nomisId: prisoner.prisonerNumber,
-            bookingId: (prisonerDetails as any)?.bookingId,
+            bookingId: (prisonerDetails as { bookingId?: number })?.bookingId,
           }
 
           const conflictingAdjustments = identifyConflictingAdjustments(proposedUal, adjustmentsToConsider)

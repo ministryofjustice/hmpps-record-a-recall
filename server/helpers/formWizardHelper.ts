@@ -35,7 +35,7 @@ export default function getJourneyDataFromRequest(
     courtCaseCount,
     eligibleSentenceCount: getEligibleSentenceCount(req),
     sentenceIds,
-    isEdit: getSessionValue(req as any, sessionModelFields.IS_EDIT) as boolean,
+    isEdit: getSessionValue(req as unknown as Request, sessionModelFields.IS_EDIT) as boolean,
     // hasMultipleOverlappingUALTypeRecall: hasMultipleUALTypeRecallConflicting(req)
   }
 }
@@ -138,7 +138,7 @@ export function getRecallTypeCode(req: Request | { sessionModel?: unknown; sessi
 }
 
 export function isManualCaseSelection(req: Request | { sessionModel?: unknown; session?: unknown }): boolean {
-  return (getSessionValue(req as any, sessionModelFields.MANUAL_CASE_SELECTION) as boolean) === true
+  return (getSessionValue(req as unknown as Request, sessionModelFields.MANUAL_CASE_SELECTION) as boolean) === true
 }
 
 export function getCourtCases(req: Request | { sessionModel?: unknown; session?: unknown }): string[] {
@@ -150,12 +150,12 @@ export function inPrisonAtRecall(req: Request | { sessionModel?: unknown; sessio
 }
 
 export function getReturnToCustodyDate(req: Request | { sessionModel?: unknown; session?: unknown }): Date {
-  const returnToCustodyDate = getSessionValue(req as any, sessionModelFields.RTC_DATE) as string
+  const returnToCustodyDate = getSessionValue(req as unknown as Request, sessionModelFields.RTC_DATE) as string
   return returnToCustodyDate ? new Date(returnToCustodyDate) : null
 }
 
 export function getRevocationDate(req: Request | { sessionModel?: unknown; session?: unknown }): Date {
-  const revocationDate = getSessionValue(req as any, sessionModelFields.REVOCATION_DATE) as string
+  const revocationDate = getSessionValue(req as unknown as Request, sessionModelFields.REVOCATION_DATE) as string
   return revocationDate ? new Date(revocationDate) : null
 }
 
@@ -224,15 +224,22 @@ export function getDpsSentenceId(req: Request | { sessionModel?: unknown; sessio
 
 export function hasMultipleConflicting(req: Request | { sessionModel?: unknown; session?: unknown }): boolean {
   return (
-    (getSessionValue(req as any, sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS) as boolean) ===
-    true
+    (getSessionValue(
+      req as unknown as Request,
+      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+    ) as boolean) === true
   )
 }
 
 export function hasMultipleUALTypeRecallConflicting(
   req: Request | { sessionModel?: unknown; session?: unknown },
 ): boolean {
-  return (getSessionValue(req as any, sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) as boolean) === true
+  return (
+    (getSessionValue(
+      req as unknown as Request,
+      sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL,
+    ) as boolean) === true
+  )
 }
 
 export function getConflictingAdjustments(
@@ -270,5 +277,5 @@ export function getSentenceGroups(
 }
 
 function get<T>(req: Request | { sessionModel?: unknown; session?: unknown }, key: string): T {
-  return getSessionValue(req as any, key) as T
+  return getSessionValue(req as unknown as Request, key) as T
 }
