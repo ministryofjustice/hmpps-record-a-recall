@@ -1,11 +1,17 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import type { CourtCase } from 'models'
 import SelectSentenceTypeController from './selectSentenceTypeController'
+import { ExtendedRequest } from '../base/ExpressBaseController'
+import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
+import { Services } from '../../services'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
+import * as sessionHelper from '../../helpers/sessionHelper'
+import * as sentenceHelper from '../../helpers/sentenceHelper'
 
 jest.mock('../../../logger')
+jest.mock('../../helpers/sessionHelper')
+jest.mock('../../helpers/sentenceHelper')
 jest.mock('../../helpers/formWizardHelper', () => ({
   getCourtCaseOptions: jest.fn(),
   sessionModelFields: {
@@ -26,7 +32,7 @@ const mockGetCourtCaseOptionsFromRas = jest.requireMock('../../utils/rasCourtCas
 
 describe('SelectSentenceTypeController', () => {
   let controller: SelectSentenceTypeController
-  let req: FormWizard.Request
+  let req: ExtendedRequest
   let res: Response
   let next: NextFunction
 
@@ -70,26 +76,20 @@ describe('SelectSentenceTypeController', () => {
   beforeEach(() => {
     controller = new SelectSentenceTypeController({ route: '/select-sentence-type' })
     mockGetCourtCaseOptionsFromRas.mockReturnValue(mockCourtCases)
-    req = {
+    req = createExtendedRequestMock({
       params: { sentenceUuid: 'sentence-1' },
-      sessionModel: {
-        get: jest.fn(),
-        set: jest.fn(),
-        unset: jest.fn(),
-      },
+      session: {
+        formData: {} as Record<string, unknown>,
+      } as unknown as Express.Request['session'],
       services: {
         courtCaseService: {
           searchSentenceTypes: jest.fn().mockResolvedValue(mockSentenceTypes),
-        },
-      },
-      journeyModel: {
-        attributes: {
-          lastVisited: '/previous-page',
-        },
-      },
+        } as unknown as Services['courtCaseService'],
+      } as unknown as Services,
       flash: jest.fn().mockReturnValue([]),
       body: {},
       form: {
+        values: {},
         options: {
           fields: {
             sentenceType: {
@@ -101,7 +101,7 @@ describe('SelectSentenceTypeController', () => {
           },
         },
       },
-    } as unknown as FormWizard.Request
+    })
 
     res = {
       locals: {
@@ -123,11 +123,16 @@ describe('SelectSentenceTypeController', () => {
   describe('get', () => {
     beforeEach(() => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
         if (key === 'prisoner') return { dateOfBirth: '1990-01-01' }
         if (key === 'updatedSentences') return {}
         return undefined
       })
+      ;(sentenceHelper.findSentenceAndCourtCase as jest.Mock).mockReturnValue({
+        targetSentence: mockCourtCases[0].sentences[0],
+        targetCourtCase: mockCourtCases[0],
+      })
+      ;(sentenceHelper.getApplicableSentenceTypes as jest.Mock).mockResolvedValue(mockSentenceTypes)
     })
 
     it('should find the sentence and court case', async () => {
@@ -145,13 +150,10 @@ describe('SelectSentenceTypeController', () => {
       await controller.setSentenceTypeFieldItems(req, res, jest.fn())
       await controller.get(req, res, next)
 
-      expect(req.services.courtCaseService.searchSentenceTypes).toHaveBeenCalledWith(
-        {
-          age: 34, // Calculated from date of birth and conviction date
-          convictionDate: '2024-01-15',
-          offenceDate: '2024-01-09',
-          statuses: ['ACTIVE'],
-        },
+      expect(sentenceHelper.getApplicableSentenceTypes).toHaveBeenCalledWith(
+        req,
+        mockCourtCases[0].sentences[0],
+        mockCourtCases[0],
         'test-user',
       )
       expect(res.locals.sentenceTypes).toEqual(
@@ -163,11 +165,12 @@ describe('SelectSentenceTypeController', () => {
     })
 
     it('should set selected type if already updated', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'prisoner') return { dateOfBirth: '1990-01-01' }
-        if (key === 'updatedSentences')
-          return { 'sentence-1': { uuid: 'sds-uuid', description: 'Standard Determinate Sentence (SDS)' } }
-        return undefined
+      req.session.formData.prisoner = { dateOfBirth: '1990-01-01' }
+      req.session.formData.updatedSentences = {
+        'sentence-1': { uuid: 'sds-uuid', description: 'Standard Determinate Sentence (SDS)' },
+      }
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
+        return req.session.formData[key]
       })
 
       // Run middleware first to set up field items
@@ -179,6 +182,10 @@ describe('SelectSentenceTypeController', () => {
 
     it('should throw error if sentence not found', async () => {
       req.params.sentenceUuid = 'non-existent'
+      ;(sentenceHelper.findSentenceAndCourtCase as jest.Mock).mockReturnValue({
+        targetSentence: null,
+        targetCourtCase: null,
+      })
 
       await controller.get(req, res, next)
 
@@ -187,7 +194,7 @@ describe('SelectSentenceTypeController', () => {
     })
 
     it('should throw error if API fails', async () => {
-      req.services.courtCaseService.searchSentenceTypes = jest.fn().mockRejectedValue(new Error('API error'))
+      ;(sentenceHelper.getApplicableSentenceTypes as jest.Mock).mockRejectedValue(new Error('API error'))
 
       // Run middleware first to set up field items - should throw error
       const middlewareNext = jest.fn()
@@ -201,26 +208,30 @@ describe('SelectSentenceTypeController', () => {
   describe('post', () => {
     beforeEach(() => {
       req.body = { sentenceType: 'sds-uuid' }
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return {}
-        return undefined
+      req.session.formData.updatedSentences = {}
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
+        return req.session.formData[key]
+      })
+      ;(sessionHelper.setSessionValue as jest.Mock).mockImplementation((reqParam, key: string, value: unknown) => {
+        // eslint-disable-next-line no-param-reassign
+        reqParam.session.formData[key] = value
       })
     })
 
     it('should update session with selected sentence type', async () => {
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith('updatedSentences', {
+      expect(req.session.formData.updatedSentences).toEqual({
         'sentence-1': { uuid: 'sds-uuid', description: 'Standard Determinate Sentence (SDS)' },
       })
     })
 
     it('should always navigate back to summary', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return {}
-        if (key === 'sentencesInCurrentCase') return ['sentence-1', 'sentence-2', 'sentence-3']
-        if (key === 'currentSentenceIndex') return 0
-        return undefined
+      req.session.formData.updatedSentences = {}
+      req.session.formData.sentencesInCurrentCase = ['sentence-1', 'sentence-2', 'sentence-3']
+      req.session.formData.currentSentenceIndex = 0
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
+        return req.session.formData[key]
       })
 
       await controller.post(req, res, next)
@@ -231,31 +242,31 @@ describe('SelectSentenceTypeController', () => {
     })
 
     it('should not clear navigation state as sequential flow is removed', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return {}
-        if (key === 'sentencesInCurrentCase') return ['sentence-1']
-        if (key === 'currentSentenceIndex') return 0
-        return undefined
+      req.session.formData.updatedSentences = {}
+      req.session.formData.sentencesInCurrentCase = ['sentence-1']
+      req.session.formData.currentSentenceIndex = 0
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
+        return req.session.formData[key]
       })
 
       await controller.post(req, res, next)
 
       // Navigation state clearing removed - always goes back to summary
-      expect(req.sessionModel.unset).not.toHaveBeenCalled()
+      // Verify session data was not cleared (these values should still exist)
+      expect(req.session.formData.sentencesInCurrentCase).toBeDefined()
       expect(res.redirect).not.toHaveBeenCalled()
       expect(next).not.toHaveBeenCalled()
     })
 
     it('sequential flow removed - always navigates back to summary', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences')
-          return {
-            'sentence-1': { uuid: 'sds-uuid', description: 'SDS' },
-            'sentence-2': { uuid: 'eds-uuid', description: 'EDS' },
-          }
-        if (key === 'sentencesInCurrentCase') return ['sentence-1', 'sentence-2', 'sentence-3']
-        if (key === 'currentSentenceIndex') return 0
-        return undefined
+      req.session.formData.updatedSentences = {
+        'sentence-1': { uuid: 'sds-uuid', description: 'SDS' },
+        'sentence-2': { uuid: 'eds-uuid', description: 'EDS' },
+      }
+      req.session.formData.sentencesInCurrentCase = ['sentence-1', 'sentence-2', 'sentence-3']
+      req.session.formData.currentSentenceIndex = 0
+      ;(sessionHelper.getSessionValue as jest.Mock).mockImplementation((reqParam, key: string) => {
+        return req.session.formData[key]
       })
 
       await controller.post(req, res, next)

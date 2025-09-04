@@ -1,9 +1,10 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import type { CourtCase } from 'models'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 import RecallBaseController from './recallBaseController'
 import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getSessionValue, setSessionValue, unsetSessionValue } from '../../helpers/sessionHelper'
 import logger from '../../../logger'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -17,7 +18,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
   }
 
   private async getCommonApplicableSentenceTypes(
-    req: FormWizard.Request,
+    req: ExtendedRequest,
     sentencesInCase: Array<{ sentenceUuid: string; isUnknownSentenceType: boolean }>,
     courtCases: CourtCase[],
     targetCase: CourtCase,
@@ -58,7 +59,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
     }
   }
 
-  async setSentenceTypeFieldItems(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async setSentenceTypeFieldItems(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { courtCaseId } = req.params
       const courtCases = getCourtCaseOptions(req)
@@ -68,7 +69,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
         return next(new Error(`Court case not found: ${courtCaseId}`))
       }
 
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = getSessionValue(req, sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -102,13 +103,13 @@ export default class BulkSentenceTypeController extends RecallBaseController {
     }
   }
 
-  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async get(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { courtCaseId } = req.params
       res.locals.courtCaseId = courtCaseId
 
       // Get sentences from session
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = getSessionValue(req, sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -132,7 +133,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
     }
   }
 
-  async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async post(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const selectedTypeUuid = req.body.sentenceType
       const { courtCaseId } = req.params
@@ -144,7 +145,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
       // Get all sentences for this court case from session
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = getSessionValue(req, sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -154,7 +155,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       }
 
       // Get existing updated sentences or initialize empty object
-      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
+      const updatedSentences = (getSessionValue(req, sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
         string,
         { uuid: string; description: string }
       >
@@ -168,12 +169,12 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       })
 
       // Update session with all sentence type mappings
-      req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
+      setSessionValue(req, sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
 
       // Clear bulk update mode and related session data
-      req.sessionModel.unset(sessionModelFields.BULK_UPDATE_MODE)
-      req.sessionModel.unset(sessionModelFields.SENTENCES_IN_CURRENT_CASE)
-      req.sessionModel.unset(sessionModelFields.CURRENT_SENTENCE_INDEX)
+      unsetSessionValue(req, sessionModelFields.BULK_UPDATE_MODE)
+      unsetSessionValue(req, sessionModelFields.SENTENCES_IN_CURRENT_CASE)
+      unsetSessionValue(req, sessionModelFields.CURRENT_SENTENCE_INDEX)
 
       logger.info('Bulk sentence type update completed', {
         courtCaseId,
@@ -189,7 +190,7 @@ export default class BulkSentenceTypeController extends RecallBaseController {
     }
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
 
     return {

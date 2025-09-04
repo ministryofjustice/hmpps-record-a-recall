@@ -32,13 +32,13 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/prison-api/api/offenders/BA1234AB',
+        urlPattern: '/prison-api/api/offenders/A1234AB',
       },
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         jsonBody: {
-          offenderNo: 'BA1234AB',
+          offenderNo: 'A1234AB',
           bookingId: '1234',
           firstName: 'Mary',
           lastName: 'Jones',

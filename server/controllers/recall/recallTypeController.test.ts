@@ -15,6 +15,9 @@ describe('recallTypeController', () => {
 
   beforeEach(() => {
     req = {
+      session: {
+        formData: {} as Record<string, any>,
+      },
       sessionModel: {
         get,
         set: jest.fn(),
@@ -42,14 +45,12 @@ describe('recallTypeController', () => {
   describe('is invalid', () => {
     beforeEach(() => {
       // set up as invalid recall type
+      req.session.formData[formWizardHelper.sessionModelFields.RECALL_TYPE] = 'FTR_28'
+      req.session.formData[formWizardHelper.sessionModelFields.INVALID_RECALL_TYPES] = [
+        RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL,
+      ]
       get.mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.RECALL_TYPE) {
-          return 'FTR_28'
-        }
-        if (key === formWizardHelper.sessionModelFields.INVALID_RECALL_TYPES) {
-          return [RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL]
-        }
-        return null
+        return req.session.formData[key]
       })
     })
 
@@ -57,28 +58,24 @@ describe('recallTypeController', () => {
       config.featureToggles.unexpectedRecallTypeCheckEnabled = true
       await controller.successHandler(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.RECALL_TYPE_MISMATCH, true)
+      expect(req.session.formData[sessionModelFields.RECALL_TYPE_MISMATCH]).toBe(true)
     })
 
     it('sets invalid recall type flag to false if is invalid but feature toggle is false', async () => {
       config.featureToggles.unexpectedRecallTypeCheckEnabled = false
       await controller.successHandler(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.RECALL_TYPE_MISMATCH, false)
+      expect(req.session.formData[sessionModelFields.RECALL_TYPE_MISMATCH]).toBe(false)
     })
   })
 
   describe('is not invalid', () => {
     beforeEach(() => {
       // set up as valid recall type
+      req.session.formData[formWizardHelper.sessionModelFields.RECALL_TYPE] = 'FTR_28'
+      req.session.formData[formWizardHelper.sessionModelFields.INVALID_RECALL_TYPES] = []
       get.mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.RECALL_TYPE) {
-          return 'FTR_28'
-        }
-        if (key === formWizardHelper.sessionModelFields.INVALID_RECALL_TYPES) {
-          return []
-        }
-        return null
+        return req.session.formData[key]
       })
     })
 
@@ -86,14 +83,14 @@ describe('recallTypeController', () => {
       config.featureToggles.unexpectedRecallTypeCheckEnabled = true
       await controller.successHandler(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.RECALL_TYPE_MISMATCH, false)
+      expect(req.session.formData[sessionModelFields.RECALL_TYPE_MISMATCH]).toBe(false)
     })
 
     it('sets invalid recall type flag to false if is valid and feature toggle is false', async () => {
       config.featureToggles.unexpectedRecallTypeCheckEnabled = false
       await controller.successHandler(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.RECALL_TYPE_MISMATCH, false)
+      expect(req.session.formData[sessionModelFields.RECALL_TYPE_MISMATCH]).toBe(false)
     })
   })
 })

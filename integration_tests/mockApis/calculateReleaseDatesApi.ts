@@ -86,7 +86,7 @@ export default {
             },
             calculationRequestId: 123456789,
             bookingId: 12345678,
-            prisonerId: 'BA1234AB',
+            prisonerId: 'A1234AB',
             calculationStatus: 'CONFIRMED',
             calculationFragments: null,
             effectiveSentenceLength: {

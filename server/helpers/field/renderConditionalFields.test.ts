@@ -1,13 +1,14 @@
-import FormWizard from 'hmpo-form-wizard'
-import renderConditionalFields, { FieldEntry } from './renderConditionalFields'
+import { Field, FieldEntry } from '../../types/field.types'
+import { ExtendedRequest } from '../../controllers/base/ExpressBaseController'
+import renderConditionalFields from './renderConditionalFields'
 import FeComponentsService from '../../services/feComponentsService'
 
 const feComponentsService = jest.mocked(new FeComponentsService(null))
-const req: FormWizard.Request = {
+const req: ExtendedRequest = {
   services: {
     feComponentsService,
   },
-} as unknown as typeof req
+} as unknown as ExtendedRequest
 
 describe('Field helpers', () => {
   describe('#renderConditionalFields()', () => {
@@ -89,7 +90,7 @@ describe('Field helpers', () => {
           })
 
           it('should render conditional content', () => {
-            expect((response[1] as FormWizard.Field).items).toEqual([
+            expect((response[1] as Field).items).toEqual([
               {
                 value: '31b90233-7043-4633-8055-f24854545ead',
                 text: 'Item one',
@@ -133,7 +134,7 @@ describe('Field helpers', () => {
           })
 
           it('should render original item', () => {
-            expect((response[1] as FormWizard.Field).items).toEqual([
+            expect((response[1] as Field).items).toEqual([
               {
                 value: '31b90233-7043-4633-8055-f24854545ead',
                 text: 'Item one',
@@ -172,7 +173,7 @@ describe('Field helpers', () => {
         })
 
         it('should render conditional content', () => {
-          expect((response[1] as FormWizard.Field).items).toEqual([
+          expect((response[1] as Field).items).toEqual([
             {
               value: '31b90233-7043-4633-8055-f24854545ead',
               text: 'Item one',
@@ -245,7 +246,7 @@ describe('Field helpers', () => {
         })
 
         it('should render conditional content', () => {
-          expect((response[1] as FormWizard.Field).items).toEqual([
+          expect((response[1] as Field).items).toEqual([
             {
               value: '31b90233-7043-4633-8055-f24854545ead',
               text: 'Item one',

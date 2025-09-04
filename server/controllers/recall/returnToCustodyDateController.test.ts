@@ -43,10 +43,8 @@ describe('ReturnToCustodyDateController - saveValues', () => {
           inPrisonAtRecall: 'false',
         },
       },
-      sessionModel: {
-        set: jest.fn(),
-        unset: jest.fn(),
-        get: jest.fn(),
+      session: {
+        formData: {} as Record<string, any>,
       },
     } as unknown as Request
 
@@ -79,8 +77,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
 
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.UAL_TO_CREATE,
+    expect(req.session.formData[sessionModelFields.UAL_TO_CREATE]).toEqual(
       expect.objectContaining({
         firstDay: mockUal.firstDay,
         lastDay: mockUal.lastDay,
@@ -88,7 +85,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
         bookingId: mockPrisonerDetails.bookingId,
       }),
     )
-    expect(req.sessionModel.unset).toHaveBeenCalledWith(sessionModelFields.UAL_TO_EDIT)
+    expect(req.session.formData[sessionModelFields.UAL_TO_EDIT]).toBeUndefined()
     expect(next).toHaveBeenCalled()
   })
 
@@ -141,8 +138,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
 
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.UAL_TO_EDIT,
+    expect(req.session.formData[sessionModelFields.UAL_TO_EDIT]).toEqual(
       expect.objectContaining({
         adjustmentId: 'ebf9db45-5780-4788-aa39-7c443d3e1fb1',
         firstDay: mockUal.firstDay,
@@ -151,7 +147,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
         bookingId: mockPrisonerDetails.bookingId,
       }),
     )
-    expect(req.sessionModel.unset).toHaveBeenCalledWith(sessionModelFields.UAL_TO_CREATE)
+    expect(req.session.formData[sessionModelFields.UAL_TO_CREATE]).toBeUndefined()
     expect(next).toHaveBeenCalled()
   })
 
@@ -377,7 +373,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
 
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
+    expect(req.session.formData[sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL]).toBe(true)
     expect(next).toHaveBeenCalled()
   })
 
@@ -458,13 +454,9 @@ describe('ReturnToCustodyDateController - saveValues', () => {
 
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      false,
-    )
+    expect(req.session.formData[sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS]).toBe(false)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.UAL_TO_CREATE,
+    expect(req.session.formData[sessionModelFields.UAL_TO_CREATE]).toEqual(
       expect.objectContaining({
         firstDay: mockUal.firstDay,
         lastDay: mockUal.lastDay,
@@ -556,10 +548,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     //   sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
     //   expect.anything(),
     // )
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      true,
-    )
+    expect(req.session.formData[sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS]).toBe(true)
     //   expect(req.sessionModel.set).toHaveBeenCalledWith(
     //       sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL,
     //       false,
@@ -673,12 +662,9 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     ])
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      true,
-    )
+    expect(req.session.formData[sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS]).toBe(true)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
+    expect(req.session.formData[sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL]).toBe(true)
     expect(next).toHaveBeenCalled()
   })
 
@@ -758,10 +744,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
     ])
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      true,
-    )
+    expect(req.session.formData[sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS]).toBe(true)
     // expect(req.sessionModel.set).toHaveBeenCalledWith(
     //     sessionModelFields.CONFLICTING_ADJUSTMENTS,
     //     { exact: [], overlap: [], within: [] }
@@ -904,10 +887,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
 
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      true,
-    )
+    expect(req.session.formData[sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS]).toBe(true)
     expect(next).toHaveBeenCalled()
   })
 
@@ -959,10 +939,7 @@ describe('ReturnToCustodyDateController - saveValues', () => {
 
     returnToCustodyDateController.saveValues(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith(
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-      true,
-    )
+    expect(req.session.formData[sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS]).toBe(true)
     expect(next).toHaveBeenCalled()
   })
 })

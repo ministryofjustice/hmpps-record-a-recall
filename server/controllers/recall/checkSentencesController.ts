@@ -1,8 +1,8 @@
-import FormWizard from 'hmpo-form-wizard'
-import { Response } from 'express'
-
+import { Response, NextFunction } from 'express'
+import { Session } from 'express-session'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import {
   getEligibleSentenceCount,
@@ -18,12 +18,12 @@ export default class CheckSentencesController extends RecallBaseController {
     this.use(this.loadOffenceNames)
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const eligibleSentenceCount = getEligibleSentenceCount(req)
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
+    const eligibleSentenceCount = getEligibleSentenceCount(req as ExtendedRequest & { sessionModel?: unknown })
     const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
 
-    const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
-    const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
+    const calculation: CalculatedReleaseDates = getTemporaryCalc(req as ExtendedRequest & { sessionModel?: unknown })
+    const summarisedSentenceGroups = getSummarisedSentenceGroups(req as ExtendedRequest & { sessionModel?: unknown })
 
     res.locals.latestSled = calculation?.dates?.SLED || null
     res.locals.manualJourney = manualJourney
@@ -34,7 +34,8 @@ export default class CheckSentencesController extends RecallBaseController {
     const { prisoner } = res.locals
 
     let backLink = `/person/${prisoner.prisonerNumber}/record-recall/rtc-date`
-    if (req.journeyModel.attributes.lastVisited?.includes('update-sentence-types-summary')) {
+    const lastVisited = (req.session as Session & { lastVisited?: string })?.lastVisited || ''
+    if (lastVisited.includes('update-sentence-types-summary')) {
       backLink = `/person/${prisoner.prisonerNumber}/record-recall/update-sentence-types-summary`
     } else if (locals.isEditRecall) {
       backLink = `/person/${prisoner.prisonerNumber}/recall/${locals.recallId}/edit/edit-summary`
@@ -43,13 +44,13 @@ export default class CheckSentencesController extends RecallBaseController {
     return { ...locals, backLink }
   }
 
-  async getOffenceNameTitle(req: FormWizard.Request, offenceCodes: string[]) {
-    return new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
+  async getOffenceNameTitle(req: ExtendedRequest, offenceCodes: string[]) {
+    return new ManageOffencesService().getOffenceMap(offenceCodes, (req as Express.Request).user?.token)
   }
 
-  async loadOffenceNames(req: FormWizard.Request, res: Response, next: () => void) {
+  async loadOffenceNames(req: ExtendedRequest, res: Response, next: NextFunction) {
     try {
-      const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
+      const summarisedSentenceGroups = getSummarisedSentenceGroups(req as ExtendedRequest & { sessionModel?: unknown })
       const offenceCodes = summarisedSentenceGroups
         .flatMap(group => group.sentences || [])
         .map(charge => charge.offenceCode)

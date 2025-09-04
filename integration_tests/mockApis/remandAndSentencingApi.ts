@@ -125,7 +125,7 @@ export default {
       },
     })
   },
-  stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
+  stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'A1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
@@ -311,7 +311,7 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPath: '/remand-and-sentencing-api/recall/person/BA1234AB',
+        urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
       },
       response: {
         status: 200,
@@ -320,7 +320,7 @@ export default {
         jsonBody: [
           {
             recallUuid: 'ABC',
-            prisonerId: 'BA1234AB',
+            prisonerId: 'A1234AB',
             revocationDate: '2018-03-03T00:00:00.000Z',
             returnToCustodyDate: null,
             recallType: {

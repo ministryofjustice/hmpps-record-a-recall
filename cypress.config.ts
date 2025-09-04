@@ -4,6 +4,7 @@ import auth from './integration_tests/mockApis/auth'
 import manageUsers from './integration_tests/mockApis/manageUsersApi'
 import tokenVerification from './integration_tests/mockApis/tokenVerification'
 import prisonerSearch from './integration_tests/mockApis/prisonerSearchApi'
+import prisonApi from './integration_tests/mockApis/prisonApi'
 import remandAndSentencingApi from './integration_tests/mockApis/remandAndSentencingApi'
 import calculateReleaseDatesApi from './integration_tests/mockApis/calculateReleaseDatesApi'
 import courtRegister from './integration_tests/mockApis/courtRegisterApi'
@@ -31,6 +32,7 @@ export default defineConfig({
         ...manageUsers,
         ...tokenVerification,
         ...prisonerSearch,
+        ...prisonApi,
         ...remandAndSentencingApi,
         ...calculateReleaseDatesApi,
         ...courtRegister,

@@ -1,15 +1,17 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 
 import {
   RecordARecallCalculationResult,
   ValidationMessage,
+  SentenceAndOffenceWithReleaseArrangements,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
 import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import { setSessionValue } from '../../helpers/sessionHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
@@ -19,12 +21,12 @@ import { COURT_MESSAGES } from '../../utils/courtConstants'
 export default class CheckPossibleController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
 
-  constructor(options: FormWizard.Controller.Options) {
+  constructor(options?: unknown) {
     super(options)
     this.recallRoutingService = new RecallRoutingService()
   }
 
-  async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  async configure(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
       let calculationResult: RecordARecallCalculationResult = null
@@ -132,7 +134,7 @@ export default class CheckPossibleController extends RecallBaseController {
 
         const sentences = await this.getCrdsSentences(req, res)
 
-        const nomisSentenceInformation = sentences.map(sentence => {
+        const nomisSentenceInformation = sentences.map((sentence: SentenceAndOffenceWithReleaseArrangements) => {
           return {
             nomisSentenceSequence: sentence.sentenceSequence,
             nomisBookingId: sentence.bookingId,
@@ -143,16 +145,16 @@ export default class CheckPossibleController extends RecallBaseController {
 
         res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
-        const matchedRaSSentences = sentencesFromRasCases.filter(sentence =>
+        const matchedRaSSentences = sentencesFromRasCases.filter((sentence: { sentenceUuid?: string }) =>
           dpsSentenceSequenceIds.some(mapping => mapping.dpsSentenceId === sentence.sentenceUuid),
         )
 
-        res.locals.rasSentences = matchedRaSSentences.map(sentence => ({
+        res.locals.rasSentences = matchedRaSSentences.map((sentence: { sentenceUuid?: string }) => ({
           ...sentence,
           dpsSentenceUuid: sentence.sentenceUuid,
         }))
 
-        res.locals.crdsSentences = sentences.map(sentence => ({
+        res.locals.crdsSentences = sentences.map((sentence: SentenceAndOffenceWithReleaseArrangements) => ({
           ...sentence,
           dpsSentenceUuid: dpsSentenceSequenceIds.find(
             mapping => mapping.nomisSentenceId.nomisSentenceSequence === sentence.sentenceSequence,
@@ -180,15 +182,15 @@ export default class CheckPossibleController extends RecallBaseController {
     }
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
 
-    req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
-    req.sessionModel.set(sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
+    setSessionValue(req, sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
+    setSessionValue(req, sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
 
     // Set manual route if STANDARD_RECALL_255 error occurred
     if (res.locals.forceManualRoute) {
-      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+      setSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION, true)
     }
 
     const { routingResponse } = res.locals
@@ -196,7 +198,7 @@ export default class CheckPossibleController extends RecallBaseController {
       Object.entries(routingResponse.sessionUpdates).forEach(([key, value]) => {
         const sessionField = this.mapToSessionField(key)
         if (sessionField) {
-          req.sessionModel.set(sessionField, value)
+          setSessionValue(req, sessionField, value)
         }
       })
 
@@ -205,14 +207,14 @@ export default class CheckPossibleController extends RecallBaseController {
       })
     }
 
-    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, res.locals.courtCases)
-    req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.crdsSentences)
-    req.sessionModel.set(sessionModelFields.RAS_SENTENCES, res.locals.rasSentences)
-    req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
-    req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
-    req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
-    req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
-    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, res.locals.summarisedSentenceGroups)
+    setSessionValue(req, sessionModelFields.COURT_CASE_OPTIONS, res.locals.courtCases)
+    setSessionValue(req, sessionModelFields.SENTENCES, res.locals.crdsSentences)
+    setSessionValue(req, sessionModelFields.RAS_SENTENCES, res.locals.rasSentences)
+    setSessionValue(req, sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
+    setSessionValue(req, sessionModelFields.BREAKDOWN, res.locals.breakdown)
+    setSessionValue(req, sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
+    setSessionValue(req, sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
+    setSessionValue(req, sessionModelFields.SUMMARISED_SENTENCES, res.locals.summarisedSentenceGroups)
 
     return { ...locals }
   }
@@ -229,7 +231,7 @@ export default class CheckPossibleController extends RecallBaseController {
     return fieldMap[serviceFieldName] || null
   }
 
-  recallPossible(req: FormWizard.Request, res: Response) {
+  recallPossible(req: ExtendedRequest, res: Response) {
     // Check if we should go to manual route due to STANDARD_RECALL_255
     if (res.locals.forceManualRoute) {
       // We still return true to allow the recall, but the manual flag will route it correctly later
@@ -238,13 +240,13 @@ export default class CheckPossibleController extends RecallBaseController {
     return getRecallRoute(req) && getRecallRoute(req) !== 'NOT_POSSIBLE'
   }
 
-  getCrdsSentences(req: FormWizard.Request, res: Response) {
+  getCrdsSentences(req: ExtendedRequest, res: Response) {
     const { calcReqId, username } = res.locals
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
   }
 
   async getNomisToDpsMapping(
-    req: FormWizard.Request,
+    req: ExtendedRequest,
     nomisSentenceInformation: NomisSentenceId[],
   ): Promise<NomisDpsSentenceMapping[]> {
     return req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)

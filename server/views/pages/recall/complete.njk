@@ -1,0 +1,31 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% set pageTitle = "Recall recorded" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          Recall recorded
+        </h1>
+        <div class="govuk-panel__body">
+          Your recall has been successfully recorded
+        </div>
+      </div>
+
+      <p class="govuk-body">
+        The recall for {{ prisoner.firstName }} {{ prisoner.lastName }} has been recorded.
+      </p>
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+      <p class="govuk-body">
+        The recall will be processed and the prisoner's records will be updated.
+      </p>
+
+      <p class="govuk-body">
+        <a href="/person/{{ prisoner.prisonerNumber }}" class="govuk-link">Return to prisoner profile</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

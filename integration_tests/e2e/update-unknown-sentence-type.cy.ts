@@ -45,14 +45,11 @@ context('Updating single unknown sentence type - Pragmatic Approach', () => {
 
     // Verify court case selection shows unknown sentence
     Page.verifyOnPage(SelectCourtCasesPage)
-    cy.get('h2.govuk-heading-m').should('contain', 'CC123/2024')
-    cy.get('h2.govuk-heading-m').should('contain', 'Aberystwyth Crown Court')
+    cy.get('.govuk-body').should('contain', 'CC123/2024')
+    cy.get('.govuk-body').should('contain', '15/01/2024')
 
-    // Verify sentence type shows as "Required"
-    cy.get('.govuk-tag--blue').should('contain', 'Required')
-
-    // Select the court case
-    cy.get('input[name="activeSentenceChoice"][value="YES"]').click()
+    // Select the court case - using the actual field name 'includeCase'
+    cy.get('input[name="includeCase"][value="YES"]').click()
     cy.get('[data-qa="continue-btn"]').click()
 
     // Verify update sentence types summary page
@@ -88,7 +85,7 @@ context('Updating single unknown sentence type - Pragmatic Approach', () => {
     Page.verifyOnPage(WasInPrisonQuestionPage).selectYes().clickContinue()
     Page.verifyOnPage<ManualInterceptPage>(ManualInterceptPage).clickContinue()
     Page.verifyOnPage(SelectCourtCasesPage)
-    cy.get('input[name="activeSentenceChoice"][value="YES"]').click()
+    cy.get('input[name="includeCase"][value="YES"]').click()
     cy.get('[data-qa="continue-btn"]').click()
 
     // On update summary page

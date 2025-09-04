@@ -1,8 +1,9 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 
 import FormInitialStep from '../base/formInitialStep'
 import { sanitizeString } from '../../utils/utils'
+import { setSessionValue } from '../../helpers/sessionHelper'
 import logger from '../../../logger'
 import config from '../../config'
 
@@ -12,7 +13,7 @@ export default class PersonSearchController extends FormInitialStep {
     this.use(this.checkForRedirect.bind(this))
   }
 
-  checkForRedirect(req: FormWizard.Request, res: Response, next: NextFunction): void {
+  checkForRedirect(req: ExtendedRequest, res: Response, next: NextFunction): void {
     // Check if not in local development and redirect to DPS home
     const isLocalDevelopment = config.domain.includes('localhost') || config.domain.includes('127.0.0.1')
 
@@ -24,14 +25,21 @@ export default class PersonSearchController extends FormInitialStep {
     next()
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     res.locals.errorMessage = req.flash('errorMessage')
 
     return super.locals(req, res)
   }
 
-  async validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
-    super.validateFields(req, res, async errors => {
+  validateFields(
+    req: ExtendedRequest,
+    res: Response,
+    callback?: (errors: Record<string, unknown>) => void,
+  ): Record<string, unknown> | void {
+    if (!callback) {
+      return {}
+    }
+    super.validateFields(req as ExtendedRequest, res as Response, async errors => {
       const { values } = req.form
       const nomisId = sanitizeString(String(values.nomisId))
       const { prisonerService } = req.services
@@ -40,8 +48,7 @@ export default class PersonSearchController extends FormInitialStep {
       if (errors.nomisId) {
         return callback({ ...errors })
       }
-      /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-      const validationErrors: any = {}
+      const validationErrors: Record<string, unknown> = {}
       let prisoner
       try {
         prisoner = await prisonerService.getPrisonerDetails(nomisId, username)
@@ -54,11 +61,12 @@ export default class PersonSearchController extends FormInitialStep {
       res.locals.nomisId = nomisId
       return callback({ ...errors, ...validationErrors })
     })
+    return undefined
   }
 
-  successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
+  successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {
     const { nomisId } = res.locals
-    req.sessionModel.set('nomisId', nomisId)
+    setSessionValue(req, 'nomisId', nomisId)
     res.redirect(`/person/${nomisId}`)
   }
 }

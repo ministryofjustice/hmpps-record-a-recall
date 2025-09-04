@@ -1,9 +1,11 @@
-import FormWizard from 'hmpo-form-wizard'
+import { Request } from 'express'
+import { Field, FieldEntry } from '../../types/field.types'
 
-export type FieldEntry = [string, FormWizard.Field]
+// Re-export FieldEntry for backward compatibility
+export type { FieldEntry }
 
 export default function renderConditionalFields(
-  req: FormWizard.Request,
+  req: Request & { services?: { feComponentsService?: { getComponent: (component: string, field: Field) => string } } },
   [key, field]: FieldEntry,
   allFieldsEntries: FieldEntry[],
 ) {
@@ -17,7 +19,7 @@ export default function renderConditionalFields(
     key,
     {
       ...field,
-      items: field.items.map(item => {
+      items: field.items.map((item: { conditional?: unknown }) => {
         const conditionalFields = [item.conditional || []].flat()
         const components = conditionalFields.map(conditionalFieldKey => {
           const conditionalField = field.prefix

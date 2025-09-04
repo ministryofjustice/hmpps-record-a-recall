@@ -1,47 +1,78 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
+/**
+ * Initial form step controller
+ * Provides compatibility layer between FormWizard and Express patterns
+ */
 
-import { NextFunction, Response } from 'express'
-import FormWizard from 'hmpo-form-wizard'
-import { flattenConditionalFields, reduceDependentFields, renderConditionalFields } from '../../helpers/field'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+import { Response } from 'express'
+import ExpressBaseController, { ExtendedRequest, Field, Fields, FormError } from './ExpressBaseController'
 import validateDateInput from '../../helpers/field/validateDateInput'
-import { FieldEntry } from '../../helpers/field/renderConditionalFields'
 
-export default class FormInitialStep extends FormWizard.Controller {
+export default class FormInitialStep extends ExpressBaseController {
   middlewareSetup() {
     super.middlewareSetup()
-    this.use(this.setupConditionalFields)
+    this.use(this.setupConditionalFields.bind(this))
   }
 
-  getInitialValues(_req: FormWizard.Request, _res: Response): { [key: string]: any } {
-    // Override in subclass to return initial values for form
-    return {}
+  // Compatibility methods for FormWizard interface
+  // Using 'any' intentionally for backward compatibility during migration
+  getValues(req: any, res: any, callback?: (err: any, values?: any) => void): any {
+    if (callback) {
+      try {
+        const values = super.getValues(req, res)
+        callback(null, values)
+      } catch (err) {
+        callback(err)
+      }
+      return undefined
+    }
+    return super.getValues(req, res)
   }
 
-  // @ts-nocheck
-  getValues(req: FormWizard.Request, res: Response, callback: (err: any, values?: any) => void) {
-    return super.getValues(req, res, (err, values) => {
-      if (err) return callback(err)
-
-      const initialValues = this.getInitialValues(req, res)
-      // @ts-expect-error spread
-      const formValues = { ...values }
-
-      Object.keys(initialValues).forEach(fieldName => {
-        if (formValues[fieldName] === undefined) {
-          formValues[fieldName] = initialValues[fieldName]
-        }
-      })
-
-      return callback(null, formValues)
-    })
+  validateFields(req: any, res: any, callback?: (errors: any) => void): any {
+    if (callback) {
+      try {
+        const errors = super.validateFields?.(req, res) || {}
+        callback(errors)
+      } catch (err) {
+        callback(err)
+      }
+      return undefined
+    }
+    return super.validateFields?.(req, res) || {}
   }
 
-  valueOrFieldName(arg: number | { field: string }, fields: Record<string, { label: { text: string } }>) {
-    return typeof arg === 'number' ? arg : `the ${fields[arg?.field]?.label?.text?.toLowerCase()}`
+  successHandler(req: any, res: any, callback?: (err?: any) => void) {
+    if (callback) {
+      callback()
+    }
   }
 
-  getErrorDetail(error: { args: any; key: string; type: string }, res: Response): { text: string; href: string } {
-    const { fields } = res.locals.options
+  saveValues(req: any, res: any, callback?: (err?: any) => void) {
+    if (callback) {
+      callback()
+    }
+  }
+
+  get(req: any, res: any, next?: any) {
+    next?.()
+  }
+
+  post(req: any, res: any, next?: any) {
+    next?.()
+  }
+
+  configure(req: any, res: any, next?: any) {
+    next?.()
+  }
+
+  use(middleware: any) {
+    super.use(middleware)
+  }
+
+  protected getErrorDetail(error: FormError, fields: Fields): { text: string; href: string } {
     const field = fields[error.key]
     const fieldName: string = field?.nameForErrors || field?.label?.text
     const errorMessageOverrides = field?.errorMessages || {}
@@ -83,45 +114,19 @@ export default class FormInitialStep extends FormWizard.Controller {
     }
   }
 
-  renderConditionalFields(req: FormWizard.Request, res: Response) {
-    const { options } = req.form
-
-    options.fields = Object.fromEntries(
-      Object.entries(options.fields).map(([key, field]: FieldEntry, _, obj: FieldEntry[]) =>
-        renderConditionalFields(req, [key, field], obj),
-      ),
-    )
-    res.locals.fields = options.fields
-  }
-
-  setupConditionalFields(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const { options } = req.form
-
-    const stepFieldsArray = Object.entries(options.fields)
-    const stepFields = stepFieldsArray.map(flattenConditionalFields)
-    const dependentFields = stepFieldsArray.reduce(reduceDependentFields(options.allFields), {})
-
-    options.fields = {
-      ...Object.fromEntries(stepFields),
-      ...dependentFields,
-    }
-
-    next()
-  }
-
-  locals(req: FormWizard.Request, res: Response): Record<string, any> {
+  public locals(req: ExtendedRequest, res: Response): Record<string, any> {
     const { options, values } = res.locals
     if (!options?.fields) {
       return {}
     }
 
     const { allFields } = options
-    const fields = this.setupFields(req, allFields, options.fields, values, res.locals.errorlist)
+    const fields = this.setupFields(req, options.fields, values, res.locals.errorlist)
 
     const validationErrors: { text: string; href: string }[] = []
 
-    res.locals.errorlist.forEach((error: { args: any; key: string; type: string }) => {
-      const errorDetail = this.getErrorDetail(error, res)
+    res.locals.errorlist.forEach((error: FormError) => {
+      const errorDetail = this.getErrorDetail(error, fields)
       validationErrors.push(errorDetail)
       const field = fields[error.key]
       if (field) {
@@ -135,11 +140,14 @@ export default class FormInitialStep extends FormWizard.Controller {
     }
   }
 
-  formError(fieldName: string, type: string): FormWizard.Controller.Error {
-    return new FormWizard.Controller.Error(fieldName, { args: {}, type, url: '/' })
+  protected formError(fieldName: string, type: string): FormError {
+    return {
+      key: fieldName,
+      type,
+    }
   }
 
-  setupDateInputFields(fields: FormWizard.Fields, errorlist: FormWizard.Controller.Error[]): FormWizard.Fields {
+  protected setupDateInputFields(fields: Fields, errorlist: FormError[]): Fields {
     Object.values(fields)
       .filter(field => field.component === 'govukDateInput')
       .forEach(field => {
@@ -151,7 +159,6 @@ export default class FormInitialStep extends FormWizard.Controller {
         }
         const [year, month, day] = value ? (value as string).split('-') : []
 
-        // @ts-expect-error This is fine
         // eslint-disable-next-line no-param-reassign
         field.items = [
           {
@@ -175,39 +182,16 @@ export default class FormInitialStep extends FormWizard.Controller {
             name: `${field.id}-year`,
             value: year || '',
           },
-        ] as unknown
+        ]
       })
 
     return fields
   }
 
-  setupFields(
-    req: FormWizard.Request,
-    allFields: { [field: string]: FormWizard.Field },
-    originalFields: FormWizard.Fields,
-    values: { [field: string]: any },
-    errorlist: FormWizard.Controller.Error[],
-  ): FormWizard.Fields {
-    const fields = originalFields
-
-    Object.keys(fields).forEach(fieldName => {
-      const value = values[fieldName]
-      fields[fieldName].value = value?.value || value
-    })
-
-    return this.setupDateInputFields(fields, errorlist)
-  }
-
-  render(req: FormWizard.Request, res: Response, next: NextFunction) {
-    this.renderConditionalFields(req, res)
-
-    return super.render(req, res, next)
-  }
-
-  populateDateInputFieldValues(req: FormWizard.Request) {
+  protected populateDateInputFieldValues(req: ExtendedRequest) {
     Object.values(req.form.options.fields)
-      .filter(field => field.component === 'govukDateInput')
-      .map(field => field.id)
+      .filter((field: Field) => field.component === 'govukDateInput')
+      .map((field: Field) => field.id)
       .forEach(id => {
         const day = req.body[`${id}-day`]
         const month = req.body[`${id}-month`]
@@ -224,12 +208,13 @@ export default class FormInitialStep extends FormWizard.Controller {
       })
   }
 
-  validateDateInputFields(req: FormWizard.Request, validationErrors: any) {
-    const { values } = req.form
+  protected validateDateInputFields(req: ExtendedRequest, fields: Fields): Record<string, FormError> {
+    const validationErrors: Record<string, FormError> = {}
+    const values = req.form?.values || {}
 
-    Object.values(req.form.options.fields)
-      .filter(field => field.component === 'govukDateInput')
-      .forEach(field => {
+    Object.values(fields)
+      .filter((field: Field) => field.component === 'govukDateInput')
+      .forEach((field: Field) => {
         const { id } = field
         if (values[id]) {
           const day = req.body[`${id}-day`]
@@ -237,22 +222,14 @@ export default class FormInitialStep extends FormWizard.Controller {
           const year = req.body[`${id}-year`]
           const error = validateDateInput(day, month, year, values[id] as string)
           if (error) {
-            // eslint-disable-next-line no-param-reassign
-            validationErrors[field.id] = this.formError(field.id, error)
+            validationErrors[field.id as string] = {
+              key: field.id as string,
+              type: error,
+            }
           }
         }
       })
-  }
 
-  validateFields(req: FormWizard.Request, res: Response, callback: (errors: any) => void) {
-    this.populateDateInputFieldValues(req)
-
-    super.validateFields(req, res, errors => {
-      const validationErrors: any = {}
-
-      this.validateDateInputFields(req, validationErrors)
-
-      callback({ ...errors, ...validationErrors })
-    })
+    return validationErrors
   }
 }

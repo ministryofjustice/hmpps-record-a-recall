@@ -1,17 +1,9 @@
 import express from 'express'
-import wizard from 'hmpo-form-wizard'
-
-import steps from './steps'
-import fields from './fields'
+import searchRoute from './search-route'
 
 const router = express.Router({ mergeParams: true })
 
-router.use(
-  wizard(steps, fields, {
-    name: 'search',
-    templatePath: 'pages/search',
-    csrf: false,
-  }),
-)
+// Use the Zod-based search route
+router.use(searchRoute)
 
 export default router

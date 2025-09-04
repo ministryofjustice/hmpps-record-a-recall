@@ -1,8 +1,8 @@
-import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import { min } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
+import { ExtendedRequest } from '../base/ExpressBaseController'
 import RecallBaseController from './recallBaseController'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import getJourneyDataFromRequest, {
@@ -13,16 +13,17 @@ import getJourneyDataFromRequest, {
 } from '../../helpers/formWizardHelper'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import logger from '../../../logger'
+import { getSessionValue, setSessionValue } from '../../helpers/sessionHelper'
 
 export default class RevocationDateController extends RecallBaseController {
   private recallRoutingService: RecallRoutingService
 
-  constructor(options: FormWizard.Controller.Options) {
+  constructor(options?: unknown) {
     super(options)
     this.recallRoutingService = new RecallRoutingService()
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
+  locals(req: ExtendedRequest, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
     const prisoner: PrisonerSearchApiPrisoner = locals.prisoner as PrisonerSearchApiPrisoner
 
@@ -30,9 +31,16 @@ export default class RevocationDateController extends RecallBaseController {
     return { ...locals, backLink }
   }
 
-  async validateFields(req: FormWizard.Request, res: Response, callback: (errors: unknown) => void) {
-    super.validateFields(req, res, async errorsParam => {
-      const validationErrors = { ...(errorsParam || {}) } as Record<string, FormWizard.Controller.Error>
+  validateFields(
+    req: ExtendedRequest,
+    res: Response,
+    callback?: (errors: Record<string, unknown>) => void,
+  ): Record<string, unknown> | void {
+    if (!callback) {
+      return {}
+    }
+    super.validateFields(req as ExtendedRequest, res as Response, async errorsParam => {
+      const validationErrors = { ...(errorsParam || {}) } as Record<string, unknown>
       const { values } = req.form
       const sentences = getCrdsSentences(req) || []
 
@@ -51,7 +59,7 @@ export default class RevocationDateController extends RecallBaseController {
         const journeyData = getJourneyDataFromRequest(req)
 
         const routingResponse = await this.recallRoutingService.routeRecall({
-          nomsId: req.sessionModel.get('prisoner.prisonerNumber'),
+          nomsId: getSessionValue(req, 'prisoner.prisonerNumber') as string,
           revocationDate,
           courtCases,
           adjustments,
@@ -84,9 +92,10 @@ export default class RevocationDateController extends RecallBaseController {
 
       callback(validationErrors)
     })
+    return undefined
   }
 
-  async successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
+  async successHandler(req: ExtendedRequest, res: Response, next: NextFunction) {
     try {
       // Use cached routing response from validateFields
       const { routingResponse } = res.locals
@@ -94,19 +103,22 @@ export default class RevocationDateController extends RecallBaseController {
       if (!routingResponse) {
         // Fallback if routing response not available (should not happen in normal flow)
         logger.warn('Routing response not found in res.locals, falling back to manual review')
-        req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+        setSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION, true)
         return super.successHandler(req, res, next)
       }
 
-      req.sessionModel.set(
+      setSessionValue(
+        req,
         sessionModelFields.INVALID_RECALL_TYPES,
         routingResponse.eligibilityDetails.invalidRecallTypes,
       )
-      req.sessionModel.set(
+      setSessionValue(
+        req,
         sessionModelFields.ELIGIBLE_SENTENCE_COUNT,
         routingResponse.eligibilityDetails.eligibleSentenceCount,
       )
-      req.sessionModel.set(
+      setSessionValue(
+        req,
         sessionModelFields.MANUAL_CASE_SELECTION,
         routingResponse.eligibilityDetails.hasNonSdsSentences,
       )
@@ -115,7 +127,7 @@ export default class RevocationDateController extends RecallBaseController {
       res.locals.routingDecision = routingResponse.routing
       res.locals.nextSteps = routingResponse.nextSteps
 
-      req.sessionModel.set('routingResponse', routingResponse)
+      setSessionValue(req, 'routingResponse', routingResponse)
 
       return super.successHandler(req, res, next)
     } catch (error) {
