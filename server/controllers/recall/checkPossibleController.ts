@@ -190,7 +190,7 @@ export default class CheckPossibleController extends RecallBaseController {
 
     // Set manual route if STANDARD_RECALL_255 error occurred
     if (res.locals.forceManualRoute) {
-      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+      setSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION, true)
     }
 
     const { routingResponse } = res.locals

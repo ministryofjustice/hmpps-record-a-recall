@@ -81,7 +81,7 @@ router.get('/select-court-case', async (req: Request, res: Response, next: NextF
           },
           hint: {
             html: `<p class="govuk-body govuk-!-font-weight-bold">Case ${currentCaseIndex + 1} of ${activeCases.length}</p>
-                   <p class="govuk-body">${currentCase.courtName || 'Unknown court'} - ${convictionDate}</p>
+                   <p class="govuk-body">${currentCase.locationName || currentCase.courtName || 'Unknown court'} - ${convictionDate}</p>
                    <p class="govuk-body">${currentCase.reference || ''}</p>
                    <p class="govuk-body">Include this case in the recall?</p>`,
           },
@@ -136,7 +136,7 @@ router.post('/select-court-case', async (req: Request, res: Response, next: Next
 
     // If user selected YES, add this case to selected cases
     if (includeCase === 'YES' && currentCase) {
-      selectedCases.push(currentCase.courtCaseUuid || currentCase.caseId)
+      selectedCases.push(currentCase.caseId || currentCase.courtCaseUuid)
     }
 
     // Move to next case
