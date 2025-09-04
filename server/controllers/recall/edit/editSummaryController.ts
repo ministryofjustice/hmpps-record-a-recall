@@ -59,7 +59,7 @@ export default class EditSummaryController extends RecallBaseController {
             // Delete the duplicate UAL adjustments (keep the first one)
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
-              duplicateAdjustments.map(async (duplicateUal) => {
+              duplicateAdjustments.map(async duplicateUal => {
                 if (duplicateUal.id) {
                   await req.services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
                   logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)

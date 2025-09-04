@@ -62,7 +62,9 @@ describe('Populate Stored Recall Route', () => {
     app.use((req, res, next) => {
       const reqWithSession = req as unknown as ExtendedRequest
       if (!reqWithSession.session) {
-        reqWithSession.session = {} as any
+        reqWithSession.session = {
+          formData: {},
+        } as Express.Request['session']
       }
       if (!reqWithSession.session.formData) {
         reqWithSession.session.formData = {}
