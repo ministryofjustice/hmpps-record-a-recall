@@ -47,7 +47,8 @@ export default function loadRecalls(
           logger.error('Error fetching court cases for offence codes:', error)
           courtCasesFetchError = true
         }
-
+        
+        console.log('courtCaseResponse *********', JSON.stringify(courtCasesResponse.cases, undefined, 2))
         const courtCases = courtCasesResponse?.cases || []
 
         if (courtCasesFetchError) {
@@ -127,6 +128,13 @@ export default function loadRecalls(
               offenceStartDate: sentenceDetails.offenceStartDate || null,
               offenceEndDate: sentenceDetails.offenceEndDate || null,
             })
+
+                  console.log(
+              '%%%%%%%%%%%%%%%',
+              sentence.sentenceUuid,
+              'lineNumber:', sentenceDetails.lineNumber ?? 'N/A',
+              'countNumber:', sentenceDetails.countNumber ?? 'N/A'
+            )
 
             return acc
           }, [])

@@ -33,6 +33,8 @@ export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
   formattedConsecutiveOrConcurrent?: string
   formattedOffenceDate?: string
   formattedConvictionDate?: string
+  formattedCountNumber: string,
+  formattedLineNumber: string,
   apiOffenceDescription?: string
   formattedOutcome?: string
 }
@@ -77,6 +79,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
   private prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
     // Create a mutable copy for the view
     const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
+    console.log('currentcase*************', currentCase)
 
     currentCase.caseNumber = originalCase.reference?.trim() || ''
     currentCase.caseReferences = originalCase.reference?.trim() || ''
@@ -84,6 +87,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
       (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
       originalCase.locationName ||
       'Court name not available'
+
+      console.log('*********_________currentCase.sentences?', JSON.stringify(currentCase.sentences, undefined, 2))
 
     const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
     currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)

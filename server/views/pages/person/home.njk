@@ -128,20 +128,21 @@
           <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">
             {% for sentence in recall.sentences %}
               <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
-                {% set countNumber = sentence.countNumber if sentence.countNumber is defined and sentence.countNumber is not null else 1 %}
+
+
                 {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
                 {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
                 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}
 
                 {{ offenceCard({
-                  countNumber: countNumber,
+                  countNumber: sentence.countNumber,
                   offenceCode: sentence.offenceCode | default('Not entered'),
                   offenceName: sentence.offenceDescription or 'Offence description not available',
                   offenceStartDate: offenceStartDate,
                   offenceEndDate: offenceEndDate,
                   hideOutcome: true,
                   outcome: sentence.outcome | default('Not entered'),
-                  lineNumber: sentence.lineNumber | default('Not entered'),
+                  lineNumber: sentence.lineNumber,
                   periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),
