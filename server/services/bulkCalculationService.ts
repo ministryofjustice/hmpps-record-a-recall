@@ -42,7 +42,11 @@ export default class BulkCalculationService {
               : undefined
 
             const calculationBreakdown = calculationRequestId
-              ? await this.calculationService.getCalculationBreakdown(calculationRequestId, username)
+              ? await this.calculationService.getCalculationBreakdown(
+                  calculationRequestId,
+                  username,
+                  prisoner.prisonerNumber,
+                )
               : undefined
 
             for (const sentence of sentencesAndReleaseDates) {
@@ -100,9 +104,11 @@ export default class BulkCalculationService {
       const custodyTerm = this.getCustodialTerm(sentence.terms)
       const licenseTerm = this.getLicenceTerm(sentence.terms)
 
-      const concurrentSentenceBreakdown = findConcurrentSentenceBreakdown(sentence, breakdowns)
-      const consecutiveSentenceBreakdown = breakdowns.consecutiveSentence
-      const consecutiveSentencePartBreakdown = findConsecutiveSentenceBreakdown(sentence, breakdowns)
+      const concurrentSentenceBreakdown = breakdowns ? findConcurrentSentenceBreakdown(sentence, breakdowns) : undefined
+      const consecutiveSentenceBreakdown = breakdowns?.consecutiveSentence
+      const consecutiveSentencePartBreakdown = breakdowns
+        ? findConsecutiveSentenceBreakdown(sentence, breakdowns)
+        : undefined
 
       let dates
       let coc: string = 'Unknown'

@@ -39,7 +39,7 @@ export default class BulkTestController {
           let calculationBreakdown
           try {
             calculationBreakdown = calculationRequestId
-              ? await this.calculationService.getCalculationBreakdown(calculationRequestId, username)
+              ? await this.calculationService.getCalculationBreakdown(calculationRequestId, username, person)
               : undefined
           } catch (e) {
             calculationBreakdown = e.userMessage
