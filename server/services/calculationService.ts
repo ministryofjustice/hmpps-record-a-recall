@@ -51,15 +51,32 @@ export default class CalculationService {
   async getCalculationBreakdown(
     calculationRequestId: number,
     username: string,
+    nomsId?: string,
   ): Promise<CalculationBreakdown | undefined> {
     if (!calculationRequestId) {
       logger.error(`Error in getCalculationBreakdown: No calculation Request id`)
       throw new Error('No calculationRequestId provided for breakdown')
     }
+
+    const crdApi = await this.getCRDApiClient(username)
+
     try {
-      const crdApi = await this.getCRDApiClient(username)
       return await crdApi.getCalculationBreakdown(calculationRequestId)
     } catch (error) {
+      // Check if this is a stale calculation error (422) ideally API would be using error codes we could check against
+      if (error.status === 422 && error.data?.userMessage?.includes('no longer agrees')) {
+        if (nomsId) {
+          logger.warn(`Calculation ${calculationRequestId} is stale for ${nomsId}`)
+        } else {
+          logger.warn(`Calculation ${calculationRequestId} is stale (no nomsId provided)`)
+        }
+        logger.warn(`Stale calculation error details: ${JSON.stringify(error.data)}`)
+
+        // The controller already has logic to handle missing breakdowns
+        logger.info(`Returning undefined breakdown for stale calculation ${calculationRequestId}`)
+        return undefined
+      }
+
       logger.error(`Error in getCalculationBreakdown: ${error.message}`, error)
       throw error
     }
