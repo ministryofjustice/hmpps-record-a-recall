@@ -132,7 +132,12 @@ export default function loadRecalls(
     countNumber: sentenceDetails.countNumber ?? null,
   })
 
-  console.log('^^^^^^^^^^^^^^^^^', acc.countNumber)
+  console.log(
+  '^^^^^^^^^^^^^^^^^',
+  sentence.sentenceUuid,
+  'lineNumber:', sentenceDetails.lineNumber ?? 'N/A',
+  'countNumber:', sentenceDetails.countNumber ?? 'N/A',
+)
 
   return acc
 }, [])

@@ -129,13 +129,20 @@
             {% for sentence in recall.sentences %}
               <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
 
+               {% if sentence.countNumber is not none and sentence.countNumber != -1 %}
+                  {% set countLabel = "Count " + sentence.countNumber %}
+                {% elseif sentence.countNumber is none %}
+                  {% set countLabel = "NOMIS line number " + sentence.lineNumber %}
+                {% else %}
+                  {% set countLabel = "" %}
+                {% endif %}
 
                 {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
                 {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
                 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}
 
                 {{ offenceCard({
-                  countNumber: sentence.countNumber,
+                  countNumber: countLabel,
                   offenceCode: sentence.offenceCode | default('Not entered'),
                   offenceName: sentence.offenceDescription or 'Offence description not available',
                   offenceStartDate: offenceStartDate,
