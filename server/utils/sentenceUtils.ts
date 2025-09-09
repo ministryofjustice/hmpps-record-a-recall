@@ -393,6 +393,7 @@ export type SummarisedSentence = {
   fineAmount?: number
   outcomeUpdated?: string
   countNumber?: string
+  lineNumber?: string,
   convictionDate?: string
   terrorRelated?: boolean
   isSentenced?: boolean
