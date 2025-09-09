@@ -13,7 +13,7 @@ import getJourneyDataFromRequest, {
   getRevocationDate,
   RecallJourneyData,
   sessionModelFields,
-} from '../../helpers/formWizardHelper'
+} from '../../helpers/recallSessionHelper'
 import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class ReturnToCustodyDateController extends RecallBaseController {

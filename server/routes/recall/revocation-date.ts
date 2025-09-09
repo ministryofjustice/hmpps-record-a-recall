@@ -7,7 +7,7 @@ import { validateWithZod } from '../../middleware/validation-middleware'
 // import { resolveNextStep } from '../../helpers/journey-resolver' // Unused import
 
 import { RecallRoutingService } from '../../services/RecallRoutingService'
-import { sessionModelFields, RecallJourneyData } from '../../helpers/formWizardHelper'
+import { sessionModelFields, RecallJourneyData } from '../../helpers/recallSessionHelper'
 import {
   getCrdsSentencesFromSession,
   getCourtCaseOptionsFromSession,

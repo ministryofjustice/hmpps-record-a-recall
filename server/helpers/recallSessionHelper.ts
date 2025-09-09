@@ -1,3 +1,14 @@
+/**
+ * Recall Session Helper
+ *
+ * This file provides utilities for managing recall journey data in the session.
+ *
+ * Key responsibilities:
+ * - Define session field constants (sessionModelFields)
+ * - Provide typed getters for session data
+ * - Aggregate journey data for recall workflows
+ */
+
 import { Request } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase, Recall, SentenceWithDpsUuid, UAL } from 'models'
@@ -13,9 +24,7 @@ import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerS
 import { AdjustmentDto, ConflictingAdjustments } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { DpsSentenceIds } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 
-export default function getJourneyDataFromRequest(
-  req: Request | { sessionModel?: unknown; session?: unknown },
-): RecallJourneyData {
+export default function getJourneyDataFromRequest(req: Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
   const courtCaseCount = courtCases ? courtCases.length : 0
   const groups = getSummarisedSentenceGroups(req)
@@ -35,7 +44,7 @@ export default function getJourneyDataFromRequest(
     courtCaseCount,
     eligibleSentenceCount: getEligibleSentenceCount(req),
     sentenceIds,
-    isEdit: getSessionValue(req as unknown as Request, sessionModelFields.IS_EDIT) as boolean,
+    isEdit: getSessionValue(req, sessionModelFields.IS_EDIT) as boolean,
     // hasMultipleOverlappingUALTypeRecall: hasMultipleUALTypeRecallConflicting(req)
   }
 }
@@ -109,88 +118,86 @@ export const sessionModelFields = {
   ACTIVE_SENTENCE_CHOICE: 'activeSentenceChoice',
   SENTENCE_GROUPS: 'sentenceGroups',
 }
-export function getStoredRecall(req: Request | { sessionModel?: unknown; session?: unknown }): Recall {
+export function getStoredRecall(req: Request): Recall {
   return get<Recall>(req, sessionModelFields.STORED_RECALL)
 }
-export function getUal(req: Request | { sessionModel?: unknown; session?: unknown }): number {
+export function getUal(req: Request): number {
   return get<number>(req, sessionModelFields.UAL)
 }
 
-export function getInvalidRecallTypes(req: Request | { sessionModel?: unknown; session?: unknown }) {
+export function getInvalidRecallTypes(req: Request) {
   return get<RecallType[]>(req, sessionModelFields.INVALID_RECALL_TYPES) || []
 }
 
-export function getRecallRoute(req: Request | { sessionModel?: unknown; session?: unknown }) {
+export function getRecallRoute(req: Request) {
   return get<RecallEligibility>(req, sessionModelFields.RECALL_ELIGIBILITY)?.recallRoute
 }
 
-export function getUalText(req: Request | { sessionModel?: unknown; session?: unknown }): string {
+export function getUalText(req: Request): string {
   const ual = getUal(req)
   return ual !== undefined ? `${ual} day${ual === 1 ? '' : 's'}` : undefined
 }
 
-export function isRecallTypeMismatch(req: Request | { sessionModel?: unknown; session?: unknown }): boolean {
+export function isRecallTypeMismatch(req: Request): boolean {
   return get<boolean>(req, sessionModelFields.RECALL_TYPE_MISMATCH) === true
 }
 
-export function getRecallTypeCode(req: Request | { sessionModel?: unknown; session?: unknown }): string {
+export function getRecallTypeCode(req: Request): string {
   return get<string>(req, sessionModelFields.RECALL_TYPE)
 }
 
-export function isManualCaseSelection(req: Request | { sessionModel?: unknown; session?: unknown }): boolean {
-  return (getSessionValue(req as unknown as Request, sessionModelFields.MANUAL_CASE_SELECTION) as boolean) === true
+export function isManualCaseSelection(req: Request): boolean {
+  return (getSessionValue(req, sessionModelFields.MANUAL_CASE_SELECTION) as boolean) === true
 }
 
-export function getCourtCases(req: Request | { sessionModel?: unknown; session?: unknown }): string[] {
+export function getCourtCases(req: Request): string[] {
   return get<string[]>(req, sessionModelFields.COURT_CASES)
 }
 
-export function inPrisonAtRecall(req: Request | { sessionModel?: unknown; session?: unknown }): boolean {
+export function inPrisonAtRecall(req: Request): boolean {
   return get<boolean>(req, sessionModelFields.IN_PRISON_AT_RECALL)
 }
 
-export function getReturnToCustodyDate(req: Request | { sessionModel?: unknown; session?: unknown }): Date {
-  const returnToCustodyDate = getSessionValue(req as unknown as Request, sessionModelFields.RTC_DATE) as string
+export function getReturnToCustodyDate(req: Request): Date {
+  const returnToCustodyDate = getSessionValue(req, sessionModelFields.RTC_DATE) as string
   return returnToCustodyDate ? new Date(returnToCustodyDate) : null
 }
 
-export function getRevocationDate(req: Request | { sessionModel?: unknown; session?: unknown }): Date {
-  const revocationDate = getSessionValue(req as unknown as Request, sessionModelFields.REVOCATION_DATE) as string
+export function getRevocationDate(req: Request): Date {
+  const revocationDate = getSessionValue(req, sessionModelFields.REVOCATION_DATE) as string
   return revocationDate ? new Date(revocationDate) : null
 }
 
-export function getEligibleSentenceCount(req: Request | { sessionModel?: unknown; session?: unknown }): number {
+export function getEligibleSentenceCount(req: Request): number {
   return get<number>(req, sessionModelFields.ELIGIBLE_SENTENCE_COUNT) || 0
 }
 
-export function getSummarisedSentenceGroups(
-  req: Request | { sessionModel?: unknown; session?: unknown },
-): SummarisedSentenceGroup[] {
+export function getSummarisedSentenceGroups(req: Request): SummarisedSentenceGroup[] {
   const groups = get<SummarisedSentenceGroup[]>(req, sessionModelFields.SUMMARISED_SENTENCES)
   return groups || []
 }
 
-export function getTemporaryCalc(req: Request | { sessionModel?: unknown; session?: unknown }): CalculatedReleaseDates {
+export function getTemporaryCalc(req: Request): CalculatedReleaseDates {
   return get<CalculatedReleaseDates>(req, sessionModelFields.TEMP_CALC)
 }
 
-export function getBreakdown(req: Request | { sessionModel?: unknown; session?: unknown }): CalculationBreakdown {
+export function getBreakdown(req: Request): CalculationBreakdown {
   return get<CalculationBreakdown>(req, sessionModelFields.BREAKDOWN)
 }
 
-export function getCrdsSentences(req: Request | { sessionModel?: unknown; session?: unknown }): SentenceWithDpsUuid[] {
+export function getCrdsSentences(req: Request): SentenceWithDpsUuid[] {
   return get<SentenceWithDpsUuid[]>(req, sessionModelFields.SENTENCES)
 }
 
-export function getCourtCaseOptions(req: Request | { sessionModel?: unknown; session?: unknown }): CourtCase[] {
+export function getCourtCaseOptions(req: Request): CourtCase[] {
   return get<CourtCase[]>(req, sessionModelFields.COURT_CASE_OPTIONS)
 }
 
-export function getPrisoner(req: Request | { sessionModel?: unknown; session?: unknown }): PrisonerSearchApiPrisoner {
+export function getPrisoner(req: Request): PrisonerSearchApiPrisoner {
   return get<PrisonerSearchApiPrisoner>(req, sessionModelFields.PRISONER)
 }
 
-export function getExistingAdjustments(req: Request | { sessionModel?: unknown; session?: unknown }): AdjustmentDto[] {
+export function getExistingAdjustments(req: Request): AdjustmentDto[] {
   return get<AdjustmentDto[]>(req, sessionModelFields.EXISTING_ADJUSTMENTS)
 }
 
@@ -218,64 +225,49 @@ export function getAdjustmentsToConsiderForValidation(
   })
 }
 
-export function getDpsSentenceId(req: Request | { sessionModel?: unknown; session?: unknown }): DpsSentenceIds {
+export function getDpsSentenceId(req: Request): DpsSentenceIds {
   return get<DpsSentenceIds>(req, sessionModelFields.DPS_SENTENCE_IDS)
 }
 
-export function hasMultipleConflicting(req: Request | { sessionModel?: unknown; session?: unknown }): boolean {
+export function hasMultipleConflicting(req: Request): boolean {
   return (
-    (getSessionValue(
-      req as unknown as Request,
-      sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
-    ) as boolean) === true
+    (getSessionValue(req, sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS) as boolean) ===
+    true
   )
 }
 
-export function hasMultipleUALTypeRecallConflicting(
-  req: Request | { sessionModel?: unknown; session?: unknown },
-): boolean {
-  return (
-    (getSessionValue(
-      req as unknown as Request,
-      sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL,
-    ) as boolean) === true
-  )
+export function hasMultipleUALTypeRecallConflicting(req: Request): boolean {
+  return (getSessionValue(req, sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) as boolean) === true
 }
 
-export function getConflictingAdjustments(
-  req: Request | { sessionModel?: unknown; session?: unknown },
-): ConflictingAdjustments {
+export function getConflictingAdjustments(req: Request): ConflictingAdjustments {
   return get<ConflictingAdjustments>(req, sessionModelFields.CONFLICTING_ADJUSTMENTS)
 }
 
-export function getRelevantAdjustment(req: Request | { sessionModel?: unknown; session?: unknown }): AdjustmentDto {
+export function getRelevantAdjustment(req: Request): AdjustmentDto {
   return get<AdjustmentDto>(req, sessionModelFields.RELEVANT_ADJUSTMENTS)
 }
 
-export function getUalToCreate(req: Request | { sessionModel?: unknown; session?: unknown }): UAL {
+export function getUalToCreate(req: Request): UAL {
   return get<UAL>(req, sessionModelFields.UAL_TO_CREATE)
 }
 
-export function getUalToEdit(req: Request | { sessionModel?: unknown; session?: unknown }): UAL {
+export function getUalToEdit(req: Request): UAL {
   return get<UAL>(req, sessionModelFields.UAL_TO_EDIT)
 }
 
-export function getEntrypoint(req: Request | { sessionModel?: unknown; session?: unknown }): string {
+export function getEntrypoint(req: Request): string {
   return get<string>(req, sessionModelFields.ENTRYPOINT)
 }
 
-export function getActiveSentenceChoice(
-  req: Request | { sessionModel?: unknown; session?: unknown },
-): string | undefined {
+export function getActiveSentenceChoice(req: Request): string | undefined {
   return get<string>(req, sessionModelFields.ACTIVE_SENTENCE_CHOICE)
 }
 
-export function getSentenceGroups(
-  req: Request | { sessionModel?: unknown; session?: unknown },
-): SummarisedSentenceGroup[] {
+export function getSentenceGroups(req: Request): SummarisedSentenceGroup[] {
   return get<SummarisedSentenceGroup[]>(req, sessionModelFields.SENTENCE_GROUPS) || []
 }
 
-function get<T>(req: Request | { sessionModel?: unknown; session?: unknown }, key: string): T {
-  return getSessionValue(req as unknown as Request, key) as T
+function get<T>(req: Request, key: string): T {
+  return getSessionValue(req, key) as T
 }

@@ -7,7 +7,7 @@ import { eligibilityReasons } from '../@types/recallEligibility'
 
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { ValidationMessage, CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from '../helpers/recallSessionHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 
-import { getCourtCaseOptions } from '../helpers/formWizardHelper'
+import { getCourtCaseOptions } from '../helpers/recallSessionHelper'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../middleware/loadCourtCases'
 
 export default function getCourtCaseOptionsFromRas(

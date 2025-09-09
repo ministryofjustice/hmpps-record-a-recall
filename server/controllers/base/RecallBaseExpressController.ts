@@ -3,7 +3,7 @@ import { Session } from 'express-session'
 import PrisonerDetailsExpressController from './PrisonerDetailsExpressController'
 import { ExtendedRequest } from './ExpressBaseController'
 import getServiceUrls from '../../helpers/urlHelper'
-import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RecallBaseExpressController extends PrisonerDetailsExpressController {

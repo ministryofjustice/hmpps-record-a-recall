@@ -10,7 +10,7 @@ import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import logger from '../../../logger'
 
 jest.mock('../../../logger')
-jest.mock('../../helpers/formWizardHelper', () => ({
+jest.mock('../../helpers/recallSessionHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({
     isEdit: false,
@@ -33,7 +33,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
   let res: Response
   let next: jest.Mock
 
-  const { getCourtCaseOptions } = jest.requireMock('../../helpers/formWizardHelper')
+  const { getCourtCaseOptions } = jest.requireMock('../../helpers/recallSessionHelper')
   const mockGetCourtCaseOptions = getCourtCaseOptions as jest.Mock
 
   beforeEach(() => {

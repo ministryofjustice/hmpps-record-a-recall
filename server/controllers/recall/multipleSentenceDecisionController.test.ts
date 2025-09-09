@@ -3,7 +3,7 @@ import type { CourtCase } from 'models'
 import MultipleSentenceDecisionController from './multipleSentenceDecisionController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
-import * as formWizardHelper from '../../helpers/formWizardHelper'
+import * as recallSessionHelper from '../../helpers/recallSessionHelper'
 import * as sessionHelper from '../../helpers/sessionHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 
@@ -13,7 +13,7 @@ jest.mock('../../helpers/urlHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({}),
 }))
-jest.mock('../../helpers/formWizardHelper', () => ({
+jest.mock('../../helpers/recallSessionHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({}),
   getCourtCaseOptions: jest.fn(),
@@ -32,8 +32,8 @@ jest.mock('../../helpers/formWizardHelper', () => ({
   },
 }))
 
-const mockGetCourtCaseOptions = formWizardHelper.getCourtCaseOptions as jest.MockedFunction<
-  typeof formWizardHelper.getCourtCaseOptions
+const mockGetCourtCaseOptions = recallSessionHelper.getCourtCaseOptions as jest.MockedFunction<
+  typeof recallSessionHelper.getCourtCaseOptions
 >
 
 describe('MultipleSentenceDecisionController', () => {
@@ -129,7 +129,7 @@ describe('MultipleSentenceDecisionController', () => {
 
       expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
         req,
-        formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE,
+        recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE,
         [
           { sentenceUuid: 'sentence-1', isUnknownSentenceType: true },
           { sentenceUuid: 'sentence-2', isUnknownSentenceType: true },
@@ -137,7 +137,7 @@ describe('MultipleSentenceDecisionController', () => {
       )
       expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
         req,
-        formWizardHelper.sessionModelFields.SELECTED_COURT_CASE_UUID,
+        recallSessionHelper.sessionModelFields.SELECTED_COURT_CASE_UUID,
         'court-case-1',
       )
       expect(res.locals.sentenceCount).toBe(2)
@@ -213,7 +213,7 @@ describe('MultipleSentenceDecisionController', () => {
 
       expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
         req,
-        formWizardHelper.sessionModelFields.BULK_UPDATE_MODE,
+        recallSessionHelper.sessionModelFields.BULK_UPDATE_MODE,
         true,
       )
       expect(superPostSpy).toHaveBeenCalled()
@@ -238,12 +238,12 @@ describe('MultipleSentenceDecisionController', () => {
 
       expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
         req,
-        formWizardHelper.sessionModelFields.BULK_UPDATE_MODE,
+        recallSessionHelper.sessionModelFields.BULK_UPDATE_MODE,
         false,
       )
       expect(sessionHelper.setSessionValue).toHaveBeenCalledWith(
         req,
-        formWizardHelper.sessionModelFields.CURRENT_SENTENCE_INDEX,
+        recallSessionHelper.sessionModelFields.CURRENT_SENTENCE_INDEX,
         0,
       )
       expect((req.form.options as { next?: string }).next).toBe(

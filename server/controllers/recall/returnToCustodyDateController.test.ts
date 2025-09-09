@@ -8,14 +8,14 @@ import getJourneyDataFromRequest, {
   getRevocationDate,
   getPrisoner,
   getExistingAdjustments,
-} from '../../helpers/formWizardHelper'
+} from '../../helpers/recallSessionHelper'
 
-jest.mock('../../helpers/formWizardHelper', () => {
-  const formWizardHelper = jest.requireActual('../../helpers/formWizardHelper')
-  const mockGetJourneyDataFromRequest = jest.fn((...args: any[]) => formWizardHelper.default(...args))
+jest.mock('../../helpers/recallSessionHelper', () => {
+  const recallSessionHelper = jest.requireActual('../../helpers/recallSessionHelper')
+  const mockGetJourneyDataFromRequest = jest.fn((...args: any[]) => recallSessionHelper.default(...args))
 
   return {
-    ...formWizardHelper,
+    ...recallSessionHelper,
     __esModule: true,
     default: mockGetJourneyDataFromRequest,
     getPrisoner: jest.fn(),

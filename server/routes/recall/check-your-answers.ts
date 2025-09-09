@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { checkAnswersSchema } from '../../schemas/recall/check-answers.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 import { getRecallType } from '../../@types/recallTypes'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/recallSessionHelper'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 import logger from '../../../logger'
 

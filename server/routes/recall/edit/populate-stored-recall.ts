@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import PopulateStoredRecallController from '../../../controllers/recall/edit/populateStoredRecallController'
 import getCourtCaseOptionsFromRas from '../../../utils/rasCourtCasesUtils'
-import { sessionModelFields } from '../../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../../helpers/recallSessionHelper'
 import { setSessionValue } from '../../../helpers/sessionHelper'
 
 const router = Router()

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jest } from '@jest/globals'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/recallSessionHelper'
 import ResetAndRedirectToManualController from './resetAndRedirectToManualInterceptController'
 import * as sessionHelper from '../../helpers/sessionHelper'
 

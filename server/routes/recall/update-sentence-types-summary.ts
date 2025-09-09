@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { resolveNextStep } from '../../helpers/journey-resolver'
 import { getFullRecallPath } from '../../helpers/routeHelper'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/recallSessionHelper'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { createSentenceToCourtCaseMap } from '../../helpers/sentenceHelper'
@@ -26,7 +26,7 @@ router.get(
       delete req.session.formData?.[sessionModelFields.CURRENT_SENTENCE_INDEX]
 
       // Get court cases from session
-      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
+      const courtCases = getCourtCaseOptions(req)
       const updatedSentences = (req.session.formData?.[sessionModelFields.UPDATED_SENTENCE_TYPES] || {}) as Record<
         string,
         { uuid: string; description: string }
@@ -155,7 +155,7 @@ router.post(
       }
 
       // Get court cases for updating
-      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
+      const courtCases = getCourtCaseOptions(req)
 
       // Check if there are any updates to persist
       const sentenceUpdates = Object.entries(updatedSentences).map(([sentenceUuid, data]) => [

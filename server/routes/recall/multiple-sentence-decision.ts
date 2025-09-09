@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import type { CourtCase } from 'models'
 import { validateWithZod } from '../../middleware/validation-middleware'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/recallSessionHelper'
 import logger from '../../../logger'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
@@ -21,9 +21,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { courtCaseId } = req.params
-      const courtCases = getCourtCaseOptions(
-        req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
-      ) as CourtCase[]
+      const courtCases = getCourtCaseOptions(req) as CourtCase[]
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {

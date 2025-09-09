@@ -10,7 +10,7 @@ import {
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getRecallRoute, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { setSessionValue } from '../../helpers/sessionHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'

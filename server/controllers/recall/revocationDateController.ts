@@ -10,7 +10,7 @@ import getJourneyDataFromRequest, {
   getCrdsSentences,
   getExistingAdjustments,
   sessionModelFields,
-} from '../../helpers/formWizardHelper'
+} from '../../helpers/recallSessionHelper'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import logger from '../../../logger'
 import { getSessionValue, setSessionValue } from '../../helpers/sessionHelper'

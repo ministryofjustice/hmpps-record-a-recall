@@ -3,7 +3,7 @@ import logger from '../../../logger'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import FormInitialStep from './formInitialStep'
 import { ExtendedRequest } from './ExpressBaseController'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/recallSessionHelper'
 import { getSessionValue, setSessionValue, unsetSessionValue, saveSession } from '../../helpers/sessionHelper'
 
 export default class PrisonerDetailsController extends FormInitialStep {

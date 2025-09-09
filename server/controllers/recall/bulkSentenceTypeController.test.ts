@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 import type { CourtCase } from 'models'
 import BulkSentenceTypeController from './bulkSentenceTypeController'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import * as formWizardHelper from '../../helpers/formWizardHelper'
+import * as recallSessionHelper from '../../helpers/recallSessionHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
@@ -13,7 +13,7 @@ jest.mock('../../helpers/urlHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({}),
 }))
-jest.mock('../../helpers/formWizardHelper', () => ({
+jest.mock('../../helpers/recallSessionHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({}),
   getCourtCaseOptions: jest.fn(),
@@ -32,8 +32,8 @@ jest.mock('../../helpers/formWizardHelper', () => ({
   },
 }))
 
-const mockGetCourtCaseOptions = formWizardHelper.getCourtCaseOptions as jest.MockedFunction<
-  typeof formWizardHelper.getCourtCaseOptions
+const mockGetCourtCaseOptions = recallSessionHelper.getCourtCaseOptions as jest.MockedFunction<
+  typeof recallSessionHelper.getCourtCaseOptions
 >
 
 jest.mock('../../utils/rasCourtCasesUtils', () => ({
@@ -145,7 +145,7 @@ describe('BulkSentenceTypeController', () => {
   describe('setSentenceTypeFieldItems middleware', () => {
     it('should set sentence type items when court case and sentences are found', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
       req.session.formData.prisoner = { dateOfBirth: '1990-01-01' }
       // Session data already set directly on req.session.formData
 
@@ -163,7 +163,7 @@ describe('BulkSentenceTypeController', () => {
     it('should call next with error when court case not found', async () => {
       req.params.courtCaseId = 'non-existent'
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
       req.session.formData.prisoner = { dateOfBirth: '1990-01-01' }
       // Session data already set directly on req.session.formData
 
@@ -174,7 +174,7 @@ describe('BulkSentenceTypeController', () => {
 
     it('should call next with error when no sentences in session', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = []
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = []
       // Session data already set directly on req.session.formData
 
       await controller.setSentenceTypeFieldItems(req, res, next)
@@ -184,7 +184,7 @@ describe('BulkSentenceTypeController', () => {
 
     it('should call next with error when sentence not found in court case', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = [
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = [
         { sentenceUuid: 'non-existent-sentence', isUnknownSentenceType: true },
       ]
       req.session.formData.prisoner = { dateOfBirth: '1990-01-01' }
@@ -197,7 +197,7 @@ describe('BulkSentenceTypeController', () => {
 
     it('should call next with error when prisoner data not in session', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
       req.session.formData.prisoner = null // No prisoner data
       // Session data already set directly on req.session.formData
 
@@ -225,7 +225,7 @@ describe('BulkSentenceTypeController', () => {
       ]
 
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
       req.session.formData.prisoner = { dateOfBirth: '1990-01-01' }
       // Session data already set directly on req.session.formData
 
@@ -250,7 +250,7 @@ describe('BulkSentenceTypeController', () => {
 
   describe('get', () => {
     it('should render the page when sentences are in session', async () => {
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
       // Session data already set directly on req.session.formData
       req.form.options.fields.sentenceType.items = mockSentenceTypes.map(type => ({
         value: type.sentenceTypeUuid,
@@ -280,7 +280,7 @@ describe('BulkSentenceTypeController', () => {
     })
 
     it('should redirect when no sentences in session', async () => {
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = null
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = null
       // Session data already set directly on req.session.formData
 
       await controller.get(req, res, next)
@@ -292,8 +292,8 @@ describe('BulkSentenceTypeController', () => {
   describe('post', () => {
     it('should update all sentences with selected type and redirect', async () => {
       req.body.sentenceType = 'sds-uuid'
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
-      req.session.formData[formWizardHelper.sessionModelFields.UPDATED_SENTENCE_TYPES] = {}
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.UPDATED_SENTENCE_TYPES] = {}
       // Session data already set directly on req.session.formData
 
       req.form.options.fields.sentenceType.items = [
@@ -304,7 +304,7 @@ describe('BulkSentenceTypeController', () => {
       await controller.post(req, res, next)
 
       // Check that the session was updated
-      expect(req.session.formData[formWizardHelper.sessionModelFields.UPDATED_SENTENCE_TYPES]).toEqual({
+      expect(req.session.formData[recallSessionHelper.sessionModelFields.UPDATED_SENTENCE_TYPES]).toEqual({
         'sentence-1': {
           uuid: 'sds-uuid',
           description: 'Standard Determinate Sentence (SDS)',
@@ -314,15 +314,15 @@ describe('BulkSentenceTypeController', () => {
           description: 'Standard Determinate Sentence (SDS)',
         },
       })
-      expect(req.session.formData[formWizardHelper.sessionModelFields.BULK_UPDATE_MODE]).toBeUndefined()
-      expect(req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE]).toBeUndefined()
-      expect(req.session.formData[formWizardHelper.sessionModelFields.CURRENT_SENTENCE_INDEX]).toBeUndefined()
+      expect(req.session.formData[recallSessionHelper.sessionModelFields.BULK_UPDATE_MODE]).toBeUndefined()
+      expect(req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE]).toBeUndefined()
+      expect(req.session.formData[recallSessionHelper.sessionModelFields.CURRENT_SENTENCE_INDEX]).toBeUndefined()
       expect(res.redirect).toHaveBeenCalledWith('/person/A1234BC/record-recall/update-sentence-types-summary')
     })
 
     it('should call next with error when no sentences in session', async () => {
       req.body.sentenceType = 'sds-uuid'
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = null
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = null
       // Session data already set directly on req.session.formData
 
       await controller.post(req, res, next)
@@ -338,15 +338,15 @@ describe('BulkSentenceTypeController', () => {
           description: 'Extended Determinate Sentence (EDS)',
         },
       }
-      req.session.formData[formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
-      req.session.formData[formWizardHelper.sessionModelFields.UPDATED_SENTENCE_TYPES] = existingUpdatedSentences
+      req.session.formData[recallSessionHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE] = mockSentencesInCase
+      req.session.formData[recallSessionHelper.sessionModelFields.UPDATED_SENTENCE_TYPES] = existingUpdatedSentences
       // Session data already set directly on req.session.formData
 
       req.form.options.fields.sentenceType.items = [{ value: 'sds-uuid', text: 'Standard Determinate Sentence (SDS)' }]
 
       await controller.post(req, res, next)
 
-      expect(req.session.formData[formWizardHelper.sessionModelFields.UPDATED_SENTENCE_TYPES]).toEqual({
+      expect(req.session.formData[recallSessionHelper.sessionModelFields.UPDATED_SENTENCE_TYPES]).toEqual({
         'sentence-3': {
           uuid: 'eds-uuid',
           description: 'Extended Determinate Sentence (EDS)',

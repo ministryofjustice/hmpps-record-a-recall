@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { entrypointUrl } from '../../utils/utils'
-import { getEntrypoint } from '../../helpers/formWizardHelper'
+import { getEntrypoint } from '../../helpers/recallSessionHelper'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 
 export default class NotPossibleController extends RecallBaseController {

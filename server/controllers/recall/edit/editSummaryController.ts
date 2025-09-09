@@ -8,7 +8,7 @@ import getJourneyDataFromRequest, {
   RecallJourneyData,
   sessionModelFields,
   getPrisoner,
-} from '../../../helpers/formWizardHelper'
+} from '../../../helpers/recallSessionHelper'
 import { setSessionValue } from '../../../helpers/sessionHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 

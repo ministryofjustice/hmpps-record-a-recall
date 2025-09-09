@@ -3,7 +3,7 @@ import type { CourtCase } from 'models'
 import { sentenceTypeSchema } from '../../schemas/recall/sentence-type.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 // import { resolveNextStep } from '../../helpers/journey-resolver' // Unused import
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { findSentenceAndCourtCase, getApplicableSentenceTypes } from '../../helpers/sentenceHelper'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import logger from '../../../logger'
@@ -25,12 +25,7 @@ async function getCommonApplicableSentenceTypes(
       if (!targetSentence) {
         throw new Error(`Sentence not found: ${sentenceUuid}`)
       }
-      return getApplicableSentenceTypes(
-        req as Request & { services?: unknown; sessionModel?: unknown },
-        targetSentence,
-        targetCase,
-        username,
-      )
+      return getApplicableSentenceTypes(req, targetSentence, targetCase, username)
     })
 
     const allApplicableTypes = await Promise.all(allApplicableTypesPromises)
@@ -64,9 +59,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { courtCaseId } = req.params
-      const courtCases = getCourtCaseOptions(
-        req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
-      )
+      const courtCases = getCourtCaseOptions(req)
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {
@@ -144,9 +137,7 @@ router.post(
       const selectedTypeUuid = validatedData.sentenceType
 
       // Get court cases to validate
-      const courtCases = getCourtCaseOptions(
-        req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
-      )
+      const courtCases = getCourtCaseOptions(req)
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {

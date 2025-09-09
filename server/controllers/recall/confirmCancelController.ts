@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 import { Session } from 'express-session'
 import RecallBaseController from './recallBaseController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
-import { getEntrypoint, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getEntrypoint, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { getSessionValue, setSessionValue, unsetSessionValue } from '../../helpers/sessionHelper'
 import { entrypointUrl } from '../../utils/utils'
 

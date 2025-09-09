@@ -5,7 +5,7 @@ import { UAL } from 'models'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from '../helpers/recallSessionHelper'
 import logger from '../../logger'
 import config from '../config'
 

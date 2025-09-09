@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { sessionModelFields } from './formWizardHelper'
+import { sessionModelFields } from './recallSessionHelper'
 import { setSessionValue, unsetSessionValue } from './sessionHelper'
 
 export default function resetRecallSession(req: Request): void {

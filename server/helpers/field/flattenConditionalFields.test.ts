@@ -1,5 +1,5 @@
 import flattenConditionalFields from './flattenConditionalFields'
-import { FieldEntry } from './renderConditionalFields'
+import { FieldEntry } from '../../types/field.types'
 
 describe('Field helpers', () => {
   describe('#flattenConditionalFields()', () => {

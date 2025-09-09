@@ -7,7 +7,7 @@ import getJourneyDataFromRequest, {
   RecallJourneyData,
   sessionModelFields,
   getPrisoner,
-} from '../../../helpers/formWizardHelper'
+} from '../../../helpers/recallSessionHelper'
 import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { RecallType } from '../../../@types/recallTypes'
 
@@ -19,15 +19,13 @@ const editSummarySchema = z.object({})
 router.get('/edit-summary', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { recallId, nomisId } = res.locals
-    const reqWithSession = req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } }
-
     // Set edit flag
     req.session.formData = {
       ...req.session.formData,
       [sessionModelFields.IS_EDIT]: true,
     }
 
-    const journeyData: RecallJourneyData = getJourneyDataFromRequest(reqWithSession)
+    const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
@@ -61,17 +59,13 @@ router.post(
     try {
       const { recallId, nomisId } = res.locals
       const { username, activeCaseload } = res.locals.user
-      const reqWithSession = req as Request & {
-        sessionModel?: unknown
-        session?: { formData?: Record<string, unknown> }
-      }
-      const { services } = reqWithSession
+      const { services } = req
 
       if (!services) {
         throw new Error('Services not configured')
       }
 
-      const journeyData: RecallJourneyData = getJourneyDataFromRequest(reqWithSession)
+      const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
 
       // Calculate the new UAL with current form data first
       const newUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
@@ -85,7 +79,7 @@ router.post(
             adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
         )
 
-        const prisonerDetails = getPrisoner(reqWithSession)
+        const prisonerDetails = getPrisoner(req)
 
         if (ualAdjustments.length) {
           // Handle unexpected multiple UAL adjustments

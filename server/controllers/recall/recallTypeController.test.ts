@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jest } from '@jest/globals'
-import * as formWizardHelper from '../../helpers/formWizardHelper'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import * as recallSessionHelper from '../../helpers/recallSessionHelper'
+import { sessionModelFields } from '../../helpers/recallSessionHelper'
 import { RecallTypes } from '../../@types/recallTypes'
 import RecallTypeController from './recallTypeController'
 import config from '../../config'
@@ -45,8 +45,8 @@ describe('recallTypeController', () => {
   describe('is invalid', () => {
     beforeEach(() => {
       // set up as invalid recall type
-      req.session.formData[formWizardHelper.sessionModelFields.RECALL_TYPE] = 'FTR_28'
-      req.session.formData[formWizardHelper.sessionModelFields.INVALID_RECALL_TYPES] = [
+      req.session.formData[recallSessionHelper.sessionModelFields.RECALL_TYPE] = 'FTR_28'
+      req.session.formData[recallSessionHelper.sessionModelFields.INVALID_RECALL_TYPES] = [
         RecallTypes.TWENTY_EIGHT_DAY_FIXED_TERM_RECALL,
       ]
       get.mockImplementation(key => {
@@ -72,8 +72,8 @@ describe('recallTypeController', () => {
   describe('is not invalid', () => {
     beforeEach(() => {
       // set up as valid recall type
-      req.session.formData[formWizardHelper.sessionModelFields.RECALL_TYPE] = 'FTR_28'
-      req.session.formData[formWizardHelper.sessionModelFields.INVALID_RECALL_TYPES] = []
+      req.session.formData[recallSessionHelper.sessionModelFields.RECALL_TYPE] = 'FTR_28'
+      req.session.formData[recallSessionHelper.sessionModelFields.INVALID_RECALL_TYPES] = []
       get.mockImplementation(key => {
         return req.session.formData[key]
       })

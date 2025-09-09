@@ -8,7 +8,7 @@ import {
   getSummarisedSentenceGroups,
   getTemporaryCalc,
   isManualCaseSelection,
-} from '../../helpers/formWizardHelper'
+} from '../../helpers/recallSessionHelper'
 import ManageOffencesService from '../../services/manageOffencesService'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
@@ -22,18 +22,12 @@ const router = Router()
  */
 async function loadOffenceNames(req: Request, res: Response): Promise<Record<string, string>> {
   try {
-    // Cast req to extended type for compatibility with helper functions
-    const reqWithSession = req as Request & {
-      sessionModel?: unknown
-      session?: { formData?: Record<string, unknown> }
-      user?: { token?: string }
-    }
     // Check if required properties exist
-    if (!reqWithSession.session || !reqWithSession.user?.token) {
+    if (!req.session || !res.locals.user?.token) {
       return {}
     }
 
-    const summarisedSentenceGroups = getSummarisedSentenceGroups(reqWithSession)
+    const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
     const offenceCodes = summarisedSentenceGroups
       .flatMap(group => group.sentences || [])
       .map(charge => charge.offenceCode)
@@ -41,7 +35,7 @@ async function loadOffenceNames(req: Request, res: Response): Promise<Record<str
 
     if (offenceCodes.length > 0) {
       const manageOffencesService = new ManageOffencesService()
-      return await manageOffencesService.getOffenceMap(offenceCodes, reqWithSession.user.token)
+      return await manageOffencesService.getOffenceMap(offenceCodes, res.locals.user.token)
     }
     return {}
   } catch (error) {
@@ -62,17 +56,14 @@ router.get('/check-sentences', async (req: Request, res: Response, next: NextFun
       prisoner: res.locals.prisoner,
     })
 
-    // Cast req to extended type for compatibility during migration
-    const reqWithSession = req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } }
-
     // Calculate eligibility and journey type
-    const eligibleSentenceCount = getEligibleSentenceCount(reqWithSession)
+    const eligibleSentenceCount = getEligibleSentenceCount(req)
     logger.debug('Eligible sentence count:', eligibleSentenceCount)
-    const manualJourney = isManualCaseSelection(reqWithSession) || eligibleSentenceCount === 0
+    const manualJourney = isManualCaseSelection(req) || eligibleSentenceCount === 0
 
     // Get calculation data
-    const calculation: CalculatedReleaseDates = getTemporaryCalc(reqWithSession)
-    let summarisedSentenceGroups = getSummarisedSentenceGroups(reqWithSession)
+    const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
+    let summarisedSentenceGroups = getSummarisedSentenceGroups(req)
 
     // For manual journey, if no summarised sentences, create empty groups for selected court cases
     if ((!summarisedSentenceGroups || summarisedSentenceGroups.length === 0) && manualJourney) {

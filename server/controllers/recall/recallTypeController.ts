@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 import RecallBaseController from './recallBaseController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import { RecallTypes } from '../../@types/recallTypes'
-import { getInvalidRecallTypes, getRecallTypeCode, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getInvalidRecallTypes, getRecallTypeCode, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { setSessionValue } from '../../helpers/sessionHelper'
 import config from '../../config'
 

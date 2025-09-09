@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { getBreakdown, getCrdsSentences, getRevocationDate, sessionModelFields } from '../helpers/formWizardHelper'
+import { getBreakdown, getCrdsSentences, getRevocationDate, sessionModelFields } from '../helpers/recallSessionHelper'
 import { setSessionValue } from '../helpers/sessionHelper'
 import { groupSentencesByCaseRefAndCourt, hasManualOnlySentences, SummarisedSentenceGroup } from './sentenceUtils'
 import summariseSentencesGroups from './CaseSentenceSummariser'

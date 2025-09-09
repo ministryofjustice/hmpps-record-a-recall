@@ -5,7 +5,7 @@ import type { UAL } from 'models'
 import { rtcDateSchema } from '../../schemas/recall/dates.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 import { calculateUal } from '../../utils/utils'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/recallSessionHelper'
 import {
   getAdjustmentsToConsiderForValidationFromSession,
   getExistingAdjustmentsFromSession,

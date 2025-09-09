@@ -14,7 +14,7 @@ import {
   getEligibleSentenceCount,
   isManualCaseSelection,
   sessionModelFields,
-} from '../../../helpers/formWizardHelper'
+} from '../../../helpers/recallSessionHelper'
 import { setSessionValue } from '../../../helpers/sessionHelper'
 import revocationDateCrdsDataComparison from '../../../utils/revocationDateCrdsDataComparison'
 import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'

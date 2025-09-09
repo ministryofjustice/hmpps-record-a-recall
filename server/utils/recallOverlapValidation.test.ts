@@ -2,7 +2,7 @@ import { addDays, subDays } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
 import { RecallTypes } from '../@types/recallTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from '../helpers/recallSessionHelper'
 import {
   validateRevocationDateAgainstRecalls,
   getRecallsToConsiderForValidation,

@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 import logger from '../../../logger'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import ExpressBaseController, { ExtendedRequest } from './ExpressBaseController'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { sessionModelFields } from '../../helpers/recallSessionHelper'
 
 export default class PrisonerDetailsExpressController extends ExpressBaseController {
   protected middlewareSetup() {

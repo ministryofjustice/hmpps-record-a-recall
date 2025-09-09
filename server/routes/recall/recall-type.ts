@@ -4,7 +4,7 @@ import { validateWithZod } from '../../middleware/validation-middleware'
 import { resolveNextStep } from '../../helpers/journey-resolver'
 import { getFullRecallPath } from '../../helpers/routeHelper'
 import { RecallTypes } from '../../@types/recallTypes'
-import { sessionModelFields, getInvalidRecallTypes } from '../../helpers/formWizardHelper'
+import { sessionModelFields, getInvalidRecallTypes } from '../../helpers/recallSessionHelper'
 import config from '../../config'
 import logger from '../../../logger'
 
@@ -60,9 +60,7 @@ router.post(
       // Check for recall type mismatch if feature is enabled
       let recallTypeMismatch = false
       if (config.featureToggles.unexpectedRecallTypeCheckEnabled) {
-        const invalidRecallTypes = getInvalidRecallTypes(
-          req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
-        )
+        const invalidRecallTypes = getInvalidRecallTypes(req)
         recallTypeMismatch =
           invalidRecallTypes?.map((t: { code: string }) => t.code).includes(validatedData.recallType) || false
       }

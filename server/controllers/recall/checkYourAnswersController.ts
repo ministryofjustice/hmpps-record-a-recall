@@ -7,7 +7,7 @@ import getJourneyDataFromRequest, {
   getUalToCreate,
   RecallJourneyData,
   getUalToEdit,
-} from '../../helpers/formWizardHelper'
+} from '../../helpers/recallSessionHelper'
 import logger from '../../../logger'
 
 export default class CheckYourAnswersController extends RecallBaseController {

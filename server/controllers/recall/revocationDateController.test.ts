@@ -4,10 +4,10 @@ import { Recall } from 'models'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import RevocationDateController from './revocationDateController'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
-import getJourneyDataFromRequest, { RecallJourneyData } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { RecallJourneyData } from '../../helpers/recallSessionHelper'
 
-jest.mock('../../helpers/formWizardHelper', () => {
-  const actual = jest.requireActual('../../helpers/formWizardHelper')
+jest.mock('../../helpers/recallSessionHelper', () => {
+  const actual = jest.requireActual('../../helpers/recallSessionHelper')
   return {
     __esModule: true,
     ...actual,
@@ -132,7 +132,7 @@ describe('RevocationDateController', () => {
     it('should pass validation with a valid date and no conflicting adjustments', done => {
       ;(req.form.values as { revocationDate: string }).revocationDate = validRevocationDate
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(false, undefined))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([])
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([])
 
       controller.validateFields(req, res, errors => {
         expect(Object.keys(errors).length).toBe(0)
@@ -148,9 +148,9 @@ describe('RevocationDateController', () => {
       // Set revocationDate to "tomorrow" (futureRevocationDate), which is before "day after tomorrow" (earliestSentenceDateForTest)
       ;(req.form.values as { revocationDate: string }).revocationDate = futureRevocationDate
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(false, undefined))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([])
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([])
       // Temporarily override the global mock for getCrdsSentences for this specific test case
-      ;(jest.requireMock('../../helpers/formWizardHelper').getCrdsSentences as jest.Mock).mockReturnValueOnce([
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getCrdsSentences as jest.Mock).mockReturnValueOnce([
         {
           sentenceDate: earliestSentenceDateForTest,
           bookingId: 123,
@@ -173,7 +173,7 @@ describe('RevocationDateController', () => {
     it('Edit Mode - should pass if overlapping UAL is linked to the current recall', done => {
       ;(req.form.values as { revocationDate: string }).revocationDate = '2023-01-01'
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(true, recallId))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
         ualAdjustmentLinked,
       ])
 
@@ -186,7 +186,7 @@ describe('RevocationDateController', () => {
     it('Edit Mode - should fail if overlapping UAL is linked to a different recall', done => {
       ;(req.form.values as { revocationDate: string }).revocationDate = '2023-01-01'
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(true, recallId))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
         ualAdjustmentUnlinked,
       ])
 
@@ -201,7 +201,7 @@ describe('RevocationDateController', () => {
     it('Edit Mode - should fail if overlapping UAL has no recallId', done => {
       ;(req.form.values as { revocationDate: string }).revocationDate = '2023-01-01'
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(true, recallId))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
         ualAdjustmentNoRecallId,
       ])
 
@@ -216,7 +216,7 @@ describe('RevocationDateController', () => {
     it('Create Mode - should fail if overlapping UAL exists (linked to different recall)', done => {
       ;(req.form.values as { revocationDate: string }).revocationDate = '2023-01-01'
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(false, undefined))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
         ualAdjustmentUnlinked,
       ])
 
@@ -231,7 +231,7 @@ describe('RevocationDateController', () => {
     it('Create Mode - should fail if overlapping UAL exists (no recallId)', done => {
       ;(req.form.values as { revocationDate: string }).revocationDate = '2023-01-01'
       ;(getJourneyDataFromRequest as jest.Mock).mockReturnValue(mockJourneyData(false, undefined))
-      ;(jest.requireMock('../../helpers/formWizardHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
+      ;(jest.requireMock('../../helpers/recallSessionHelper').getExistingAdjustments as jest.Mock).mockReturnValue([
         ualAdjustmentNoRecallId,
       ])
 

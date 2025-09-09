@@ -9,7 +9,7 @@ import {
   getSummarisedSentenceGroups,
   getTemporaryCalc,
   isManualCaseSelection,
-} from '../../helpers/formWizardHelper'
+} from '../../helpers/recallSessionHelper'
 import ManageOffencesService from '../../services/manageOffencesService'
 
 export default class CheckSentencesController extends RecallBaseController {

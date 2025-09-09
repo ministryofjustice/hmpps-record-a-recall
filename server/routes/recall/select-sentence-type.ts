@@ -3,7 +3,7 @@ import { sentenceTypeSchema } from '../../schemas/recall/sentence-type.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 import { resolveNextStep } from '../../helpers/journey-resolver'
 import { getFullRecallPath } from '../../helpers/routeHelper'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { findSentenceAndCourtCase, getApplicableSentenceTypes } from '../../helpers/sentenceHelper'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import logger from '../../../logger'
@@ -16,7 +16,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { sentenceUuid } = req.params
-      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
+      const courtCases = getCourtCaseOptions(req)
 
       const { targetSentence, targetCourtCase } = findSentenceAndCourtCase(sentenceUuid, courtCases)
 
@@ -25,12 +25,7 @@ router.get(
       }
 
       const { user } = res.locals
-      const sentenceTypes = await getApplicableSentenceTypes(
-        req as Request & { sessionModel?: unknown; session?: unknown },
-        targetSentence,
-        targetCourtCase,
-        user.username,
-      )
+      const sentenceTypes = await getApplicableSentenceTypes(req, targetSentence, targetCourtCase, user.username)
 
       // Check if sentence has already been updated
       const updatedSentences = (req.session.formData?.[sessionModelFields.UPDATED_SENTENCE_TYPES] || {}) as Record<
@@ -91,7 +86,7 @@ router.post(
       const selectedTypeUuid = validatedData.sentenceType
 
       // Get the court cases to find the sentence description
-      const courtCases = getCourtCaseOptions(req as Request & { sessionModel?: unknown; session?: unknown })
+      const courtCases = getCourtCaseOptions(req)
       const { targetSentence, targetCourtCase } = findSentenceAndCourtCase(sentenceUuid, courtCases)
 
       if (!targetSentence || !targetCourtCase) {
@@ -100,12 +95,7 @@ router.post(
 
       // Get the sentence types to find the description
       const { user } = res.locals
-      const sentenceTypes = await getApplicableSentenceTypes(
-        req as Request & { sessionModel?: unknown; session?: unknown },
-        targetSentence,
-        targetCourtCase,
-        user.username,
-      )
+      const sentenceTypes = await getApplicableSentenceTypes(req, targetSentence, targetCourtCase, user.username)
       const sentenceTypeItem = sentenceTypes.find(type => type.sentenceTypeUuid === selectedTypeUuid)
       const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.description : selectedTypeUuid
 

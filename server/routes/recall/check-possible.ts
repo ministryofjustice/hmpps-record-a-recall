@@ -5,7 +5,7 @@ import { checkPossibleSchema } from '../../schemas/recall/check-possible.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 import { resolveNextStep } from '../../helpers/journey-resolver'
 import { getFullRecallPath } from '../../helpers/routeHelper'
-import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getRecallRoute, sessionModelFields } from '../../helpers/recallSessionHelper'
 import logger from '../../../logger'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
@@ -25,14 +25,7 @@ async function configureCheckPossible(req: Request, res: Response, next: NextFun
 
   try {
     // Get services from req (these should be injected by middleware)
-    const { services } = req as Request & {
-      services?: {
-        calculationService?: {
-          getTemporaryCalculation: (nomisId: string, username: string) => Promise<unknown>
-          getBreakdown: (id: number, username: string) => Promise<unknown>
-        }
-      }
-    }
+    const { services } = req
     if (!services) {
       logger.error('Services not available on request')
       return next(new Error('Services not configured'))
@@ -123,9 +116,7 @@ router.get('/check-possible', configureCheckPossible, (req: Request, res: Respon
   const { prisoner } = res.locals
 
   // Check if recall is possible
-  const recallRoute = getRecallRoute(
-    req as Request & { sessionModel?: unknown; session?: { formData?: Record<string, unknown> } },
-  )
+  const recallRoute = getRecallRoute(req)
   const recallPossible = recallRoute && recallRoute !== 'NOT_POSSIBLE'
 
   const backLink = `/person/${prisoner.prisonerNumber}/record-recall/revocation-date`

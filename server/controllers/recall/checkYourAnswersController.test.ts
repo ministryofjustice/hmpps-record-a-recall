@@ -3,9 +3,9 @@
 
 import { jest } from '@jest/globals'
 import CheckYourAnswersController from './checkYourAnswersController'
-import getJourneyDataFromRequest, { getUalToEdit, getUalToCreate } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getUalToEdit, getUalToCreate } from '../../helpers/recallSessionHelper'
 
-jest.mock('../../helpers/formWizardHelper', () => ({
+jest.mock('../../helpers/recallSessionHelper', () => ({
   __esModule: true,
   default: jest.fn(),
   getJourneyDataFromRequest: jest.fn(),

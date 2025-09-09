@@ -5,22 +5,22 @@ import { ExtendedRequest } from '../base/ExpressBaseController'
 import createExtendedRequestMock from '../../test-utils/extendedRequestMock'
 import { Services } from '../../services'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import * as formWizardHelper from '../../helpers/formWizardHelper'
+import * as recallSessionHelper from '../../helpers/recallSessionHelper'
 import * as sessionHelper from '../../helpers/sessionHelper'
 import * as sentenceHelper from '../../helpers/sentenceHelper'
 
 jest.mock('../../../logger')
 jest.mock('../../helpers/sessionHelper')
 jest.mock('../../helpers/sentenceHelper')
-jest.mock('../../helpers/formWizardHelper', () => ({
+jest.mock('../../helpers/recallSessionHelper', () => ({
   getCourtCaseOptions: jest.fn(),
   sessionModelFields: {
     UPDATED_SENTENCE_TYPES: 'updatedSentences',
   },
 }))
 
-const mockGetCourtCaseOptions = formWizardHelper.getCourtCaseOptions as jest.MockedFunction<
-  typeof formWizardHelper.getCourtCaseOptions
+const mockGetCourtCaseOptions = recallSessionHelper.getCourtCaseOptions as jest.MockedFunction<
+  typeof recallSessionHelper.getCourtCaseOptions
 >
 
 jest.mock('../../utils/rasCourtCasesUtils', () => ({

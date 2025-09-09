@@ -3,7 +3,7 @@ import { Session } from 'express-session'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
 import { ExtendedRequest } from '../base/ExpressBaseController'
 import getServiceUrls from '../../helpers/urlHelper'
-import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/recallSessionHelper'
 import { getSessionValue } from '../../helpers/sessionHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
