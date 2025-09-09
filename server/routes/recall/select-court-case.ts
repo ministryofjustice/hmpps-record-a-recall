@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { resolveNextStep } from '../../helpers/journey-resolver'
 import { getFullRecallPath } from '../../helpers/routeHelper'
-import { getCourtCaseOptionsFromSession } from '../../helpers/migratedFormHelper'
+import { getCourtCaseOptions } from '../../helpers/recallSessionHelper'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import logger from '../../../logger'
@@ -14,7 +14,7 @@ router.get('/select-court-case', async (req: Request, res: Response, next: NextF
     const formData = req.session.formData || {}
 
     // Get court case options from session
-    const courtCases = getCourtCaseOptionsFromSession(req) || res.locals.recallableCourtCases || []
+    const courtCases = getCourtCaseOptions(req) || res.locals.recallableCourtCases || []
 
     // Filter for active court cases
     const activeCases = courtCases.filter((c: { status?: string }) => c.status !== 'DRAFT')
@@ -122,7 +122,7 @@ router.post('/select-court-case', async (req: Request, res: Response, next: Next
     const formData = req.session.formData || {}
 
     // Get court case options from session
-    const courtCases = getCourtCaseOptionsFromSession(req) || res.locals.recallableCourtCases || []
+    const courtCases = getCourtCaseOptions(req) || res.locals.recallableCourtCases || []
     const activeCases = courtCases.filter((c: { status?: string }) => c.status !== 'DRAFT')
 
     const currentCaseIndex = Number(formData.currentCaseIndex) || 0

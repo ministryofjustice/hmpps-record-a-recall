@@ -7,12 +7,13 @@ import { validateWithZod } from '../../middleware/validation-middleware'
 // import { resolveNextStep } from '../../helpers/journey-resolver' // Unused import
 
 import { RecallRoutingService } from '../../services/RecallRoutingService'
-import { sessionModelFields, RecallJourneyData } from '../../helpers/recallSessionHelper'
 import {
-  getCrdsSentencesFromSession,
-  getCourtCaseOptionsFromSession,
-  getExistingAdjustmentsFromSession,
-} from '../../helpers/migratedFormHelper'
+  sessionModelFields,
+  RecallJourneyData,
+  getCrdsSentences,
+  getCourtCaseOptions,
+  getExistingAdjustments,
+} from '../../helpers/recallSessionHelper'
 import logger from '../../../logger'
 
 const router = Router()
@@ -92,7 +93,7 @@ router.post(
       const revocationDate = new Date(validatedData.revocationDate)
       const { prisoner } = res.locals
 
-      const sentences = getCrdsSentencesFromSession(req) || []
+      const sentences = getCrdsSentences(req) || []
 
       if (sentences.length) {
         const earliestSentenceDate = min(sentences.map(s => new Date((s as { sentenceDate: string }).sentenceDate)))
@@ -113,7 +114,7 @@ router.post(
 
       try {
         // For Cypress tests, use res.locals data if session data is not available
-        let courtCases = getCourtCaseOptionsFromSession(req)
+        let courtCases = getCourtCaseOptions(req)
         if ((!courtCases || courtCases.length === 0) && res.locals.recallableCourtCases) {
           // Load court cases from res.locals for Cypress tests
           const enhancedCases = res.locals.recallableCourtCases
@@ -156,7 +157,7 @@ router.post(
 
         courtCases = courtCases.filter((c: { status: string }) => c.status !== 'DRAFT')
 
-        const adjustments = getExistingAdjustmentsFromSession(req) || res.locals.adjustments || []
+        const adjustments = getExistingAdjustments(req) || res.locals.adjustments || []
         const existingRecalls = res.locals.recalls || []
 
         logger.info(`Routing recall with ${courtCases.length} court cases`, {

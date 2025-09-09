@@ -5,17 +5,17 @@ import type { UAL } from 'models'
 import { rtcDateSchema } from '../../schemas/recall/dates.schema'
 import { validateWithZod } from '../../middleware/validation-middleware'
 import { calculateUal } from '../../utils/utils'
-import { sessionModelFields } from '../../helpers/recallSessionHelper'
-import {
-  getAdjustmentsToConsiderForValidationFromSession,
-  getExistingAdjustmentsFromSession,
-  getPrisonerFromSession,
-  getRevocationDateFromSession,
-  hasMultipleConflictingFromSession,
-  hasMultipleUALTypeRecallConflictingFromSession,
-  isManualCaseSelectionFromSession,
-  getEligibleSentenceCountFromSession,
-} from '../../helpers/migratedFormHelper'
+import getJourneyDataFromRequest, {
+  sessionModelFields,
+  getAdjustmentsToConsiderForValidation,
+  getExistingAdjustments,
+  getPrisoner,
+  getRevocationDate,
+  hasMultipleConflicting,
+  hasMultipleUALTypeRecallConflicting,
+  isManualCaseSelection,
+  getEligibleSentenceCount,
+} from '../../helpers/recallSessionHelper'
 import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import logger from '../../../logger'
 
@@ -170,9 +170,9 @@ router.post(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const validatedData = req.validatedData as { inPrisonAtRecall: string; returnToCustodyDate?: string }
-      const revocationDate = getRevocationDateFromSession(req)
+      const revocationDate = getRevocationDate(req)
       const { prisoner } = res.locals
-      const prisonerDetails = getPrisonerFromSession(req)
+      const prisonerDetails = getPrisoner(req)
 
       if (validatedData.inPrisonAtRecall === 'false' && validatedData.returnToCustodyDate) {
         if (isBefore(new Date(validatedData.returnToCustodyDate), revocationDate)) {
@@ -201,11 +201,9 @@ router.post(
         const ual = calculateUal(revocationDate, rtcDate)
         const proposedUal = calculateUal(revocationDate, rtcDate)
 
-        const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustmentsFromSession(req)
-        const adjustmentsToConsider = getAdjustmentsToConsiderForValidationFromSession(
-          req.session.formData || {},
-          allExistingAdjustments,
-        )
+        const allExistingAdjustments: AdjustmentDto[] = getExistingAdjustments(req)
+        const journeyData = getJourneyDataFromRequest(req)
+        const adjustmentsToConsider = getAdjustmentsToConsiderForValidation(journeyData, allExistingAdjustments)
 
         const conflictingRecallUALAdjustments = adjustmentsToConsider.filter(adjustment => {
           return (
@@ -241,7 +239,7 @@ router.post(
           const ualToSave: UAL = {
             ...ual,
             nomisId: prisoner.prisonerNumber,
-            bookingId: (prisonerDetails as { bookingId?: number })?.bookingId,
+            bookingId: prisonerDetails?.bookingId,
           }
 
           const conflictingAdjustments = identifyConflictingAdjustments(proposedUal, adjustmentsToConsider)
@@ -299,21 +297,21 @@ router.post(
       let nextStep = `/person/${prisoner.prisonerNumber}/record-recall/check-sentences`
 
       // Debug logging for manual recall test
-      const manualCaseSelection = isManualCaseSelectionFromSession(req)
+      const manualCaseSelection = isManualCaseSelection(req)
       logger.info('RTC date navigation decision:', {
         prisonerNumber: prisoner.prisonerNumber,
         manualCaseSelection,
-        hasMultipleUALConflict: hasMultipleUALTypeRecallConflictingFromSession(req),
-        hasMultipleConflict: hasMultipleConflictingFromSession(req),
-        eligibleSentenceCount: getEligibleSentenceCountFromSession(req),
+        hasMultipleUALConflict: hasMultipleUALTypeRecallConflicting(req),
+        hasMultipleConflict: hasMultipleConflicting(req),
+        eligibleSentenceCount: getEligibleSentenceCount(req),
         sessionData: req.session.formData,
       })
 
-      if (hasMultipleUALTypeRecallConflictingFromSession(req) || hasMultipleConflictingFromSession(req)) {
+      if (hasMultipleUALTypeRecallConflicting(req) || hasMultipleConflicting(req)) {
         nextStep = `/person/${prisoner.prisonerNumber}/record-recall/conflicting-adjustments-interrupt`
       } else if (manualCaseSelection) {
         nextStep = `/person/${prisoner.prisonerNumber}/record-recall/manual-recall-intercept`
-      } else if (getEligibleSentenceCountFromSession(req) === 0) {
+      } else if (getEligibleSentenceCount(req) === 0) {
         nextStep = `/person/${prisoner.prisonerNumber}/record-recall/no-sentences-interrupt`
       }
 
