@@ -143,27 +143,31 @@
 {% endmacro %}
 
 {% macro sentenceCard(sentence, offenceNameMap) %}
-    {% if sentence.countNumber is not defined or sentence.countNumber is null %}
-        {% set countNumber = "NOMIS line number " ~ sentence.lineNumber %}
-    {% elseif sentence.countNumber == -1 %}
-        {% set countNumber = "" %}
-    {% else %}
-        {% set countNumber = "Count " ~ sentence.countNumber %}
-    {% endif %}
-
     {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
     {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
     {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not available' %}
+    {# Determine numeric values for count and line number #}
+    {% if sentence.countNumber and sentence.countNumber != '-1' %}
+        {% set countNum = sentence.countNumber %}
+        {% set lineNum = null %}
+    {% elseif not sentence.countNumber %}
+        {% set countNum = null %}
+        {% set lineNum = sentence.lineNumber %}
+    {% else %}
+        {# countNumber is '-1' → show neither #}
+        {% set countNum = null %}
+        {% set lineNum = null %}
+    {% endif %}
 
     {{ offenceCard({
-      countNumber: countNumber,
+      countNumber: countNum,
       offenceCode: sentence.offenceCode | default('N/A'),
       offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
       offenceStartDate: offenceStartDate,
       offenceEndDate: offenceEndDate,
       hideOutcome: true,
       outcome: sentence.outcome | default('N/A'),
-      lineNumber: sentence.lineNumber | default('N/A'),
+      lineNumber: lineNum,
       periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
       sentenceServeType: sentence.sentenceServeType | default(null),
       sentenceType: sentence.sentenceType | default('N/A'),
