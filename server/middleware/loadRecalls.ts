@@ -110,34 +110,32 @@ export default function loadRecalls(
           const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
           const enhancedSentences = recall.sentences?.reduce((acc, sentence) => {
-            // Filter out any sentences with deleted status (defensive)
-            if ('status' in sentence && sentence.status === 'DELETED') {
-              return acc
-            }
-            // Get offence code either from sentence or from court case mapping
-            const offenceCode =
-              sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
+  // Filter out any sentences with deleted status (defensive)
+  if ('status' in sentence && sentence.status === 'DELETED') {
+    return acc
+  }
 
-            const sentenceDetails = sentenceDetailsMap[sentence.sentenceUuid] || {}
+  // Get offence code either from sentence or from court case mapping
+  const offenceCode =
+    sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
-            acc.push({
-              ...sentence,
-              offenceCode, // Ensure offenceCode is populated
-              offenceDescription: offenceMap[offenceCode] || undefined,
-              sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
-              offenceStartDate: sentenceDetails.offenceStartDate || null,
-              offenceEndDate: sentenceDetails.offenceEndDate || null,
-            })
+  const sentenceDetails = sentenceDetailsMap[sentence.sentenceUuid] || {}
 
-                  console.log(
-              '%%%%%%%%%%%%%%%',
-              sentence.sentenceUuid,
-              'lineNumber:', sentenceDetails.lineNumber ?? 'N/A',
-              'countNumber:', sentenceDetails.countNumber ?? 'N/A'
-            )
+  acc.push({
+    ...sentence,
+    offenceCode, // Ensure offenceCode is populated
+    offenceDescription: offenceMap[offenceCode] || undefined,
+    sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
+    offenceStartDate: sentenceDetails.offenceStartDate || null,
+    offenceEndDate: sentenceDetails.offenceEndDate || null,
+    lineNumber: sentenceDetails.lineNumber ?? null,
+    countNumber: sentenceDetails.countNumber ?? null,
+  })
 
-            return acc
-          }, [])
+  console.log('^^^^^^^^^^^^^^^^^', acc.countNumber)
+
+  return acc
+}, [])
 
           return {
             ...recall,
