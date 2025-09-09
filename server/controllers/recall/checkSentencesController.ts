@@ -11,8 +11,6 @@ import {
   isManualCaseSelection,
 } from '../../helpers/formWizardHelper'
 import ManageOffencesService from '../../services/manageOffencesService'
-import { RecallableCourtCaseSentenceAugmented } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { SummarisedSentenceGroup } from '../../utils/sentenceUtils'
 
 export default class CheckSentencesController extends RecallBaseController {
   middlewareSetup() {
@@ -26,18 +24,6 @@ export default class CheckSentencesController extends RecallBaseController {
 
     const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
     const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
-
-
-summarisedSentenceGroups.forEach((group: SummarisedSentenceGroup, groupIndex: number) => {
-  console.log(`Group ${groupIndex + 1}: caseRef=${group.caseReference}, court=${group.courtName}`);
-
-  const sentences = group.sentences || [];
-  sentences.forEach((sentence: RecallableCourtCaseSentenceAugmented, sentenceIndex: number) => {
-    console.log(
-      `  CHECK_SENTENCES!!!!!!!!!!!!!!!!!!!!! Sentence ${sentenceIndex + 1}: countNumber=${sentence.countNumber ?? 'null'}, lineNumber=${sentence.lineNumber ?? 'null'}`
-    );
-  });
-});
 
     res.locals.latestSled = calculation?.dates?.SLED || null
     res.locals.manualJourney = manualJourney

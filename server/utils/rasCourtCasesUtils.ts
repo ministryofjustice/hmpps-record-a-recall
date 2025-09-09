@@ -22,22 +22,13 @@ export default function getCourtCaseOptionsFromRas(req: FormWizard.Request, res:
             locationName: recallableCase.courtName,
             reference: recallableCase.reference,
             sentenced: recallableCase.isSentenced,
-            sentences: (recallableCase.sentences || []).map((sentence: EnhancedRecallableSentence) => {
-              // Log lineNumber and countNumber
-              console.log(
-                `UTILS@@@@@@@@@@@@@@@ Sentence ${sentence.sentenceUuid} -> lineNumber: ${sentence.lineNumber ?? 'N/A'}, countNumber: ${sentence.countNumber ?? 'N/A'}`
-              )
-
-              return {
-                ...sentence,
-                offenceDescription: sentence.offenceDescription,
-              }
-            }),
+            sentences: (recallableCase.sentences || []).map((sentence: EnhancedRecallableSentence) => ({
+              ...sentence,
+              offenceDescription: sentence.offenceDescription,
+            })),
           }),
         )
       : []
 
-  return cases
-    .filter((c: CourtCase) => c.status !== 'DRAFT')
-    .filter((c: CourtCase) => c.sentenced)
+  return cases.filter((c: CourtCase) => c.status !== 'DRAFT').filter((c: CourtCase) => c.sentenced)
 }

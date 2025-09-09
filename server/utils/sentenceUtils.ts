@@ -1,5 +1,8 @@
 import type { SentenceWithDpsUuid, Term } from 'models'
-import { RecallableCourtCaseSentence, RecallableCourtCaseSentenceAugmented } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  RecallableCourtCaseSentence,
+  RecallableCourtCaseSentenceAugmented,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import {
   CalculationBreakdown,
   ConcurrentSentenceBreakdown,
@@ -393,7 +396,7 @@ export type SummarisedSentence = {
   fineAmount?: number
   outcomeUpdated?: string
   countNumber?: string
-  lineNumber?: string,
+  lineNumber?: string
   convictionDate?: string
   terrorRelated?: boolean
   isSentenced?: boolean

@@ -134,27 +134,27 @@
                 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}
                {# Determine numeric values for count and line number #}
                 {% if sentence.countNumber and sentence.countNumber != '-1' %}
-                  {% set countNum = sentence.countNumber %}
-                  {% set lineNum = null %}
+                  {% set countNumberWithText = sentence.countNumber %}
+                  {% set lineNumberWithText = null %}
                 {% elseif not sentence.countNumber %}
-                  {% set countNum = null %}
-                  {% set lineNum = sentence.lineNumber %}
+                  {% set countNumberWithText = null %}
+                  {% set lineNumberWithText = sentence.lineNumber %}
                 {% else %}
                   {# countNumber is '-1' → show neither #}
-                  {% set countNum = null %}
-                  {% set lineNum = null %}
+                  {% set countNumberWithText = null %}
+                  {% set lineNumberWithText = null %}
                 {% endif %}
                               
                 
                 {{ offenceCard({
-                  countNumber: countNum,
+                  countNumber: countNumberWithText,
                   offenceCode: sentence.offenceCode | default('Not entered'),
                   offenceName: sentence.offenceDescription or 'Offence description not available',
                   offenceStartDate: offenceStartDate,
                   offenceEndDate: offenceEndDate,
                   hideOutcome: true,
                   outcome: sentence.outcome | default('Not entered'),
-                  lineNumber: lineNum,
+                  lineNumber: lineNumberWithText,
                   periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),

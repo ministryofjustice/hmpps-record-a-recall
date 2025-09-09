@@ -84,17 +84,11 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('lowercaseFirstLetter', lowercaseFirstLetter)
   njkEnv.addFilter('formatCountNumber', formatCountNumber)
-  
 
   njkEnv.addFilter('sortPeriodLengths', (periods: Array<{ length: number }>) => {
     if (!Array.isArray(periods)) return []
     return periods.slice().sort((a, b) => a.length - b.length)
   })
-
-  // njkEnv.addFilter('formatCountNumber', (value: number) => {
-  //   if (typeof value !== 'number') return ''
-  //   return value.toLocaleString('en-GB')
-  // })
 
   // Filter to pluralize a word based on a count. Adds 's' if count is not 1.
   function pluralize(count: number): string {

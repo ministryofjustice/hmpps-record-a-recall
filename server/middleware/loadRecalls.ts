@@ -47,8 +47,7 @@ export default function loadRecalls(
           logger.error('Error fetching court cases for offence codes:', error)
           courtCasesFetchError = true
         }
-        
-        // console.log('courtCaseResponse *********', JSON.stringify(courtCasesResponse.cases, undefined, 2))
+
         const courtCases = courtCasesResponse?.cases || []
 
         if (courtCasesFetchError) {
@@ -110,37 +109,30 @@ export default function loadRecalls(
           const isFromNomis = recall.sentences?.some(isRecallFromNomis)
 
           const enhancedSentences = recall.sentences?.reduce((acc, sentence) => {
-  // Filter out any sentences with deleted status (defensive)
-  if ('status' in sentence && sentence.status === 'DELETED') {
-    return acc
-  }
+            // Filter out any sentences with deleted status (defensive)
+            if ('status' in sentence && sentence.status === 'DELETED') {
+              return acc
+            }
 
-  // Get offence code either from sentence or from court case mapping
-  const offenceCode =
-    sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
+            // Get offence code either from sentence or from court case mapping
+            const offenceCode =
+              sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
-  const sentenceDetails = sentenceDetailsMap[sentence.sentenceUuid] || {}
+            const sentenceDetails = sentenceDetailsMap[sentence.sentenceUuid] || {}
 
-  acc.push({
-    ...sentence,
-    offenceCode, // Ensure offenceCode is populated
-    offenceDescription: offenceMap[offenceCode] || undefined,
-    sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
-    offenceStartDate: sentenceDetails.offenceStartDate || null,
-    offenceEndDate: sentenceDetails.offenceEndDate || null,
-    lineNumber: sentenceDetails.lineNumber ?? null,
-    countNumber: sentenceDetails.countNumber ?? null,
-  })
+            acc.push({
+              ...sentence,
+              offenceCode, // Ensure offenceCode is populated
+              offenceDescription: offenceMap[offenceCode] || undefined,
+              sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
+              offenceStartDate: sentenceDetails.offenceStartDate || null,
+              offenceEndDate: sentenceDetails.offenceEndDate || null,
+              lineNumber: sentenceDetails.lineNumber ?? null,
+              countNumber: sentenceDetails.countNumber ?? null,
+            })
 
-//   console.log(
-//   '^^^^^^^^^^^^^^^^^',
-//   sentence.sentenceUuid,
-//   'lineNumber:', sentenceDetails.lineNumber ?? 'N/A',
-//   'countNumber:', sentenceDetails.countNumber ?? 'N/A',
-// )
-
-  return acc
-}, [])
+            return acc
+          }, [])
 
           return {
             ...recall,

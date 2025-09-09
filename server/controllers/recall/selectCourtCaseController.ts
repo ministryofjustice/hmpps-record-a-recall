@@ -33,8 +33,8 @@ export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
   formattedConsecutiveOrConcurrent?: string
   formattedOffenceDate?: string
   formattedConvictionDate?: string
-  formattedCountNumber: string,
-  formattedLineNumber: string,
+  formattedCountNumber: string
+  formattedLineNumber: string
   apiOffenceDescription?: string
   formattedOutcome?: string
 }
@@ -79,7 +79,6 @@ export default class SelectCourtCaseController extends RecallBaseController {
   private prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
     // Create a mutable copy for the view
     const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
-    console.log('currentcase*************', currentCase)
 
     currentCase.caseNumber = originalCase.reference?.trim() || ''
     currentCase.caseReferences = originalCase.reference?.trim() || ''
@@ -88,17 +87,12 @@ export default class SelectCourtCaseController extends RecallBaseController {
       originalCase.locationName ||
       'Court name not available'
 
-      console.log('*********_________currentCase.sentences?', JSON.stringify(currentCase.sentences, undefined, 2))
-
     const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
     currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
     currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
 
     if (currentCase.sentences) {
       const enhancedSentences = currentCase.sentences.map(sentence => {
-         console.log(
-      `Sentence ${sentence.sentenceUuid} -> lineNumber: ${sentence.lineNumber ?? 'N/A'}, countNumber: ${sentence.countNumber ?? 'N/A'}`
-    )
         const sentencePeriodLengths = sentence.periodLengths || []
         const custodialPeriod = sentencePeriodLengths.find(
           (p: unknown) =>
