@@ -132,16 +132,29 @@
                 {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
                 {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
                 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}
+               {# Determine numeric values for count and line number #}
+                {% if sentence.countNumber and sentence.countNumber != '-1' %}
+                  {% set countNum = sentence.countNumber %}
+                  {% set lineNum = null %}
+                {% elseif not sentence.countNumber %}
+                  {% set countNum = null %}
+                  {% set lineNum = sentence.lineNumber %}
+                {% else %}
+                  {# countNumber is '-1' → show neither #}
+                  {% set countNum = null %}
+                  {% set lineNum = null %}
+                {% endif %}
+                              
                 
                 {{ offenceCard({
-                  countNumber: sentence.countNumber | formatCountNumber(sentence.lineNumber),
+                  countNumber: countNum,
                   offenceCode: sentence.offenceCode | default('Not entered'),
                   offenceName: sentence.offenceDescription or 'Offence description not available',
                   offenceStartDate: offenceStartDate,
                   offenceEndDate: offenceEndDate,
                   hideOutcome: true,
                   outcome: sentence.outcome | default('Not entered'),
-                  lineNumber: sentence.lineNumber,
+                  lineNumber: lineNum,
                   periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),
@@ -149,6 +162,7 @@
                   isSentenced: true,
                   detailsClasses: 'govuk-!-padding-4'
                 }) }}
+
               </div>
             {% endfor %}
           </div>
