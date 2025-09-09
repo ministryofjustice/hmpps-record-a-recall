@@ -68,15 +68,14 @@ const redirect = () =>
   stubFor({
     request: {
       method: 'GET',
-      urlPattern: '/auth/oauth/authorize\\?response_type=code&redirect_uri=.+?&state=.+?&client_id=clientid',
+      urlPattern: '/auth/oauth/authorize\\?response_type=code&redirect_uri=.+?&state=(.+?)&client_id=clientid',
     },
     response: {
-      status: 200,
+      status: 302,
       headers: {
-        'Content-Type': 'text/html',
-        Location: 'http://localhost:3007/sign-in/callback?code=codexxxx&state=stateyyyy',
+        Location: 'http://localhost:3007/sign-in/callback?code=codexxxx&state={{request.query.state}}',
       },
-      body: '<html><body>Sign in page<h1>Sign in</h1></body></html>',
+      transformers: ['response-template'],
     },
   })
 
@@ -125,7 +124,6 @@ const token = (userToken: UserToken) =>
       status: 200,
       headers: {
         'Content-Type': 'application/json;charset=UTF-8',
-        Location: 'http://localhost:3007/sign-in/callback?code=codexxxx&state=stateyyyy',
       },
       jsonBody: {
         access_token: createToken(userToken),

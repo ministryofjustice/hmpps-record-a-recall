@@ -1,8 +1,8 @@
 Cypress.Commands.add('signIn', (options = { failOnStatusCode: false }) => {
-  // With CYPRESS=true set, we can directly visit the callback URL
-  // This will authenticate us without going through the full OAuth flow
-  cy.visit('/sign-in/callback?code=test&state=test', options)
+  // Visit the sign-in page which will redirect to the OAuth provider
+  cy.visit('/sign-in', options)
 
-  // Should be redirected to search page after authentication
-  cy.url().should('include', '/search', { timeout: 5000 })
+  // The mock auth API will handle the OAuth flow and redirect back
+  // We should end up on the search page after successful authentication
+  cy.url().should('include', '/search', { timeout: 10000 })
 })

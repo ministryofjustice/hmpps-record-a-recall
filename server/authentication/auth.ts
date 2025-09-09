@@ -20,25 +20,6 @@ export type AuthenticationMiddleware = (tokenVerifier: TokenVerifier) => Request
 
 const authenticationMiddleware: AuthenticationMiddleware = verifyToken => {
   return async (req, res, next) => {
-    // For Cypress tests, check if user is already authenticated via session
-    if (process.env.CYPRESS === 'true' || req.headers['x-cypress-test'] === 'true') {
-      // If user is already authenticated (from /sign-in/callback), continue
-      if (req.isAuthenticated()) {
-        // For token verification tests, check the token if stubbed to fail
-        if (await verifyToken(req)) {
-          return next()
-        }
-        // Token verification failed, clear session and redirect
-        req.logout(() => {
-          req.session.destroy(() => {
-            res.redirect('/sign-in')
-          })
-        })
-        return undefined
-      }
-      // User not authenticated, fall through to normal redirect
-    }
-
     if (req.isAuthenticated() && (await verifyToken(req))) {
       return next()
     }

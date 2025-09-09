@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { csrfSync } from 'csrf-sync'
 
-const testMode = process.env.NODE_ENV === 'test' || process.env.CYPRESS === 'true'
+const testMode = process.env.NODE_ENV === 'test'
 
 export default function setUpCsrf(): Router {
   const router = Router({ mergeParams: true })
@@ -24,9 +24,6 @@ export default function setUpCsrf(): Router {
   router.use((req, res, next) => {
     if (typeof req.csrfToken === 'function') {
       res.locals.csrfToken = req.csrfToken()
-    } else if (testMode) {
-      // Provide a dummy token for test mode to prevent template errors
-      res.locals.csrfToken = 'test-csrf-token'
     }
     next()
   })

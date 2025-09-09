@@ -14,7 +14,7 @@ context('Create recall happy path | NON-MANUAL', () => {
     cy.task('stubSignIn')
     cy.task('stubManageUsersMeCaseloads')
     cy.task('stubPrisonerSearchNonManual')
-    cy.task('stubGetPrisonerDetailsTwo') // Add Prison API stub for A1234AB
+    cy.task('stubGetPrisonerDetailsTwo')
     cy.task('getServiceDefinitionsNonManual') // Add CCRD API stub for A1234AB
     cy.task('stubRecordARecallCRDSNonManual')
     cy.task('stubSentencesAndOffences')
