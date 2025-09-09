@@ -41,7 +41,31 @@ export default class CheckPossibleController extends RecallBaseController {
         // Get breakdown immediately if we have calculation results
         if (calculationResult.calculatedReleaseDates) {
           const tempCalcReqId = calculationResult.calculatedReleaseDates.calculationRequestId
-          breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username)
+          breakdown = await req.services.calculationService.getCalculationBreakdown(tempCalcReqId, username, nomisId)
+
+          // If breakdown is undefined due to stale calculation, trigger a fresh calculation
+          if (!breakdown) {
+            logger.info(
+              `Breakdown was undefined for calculation ${tempCalcReqId}, triggering fresh calculation for ${nomisId}`,
+            )
+            try {
+              const freshCalc = await req.services.calculationService.getTemporaryCalculation(nomisId, username)
+              if (freshCalc?.calculatedReleaseDates?.calculationRequestId) {
+                calculationResult = freshCalc
+                const newCalcReqId = freshCalc.calculatedReleaseDates.calculationRequestId
+                logger.info(`Got fresh calculation with ID ${newCalcReqId}, attempting to get breakdown`)
+                // Try to get the breakdown for the new calculation, but don't fail if it's still stale
+                breakdown = await req.services.calculationService.getCalculationBreakdown(
+                  newCalcReqId,
+                  username,
+                  nomisId,
+                )
+              }
+            } catch (recalcError) {
+              logger.error(`Failed to get fresh calculation after stale breakdown: ${recalcError.message}`)
+              // Continue with undefined breakdown rather than failing completely
+            }
+          }
         }
       } catch (calculationError) {
         // Check if this is the STANDARD_RECALL_255 error

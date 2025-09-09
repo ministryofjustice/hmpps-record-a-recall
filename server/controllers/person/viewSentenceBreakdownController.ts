@@ -23,7 +23,7 @@ export default async (req: Request, res: Response) => {
         : undefined
 
       const calculationBreakdown = calculationRequestId
-        ? await req.services.calculationService.getCalculationBreakdown(calculationRequestId, username)
+        ? await req.services.calculationService.getCalculationBreakdown(calculationRequestId, username, nomisId)
         : undefined
       return res.render('pages/person/view-all-sentences', {
         prisoner,
