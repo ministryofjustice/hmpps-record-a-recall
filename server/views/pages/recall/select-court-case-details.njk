@@ -46,27 +46,27 @@
             </h2>
 
       {% for sentence in currentCase.recallableSentences %}
-          {% if sentence.countNumber is not none and sentence.countNumber != '-1' %}
-              {% set countLabel = "Count " ~ sentence.countNumber %}
-            {% elseif sentence.countNumber is none %}
-              {% set countLabel = "NOMIS line number " ~ sentence.lineNumber %}
-            {% else %}
-              {% set countLabel = "" %}
-            {% endif %}
-            {% if sentence.sentenceTypeDescription == 'Required' %}
-              {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
-            {% else %}
-              {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
-            {% endif %}
-
             {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+                {# Determine numeric values for count and line number #}
+                {% if sentence.countNumber and sentence.countNumber != '-1' %}
+                  {% set countNum = sentence.countNumber %}
+                  {% set lineNum = null %}
+                {% elseif not sentence.countNumber %}
+                  {% set countNum = null %}
+                  {% set lineNum = sentence.lineNumber %}
+                {% else %}
+                  {# countNumber is '-1' → show neither #}
+                  {% set countNum = null %}
+                  {% set lineNum = null %}
+                {% endif %}
 
             {{ offenceCard({
                 offenceCode: sentence.offenceCode | default("N/A"),
                 offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
                 offenceStartDate: sentence.offenceStartDate | default('N/A'),
                 offenceEndDate: sentence.offenceEndDate | default(null),
-                countNumber: countLabel,
+                countNumber: countNum,
+                lineNumber: lineNum,
                 terrorRelated: sentence.terrorRelated | default(false),
                 isSentenced: true,
                 periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
@@ -90,6 +90,18 @@
                   View offences which are not eligible for recall ({{ currentCase.nonRecallableSentences.length }})
                 </span>
               </summary>
+                  {# Determine numeric values for count and line number #}
+                {% if sentence.countNumber and sentence.countNumber != '-1' %}
+                  {% set countNum = sentence.countNumber %}
+                  {% set lineNum = null %}
+                {% elseif not sentence.countNumber %}
+                  {% set countNum = null %}
+                  {% set lineNum = sentence.lineNumber %}
+                {% else %}
+                  {# countNumber is '-1' → show neither #}
+                  {% set countNum = null %}
+                  {% set lineNum = null %}
+                {% endif %}
               <div class="govuk-details__text">
                 {% for sentence in currentCase.nonRecallableSentences %}
                 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
@@ -98,7 +110,8 @@
                       offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
                       offenceStartDate: sentence.offenceStartDate | default('N/A'),
                       offenceEndDate: sentence.offenceEndDate | default(null),
-                      countNumber: loop.index,
+                      countNumber: countNum,
+                      lineNumber: lineNum,
                       terrorRelated: sentence.terrorRelated | default(false),
                       isSentenced: true,
                       periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
