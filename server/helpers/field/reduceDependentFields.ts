@@ -13,8 +13,6 @@ export default function reduceDependentFields(allFields: { [key: string]: Field 
       }) => {
         const conditionals = [item.conditional || []].flat()
         const dependentOptions = {
-          // tell form wizard to not render field at top level
-          skip: true,
           // set dependent object for validation
           dependent: {
             field: key,

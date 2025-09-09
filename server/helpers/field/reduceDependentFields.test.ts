@@ -79,7 +79,6 @@ describe('Field helpers', () => {
               conditionalField1: {
                 id: 'conditionalField1',
                 name: 'conditionalField1',
-                skip: true,
                 attributes: {
                   'data-id': 'conditionalField1',
                   'data-name': 'conditionalField1',
@@ -126,7 +125,6 @@ describe('Field helpers', () => {
               conditionalField1: {
                 id: 'conditionalField1',
                 name: 'conditionalField1',
-                skip: true,
                 attributes: {
                   'data-id': 'conditionalField1',
                   'data-name': 'conditionalField1',
@@ -139,7 +137,6 @@ describe('Field helpers', () => {
               conditionalField2: {
                 id: 'conditionalField2',
                 name: 'conditionalField2',
-                skip: true,
                 attributes: {
                   'data-id': 'conditionalField2',
                   'data-name': 'conditionalField2',
