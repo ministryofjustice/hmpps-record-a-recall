@@ -46,6 +46,13 @@
             </h2>
 
       {% for sentence in currentCase.recallableSentences %}
+          {% if sentence.countNumber is not none and sentence.countNumber != '-1' %}
+              {% set countLabel = "Count " ~ sentence.countNumber %}
+            {% elseif sentence.countNumber is none %}
+              {% set countLabel = "NOMIS line number " ~ sentence.lineNumber %}
+            {% else %}
+              {% set countLabel = "" %}
+            {% endif %}
             {% if sentence.sentenceTypeDescription == 'Required' %}
               {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
             {% else %}
@@ -59,7 +66,7 @@
                 offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
                 offenceStartDate: sentence.offenceStartDate | default('N/A'),
                 offenceEndDate: sentence.offenceEndDate | default(null),
-                countNumber: loop.index,
+                countNumber: countLabel,
                 terrorRelated: sentence.terrorRelated | default(false),
                 isSentenced: true,
                 periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),

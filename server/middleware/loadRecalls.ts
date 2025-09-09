@@ -48,7 +48,7 @@ export default function loadRecalls(
           courtCasesFetchError = true
         }
         
-        console.log('courtCaseResponse *********', JSON.stringify(courtCasesResponse.cases, undefined, 2))
+        // console.log('courtCaseResponse *********', JSON.stringify(courtCasesResponse.cases, undefined, 2))
         const courtCases = courtCasesResponse?.cases || []
 
         if (courtCasesFetchError) {
@@ -132,12 +132,12 @@ export default function loadRecalls(
     countNumber: sentenceDetails.countNumber ?? null,
   })
 
-  console.log(
-  '^^^^^^^^^^^^^^^^^',
-  sentence.sentenceUuid,
-  'lineNumber:', sentenceDetails.lineNumber ?? 'N/A',
-  'countNumber:', sentenceDetails.countNumber ?? 'N/A',
-)
+//   console.log(
+//   '^^^^^^^^^^^^^^^^^',
+//   sentence.sentenceUuid,
+//   'lineNumber:', sentenceDetails.lineNumber ?? 'N/A',
+//   'countNumber:', sentenceDetails.countNumber ?? 'N/A',
+// )
 
   return acc
 }, [])

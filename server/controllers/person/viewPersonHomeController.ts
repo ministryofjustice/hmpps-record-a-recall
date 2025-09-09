@@ -8,8 +8,9 @@ export default async (req: Request, res: Response) => {
   const { nomisId, prisoner, recalls, serviceDefinitions, banner, errorMessage } = res.locals
 
   console.log(
-  '*********',
+  'countNumber',
   recalls[0]?.sentences?.[0]?.countNumber,
+  'lineNumber',
   recalls[0]?.sentences?.[0]?.lineNumber
 )
 

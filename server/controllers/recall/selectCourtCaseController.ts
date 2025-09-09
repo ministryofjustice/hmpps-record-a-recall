@@ -96,6 +96,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
     if (currentCase.sentences) {
       const enhancedSentences = currentCase.sentences.map(sentence => {
+         console.log(
+      `Sentence ${sentence.sentenceUuid} -> lineNumber: ${sentence.lineNumber ?? 'N/A'}, countNumber: ${sentence.countNumber ?? 'N/A'}`
+    )
         const sentencePeriodLengths = sentence.periodLengths || []
         const custodialPeriod = sentencePeriodLengths.find(
           (p: unknown) =>
