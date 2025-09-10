@@ -19,7 +19,7 @@
         <div class="offence-card govuk-!-padding-4">
            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
                 {% if sentence.countNumber is not defined or sentence.countNumber == null %}
-                    NOMIS line {{ sentence.lineNumber }}
+                    NOMIS line number {{ sentence.lineNumber }}
                 {% elseif sentence.countNumber == -1 %}
                     {# show nothing #}
                 {% else %}
