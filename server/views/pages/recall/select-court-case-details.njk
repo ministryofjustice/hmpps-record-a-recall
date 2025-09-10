@@ -46,6 +46,11 @@
             </h2>
 
       {% for sentence in currentCase.recallableSentences %}
+      {% if sentence.sentenceTypeDescription == 'Required' %}
+              {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
+            {% else %}
+              {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+            {% endif %}
             {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
                 {# Determine numeric values for count and line number #}
                 {% if sentence.countNumber and sentence.countNumber != '-1' %}
