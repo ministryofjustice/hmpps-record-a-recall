@@ -3,10 +3,11 @@ import { HmppsAuthClient } from '../data'
 import RemandAndSentencingApiClient from '../api/remandAndSentencingApiClient'
 import {
   RecallableCourtCase,
-  RecallableCourtCasesResponse,
   UpdateSentenceTypesRequest,
   UpdateSentenceTypesResponse,
   SentenceType,
+  RecallableCourtCasesResponseAugmented,
+  RecallableCourtCaseSentenceAugmented,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CourtCaseService {
@@ -17,8 +18,22 @@ export default class CourtCaseService {
     return response.cases.map((recallableCase: RecallableCourtCase) => this.fromRecallableCourtCase(recallableCase))
   }
 
-  async getAllRecallableCourtCases(nomsId: string, username: string): Promise<RecallableCourtCasesResponse> {
-    return (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
+  async getAllRecallableCourtCases(nomsId: string, username: string): Promise<RecallableCourtCasesResponseAugmented> {
+    const response = await (await this.getApiClient(username)).getRecallableCourtCases(nomsId)
+
+    return {
+      cases: response.cases.map(courtCase => ({
+        ...courtCase,
+        sentences: courtCase.sentences.map(sentence => {
+          const augmented: RecallableCourtCaseSentenceAugmented = {
+            ...sentence,
+            lineNumber: sentence.lineNumber ?? null,
+            countNumber: sentence.countNumber ?? null,
+          }
+          return augmented
+        }),
+      })),
+    }
   }
 
   async updateSentenceTypes(

@@ -113,6 +113,7 @@ export default function loadRecalls(
             if ('status' in sentence && sentence.status === 'DELETED') {
               return acc
             }
+
             // Get offence code either from sentence or from court case mapping
             const offenceCode =
               sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
@@ -126,6 +127,8 @@ export default function loadRecalls(
               sentenceDate: sentenceDetailsMap[sentence.sentenceUuid]?.sentenceDate || null,
               offenceStartDate: sentenceDetails.offenceStartDate || null,
               offenceEndDate: sentenceDetails.offenceEndDate || null,
+              lineNumber: sentenceDetails.lineNumber ?? null,
+              countNumber: sentenceDetails.countNumber ?? null,
             })
 
             return acc

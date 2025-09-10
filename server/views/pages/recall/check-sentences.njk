@@ -143,32 +143,39 @@
 {% endmacro %}
 
 {% macro sentenceCard(sentence, offenceNameMap) %}
-    {% if sentence.countNumber is defined and sentence.countNumber is not none %}
-    {% set countNumber = sentence.countNumber %}
-  {% else %}
-    {% set countNumber = 1 %}
-  {% endif %}
+    {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
+    {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
+    {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not available' %}
+    {# Determine numeric values for count and line number #}
+    {% if sentence.countNumber and sentence.countNumber != '-1' %}
+        {% set countNumberWithText = sentence.countNumber %}
+        {% set lineNumberWithText = null %}
+    {% elseif not sentence.countNumber %}
+        {% set countNumberWithText = null %}
+        {% set lineNumberWithText = sentence.lineNumber %}
+    {% else %}
+        {# countNumber is '-1' → show neither #}
+        {% set countNumberWithText = null %}
+        {% set lineNumberWithText = null %}
+    {% endif %}
 
-  {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
-  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
-  {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not available' %}
-
-  {{ offenceCard({
-    countNumber: countNumber,
-    offenceCode: sentence.offenceCode | default('N/A'),
-    offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-    offenceStartDate: offenceStartDate,
-    offenceEndDate: offenceEndDate,
-    hideOutcome: true,
-    outcome: sentence.outcome | default('N/A'),
-    lineNumber: sentence.lineNumber | default('N/A'),
-    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
-    sentenceServeType: sentence.sentenceServeType | default(null),
-    sentenceType: sentence.sentenceType | default('N/A'),
-    sentenceDate: sentenceDate,
-    fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-    isSentenced: true,
-    detailsClasses: 'govuk-!-padding-4'
-  }) }}
+    {{ offenceCard({
+      countNumber: countNumberWithText,
+      offenceCode: sentence.offenceCode | default('N/A'),
+      offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+      offenceStartDate: offenceStartDate,
+      offenceEndDate: offenceEndDate,
+      hideOutcome: true,
+      outcome: sentence.outcome | default('N/A'),
+      lineNumber: lineNumberWithText,
+      periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+      sentenceServeType: sentence.sentenceServeType | default(null),
+      sentenceType: sentence.sentenceType | default('N/A'),
+      sentenceDate: sentenceDate,
+      fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+      isSentenced: true,
+      detailsClasses: 'govuk-!-padding-4'
+    }) }}
 {% endmacro %}
+
 

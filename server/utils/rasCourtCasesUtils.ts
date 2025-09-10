@@ -11,9 +11,6 @@ export default function getCourtCaseOptionsFromRas(req: FormWizard.Request, res:
     return sessionCases
   }
 
-  // TODO somewhere here need to go into recalls.source to check if its nomis or not for the count number text
-  // courtCase also needs source
-
   const cases: CourtCase[] =
     res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)
       ? (res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]).map(

@@ -33,6 +33,8 @@ export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
   formattedConsecutiveOrConcurrent?: string
   formattedOffenceDate?: string
   formattedConvictionDate?: string
+  formattedCountNumber: string
+  formattedLineNumber: string
   apiOffenceDescription?: string
   formattedOutcome?: string
 }
