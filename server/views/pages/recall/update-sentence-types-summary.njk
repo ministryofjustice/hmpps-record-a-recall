@@ -17,7 +17,15 @@
 {% macro sentenceCard(sentence, courtCase, updatedSentenceTypes, updatedSentenceTypeDescriptions, nomisId, isUpdated) %}
     <div class="govuk-!-margin-bottom-3">
         <div class="offence-card govuk-!-padding-4">
-            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Count {{ sentence.countNumber or 1 }}</h3>
+           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+                {% if sentence.countNumber is not defined or sentence.countNumber == null %}
+                    NOMIS line {{ sentence.lineNumber }}
+                {% elseif sentence.countNumber == -1 %}
+                    {# show nothing #}
+                {% else %}
+                    Count {{ sentence.countNumber }}
+                {% endif %}
+                </h3>
             <p class="govuk-body govuk-!-margin-bottom-3">
                 {{ sentence.offenceCode or '' }}: {{ sentence.offenceDescription or 'Offence description not available' }}
             </p>
