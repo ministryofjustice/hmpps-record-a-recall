@@ -5,7 +5,8 @@ import RecallBaseController from './recallBaseController'
 import { UpdateSentenceTypesRequest } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../../logger'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { createSentenceToCourtCaseMap } from '../../helpers/sentenceHelper'
@@ -24,16 +25,16 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Clean up session state from any sub-flows
-      req.sessionModel.unset(sessionModelFields.BULK_UPDATE_MODE)
-      req.sessionModel.unset(sessionModelFields.SENTENCES_IN_CURRENT_CASE)
-      req.sessionModel.unset(sessionModelFields.CURRENT_SENTENCE_INDEX)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BULK_UPDATE_MODE, null)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE, null)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX, null)
 
       // Get court cases from session
       const courtCases = getCourtCaseOptions(req)
-      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-        string,
-        { uuid: string; description: string }
-      >
+      const updatedSentences = (SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+      ) || {}) as Record<string, { uuid: string; description: string }>
       // Create compatibility maps for templates
       const updatedSentenceTypes: Record<string, string> = {}
       const updatedSentenceTypeDescriptions: Record<string, string> = {}
@@ -74,7 +75,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
       const unknownSentenceIds = courtCasesWithUnknownSentences.flatMap(courtCase =>
         courtCase.unknownSentences.map(s => s.sentenceUuid),
       )
-      req.sessionModel.set(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE, unknownSentenceIds)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE, unknownSentenceIds)
 
       // Pre-process data for cleaner template logic
       const unupdatedCases = []
@@ -115,11 +116,12 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     // Validate that all sentences have been updated
-    const unknownSentenceIds = (req.sessionModel.get(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE) || []) as string[]
-    const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-      string,
-      { uuid: string; description: string }
-    >
+    const unknownSentenceIds = (SessionManager.getSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE,
+    ) || []) as string[]
+    const updatedSentences = (SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) ||
+      {}) as Record<string, { uuid: string; description: string }>
 
     const allUpdated = unknownSentenceIds.every(sentenceUuid => updatedSentences[sentenceUuid])
 
@@ -140,7 +142,7 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
         ],
       }
 
-      req.sessionModel.set('errors', errors)
+      SessionManager.setSessionValue(req, 'errors', errors)
       res.locals.errors = errors
       res.locals.errorSummary = errorSummary
 
@@ -154,10 +156,10 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
   async saveValues(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-        string,
-        { uuid: string; description: string }
-      >
+      const updatedSentences = (SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+      ) || {}) as Record<string, { uuid: string; description: string }>
       const courtCases = getCourtCaseOptions(req)
 
       // Check if there are any updates to persist
@@ -249,12 +251,16 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
 
       // Re-summarize the cases with updated sentence types
       const summarisedSentenceGroupsArray = summariseRasCases(updatedCourtCases)
-      req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroupsArray)
-      req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, updatedCourtCases)
+      SessionManager.setSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SUMMARISED_SENTENCES,
+        summarisedSentenceGroupsArray,
+      )
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.COURT_CASE_OPTIONS, updatedCourtCases)
 
       // Clear the temporary session data on success
-      req.sessionModel.unset(sessionModelFields.UPDATED_SENTENCE_TYPES)
-      req.sessionModel.unset(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES, null)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE, null)
 
       // Continue to the next step
       return super.saveValues(req, res, next)
@@ -284,12 +290,12 @@ export default class UpdateSentenceTypesSummaryController extends RecallBaseCont
   }
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-      string,
-      { uuid: string; description: string }
-    >
-    const unknownSentencesToUpdate = (req.sessionModel.get(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE) ||
-      []) as string[]
+    const updatedSentences = (SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) ||
+      {}) as Record<string, { uuid: string; description: string }>
+    const unknownSentencesToUpdate = (SessionManager.getSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE,
+    ) || []) as string[]
 
     // Create compatibility maps for templates
     const updatedSentenceTypes: Record<string, string> = {}

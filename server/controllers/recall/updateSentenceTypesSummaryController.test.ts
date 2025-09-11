@@ -6,8 +6,10 @@ import UpdateSentenceTypesSummaryController from './updateSentenceTypesSummaryCo
 import RecallBaseController from './recallBaseController'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import logger from '../../../logger'
+import { SessionManager } from '../../services/sessionManager'
 
 jest.mock('../../../logger')
+jest.mock('../../services/sessionManager')
 jest.mock('../../helpers/formWizardHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({
@@ -68,6 +70,10 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     next = jest.fn()
     jest.clearAllMocks()
+
+    // Mock SessionManager methods
+    ;(SessionManager.getSessionValue as jest.Mock) = jest.fn()
+    ;(SessionManager.setSessionValue as jest.Mock) = jest.fn()
   })
 
   it('should extend RecallBaseController', () => {
@@ -86,7 +92,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
     it('should continue to next step if no updates to persist', async () => {
       // Arrange
       mockGetCourtCaseOptions.mockReturnValue([])
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue({})
+      ;(SessionManager.getSessionValue as jest.Mock).mockReturnValue({})
 
       const superSaveValuesSpy = jest.spyOn(RecallBaseController.prototype, 'saveValues').mockImplementation(() => {})
 
@@ -128,8 +134,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
       ]
 
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
         return undefined
       })
 
@@ -165,16 +171,24 @@ describe('UpdateSentenceTypesSummaryController', () => {
         },
         'test-user',
       )
-      expect(req.sessionModel.unset).toHaveBeenCalledWith('updatedSentences')
-      expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+        null,
+      )
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE,
+        null,
+      )
       expect(superSaveValuesSpy).toHaveBeenCalledWith(req, res, next)
     })
 
     it('should skip sentences not found in any court case', async () => {
       // Arrange
       mockGetCourtCaseOptions.mockReturnValue([])
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return {}
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return {}
         return undefined
       })
 
@@ -194,8 +208,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
           sentences: [{ sentenceUuid: 'sentence-2' }], // Different sentence
         },
       ])
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
         return undefined
       })
 
@@ -204,8 +218,16 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
       // Assert
       expect(req.services.courtCaseService.updateSentenceTypes).not.toHaveBeenCalled()
-      expect(req.sessionModel.unset).toHaveBeenCalledWith('updatedSentences')
-      expect(req.sessionModel.unset).toHaveBeenCalledWith('unknownSentencesToUpdate')
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+        null,
+      )
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE,
+        null,
+      )
       expect(next).not.toHaveBeenCalled()
     })
 
@@ -224,8 +246,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
         },
       ]
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
         return undefined
       })
 
@@ -259,8 +281,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
         },
       ]
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
         return undefined
       })
 
@@ -294,8 +316,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
         },
       ]
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
         return undefined
       })
 
@@ -329,8 +351,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
         },
       ]
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
         return undefined
       })
 
@@ -399,8 +421,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     it('should correctly identify and group court cases with unknown sentences', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences')
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES)
           return { 'sentence-1': { uuid: 'SDS', description: 'Standard Determinate Sentence' } }
         return undefined
       })
@@ -419,8 +441,8 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     it('should handle court cases with multiple unknown sentences', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences')
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES)
           return {
             'sentence-1': { uuid: 'SDS', description: 'SDS' },
             'sentence-3': { uuid: 'EDS', description: 'EDS' },
@@ -437,8 +459,9 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
     it('should set allComplete to false when not all sentences are updated', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return { 'sentence-1': { uuid: 'SDS', description: 'SDS' } } // sentence-2 not updated
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES)
+          return { 'sentence-1': { uuid: 'SDS', description: 'SDS' } } // sentence-2 not updated
         return undefined
       })
 
@@ -452,9 +475,10 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
   describe('post', () => {
     it('should validate that all sentences have been updated', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'unknownSentencesToUpdate') return ['sentence-1', 'sentence-2']
-        if (key === 'updatedSentences') return { 'sentence-1': { uuid: 'type-1', description: 'Type 1' } } // sentence-2 not updated
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE) return ['sentence-1', 'sentence-2']
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES)
+          return { 'sentence-1': { uuid: 'type-1', description: 'Type 1' } } // sentence-2 not updated
         return undefined
       })
 
@@ -462,7 +486,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', {
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(req, 'errors', {
         sentenceTypes: {
           text: 'You must update all sentence types before continuing',
         },
@@ -471,9 +495,9 @@ describe('UpdateSentenceTypesSummaryController', () => {
     })
 
     it('should proceed when all sentences are updated', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'unknownSentencesToUpdate') return ['sentence-1', 'sentence-2']
-        if (key === 'updatedSentences')
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE) return ['sentence-1', 'sentence-2']
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES)
           return {
             'sentence-1': { uuid: 'type-1', description: 'Type 1' },
             'sentence-2': { uuid: 'type-2', description: 'Type 2' },
@@ -496,9 +520,10 @@ describe('UpdateSentenceTypesSummaryController', () => {
         'sentence-2': { uuid: 'type-2', description: 'Type 2' },
       }
 
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'updatedSentences') return updatedSentences
-        if (key === 'unknownSentencesToUpdate') return ['sentence-1', 'sentence-2', 'sentence-3']
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
+        if (key === SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) return updatedSentences
+        if (key === SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE)
+          return ['sentence-1', 'sentence-2', 'sentence-3']
         if (key === 'prisoner') return { prisonerNumber: 'A1234BC' }
         return undefined
       })
@@ -512,7 +537,7 @@ describe('UpdateSentenceTypesSummaryController', () => {
     })
 
     it('should handle empty session data', () => {
-      ;(req.sessionModel.get as jest.Mock).mockImplementation((key: string) => {
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key: string) => {
         if (key === 'prisoner') return { prisonerNumber: 'A1234BC' }
         return undefined
       })

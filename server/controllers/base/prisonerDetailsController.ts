@@ -3,7 +3,7 @@ import FormWizard from 'hmpo-form-wizard'
 import logger from '../../../logger'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import FormInitialStep from './formInitialStep'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 
 export default class PrisonerDetailsController extends FormInitialStep {
   middlewareSetup() {
@@ -13,7 +13,10 @@ export default class PrisonerDetailsController extends FormInitialStep {
 
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
-    const prisoner = req.sessionModel.get<PrisonerSearchApiPrisoner>(sessionModelFields.PRISONER)
+    const prisoner = SessionManager.getSessionValue<PrisonerSearchApiPrisoner>(
+      req,
+      SessionManager.SESSION_KEYS.PRISONER,
+    )
     const nomisId = prisoner?.prisonerNumber
 
     // Ensure prisoner data is also available in res.locals for template consistency
@@ -25,15 +28,18 @@ export default class PrisonerDetailsController extends FormInitialStep {
 
   async getPrisoner(req: FormWizard.Request, res: Response, next: NextFunction) {
     const { nomisId, username } = res.locals
-    const sessionPrisoner = req.sessionModel.get<PrisonerSearchApiPrisoner>(sessionModelFields.PRISONER)
+    const sessionPrisoner = SessionManager.getSessionValue<PrisonerSearchApiPrisoner>(
+      req,
+      SessionManager.SESSION_KEYS.PRISONER,
+    )
 
     if (!sessionPrisoner) {
       try {
         const newPrisoner = await req.services.prisonerService.getPrisonerDetails(nomisId, username)
 
         // Store in session for form wizard
-        req.sessionModel.set(sessionModelFields.PRISONER, newPrisoner)
-        req.sessionModel.save()
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.PRISONER, newPrisoner)
+        SessionManager.save(req)
 
         // Also populate res.locals for template consistency
         res.locals.prisoner = newPrisoner
@@ -42,7 +48,7 @@ export default class PrisonerDetailsController extends FormInitialStep {
         next()
       } catch (error) {
         logger.error(error, `Failed to retrieve prisoner details for: ${nomisId}`)
-        req.sessionModel.unset(sessionModelFields.PRISONER)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.PRISONER, null)
         res.locals.prisoner = null
         next(error)
       }

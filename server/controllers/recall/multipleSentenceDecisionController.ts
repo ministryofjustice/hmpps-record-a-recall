@@ -3,7 +3,8 @@ import { NextFunction, Response } from 'express'
 
 import type { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 import logger from '../../../logger'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -40,8 +41,8 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
       }
 
       // Store sentences in session for later use
-      req.sessionModel.set(sessionModelFields.SENTENCES_IN_CURRENT_CASE, unknownSentences)
-      req.sessionModel.set(sessionModelFields.SELECTED_COURT_CASE_UUID, courtCaseId)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE, unknownSentences)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SELECTED_COURT_CASE_UUID, courtCaseId)
 
       // Set court case details for the template
       res.locals.sentenceCount = unknownSentences.length
@@ -61,7 +62,10 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
       res.locals.courtCaseId = courtCaseId
 
       // Get the sentences from session that were set in middleware
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+      ) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -83,7 +87,7 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
       const sameSentenceType = req.body.sameSentenceType === 'yes'
 
       // Set bulk update mode flag
-      req.sessionModel.set(sessionModelFields.BULK_UPDATE_MODE, sameSentenceType)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BULK_UPDATE_MODE, sameSentenceType)
 
       if (sameSentenceType) {
         // For bulk flow, navigate to bulk sentence type page
@@ -91,10 +95,13 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
         req.form.options.next = `/person/${res.locals.nomisId}/record-recall/bulk-sentence-type/${courtCaseId}`
       } else {
         // For individual flow, initialize the sentence index
-        req.sessionModel.set(sessionModelFields.CURRENT_SENTENCE_INDEX, 0)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX, 0)
 
         // Get the first sentence to determine next URL
-        const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+        const sentencesInCase = SessionManager.getSessionValue(
+          req,
+          SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+        ) as Array<{
           sentenceUuid: string
           isUnknownSentenceType: boolean
         }>

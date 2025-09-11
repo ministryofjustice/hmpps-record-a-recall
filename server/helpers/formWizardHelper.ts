@@ -11,6 +11,7 @@ import { RecallEligibility } from '../@types/recallEligibility'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import { AdjustmentDto, ConflictingAdjustments } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { DpsSentenceIds } from '../@types/nomisMappingApi/nomisMappingApiTypes'
+import { SessionManager } from '../services/sessionManager'
 
 export default function getJourneyDataFromRequest(req: FormWizard.Request): RecallJourneyData {
   const courtCases = getCourtCases(req)
@@ -32,7 +33,7 @@ export default function getJourneyDataFromRequest(req: FormWizard.Request): Reca
     courtCaseCount,
     eligibleSentenceCount: getEligibleSentenceCount(req),
     sentenceIds,
-    isEdit: req.sessionModel.get<boolean>(sessionModelFields.IS_EDIT),
+    isEdit: SessionManager.getSessionValue<boolean>(req, SessionManager.SESSION_KEYS.IS_EDIT),
     // hasMultipleOverlappingUALTypeRecall: hasMultipleUALTypeRecallConflicting(req)
   }
 }
@@ -135,7 +136,7 @@ export function getRecallTypeCode(req: FormWizard.Request): string {
 }
 
 export function isManualCaseSelection(req: FormWizard.Request): boolean {
-  return req.sessionModel.get<boolean>(sessionModelFields.MANUAL_CASE_SELECTION) === true
+  return SessionManager.getSessionValue<boolean>(req, SessionManager.SESSION_KEYS.MANUAL_CASE_SELECTION) === true
 }
 
 export function getCourtCases(req: FormWizard.Request): string[] {
@@ -147,12 +148,12 @@ export function inPrisonAtRecall(req: FormWizard.Request): boolean {
 }
 
 export function getReturnToCustodyDate(req: FormWizard.Request): Date {
-  const returnToCustodyDate = req.sessionModel.get<string>(sessionModelFields.RTC_DATE)
+  const returnToCustodyDate = SessionManager.getSessionValue<string>(req, SessionManager.SESSION_KEYS.RTC_DATE)
   return returnToCustodyDate ? new Date(returnToCustodyDate) : null
 }
 
 export function getRevocationDate(req: FormWizard.Request): Date {
-  const revocationDate = req.sessionModel.get<string>(sessionModelFields.REVOCATION_DATE)
+  const revocationDate = SessionManager.getSessionValue<string>(req, SessionManager.SESSION_KEYS.REVOCATION_DATE)
   return revocationDate ? new Date(revocationDate) : null
 }
 
@@ -219,12 +220,20 @@ export function getDpsSentenceId(req: FormWizard.Request): DpsSentenceIds {
 
 export function hasMultipleConflicting(req: FormWizard.Request): boolean {
   return (
-    req.sessionModel.get<boolean>(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS) === true
+    SessionManager.getSessionValue<boolean>(
+      req,
+      SessionManager.SESSION_KEYS.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+    ) === true
   )
 }
 
 export function hasMultipleUALTypeRecallConflicting(req: FormWizard.Request): boolean {
-  return req.sessionModel.get<boolean>(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) === true
+  return (
+    SessionManager.getSessionValue<boolean>(
+      req,
+      SessionManager.SESSION_KEYS.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL,
+    ) === true
+  )
 }
 
 export function getConflictingAdjustments(req: FormWizard.Request): ConflictingAdjustments {
@@ -256,5 +265,14 @@ export function getSentenceGroups(req: FormWizard.Request): SummarisedSentenceGr
 }
 
 function get<T>(req: FormWizard.Request, key: string): T {
-  return req.sessionModel.get<T>(key)
+  // Map sessionModelFields to SESSION_KEYS
+  const sessionKey = Object.entries(sessionModelFields).find(([, value]) => value === key)?.[0]
+  if (sessionKey && SessionManager.SESSION_KEYS[sessionKey as keyof typeof SessionManager.SESSION_KEYS]) {
+    return SessionManager.getSessionValue<T>(
+      req,
+      SessionManager.SESSION_KEYS[sessionKey as keyof typeof SessionManager.SESSION_KEYS],
+    )
+  }
+  // Fallback for direct key access
+  return SessionManager.getSessionValue<T>(req, key)
 }

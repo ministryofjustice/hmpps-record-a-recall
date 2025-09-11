@@ -4,6 +4,7 @@ import { min } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
+import { SessionManager } from '../../services/sessionManager'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 import getJourneyDataFromRequest, {
   getCourtCaseOptions,
@@ -94,7 +95,7 @@ export default class RevocationDateController extends RecallBaseController {
       if (!routingResponse) {
         // Fallback if routing response not available (should not happen in normal flow)
         logger.warn('Routing response not found in res.locals, falling back to manual review')
-        req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.MANUAL_CASE_SELECTION, true)
         return super.successHandler(req, res, next)
       }
 

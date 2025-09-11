@@ -4,17 +4,14 @@ import logger from '../../../../logger'
 
 import RecallBaseController from '../recallBaseController'
 import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
-import getJourneyDataFromRequest, {
-  RecallJourneyData,
-  sessionModelFields,
-  getPrisoner,
-} from '../../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { RecallJourneyData, getPrisoner } from '../../../helpers/formWizardHelper'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { SessionManager } from '../../../services/sessionManager'
 
 export default class EditSummaryController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const { recallId, nomisId } = res.locals
-    req.sessionModel.set(sessionModelFields.IS_EDIT, true)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.IS_EDIT, true)
     const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
@@ -119,7 +116,7 @@ export default class EditSummaryController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
-    req.sessionModel.set(sessionModelFields.JOURNEY_COMPLETE, true)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
     return super.successHandler(req, res, next)
   }
 }

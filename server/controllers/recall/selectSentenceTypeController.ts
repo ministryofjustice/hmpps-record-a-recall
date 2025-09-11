@@ -2,7 +2,8 @@ import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 import logger from '../../../logger'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { findSentenceAndCourtCase, getApplicableSentenceTypes } from '../../helpers/sentenceHelper'
@@ -52,10 +53,10 @@ export default class SelectSentenceTypeController extends RecallBaseController {
       }
 
       // Check if sentence has already been updated
-      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-        string,
-        { uuid: string; description: string }
-      >
+      const updatedSentences = (SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+      ) || {}) as Record<string, { uuid: string; description: string }>
       const selectedType = updatedSentences[sentenceUuid]?.uuid
 
       const sentenceTypes = req.form.options.fields.sentenceType.items.map((item: { value: string; text: string }) => ({
@@ -86,33 +87,37 @@ export default class SelectSentenceTypeController extends RecallBaseController {
     )
     const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
-    const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-      string,
-      { uuid: string; description: string }
-    >
+    const updatedSentences = (SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES) ||
+      {}) as Record<string, { uuid: string; description: string }>
     updatedSentences[sentenceUuid] = {
       uuid: selectedTypeUuid,
       description: selectedTypeDescription,
     }
-    req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES, updatedSentences)
 
     // Check if we're in individual update mode (not bulk)
-    const bulkUpdateMode = req.sessionModel.get(sessionModelFields.BULK_UPDATE_MODE)
+    const bulkUpdateMode = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.BULK_UPDATE_MODE)
 
     if (bulkUpdateMode === false) {
       // We're in individual update mode
-      const sentencesInCurrentCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as
+      const sentencesInCurrentCase = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+      ) as
         | Array<{
             sentenceUuid: string
             isUnknownSentenceType: boolean
           }>
         | undefined
-      let currentSentenceIndex = req.sessionModel.get(sessionModelFields.CURRENT_SENTENCE_INDEX) as number | undefined
+      let currentSentenceIndex = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX,
+      ) as number | undefined
 
       if (sentencesInCurrentCase && typeof currentSentenceIndex === 'number') {
         // Move to the next sentence
         currentSentenceIndex += 1
-        req.sessionModel.set(sessionModelFields.CURRENT_SENTENCE_INDEX, currentSentenceIndex)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX, currentSentenceIndex)
 
         if (currentSentenceIndex < sentencesInCurrentCase.length) {
           // There are more sentences to update
@@ -129,9 +134,9 @@ export default class SelectSentenceTypeController extends RecallBaseController {
         logger.info('Completed individual sentence update flow', {
           totalSentences: sentencesInCurrentCase.length,
         })
-        req.sessionModel.unset(sessionModelFields.BULK_UPDATE_MODE)
-        req.sessionModel.unset(sessionModelFields.SENTENCES_IN_CURRENT_CASE)
-        req.sessionModel.unset(sessionModelFields.CURRENT_SENTENCE_INDEX)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BULK_UPDATE_MODE, null)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE, null)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX, null)
       }
     }
 

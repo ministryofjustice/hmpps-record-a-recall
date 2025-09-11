@@ -4,6 +4,7 @@ import { isBefore, isAfter, isEqual } from 'date-fns'
 import _ from 'lodash'
 import type { UAL } from 'models'
 import RecallBaseController from './recallBaseController'
+import { SessionManager } from '../../services/sessionManager'
 import { calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
   getAdjustmentsToConsiderForValidation,
@@ -11,7 +12,6 @@ import getJourneyDataFromRequest, {
   getPrisoner,
   getRevocationDate,
   RecallJourneyData,
-  sessionModelFields,
 } from '../../helpers/formWizardHelper'
 import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 
@@ -109,9 +109,9 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
       return true
     }
     if (conflictingRecallUALAdjustments.length > 1) {
-      req.sessionModel.set(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, true)
     } else {
-      req.sessionModel.unset(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL, null)
       return true
     }
     return false
@@ -131,9 +131,13 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     })
 
     if (conflictingNonRecallUALAdjustments.length > 0) {
-      req.sessionModel.set(sessionModelFields.RELEVANT_ADJUSTMENTS, conflictingNonRecallUALAdjustments)
+      SessionManager.setSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.RELEVANT_ADJUSTMENTS,
+        conflictingNonRecallUALAdjustments,
+      )
     } else {
-      req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RELEVANT_ADJUSTMENTS, null)
       return true
     }
     return false
@@ -169,7 +173,11 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
 
     const hasConflicts = !hasNoRecallUalConflicts || !hasNoOtherAdjustmentConflicts
 
-    req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, hasConflicts)
+    SessionManager.setSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+      hasConflicts,
+    )
 
     if (ual && !hasConflicts) {
       const ualToSave: UAL = {
@@ -189,12 +197,12 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
         .filter(adj => this.isRelevantAdjustment(adj).isRelevant)
         .filter((adj, index, self) => index === self.findIndex(t => t.id === adj.id))
 
-      req.sessionModel.set(sessionModelFields.CONFLICTING_ADJUSTMENTS, conflictingAdjustments)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CONFLICTING_ADJUSTMENTS, conflictingAdjustments)
 
       if (relevantAdjustments.length === 0) {
         if (Object.values(conflictingAdjustments).every(arr => arr.length === 0)) {
-          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-          req.sessionModel.unset(sessionModelFields.UAL_TO_EDIT)
+          SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_CREATE, ualToSave)
+          SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_EDIT, null)
         } else if (conflictingAdjustments.exact.length === 1 || conflictingAdjustments.within.length === 1) {
           const existingAdjustment = _.first([...conflictingAdjustments.exact, ...conflictingAdjustments.within])
           const updatedUal: UAL = {
@@ -204,8 +212,8 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             lastDay: ual.lastDay,
             nomisId: existingAdjustment.person,
           }
-          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
-          req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+          SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_EDIT, updatedUal)
+          SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_CREATE, null)
         } else {
           const existingAdj = _.first(conflictingAdjustments.overlap)
           const updatedUal: UAL = {
@@ -215,16 +223,20 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
             lastDay: existingAdj.toDate,
             nomisId: existingAdj.person,
           }
-          req.sessionModel.set(sessionModelFields.UAL_TO_CREATE, ualToSave)
-          req.sessionModel.set(sessionModelFields.UAL_TO_EDIT, updatedUal)
+          SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_CREATE, ualToSave)
+          SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_EDIT, updatedUal)
         }
 
-        req.sessionModel.set(sessionModelFields.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS, false)
-        req.sessionModel.unset(sessionModelFields.RELEVANT_ADJUSTMENTS)
+        SessionManager.setSessionValue(
+          req,
+          SessionManager.SESSION_KEYS.INCOMPATIBLE_TYPES_AND_MULTIPLE_CONFLICTING_ADJUSTMENTS,
+          false,
+        )
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RELEVANT_ADJUSTMENTS, null)
       }
     } else if (!ual) {
-      req.sessionModel.unset(sessionModelFields.UAL)
-      req.sessionModel.unset(sessionModelFields.UAL_TO_CREATE)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL, null)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UAL_TO_CREATE, null)
     }
 
     if (isInPrisonAtRecall) {
