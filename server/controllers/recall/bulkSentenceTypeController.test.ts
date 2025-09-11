@@ -5,8 +5,10 @@ import BulkSentenceTypeController from './bulkSentenceTypeController'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import * as formWizardHelper from '../../helpers/formWizardHelper'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
+import { SessionManager } from '../../services/sessionManager'
 
 jest.mock('../../../logger')
+jest.mock('../../services/sessionManager')
 jest.mock('../../helpers/urlHelper', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue({}),
@@ -140,6 +142,10 @@ describe('BulkSentenceTypeController', () => {
     } as unknown as Response
 
     next = jest.fn()
+
+    // Mock SessionManager methods
+    ;(SessionManager.getSessionValue as jest.Mock) = jest.fn()
+    ;(SessionManager.setSessionValue as jest.Mock) = jest.fn()
   })
 
   afterEach(() => {
@@ -149,10 +155,17 @@ describe('BulkSentenceTypeController', () => {
   describe('setSentenceTypeFieldItems middleware', () => {
     it('should set sentence type items when court case and sentences are found', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE) {
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key) => {
+        if (key === SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE) {
           return mockSentencesInCase
         }
+        if (key === 'prisoner') {
+          return { dateOfBirth: '1990-01-01' }
+        }
+        return null
+      })
+      // Also mock req.sessionModel.get for the helper function
+      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
         if (key === 'prisoner') {
           return { dateOfBirth: '1990-01-01' }
         }
@@ -173,10 +186,17 @@ describe('BulkSentenceTypeController', () => {
     it('should call next with error when court case not found', async () => {
       req.params.courtCaseId = 'non-existent'
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE) {
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key) => {
+        if (key === SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE) {
           return mockSentencesInCase
         }
+        if (key === 'prisoner') {
+          return { dateOfBirth: '1990-01-01' }
+        }
+        return null
+      })
+      // Also mock req.sessionModel.get for the helper function
+      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
         if (key === 'prisoner') {
           return { dateOfBirth: '1990-01-01' }
         }
@@ -190,7 +210,7 @@ describe('BulkSentenceTypeController', () => {
 
     it('should call next with error when no sentences in session', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue([])
+      ;(SessionManager.getSessionValue as jest.Mock).mockReturnValue([])
 
       await controller.setSentenceTypeFieldItems(req, res, next)
 
@@ -199,10 +219,17 @@ describe('BulkSentenceTypeController', () => {
 
     it('should call next with error when sentence not found in court case', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE) {
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key) => {
+        if (key === SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE) {
           return [{ sentenceUuid: 'non-existent-sentence', isUnknownSentenceType: true }]
         }
+        if (key === 'prisoner') {
+          return { dateOfBirth: '1990-01-01' }
+        }
+        return null
+      })
+      // Also mock req.sessionModel.get for the helper function
+      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
         if (key === 'prisoner') {
           return { dateOfBirth: '1990-01-01' }
         }
@@ -216,8 +243,8 @@ describe('BulkSentenceTypeController', () => {
 
     it('should call next with error when prisoner data not in session', async () => {
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE) {
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key) => {
+        if (key === SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE) {
           return mockSentencesInCase
         }
         if (key === 'prisoner') {
@@ -250,10 +277,17 @@ describe('BulkSentenceTypeController', () => {
       ]
 
       mockGetCourtCaseOptions.mockReturnValue(mockCourtCases)
-      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
-        if (key === formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE) {
+      ;(SessionManager.getSessionValue as jest.Mock).mockImplementation((request, key) => {
+        if (key === SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE) {
           return mockSentencesInCase
         }
+        if (key === 'prisoner') {
+          return { dateOfBirth: '1990-01-01' }
+        }
+        return null
+      })
+      // Also mock req.sessionModel.get for the helper function
+      ;(req.sessionModel.get as jest.Mock).mockImplementation(key => {
         if (key === 'prisoner') {
           return { dateOfBirth: '1990-01-01' }
         }
@@ -281,7 +315,7 @@ describe('BulkSentenceTypeController', () => {
 
   describe('get', () => {
     it('should render the page when sentences are in session', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue(mockSentencesInCase)
+      ;(SessionManager.getSessionValue as jest.Mock).mockReturnValue(mockSentencesInCase)
       req.form.options.fields.sentenceType.items = mockSentenceTypes.map(type => ({
         value: type.sentenceTypeUuid,
         text: type.description,
@@ -310,7 +344,7 @@ describe('BulkSentenceTypeController', () => {
     })
 
     it('should redirect when no sentences in session', async () => {
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue(null)
+      ;(SessionManager.getSessionValue as jest.Mock).mockReturnValue(null)
 
       await controller.get(req, res, next)
 
@@ -321,7 +355,7 @@ describe('BulkSentenceTypeController', () => {
   describe('post', () => {
     it('should update all sentences with selected type and redirect', async () => {
       req.body.sentenceType = 'sds-uuid'
-      ;(req.sessionModel.get as jest.Mock)
+      ;(SessionManager.getSessionValue as jest.Mock)
         .mockReturnValueOnce(mockSentencesInCase) // First call for sentences
         .mockReturnValueOnce({}) // Second call for existing updated sentences
 
@@ -332,25 +366,41 @@ describe('BulkSentenceTypeController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.UPDATED_SENTENCE_TYPES, {
-        'sentence-1': {
-          uuid: 'sds-uuid',
-          description: 'Standard Determinate Sentence (SDS)',
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+        {
+          'sentence-1': {
+            uuid: 'sds-uuid',
+            description: 'Standard Determinate Sentence (SDS)',
+          },
+          'sentence-2': {
+            uuid: 'sds-uuid',
+            description: 'Standard Determinate Sentence (SDS)',
+          },
         },
-        'sentence-2': {
-          uuid: 'sds-uuid',
-          description: 'Standard Determinate Sentence (SDS)',
-        },
-      })
-      expect(req.sessionModel.unset).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.BULK_UPDATE_MODE)
-      expect(req.sessionModel.unset).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.SENTENCES_IN_CURRENT_CASE)
-      expect(req.sessionModel.unset).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.CURRENT_SENTENCE_INDEX)
+      )
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.BULK_UPDATE_MODE,
+        null,
+      )
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+        null,
+      )
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX,
+        null,
+      )
       expect(res.redirect).toHaveBeenCalledWith('/person/A1234BC/record-recall/update-sentence-types-summary')
     })
 
     it('should call next with error when no sentences in session', async () => {
       req.body.sentenceType = 'sds-uuid'
-      ;(req.sessionModel.get as jest.Mock).mockReturnValue(null)
+      ;(SessionManager.getSessionValue as jest.Mock).mockReturnValue(null)
 
       await controller.post(req, res, next)
 
@@ -365,7 +415,7 @@ describe('BulkSentenceTypeController', () => {
           description: 'Extended Determinate Sentence (EDS)',
         },
       }
-      ;(req.sessionModel.get as jest.Mock)
+      ;(SessionManager.getSessionValue as jest.Mock)
         .mockReturnValueOnce(mockSentencesInCase) // First call for sentences
         .mockReturnValueOnce(existingUpdatedSentences) // Second call for existing updated sentences
 
@@ -373,20 +423,24 @@ describe('BulkSentenceTypeController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith(formWizardHelper.sessionModelFields.UPDATED_SENTENCE_TYPES, {
-        'sentence-3': {
-          uuid: 'eds-uuid',
-          description: 'Extended Determinate Sentence (EDS)',
+      expect(SessionManager.setSessionValue).toHaveBeenCalledWith(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+        {
+          'sentence-3': {
+            uuid: 'eds-uuid',
+            description: 'Extended Determinate Sentence (EDS)',
+          },
+          'sentence-1': {
+            uuid: 'sds-uuid',
+            description: 'Standard Determinate Sentence (SDS)',
+          },
+          'sentence-2': {
+            uuid: 'sds-uuid',
+            description: 'Standard Determinate Sentence (SDS)',
+          },
         },
-        'sentence-1': {
-          uuid: 'sds-uuid',
-          description: 'Standard Determinate Sentence (SDS)',
-        },
-        'sentence-2': {
-          uuid: 'sds-uuid',
-          description: 'Standard Determinate Sentence (SDS)',
-        },
-      })
+      )
     })
   })
 

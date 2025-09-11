@@ -3,7 +3,8 @@ import { NextFunction, Response } from 'express'
 
 import type { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
-import { getCourtCaseOptions, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 import logger from '../../../logger'
 import loadCourtCaseOptions from '../../middleware/loadCourtCaseOptions'
 import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -68,7 +69,10 @@ export default class BulkSentenceTypeController extends RecallBaseController {
         return next(new Error(`Court case not found: ${courtCaseId}`))
       }
 
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+      ) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -108,7 +112,10 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       res.locals.courtCaseId = courtCaseId
 
       // Get sentences from session
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+      ) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -144,7 +151,10 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       const selectedTypeDescription = sentenceTypeItem ? sentenceTypeItem.text : selectedTypeUuid
 
       // Get all sentences for this court case from session
-      const sentencesInCase = req.sessionModel.get(sessionModelFields.SENTENCES_IN_CURRENT_CASE) as Array<{
+      const sentencesInCase = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
+      ) as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
@@ -154,10 +164,10 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       }
 
       // Get existing updated sentences or initialize empty object
-      const updatedSentences = (req.sessionModel.get(sessionModelFields.UPDATED_SENTENCE_TYPES) || {}) as Record<
-        string,
-        { uuid: string; description: string }
-      >
+      const updatedSentences = (SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES,
+      ) || {}) as Record<string, { uuid: string; description: string }>
 
       // Apply the selected type to all sentences in the court case
       sentencesInCase.forEach(({ sentenceUuid }) => {
@@ -168,12 +178,12 @@ export default class BulkSentenceTypeController extends RecallBaseController {
       })
 
       // Update session with all sentence type mappings
-      req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, updatedSentences)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES, updatedSentences)
 
       // Clear bulk update mode and related session data
-      req.sessionModel.unset(sessionModelFields.BULK_UPDATE_MODE)
-      req.sessionModel.unset(sessionModelFields.SENTENCES_IN_CURRENT_CASE)
-      req.sessionModel.unset(sessionModelFields.CURRENT_SENTENCE_INDEX)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BULK_UPDATE_MODE, null)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE, null)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX, null)
 
       logger.info('Bulk sentence type update completed', {
         courtCaseId,

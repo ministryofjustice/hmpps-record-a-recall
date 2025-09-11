@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { sessionModelFields } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 import {
   calculateOverallSentenceLength,
   formatSentenceServeType,
@@ -202,11 +202,16 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      let reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[] | undefined
-      let currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number | undefined
-      let manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as
-        | (string | undefined)[]
+      let reviewableCases = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES) as
+        | CourtCase[]
         | undefined
+      let currentCaseIndex = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX) as
+        | number
+        | undefined
+      let manualRecallDecisions = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
+      ) as (string | undefined)[] | undefined
 
       if (!reviewableCases) {
         if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
@@ -240,9 +245,9 @@ export default class SelectCourtCaseController extends RecallBaseController {
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
 
-        req.sessionModel.set(sessionModelFields.REVIEWABLE_COURT_CASES, reviewableCases)
-        req.sessionModel.set(sessionModelFields.CURRENT_CASE_INDEX, currentCaseIndex)
-        req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES, reviewableCases)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX, currentCaseIndex)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
       }
 
       if (currentCaseIndex === undefined || !reviewableCases || currentCaseIndex >= reviewableCases.length) {
@@ -289,13 +294,18 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
     if (errors) {
       const { nomsNumber } = req.params
-      const recallId = req.sessionModel.get('recallId')
+      const recallId = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.RECALL_ID)
 
-      let reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[] | undefined
-      let currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number | undefined
-      const manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as
-        | string[]
+      let reviewableCases = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES) as
+        | CourtCase[]
         | undefined
+      let currentCaseIndex = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX) as
+        | number
+        | undefined
+      const manualRecallDecisions = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
+      ) as string[] | undefined
 
       if (!reviewableCases || currentCaseIndex === undefined) {
         const allCases = await getCourtCaseOptionsFromRas(req, res)
@@ -321,8 +331,8 @@ export default class SelectCourtCaseController extends RecallBaseController {
       res.locals.previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
       res.locals.backLinkUrl = `${req.baseUrl}/manual-recall-intercept`
 
-      req.sessionModel.set('errors', errors)
-      req.sessionModel.set('formResponses', formResponses)
+      SessionManager.setSessionValue(req, 'errors', errors)
+      SessionManager.setSessionValue(req, 'formResponses', formResponses)
       return this.get(req, res, next)
     }
 
@@ -340,12 +350,18 @@ export default class SelectCourtCaseController extends RecallBaseController {
         }
 
         const activeSentenceChoice = req.form.values.activeSentenceChoice as string | undefined
-        const reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[]
-        const currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number
-        const manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as (
-          | string
-          | undefined
-        )[]
+        const reviewableCases = SessionManager.getSessionValue(
+          req,
+          SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES,
+        ) as CourtCase[]
+        const currentCaseIndex = SessionManager.getSessionValue(
+          req,
+          SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX,
+        ) as number
+        const manualRecallDecisions = SessionManager.getSessionValue(
+          req,
+          SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
+        ) as (string | undefined)[]
 
         if (!reviewableCases || typeof currentCaseIndex !== 'number' || !manualRecallDecisions) {
           callback(new Error('Session not properly initialized for case review in saveValues.'))
@@ -354,11 +370,15 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
         if (activeSentenceChoice) {
           manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
-          req.sessionModel.set(sessionModelFields.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
+          SessionManager.setSessionValue(
+            req,
+            SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
+            manualRecallDecisions,
+          )
         }
 
         const nextCaseIndex = currentCaseIndex + 1
-        req.sessionModel.set(sessionModelFields.CURRENT_CASE_INDEX, nextCaseIndex)
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX, nextCaseIndex)
 
         callback()
       })
@@ -368,8 +388,14 @@ export default class SelectCourtCaseController extends RecallBaseController {
   }
 
   async successHandler(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    const reviewableCases = req.sessionModel.get(sessionModelFields.REVIEWABLE_COURT_CASES) as CourtCase[]
-    const currentCaseIndex = req.sessionModel.get(sessionModelFields.CURRENT_CASE_INDEX) as number
+    const reviewableCases = SessionManager.getSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES,
+    ) as CourtCase[]
+    const currentCaseIndex = SessionManager.getSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX,
+    ) as number
 
     if (reviewableCases && typeof currentCaseIndex === 'number' && currentCaseIndex < reviewableCases.length) {
       req.session.save(err => {
@@ -381,10 +407,10 @@ export default class SelectCourtCaseController extends RecallBaseController {
       })
     } else {
       // All cases have been reviewed, or there were no cases to review.
-      const manualRecallDecisions = req.sessionModel.get(sessionModelFields.MANUAL_RECALL_DECISIONS) as (
-        | string
-        | undefined
-      )[]
+      const manualRecallDecisions = SessionManager.getSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
+      ) as (string | undefined)[]
 
       let summarisedSentenceGroupsArray: SummarisedSentenceGroup[] = []
 
@@ -433,13 +459,21 @@ export default class SelectCourtCaseController extends RecallBaseController {
 
           // Set session data for unknown sentences
           if (unknownSentenceIds.length > 0) {
-            req.sessionModel.set(sessionModelFields.UNKNOWN_SENTENCES_TO_UPDATE, unknownSentenceIds)
-            req.sessionModel.set(sessionModelFields.UPDATED_SENTENCE_TYPES, {})
+            SessionManager.setSessionValue(
+              req,
+              SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE,
+              unknownSentenceIds,
+            )
+            SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES, {})
           }
         }
       }
 
-      req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, summarisedSentenceGroupsArray)
+      SessionManager.setSessionValue(
+        req,
+        SessionManager.SESSION_KEYS.SUMMARISED_SENTENCES,
+        summarisedSentenceGroupsArray,
+      )
       super.successHandler(req, res, next)
     }
   }
