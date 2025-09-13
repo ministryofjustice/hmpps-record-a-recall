@@ -101,7 +101,7 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.879.0",
+    "@aws-sdk/client-sqs": "^3.883.0",
     "@ministryofjustice/frontend": "^4.0.2",
     "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.14.0",
     "@types/cookie-parser": "^1.4.9",
@@ -137,7 +137,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@ministryofjustice/eslint-config-hmpps": "^0.0.3",
+    "@ministryofjustice/eslint-config-hmpps": "^0.0.4",
     "@testing-library/cypress": "^10.1.0",
     "@types/bunyan": "^1.8.11",
     "@types/bunyan-format": "^0.2.9",
@@ -150,7 +150,7 @@
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.17.20",
-    "@types/node": "^20.19.12",
+    "@types/node": "^20.19.13",
     "@types/nunjucks": "^3.2.6",
     "@types/passport": "^1.0.17",
     "@types/passport-oauth2": "^1.8.0",
@@ -177,7 +177,7 @@
     "openapi-typescript": "^7.9.1",
     "prettier": "^3.6.2",
     "prettier-plugin-jinja-template": "^2.1.0",
-    "sass": "^1.92.0",
+    "sass": "^1.92.1",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "typescript": "^5.9.2"
