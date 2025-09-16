@@ -23,12 +23,16 @@ export default class CheckSentencesController extends RecallBaseController {
     const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
 
     const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
-    const summarisedSentenceGroups = getSummarisedSentenceGroups(req)
+    const allSummarisedSentenceGroups = getSummarisedSentenceGroups(req)
+
+    // Filter to only include court cases that have eligible sentences
+    const eligibleSentenceGroups = allSummarisedSentenceGroups.filter(group => group.hasEligibleSentences)
 
     res.locals.latestSled = calculation?.dates?.SLED || null
     res.locals.manualJourney = manualJourney
-    res.locals.summarisedSentencesGroups = summarisedSentenceGroups
-    res.locals.casesWithEligibleSentences = eligibleSentenceCount
+    res.locals.summarisedSentencesGroups = eligibleSentenceGroups
+    res.locals.eligibleCourtCasesCount = eligibleSentenceGroups.length
+    res.locals.eligibleSentenceCount = eligibleSentenceCount
 
     const locals = super.locals(req, res)
     const { prisoner } = res.locals

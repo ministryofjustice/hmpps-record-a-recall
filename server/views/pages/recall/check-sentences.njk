@@ -69,33 +69,59 @@
                                 The SLED (Sentence and licence expiry date) is not available.
                               {% endif %}
                           </p>
-                          <h2 class="govuk-heading-l">
-                              Court cases with sentences eligible for recall ({{ summarisedSentencesGroups.length }})
-                          </h2>
-                          {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
+                          
+                          {% if summarisedSentencesGroups.length > 0 %}
+                              <h2 class="govuk-heading-l">
+                                  Court cases with sentences eligible for recall ({{ summarisedSentencesGroups.length }})
+                              </h2>
+                              {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
+                          {% else %}
+                              <h2 class="govuk-heading-l">
+                                  No sentences are eligible for recall
+                              </h2>
+                              <div class="govuk-warning-text">
+                                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                  <strong class="govuk-warning-text__text">
+                                      <span class="govuk-warning-text__assistive">Warning</span>
+                                      Based on the revocation date provided, there are no sentences eligible for recall. This may be because:
+                                  </strong>
+                              </div>
+                              <ul class="govuk-list govuk-list--bullet">
+                                  <li>The revocation date is after the sentence and licence expiry date (SLED)</li>
+                                  <li>The revocation date is before the conditional release date (CRD)</li>
+                                  <li>There are no valid sentences available for this person</li>
+                              </ul>
+                              <p class="govuk-body">
+                                  Please review the revocation date and try again, or contact support if you believe this is an error.
+                              </p>
+                          {% endif %}
 
                     {% endblock %}
 
-                  <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
+                  {% if summarisedSentencesGroups.length > 0 %}
+                      <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
 
-                  <!-- Call to action -->
-                  <p class="govuk-body">If you think some information is wrong, you can manage all court case
-                    information <a class="govuk-link" target="external" href="{{ urls.ccards }}">Court cases and
-                      release dates (opens in a new tab)</a>.</p>
+                      <!-- Call to action -->
+                      <p class="govuk-body">If you think some information is wrong, you can manage all court case
+                        information <a class="govuk-link" target="external" href="{{ urls.ccards }}">Court cases and
+                          release dates (opens in a new tab)</a>.</p>
+                  {% endif %}
 
                     <div class="govuk-button-group">
                         {% block formActions %}
-                          {% block submitAction %}
-                              {{ govukButton({
-                                  text: "Confirm and continue",
-                                  classes: options.buttonClasses,
-                                  preventDoubleClick: true,
-                                  type: "submit",
-                                  attributes: {
-                                    "data-qa": "confirm-and-continue-btn"
-                                }
-                              }) }}
-                          {% endblock %}
+                          {% if summarisedSentencesGroups.length > 0 %}
+                              {% block submitAction %}
+                                  {{ govukButton({
+                                      text: "Confirm and continue",
+                                      classes: options.buttonClasses,
+                                      preventDoubleClick: true,
+                                      type: "submit",
+                                      attributes: {
+                                        "data-qa": "confirm-and-continue-btn"
+                                    }
+                                  }) }}
+                              {% endblock %}
+                          {% endif %}
 
                           {% block cancel %}
                             {{ govukButton({
@@ -116,8 +142,6 @@
 
 {%  macro sentenceCards(groups, offenceNameMap) %}
     {% for group in groups %}
-{#      Temporarily disabled in order to help analysis - to be reinstated for business requirement#}
-{#    {%  if group.hasEligibleSentences  %}#}
         <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
 
         {% for sentence in group.eligibleSentences %}
