@@ -126,7 +126,26 @@
             </span>
           </summary>
           <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">
+            {% set previousCourtCase = null %}
             {% for sentence in recall.sentences %}
+              {% set currentCourtCase = (sentence.courtCaseReference or '') + '|' + (sentence.courtName or '') + '|' + (sentence.courtCaseDate or '') %}
+              
+              {# Display court case header if it's different from the previous one #}
+              {% if currentCourtCase != previousCourtCase %}
+                {% if sentence.courtCaseReference or sentence.courtName or sentence.courtCaseDate %}
+                  <h3 class="govuk-heading-m govuk-!-margin-top-6 govuk-!-margin-bottom-3">
+                    {% if sentence.courtCaseReference %}
+                      {{ sentence.courtCaseReference }}{% if sentence.courtName %} at {{ sentence.courtName }}{% endif %}{% if sentence.courtCaseDate %} on {{ sentence.courtCaseDate | formatDate }}{% endif %}
+                    {% elif sentence.courtName %}
+                      Case held at {{ sentence.courtName }}{% if sentence.courtCaseDate %} on {{ sentence.courtCaseDate | formatDate }}{% endif %}
+                    {% elif sentence.courtCaseDate %}
+                      Case on {{ sentence.courtCaseDate | formatDate }}
+                    {% endif %}
+                  </h3>
+                {% endif %}
+                {% set previousCourtCase = currentCourtCase %}
+              {% endif %}
+              
               <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">
 
                 {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
