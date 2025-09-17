@@ -42,7 +42,12 @@ export default function routes(services: Services): Router {
     populateEntrypoint(),
     populateNomisId(),
     populateRecallId(),
-    loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
+    loadCourtCases(
+      services.courtCaseService,
+      services.manageOffencesService,
+      services.courtService,
+      services.calculationService,
+    ),
     loadRecalls(
       services.recallService,
       services.prisonService,
@@ -55,7 +60,12 @@ export default function routes(services: Services): Router {
     '/person/:nomisId/record-recall',
     populateEntrypoint(),
     populateNomisId(),
-    loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
+    loadCourtCases(
+      services.courtCaseService,
+      services.manageOffencesService,
+      services.courtService,
+      services.calculationService,
+    ),
     loadRecalls(
       services.recallService,
       services.prisonService,

@@ -3,6 +3,7 @@ import logger from '../../logger'
 import CourtCaseService from '../services/CourtCaseService'
 import ManageOffencesService from '../services/manageOffencesService'
 import CourtService from '../services/CourtService'
+import CalculationService from '../services/calculationService'
 import {
   RecallableCourtCase,
   RecallableCourtCaseSentenceAugmented,
@@ -11,6 +12,18 @@ import {
 // Enhanced types for court cases with additional fields
 export type EnhancedRecallableSentence = RecallableCourtCaseSentenceAugmented & {
   offenceDescription?: string
+  adjustedSLED?: string
+  adjustedCRD?: string
+  releaseCalculationSource?: 'NOMIS' | 'CRDS' | 'UNAVAILABLE'
+  sentenceLegacyData?: {
+    sentenceCalcType?: string
+    sentenceCategory?: string
+    sentenceTypeDesc?: string
+    postedDate: string
+    active?: boolean
+    nomisLineReference?: string
+    bookingId?: number
+  }
 }
 
 export type EnhancedRecallableCourtCase = RecallableCourtCase & {
@@ -19,12 +32,13 @@ export type EnhancedRecallableCourtCase = RecallableCourtCase & {
 }
 
 /**
- * Middleware to load court cases details into res.locals with offence descriptions and court names
+ * Middleware to load court cases details into res.locals with offence descriptions, court names, and release dates
  */
 export default function loadCourtCases(
   courtCaseService: CourtCaseService,
   manageOffencesService: ManageOffencesService,
   courtService: CourtService,
+  calculationService?: CalculationService,
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { nomisId, user } = res.locals
@@ -38,15 +52,37 @@ export default function loadCourtCases(
       const response = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
       const recallableCourtCases: RecallableCourtCase[] = response.cases || []
 
-      // Enhance court cases with offence descriptions and court names
+      // Enhance court cases with offence descriptions, court names, and release dates
       if (recallableCourtCases && Array.isArray(recallableCourtCases) && recallableCourtCases.length > 0) {
-        const [offenceEnhancedCases, courtNamesMap] = await Promise.all([
+        const [offenceEnhancedCases, courtNamesMap, releaseDates] = await Promise.all([
           enhanceCourtCasesWithOffenceDescriptions(recallableCourtCases, manageOffencesService, user.token),
           getCourtNamesMap(recallableCourtCases, courtService, user.username),
+          calculationService ? getReleaseDates(nomisId, user.username, calculationService) : null,
         ])
 
         // Apply court names to the offence-enhanced cases
-        res.locals.recallableCourtCases = applyCourtNamesToEnhancedCases(offenceEnhancedCases, courtNamesMap)
+        let enhancedCases = applyCourtNamesToEnhancedCases(offenceEnhancedCases, courtNamesMap)
+
+        // Apply release dates if available
+        if (releaseDates) {
+          enhancedCases = applyReleaseDatesToCases(enhancedCases, releaseDates)
+
+          let totalSentences = 0
+          let sentencesWithSLED = 0
+          let sentencesWithCRD = 0
+
+          enhancedCases.forEach(courtCase => {
+            if (courtCase.sentences) {
+              totalSentences += courtCase.sentences.length
+              courtCase.sentences.forEach((sentence: EnhancedRecallableSentence) => {
+                if (sentence.adjustedSLED) sentencesWithSLED += 1
+                if (sentence.adjustedCRD) sentencesWithCRD += 1
+              })
+            }
+          })
+        }
+
+        res.locals.recallableCourtCases = enhancedCases
       } else {
         res.locals.recallableCourtCases = recallableCourtCases
       }
@@ -180,5 +216,229 @@ function applyCourtNamesToEnhancedCases(
   return cases.map(courtCase => ({
     ...courtCase,
     courtName: courtNamesMap.get(courtCase.courtCode) || 'Court name not available',
+  }))
+}
+
+/**
+ * Fetches release dates from CRD API
+ * @param nomisId Prison number
+ * @param username Username for authentication
+ * @param calculationService Service to fetch release dates
+ * @returns Release dates data or null if unavailable
+ */
+async function getReleaseDates(
+  nomisId: string,
+  username: string,
+  calculationService: CalculationService,
+): Promise<{
+  sled?: string
+  crd?: string
+  source: 'NOMIS' | 'CRDS' | 'UNAVAILABLE'
+  sentenceReleaseDates?: Map<string, { sled?: string; crd?: string }>
+} | null> {
+  try {
+    const latestCalculation = await calculationService.getLatestCalculation(nomisId, username)
+
+    if (!latestCalculation) {
+      console.debug(`No calculation available for ${nomisId}`)
+      return { source: 'UNAVAILABLE' }
+    }
+
+    if (latestCalculation.dates && latestCalculation.dates.length > 0) {
+      console.info(`  Available release dates:`)
+      latestCalculation.dates.forEach(date => {
+        console.info(`    ${date.type}: ${date.date} (${date.description || 'No description'})`)
+      })
+    }
+
+    // Extract overall SLED and CRD
+    const overallSled = latestCalculation.dates?.find(d => d.type === 'SLED')?.date
+    const overallCrd = latestCalculation.dates?.find(d => d.type === 'CRD')?.date
+
+    // Try to get sentence-specific release dates if calculationRequestId is available
+    const sentenceReleaseDates = new Map<string, { sled?: string; crd?: string }>()
+
+    if (latestCalculation.calculationRequestId) {
+      try {
+        const [breakdown, sentencesAndReleaseDates] = await Promise.all([
+          calculationService.getCalculationBreakdown(latestCalculation.calculationRequestId, username, nomisId),
+          calculationService.getSentencesAndReleaseDates(latestCalculation.calculationRequestId, username),
+        ])
+
+        // try to map usng sentencesAndReleaseDates which has sentenceSequence
+        if (sentencesAndReleaseDates && sentencesAndReleaseDates.length > 0) {
+          sentencesAndReleaseDates.forEach(sentence => {
+            // Create multiple possible keys for matching
+            // TODO: use sentence date to match?
+            const keys = [
+              `seq-${sentence.sentenceSequence}`, // sentenceSequence key
+              `${sentence.caseSequence}-${sentence.lineSequence}`, // case-line key
+              `case-${sentence.caseSequence}`, // just case sequence
+            ]
+
+            // Check the breakdown for this specific sentence's dates
+            let sledDate: string | undefined
+            let crdDate: string | undefined
+
+            // Find matching sentence in breakdown
+            const concurrentMatch = breakdown?.concurrentSentences?.find(
+              s => s.caseSequence === sentence.caseSequence && s.lineSequence === sentence.lineSequence,
+            )
+
+            if (concurrentMatch?.dates) {
+              sledDate = concurrentMatch.dates.SLED?.adjusted || concurrentMatch.dates.SLED?.unadjusted
+              crdDate = concurrentMatch.dates.CRD?.adjusted || concurrentMatch.dates.CRD?.unadjusted
+            }
+
+            // Store with multiple keys for flexible matching
+            if (sledDate || crdDate) {
+              keys.forEach(key => {
+                sentenceReleaseDates.set(key, { sled: sledDate, crd: crdDate })
+              })
+            }
+          })
+        }
+
+        if (breakdown) {
+          // Extract individual sentence dates from concurrent sentences
+          if (breakdown.concurrentSentences && breakdown.concurrentSentences.length > 0) {
+            breakdown.concurrentSentences.forEach(sentence => {
+              // Use lineSequence and caseSequence as the key to map to court case sentences
+              const sentenceKey = `${sentence.caseSequence}-${sentence.lineSequence}`
+
+              // Extract SLED and CRD from the sentence's dates map
+              const sledDate = sentence.dates?.SLED
+              const crdDate = sentence.dates?.CRD
+
+              if (sledDate || crdDate) {
+                sentenceReleaseDates.set(sentenceKey, {
+                  sled: sledDate?.adjusted || sledDate?.unadjusted,
+                  crd: crdDate?.adjusted || crdDate?.unadjusted,
+                })
+              }
+            })
+          }
+
+          // Also handle consecutive sentences if present
+          if (breakdown.consecutiveSentence) {
+            // For consecutive sentences, use the overall consecutive dates
+            const consSled = breakdown.consecutiveSentence.dates?.SLED
+            const consCrd = breakdown.consecutiveSentence.dates?.CRD
+
+            // Apply these dates to each sentence part
+            breakdown.consecutiveSentence.sentenceParts?.forEach(part => {
+              const sentenceKey = `${part.caseSequence}-${part.lineSequence}`
+
+              if (consSled || consCrd) {
+                sentenceReleaseDates.set(sentenceKey, {
+                  sled: consSled?.adjusted || consSled?.unadjusted,
+                  crd: consCrd?.adjusted || consCrd?.unadjusted,
+                })
+              }
+            })
+          }
+
+          // Fallback to overall breakdown dates if no individual sentence dates found
+          if (sentenceReleaseDates.size === 0 && breakdown?.breakdownByReleaseDateType) {
+            console.warn(
+              `No individual sentence dates found, using overall breakdown as fallback which may cause ineligible sentences to be displayed`,
+            )
+            const sledBreakdown = breakdown.breakdownByReleaseDateType.SLED
+            const crdBreakdown = breakdown.breakdownByReleaseDateType.CRD
+
+            if (sledBreakdown?.releaseDate || crdBreakdown?.releaseDate) {
+              sentenceReleaseDates.set('overall', {
+                sled: sledBreakdown?.releaseDate,
+                crd: crdBreakdown?.releaseDate,
+              })
+            }
+          }
+        } else {
+          console.info(`No calculation breakdown available (may be stale or from NOMIS)`)
+        }
+      } catch (error) {
+        console.warn(`Could not fetch sentence-specific release dates: ${error.message}`)
+      }
+    } else {
+      console.info(`No calculation request ID available - using NOMIS dates only`)
+    }
+
+    return {
+      sled: overallSled,
+      crd: overallCrd,
+      source: latestCalculation.source || 'NOMIS',
+      sentenceReleaseDates: sentenceReleaseDates.size > 0 ? sentenceReleaseDates : undefined,
+    }
+  } catch (error) {
+    console.error('Error fetching release dates from CRD API:', error)
+    return { source: 'UNAVAILABLE' }
+  }
+}
+
+/**
+ * Applies release dates to enhanced court cases
+ * @param cases Array of enhanced court cases
+ * @param releaseDates Release dates data from CRD API
+ * @returns Court cases with release dates applied
+ */
+function applyReleaseDatesToCases(
+  cases: EnhancedRecallableCourtCase[],
+  releaseDates: {
+    sled?: string
+    crd?: string
+    source: 'NOMIS' | 'CRDS' | 'UNAVAILABLE'
+    sentenceReleaseDates?: Map<string, { sled?: string; crd?: string }>
+  },
+): EnhancedRecallableCourtCase[] {
+  return cases.map((courtCase, caseIndex) => ({
+    ...courtCase,
+    sentences:
+      courtCase.sentences?.map((sentence: EnhancedRecallableSentence, sentenceIndex): EnhancedRecallableSentence => {
+        // Try to find sentence-specific dates using caseSequence-lineSequence mapping
+        // Note: We need to map from court case sentence to CRD sentence
+        // The court case sentence doesn't have caseSequence/lineSequence directly,
+        // but we can try to match using available identifiers
+        let specificDates: { sled?: string; crd?: string } | undefined
+
+        // Try different key combinations to find matching dates
+        // We need to find a way to match court case sentences to CRD sentences
+
+        // Try multiple matching strategies
+        const possibleKeys = [
+          // If we have countNumber and lineNumber
+          sentence.countNumber && sentence.lineNumber ? `${sentence.countNumber}-${sentence.lineNumber}` : null,
+          // Try with just countNumber as case sequence
+          sentence.countNumber ? `case-${sentence.countNumber}` : null,
+          // Try with sentenceLegacyData if available
+          sentence.sentenceLegacyData?.nomisLineReference
+            ? `seq-${sentence.sentenceLegacyData.nomisLineReference}`
+            : null,
+        ].filter(Boolean)
+
+        for (const key of possibleKeys) {
+          if (key) {
+            specificDates = releaseDates.sentenceReleaseDates?.get(key)
+            if (specificDates) {
+              logger.info(`  Found specific dates for sentence using key: ${key}`)
+              break
+            }
+          }
+        }
+
+        // If no specific dates found, try the overall fallback
+        if (!specificDates) {
+          specificDates = releaseDates.sentenceReleaseDates?.get('overall')
+          if (specificDates) {
+            console.info(`  Using overall dates as fallback for sentence ${sentenceIndex + 1}`)
+          }
+        }
+
+        return {
+          ...sentence,
+          adjustedSLED: specificDates?.sled || releaseDates.sled,
+          adjustedCRD: specificDates?.crd || releaseDates.crd,
+          releaseCalculationSource: releaseDates.source,
+        }
+      }) || [],
   }))
 }
