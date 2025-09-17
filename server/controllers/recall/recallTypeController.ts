@@ -3,7 +3,8 @@ import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
 import { RecallTypes } from '../../@types/recallTypes'
-import { getInvalidRecallTypes, getRecallTypeCode, sessionModelFields } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
+import { getRecallTypeCode, getInvalidRecallTypes } from '../../helpers/formWizardHelper'
 import config from '../../config'
 
 export default class RecallTypeController extends RecallBaseController {
@@ -32,7 +33,7 @@ export default class RecallTypeController extends RecallBaseController {
       // @ts-expect-error Type will be correct
       recallTypeMismatch = invalidRecallTypes?.map(t => t.code).includes(selectedType) || false
     }
-    req.sessionModel.set(sessionModelFields.RECALL_TYPE_MISMATCH, recallTypeMismatch)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RECALL_TYPE_MISMATCH, recallTypeMismatch)
     return super.successHandler(req, res, next)
   }
 }

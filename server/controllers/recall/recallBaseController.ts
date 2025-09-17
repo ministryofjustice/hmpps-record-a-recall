@@ -2,8 +2,9 @@ import { NextFunction, Response } from 'express'
 import FormWizard from 'hmpo-form-wizard'
 import PrisonerDetailsController from '../base/prisonerDetailsController'
 import getServiceUrls from '../../helpers/urlHelper'
-import getJourneyDataFromRequest, { getTemporaryCalc, sessionModelFields } from '../../helpers/formWizardHelper'
+import getJourneyDataFromRequest, { getTemporaryCalc } from '../../helpers/formWizardHelper'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { SessionManager } from '../../services/sessionManager'
 
 export default class RecallBaseController extends PrisonerDetailsController {
   middlewareSetup() {
@@ -12,8 +13,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
 
   checkJourneyProgress(req: FormWizard.Request, res: Response, next: NextFunction) {
     if (
-      !req.sessionModel.get(sessionModelFields.IS_EDIT) ||
-      req.sessionModel.get<boolean>(sessionModelFields.JOURNEY_COMPLETE)
+      !SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.IS_EDIT) ||
+      SessionManager.getSessionValue<boolean>(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE)
     ) {
       super.checkJourneyProgress(req, res, next)
     } else {
@@ -30,14 +31,18 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const recallId = journeyData.storedRecall?.recallId
     const calculation = getTemporaryCalc(req)
     const { revocationDate } = journeyData
-    const crdsValidationErrors = req.sessionModel.get(sessionModelFields.CRDS_ERRORS)
-    const autoRecallFailErrors = req.sessionModel.get(sessionModelFields.HAPPY_PATH_FAIL_REASONS)
+    const crdsValidationErrors = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.CRDS_ERRORS)
+    const autoRecallFailErrors = SessionManager.getSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.HAPPY_PATH_FAIL_REASONS,
+    )
     const selectedRecallType = journeyData.recallType
-    const relevantAdjustments: AdjustmentDto[] = req.sessionModel.get(sessionModelFields.RELEVANT_ADJUSTMENTS) || []
+    const relevantAdjustments: AdjustmentDto[] =
+      SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.RELEVANT_ADJUSTMENTS) || []
     const arrestDate: Date = journeyData.returnToCustodyDate
 
     const hasMultipleOverlappingUALTypeRecall: boolean =
-      req.sessionModel.get(sessionModelFields.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) || false
+      SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.HAS_MULTIPLE_OVERLAPPING_UAL_TYPE_RECALL) || false
 
     const urls = getServiceUrls(res.locals.nomisId)
     const journeyBaseLink = `/person/${locals.nomisId}/${isEditRecall ? `edit-recall/${recallId}` : 'record-recall'}`
