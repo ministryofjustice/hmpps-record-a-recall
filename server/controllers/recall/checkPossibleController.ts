@@ -9,7 +9,8 @@ import {
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
 import RecallBaseController from './recallBaseController'
-import { getRecallRoute, sessionModelFields } from '../../helpers/formWizardHelper'
+import { getRecallRoute } from '../../helpers/formWizardHelper'
+import { SessionManager } from '../../services/sessionManager'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
@@ -207,12 +208,12 @@ export default class CheckPossibleController extends RecallBaseController {
   locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
     const locals = super.locals(req, res)
 
-    req.sessionModel.set(sessionModelFields.ENTRYPOINT, res.locals.entrypoint)
-    req.sessionModel.set(sessionModelFields.RECALL_ELIGIBILITY, res.locals.recallEligibility)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.ENTRYPOINT, res.locals.entrypoint)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RECALL_ELIGIBILITY, res.locals.recallEligibility)
 
     // Set manual route if STANDARD_RECALL_255 error occurred
     if (res.locals.forceManualRoute) {
-      req.sessionModel.set(sessionModelFields.MANUAL_CASE_SELECTION, true)
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.MANUAL_CASE_SELECTION, true)
     }
 
     const { routingResponse } = res.locals
@@ -229,14 +230,22 @@ export default class CheckPossibleController extends RecallBaseController {
       })
     }
 
-    req.sessionModel.set(sessionModelFields.COURT_CASE_OPTIONS, res.locals.courtCases)
-    req.sessionModel.set(sessionModelFields.SENTENCES, res.locals.crdsSentences)
-    req.sessionModel.set(sessionModelFields.RAS_SENTENCES, res.locals.rasSentences)
-    req.sessionModel.set(sessionModelFields.TEMP_CALC, res.locals.temporaryCalculation)
-    req.sessionModel.set(sessionModelFields.BREAKDOWN, res.locals.breakdown)
-    req.sessionModel.set(sessionModelFields.EXISTING_ADJUSTMENTS, res.locals.existingAdjustments)
-    req.sessionModel.set(sessionModelFields.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
-    req.sessionModel.set(sessionModelFields.SUMMARISED_SENTENCES, res.locals.summarisedSentenceGroups)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.COURT_CASE_OPTIONS, res.locals.courtCases)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES, res.locals.crdsSentences)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RAS_SENTENCES, res.locals.rasSentences)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.TEMP_CALC, res.locals.temporaryCalculation)
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BREAKDOWN, res.locals.breakdown)
+    SessionManager.setSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.EXISTING_ADJUSTMENTS,
+      res.locals.existingAdjustments,
+    )
+    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
+    SessionManager.setSessionValue(
+      req,
+      SessionManager.SESSION_KEYS.SUMMARISED_SENTENCES,
+      res.locals.summarisedSentenceGroups,
+    )
 
     return { ...locals }
   }
@@ -246,9 +255,9 @@ export default class CheckPossibleController extends RecallBaseController {
    */
   private mapToSessionField(serviceFieldName: string): string | null {
     const fieldMap: Record<string, string> = {
-      recallEligibility: sessionModelFields.RECALL_ELIGIBILITY,
-      crdsErrors: sessionModelFields.CRDS_ERRORS,
-      manualCaseSelection: sessionModelFields.MANUAL_CASE_SELECTION,
+      recallEligibility: SessionManager.SESSION_KEYS.RECALL_ELIGIBILITY,
+      crdsErrors: SessionManager.SESSION_KEYS.CRDS_ERRORS,
+      manualCaseSelection: SessionManager.SESSION_KEYS.MANUAL_CASE_SELECTION,
     }
     return fieldMap[serviceFieldName] || null
   }

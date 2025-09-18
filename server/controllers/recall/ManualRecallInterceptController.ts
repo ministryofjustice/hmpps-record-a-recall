@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express'
 import FormWizard from 'hmpo-form-wizard'
 import RecallBaseController from './recallBaseController'
+import { SessionManager } from '../../services/sessionManager'
 
 export default class ManualRecallInterceptController extends RecallBaseController {
   async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
@@ -10,7 +11,7 @@ export default class ManualRecallInterceptController extends RecallBaseControlle
 
   async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     if ('continue' in req.body) {
-      req.sessionModel.set('select-court-case-details.njk', 'confirmed')
+      SessionManager.setSessionValue(req, 'select-court-case-details.njk', 'confirmed')
     }
     if ('cancel' in req.body) {
       return res.redirect(303, `${req.baseUrl}/confirm-cancel`)
