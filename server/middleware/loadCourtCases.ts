@@ -351,7 +351,9 @@ function applyReleaseDatesToCases(
         if (!specificDates) {
           specificDates = releaseDates.sentenceReleaseDates?.get('overall')
           if (specificDates) {
-            logger.debug(`Using overall dates as fallback for sentence without matching key`)
+            logger.warn(
+              `Using overall dates as fallback for sentence without matching key, could lead to expired sentences showing up as eligible`,
+            )
           }
         }
 
