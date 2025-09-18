@@ -66,20 +66,6 @@ export default function loadCourtCases(
         // Apply release dates if available
         if (releaseDates) {
           enhancedCases = applyReleaseDatesToCases(enhancedCases, releaseDates)
-
-          let totalSentences = 0
-          let sentencesWithSLED = 0
-          let sentencesWithCRD = 0
-
-          enhancedCases.forEach(courtCase => {
-            if (courtCase.sentences) {
-              totalSentences += courtCase.sentences.length
-              courtCase.sentences.forEach((sentence: EnhancedRecallableSentence) => {
-                if (sentence.adjustedSLED) sentencesWithSLED += 1
-                if (sentence.adjustedCRD) sentencesWithCRD += 1
-              })
-            }
-          })
         }
 
         res.locals.recallableCourtCases = enhancedCases
@@ -240,14 +226,14 @@ async function getReleaseDates(
     const latestCalculation = await calculationService.getLatestCalculation(nomisId, username)
 
     if (!latestCalculation) {
-      console.debug(`No calculation available for ${nomisId}`)
+      logger.debug(`No calculation available for ${nomisId}`)
       return { source: 'UNAVAILABLE' }
     }
 
     if (latestCalculation.dates && latestCalculation.dates.length > 0) {
-      console.info(`  Available release dates:`)
+      logger.info(`  Available release dates:`)
       latestCalculation.dates.forEach(date => {
-        console.info(`    ${date.type}: ${date.date} (${date.description || 'No description'})`)
+        logger.info(`    ${date.type}: ${date.date} (${date.description || 'No description'})`)
       })
     }
 
@@ -265,22 +251,17 @@ async function getReleaseDates(
           calculationService.getSentencesAndReleaseDates(latestCalculation.calculationRequestId, username),
         ])
 
-        // try to map usng sentencesAndReleaseDates which has sentenceSequence
+        // Map sentences using composite key: sentenceDate-offenceCode
         if (sentencesAndReleaseDates && sentencesAndReleaseDates.length > 0) {
           sentencesAndReleaseDates.forEach(sentence => {
-            // Create multiple possible keys for matching
-            // TODO: use sentence date to match?
-            const keys = [
-              `seq-${sentence.sentenceSequence}`, // sentenceSequence key
-              `${sentence.caseSequence}-${sentence.lineSequence}`, // case-line key
-              `case-${sentence.caseSequence}`, // just case sequence
-            ]
+            // Create composite key using sentenceDate and offenceCode
+            const compositeKey = `${sentence.sentenceDate}-${sentence.offence.offenceCode}`
 
-            // Check the breakdown for this specific sentence's dates
+            // Get release dates for this sentence
             let sledDate: string | undefined
             let crdDate: string | undefined
 
-            // Find matching sentence in breakdown
+            // First try to find matching sentence in breakdown
             const concurrentMatch = breakdown?.concurrentSentences?.find(
               s => s.caseSequence === sentence.caseSequence && s.lineSequence === sentence.lineSequence,
             )
@@ -290,77 +271,35 @@ async function getReleaseDates(
               crdDate = concurrentMatch.dates.CRD?.adjusted || concurrentMatch.dates.CRD?.unadjusted
             }
 
-            // Store with multiple keys for flexible matching
+            // Store with composite key
             if (sledDate || crdDate) {
-              keys.forEach(key => {
-                sentenceReleaseDates.set(key, { sled: sledDate, crd: crdDate })
-              })
+              sentenceReleaseDates.set(compositeKey, { sled: sledDate, crd: crdDate })
+              logger.debug(`Stored release dates for sentence with key: ${compositeKey}`)
             }
           })
         }
 
-        if (breakdown) {
-          // Extract individual sentence dates from concurrent sentences
-          if (breakdown.concurrentSentences && breakdown.concurrentSentences.length > 0) {
-            breakdown.concurrentSentences.forEach(sentence => {
-              // Use lineSequence and caseSequence as the key to map to court case sentences
-              const sentenceKey = `${sentence.caseSequence}-${sentence.lineSequence}`
+        // If we couldn't get release dates from sentencesAndReleaseDates,
+        // try using the breakdown as fallback
+        if (sentenceReleaseDates.size === 0 && breakdown?.breakdownByReleaseDateType) {
+          logger.warn(
+            `No individual sentence dates found from sentencesAndReleaseDates, using overall breakdown as fallback`,
+          )
+          const sledBreakdown = breakdown.breakdownByReleaseDateType.SLED
+          const crdBreakdown = breakdown.breakdownByReleaseDateType.CRD
 
-              // Extract SLED and CRD from the sentence's dates map
-              const sledDate = sentence.dates?.SLED
-              const crdDate = sentence.dates?.CRD
-
-              if (sledDate || crdDate) {
-                sentenceReleaseDates.set(sentenceKey, {
-                  sled: sledDate?.adjusted || sledDate?.unadjusted,
-                  crd: crdDate?.adjusted || crdDate?.unadjusted,
-                })
-              }
+          if (sledBreakdown?.releaseDate || crdBreakdown?.releaseDate) {
+            sentenceReleaseDates.set('overall', {
+              sled: sledBreakdown?.releaseDate,
+              crd: crdBreakdown?.releaseDate,
             })
           }
-
-          // Also handle consecutive sentences if present
-          if (breakdown.consecutiveSentence) {
-            // For consecutive sentences, use the overall consecutive dates
-            const consSled = breakdown.consecutiveSentence.dates?.SLED
-            const consCrd = breakdown.consecutiveSentence.dates?.CRD
-
-            // Apply these dates to each sentence part
-            breakdown.consecutiveSentence.sentenceParts?.forEach(part => {
-              const sentenceKey = `${part.caseSequence}-${part.lineSequence}`
-
-              if (consSled || consCrd) {
-                sentenceReleaseDates.set(sentenceKey, {
-                  sled: consSled?.adjusted || consSled?.unadjusted,
-                  crd: consCrd?.adjusted || consCrd?.unadjusted,
-                })
-              }
-            })
-          }
-
-          // Fallback to overall breakdown dates if no individual sentence dates found
-          if (sentenceReleaseDates.size === 0 && breakdown?.breakdownByReleaseDateType) {
-            console.warn(
-              `No individual sentence dates found, using overall breakdown as fallback which may cause ineligible sentences to be displayed`,
-            )
-            const sledBreakdown = breakdown.breakdownByReleaseDateType.SLED
-            const crdBreakdown = breakdown.breakdownByReleaseDateType.CRD
-
-            if (sledBreakdown?.releaseDate || crdBreakdown?.releaseDate) {
-              sentenceReleaseDates.set('overall', {
-                sled: sledBreakdown?.releaseDate,
-                crd: crdBreakdown?.releaseDate,
-              })
-            }
-          }
-        } else {
-          console.info(`No calculation breakdown available (may be stale or from NOMIS)`)
         }
       } catch (error) {
-        console.warn(`Could not fetch sentence-specific release dates: ${error.message}`)
+        logger.warn(`Could not fetch sentence-specific release dates: ${error.message}`)
       }
     } else {
-      console.info(`No calculation request ID available - using NOMIS dates only`)
+      logger.info(`No calculation request ID available - using NOMIS dates only`)
     }
 
     return {
@@ -370,7 +309,7 @@ async function getReleaseDates(
       sentenceReleaseDates: sentenceReleaseDates.size > 0 ? sentenceReleaseDates : undefined,
     }
   } catch (error) {
-    console.error('Error fetching release dates from CRD API:', error)
+    logger.error('Error fetching release dates from CRD API:', error)
     return { source: 'UNAVAILABLE' }
   }
 }
@@ -390,46 +329,29 @@ function applyReleaseDatesToCases(
     sentenceReleaseDates?: Map<string, { sled?: string; crd?: string }>
   },
 ): EnhancedRecallableCourtCase[] {
-  return cases.map((courtCase, caseIndex) => ({
+  return cases.map(courtCase => ({
     ...courtCase,
     sentences:
-      courtCase.sentences?.map((sentence: EnhancedRecallableSentence, sentenceIndex): EnhancedRecallableSentence => {
-        // Try to find sentence-specific dates using caseSequence-lineSequence mapping
-        // Note: We need to map from court case sentence to CRD sentence
-        // The court case sentence doesn't have caseSequence/lineSequence directly,
-        // but we can try to match using available identifiers
+      courtCase.sentences?.map((sentence: EnhancedRecallableSentence): EnhancedRecallableSentence => {
+        // Create composite key using sentenceDate and offenceCode for matching
+        const compositeKey =
+          sentence.sentenceDate && sentence.offenceCode ? `${sentence.sentenceDate}-${sentence.offenceCode}` : null
+
+        // Try to find sentence-specific dates using the composite key
         let specificDates: { sled?: string; crd?: string } | undefined
 
-        // Try different key combinations to find matching dates
-        // We need to find a way to match court case sentences to CRD sentences
-
-        // Try multiple matching strategies
-        const possibleKeys = [
-          // If we have countNumber and lineNumber
-          sentence.countNumber && sentence.lineNumber ? `${sentence.countNumber}-${sentence.lineNumber}` : null,
-          // Try with just countNumber as case sequence
-          sentence.countNumber ? `case-${sentence.countNumber}` : null,
-          // Try with sentenceLegacyData if available
-          sentence.sentenceLegacyData?.nomisLineReference
-            ? `seq-${sentence.sentenceLegacyData.nomisLineReference}`
-            : null,
-        ].filter(Boolean)
-
-        for (const key of possibleKeys) {
-          if (key) {
-            specificDates = releaseDates.sentenceReleaseDates?.get(key)
-            if (specificDates) {
-              logger.info(`  Found specific dates for sentence using key: ${key}`)
-              break
-            }
+        if (compositeKey) {
+          specificDates = releaseDates.sentenceReleaseDates?.get(compositeKey)
+          if (specificDates) {
+            logger.debug(`Found specific dates for sentence with key: ${compositeKey}`)
           }
         }
 
-        // If no specific dates found, try the overall fallback
+        // If no specific dates found with composite key, try the overall fallback
         if (!specificDates) {
           specificDates = releaseDates.sentenceReleaseDates?.get('overall')
           if (specificDates) {
-            console.info(`  Using overall dates as fallback for sentence ${sentenceIndex + 1}`)
+            logger.debug(`Using overall dates as fallback for sentence without matching key`)
           }
         }
 

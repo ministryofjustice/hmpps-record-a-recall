@@ -72,12 +72,12 @@ export default class CheckSentencesController extends RecallBaseController {
       const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
       if (!revocationDate || !recallableCourtCases) {
-        console.warn('No revocation date or court cases available for filtering')
+        logger.warn('No revocation date or court cases available for filtering')
         res.locals.filteredCourtCases = []
         return next()
       }
 
-      console.info(`Filtering sentences based on revocation date: ${revocationDate.toISOString().split('T')[0]}`)
+      logger.info(`Filtering sentences based on revocation date: ${revocationDate.toISOString().split('T')[0]}`)
 
       const filteredCourtCases: FilteredCourtCase[] = recallableCourtCases.map(courtCase => {
         const eligibleSentences: EnhancedSentenceWithEligibility[] = []
@@ -91,7 +91,7 @@ export default class CheckSentencesController extends RecallBaseController {
             sentenceWithEligibility.ineligibilityReason = 'Missing release dates'
             sentenceWithEligibility.isEligible = false
             ineligibleSentences.push(sentenceWithEligibility)
-            console.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Missing dates`)
+            logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Missing dates`)
             return
           }
 
@@ -103,18 +103,16 @@ export default class CheckSentencesController extends RecallBaseController {
             sentenceWithEligibility.ineligibilityReason = 'Sentence expired before revocation date'
             sentenceWithEligibility.isEligible = false
             ineligibleSentences.push(sentenceWithEligibility)
-            console.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Expired (SLED: ${sentence.adjustedSLED})`)
+            logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Expired (SLED: ${sentence.adjustedSLED})`)
           } else if (revocationDate < crd) {
             sentenceWithEligibility.ineligibilityReason = 'Not yet on licence at revocation date'
             sentenceWithEligibility.isEligible = false
             ineligibleSentences.push(sentenceWithEligibility)
-            console.info(
-              `Sentence ${sentence.sentenceUuid}: Ineligible - Not on licence (CRD: ${sentence.adjustedCRD})`,
-            )
+            logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Not on licence (CRD: ${sentence.adjustedCRD})`)
           } else {
             sentenceWithEligibility.isEligible = true
             eligibleSentences.push(sentenceWithEligibility)
-            console.info(
+            logger.info(
               `Sentence ${sentence.sentenceUuid}: ELIGIBLE (CRD: ${sentence.adjustedCRD}, SLED: ${sentence.adjustedSLED})`,
             )
           }
@@ -139,12 +137,12 @@ export default class CheckSentencesController extends RecallBaseController {
 
       const totalEligible = filteredCourtCases.reduce((sum, cc) => sum + cc.eligibleSentences.length, 0)
       const totalIneligible = filteredCourtCases.reduce((sum, cc) => sum + cc.ineligibleSentences.length, 0)
-      console.info(`Filtering complete: ${totalEligible} eligible, ${totalIneligible} ineligible sentences`)
+      logger.info(`Filtering complete: ${totalEligible} eligible, ${totalIneligible} ineligible sentences`)
 
       res.locals.filteredCourtCases = filteredCourtCases
       return next()
     } catch (error) {
-      console.error('Error filtering sentences by eligibility:', error)
+      logger.error('Error filtering sentences by eligibility:', error)
       res.locals.filteredCourtCases = []
       return next()
     }
