@@ -6,6 +6,7 @@ import RecallService from '../services/recallService'
 import PrisonService from '../services/PrisonService'
 import ManageOffencesService from '../services/manageOffencesService'
 import CourtCaseService from '../services/CourtCaseService'
+import CourtService from '../services/CourtService'
 
 /**
  * Middleware to load recalls with location names and offence descriptions into res.locals
@@ -15,6 +16,7 @@ export default function loadRecalls(
   prisonService: PrisonService,
   manageOffencesService: ManageOffencesService,
   courtCaseService: CourtCaseService,
+  courtService: CourtService,
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { nomisId, user } = res.locals
@@ -54,13 +56,40 @@ export default function loadRecalls(
           logger.warn(`Unable to fetch court cases for ${nomisId}, offence descriptions may be missing`)
         }
 
+        // Get court names for all court cases
+        const courtCodes = [...new Set(courtCases.map(cc => cc.courtCode).filter(Boolean))]
+        let courtNameMap: Map<string, string> = new Map()
+        if (courtCodes.length > 0 && courtService) {
+          try {
+            courtNameMap = await courtService.getCourtNames(courtCodes, user.username)
+          } catch (error) {
+            logger.error('Error fetching court names:', error)
+          }
+        }
+
         // Create a map of sentenceId to offenceCode from court cases
         const sentenceOffenceMap: Record<string, string> = {}
+        // Create a map of sentenceId to court case info
+        const sentenceCourtCaseMap: Record<
+          string,
+          { reference?: string; courtName?: string; courtCode?: string; date?: string }
+        > = {}
+
         courtCases.forEach(courtCase => {
+          const courtName = courtNameMap.get(courtCase.courtCode) || undefined
+
           if (courtCase.sentences && Array.isArray(courtCase.sentences)) {
             courtCase.sentences.forEach(sentence => {
               if (sentence.sentenceUuid && sentence.offenceCode) {
                 sentenceOffenceMap[sentence.sentenceUuid] = sentence.offenceCode
+              }
+              if (sentence.sentenceUuid) {
+                sentenceCourtCaseMap[sentence.sentenceUuid] = {
+                  reference: courtCase.reference || undefined,
+                  courtName,
+                  courtCode: courtCase.courtCode,
+                  date: courtCase.date,
+                }
               }
             })
           }
@@ -119,6 +148,7 @@ export default function loadRecalls(
               sentence.offenceCode || (sentence.sentenceUuid && sentenceOffenceMap[sentence.sentenceUuid]) || ''
 
             const sentenceDetails = sentenceDetailsMap[sentence.sentenceUuid] || {}
+            const courtCaseInfo = sentenceCourtCaseMap[sentence.sentenceUuid] || {}
 
             acc.push({
               ...sentence,
@@ -129,10 +159,25 @@ export default function loadRecalls(
               offenceEndDate: sentenceDetails.offenceEndDate || null,
               lineNumber: sentenceDetails.lineNumber ?? null,
               countNumber: sentenceDetails.countNumber ?? null,
+              courtCaseReference: courtCaseInfo.reference,
+              courtName: courtCaseInfo.courtName,
+              courtCaseDate: courtCaseInfo.date,
             })
 
             return acc
           }, [])
+
+          // Sort sentences by court case to ensure proper grouping in UI
+          if (enhancedSentences && enhancedSentences.length > 0) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            enhancedSentences.sort((a: any, b: any) => {
+              const caseKeyA = `${a.courtCaseReference || ''}|${a.courtCaseDate || ''}|${a.courtName || ''}`
+              const caseKeyB = `${b.courtCaseReference || ''}|${b.courtCaseDate || ''}|${b.courtName || ''}`
+              if (caseKeyA < caseKeyB) return -1
+              if (caseKeyA > caseKeyB) return 1
+              return 0
+            })
+          }
 
           return {
             ...recall,

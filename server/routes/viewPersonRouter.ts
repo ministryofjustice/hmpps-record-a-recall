@@ -23,6 +23,7 @@ export default function personRouter(services: Services): Router {
       services.prisonService,
       services.manageOffencesService,
       services.courtCaseService,
+      services.courtService,
     ),
     loadServiceDefinitions(services.courtCasesReleaseDatesService),
     logPageView(services.auditService, Page.PERSON_HOME_PAGE),

@@ -53,6 +53,7 @@ export default function routes(services: Services): Router {
       services.prisonService,
       services.manageOffencesService,
       services.courtCaseService,
+      services.courtService,
     ),
     editRecallRouter,
   )
@@ -71,6 +72,7 @@ export default function routes(services: Services): Router {
       services.prisonService,
       services.manageOffencesService,
       services.courtCaseService,
+      services.courtService,
     ),
     newRecallRouter,
   )
