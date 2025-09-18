@@ -47,6 +47,7 @@ export default function routes(services: Services): Router {
       services.manageOffencesService,
       services.courtService,
       services.calculationService,
+      services.nomisMappingService,
     ),
     loadRecalls(
       services.recallService,
@@ -66,6 +67,7 @@ export default function routes(services: Services): Router {
       services.manageOffencesService,
       services.courtService,
       services.calculationService,
+      services.nomisMappingService,
     ),
     loadRecalls(
       services.recallService,

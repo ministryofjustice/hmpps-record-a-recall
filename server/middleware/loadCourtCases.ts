@@ -4,6 +4,8 @@ import CourtCaseService from '../services/CourtCaseService'
 import ManageOffencesService from '../services/manageOffencesService'
 import CourtService from '../services/CourtService'
 import CalculationService from '../services/calculationService'
+import NomisToDpsMappingService from '../services/NomisToDpsMappingService'
+import { NomisSentenceId } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 import {
   RecallableCourtCase,
   RecallableCourtCaseSentenceAugmented,
@@ -39,6 +41,7 @@ export default function loadCourtCases(
   manageOffencesService: ManageOffencesService,
   courtService: CourtService,
   calculationService?: CalculationService,
+  nomisMappingService?: NomisToDpsMappingService,
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { nomisId, user } = res.locals
@@ -57,7 +60,9 @@ export default function loadCourtCases(
         const [offenceEnhancedCases, courtNamesMap, releaseDates] = await Promise.all([
           enhanceCourtCasesWithOffenceDescriptions(recallableCourtCases, manageOffencesService, user.token),
           getCourtNamesMap(recallableCourtCases, courtService, user.username),
-          calculationService ? getReleaseDates(nomisId, user.username, calculationService) : null,
+          calculationService && nomisMappingService
+            ? getReleaseDates(nomisId, user.username, calculationService, nomisMappingService)
+            : null,
         ])
 
         // Apply court names to the offence-enhanced cases
@@ -210,12 +215,14 @@ function applyCourtNamesToEnhancedCases(
  * @param nomisId Prison number
  * @param username Username for authentication
  * @param calculationService Service to fetch release dates
+ * @param nomisMappingService Service to map NOMIS to DPS sentence IDs
  * @returns Release dates data or null if unavailable
  */
 async function getReleaseDates(
   nomisId: string,
   username: string,
   calculationService: CalculationService,
+  nomisMappingService: NomisToDpsMappingService,
 ): Promise<{
   sled?: string
   crd?: string
@@ -228,13 +235,6 @@ async function getReleaseDates(
     if (!latestCalculation) {
       logger.debug(`No calculation available for ${nomisId}`)
       return { source: 'UNAVAILABLE' }
-    }
-
-    if (latestCalculation.dates && latestCalculation.dates.length > 0) {
-      logger.info(`  Available release dates:`)
-      latestCalculation.dates.forEach(date => {
-        logger.info(`    ${date.type}: ${date.date} (${date.description || 'No description'})`)
-      })
     }
 
     // Extract overall SLED and CRD
@@ -251,30 +251,51 @@ async function getReleaseDates(
           calculationService.getSentencesAndReleaseDates(latestCalculation.calculationRequestId, username),
         ])
 
-        // Map sentences using composite key: sentenceDate-offenceCode
+        // Map sentences using NOMIS to DPS UUID mapping
         if (sentencesAndReleaseDates && sentencesAndReleaseDates.length > 0) {
+          // Extract NOMIS sentence identifiers from CRDS sentences
+          const nomisSentenceIds: NomisSentenceId[] = sentencesAndReleaseDates.map(sentence => ({
+            nomisBookingId: sentence.bookingId,
+            nomisSentenceSequence: sentence.sentenceSequence,
+          }))
+
+          // Get the UUID mappings from NOMIS to DPS
+          const dpsMappings = await nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceIds, username)
+
+          // Create a map from NOMIS identifiers to DPS UUIDs for quick lookup
+          const nomisToUuidMap = new Map<string, string>()
+          dpsMappings.forEach(mapping => {
+            const key = `${mapping.nomisSentenceId.nomisBookingId}-${mapping.nomisSentenceId.nomisSentenceSequence}`
+            nomisToUuidMap.set(key, mapping.dpsSentenceId)
+          })
+
+          // Now map the release dates by DPS UUID
           sentencesAndReleaseDates.forEach(sentence => {
-            // Create composite key using sentenceDate and offenceCode
-            const compositeKey = `${sentence.sentenceDate}-${sentence.offence.offenceCode}`
+            const nomisKey = `${sentence.bookingId}-${sentence.sentenceSequence}`
+            const dpsUuid = nomisToUuidMap.get(nomisKey)
 
-            // Get release dates for this sentence
-            let sledDate: string | undefined
-            let crdDate: string | undefined
+            if (dpsUuid) {
+              // Get release dates for this sentence
+              let sledDate: string | undefined
+              let crdDate: string | undefined
 
-            // First try to find matching sentence in breakdown
-            const concurrentMatch = breakdown?.concurrentSentences?.find(
-              s => s.caseSequence === sentence.caseSequence && s.lineSequence === sentence.lineSequence,
-            )
+              // First try to find matching sentence in breakdown
+              const concurrentMatch = breakdown?.concurrentSentences?.find(
+                s => s.caseSequence === sentence.caseSequence && s.lineSequence === sentence.lineSequence,
+              )
 
-            if (concurrentMatch?.dates) {
-              sledDate = concurrentMatch.dates.SLED?.adjusted || concurrentMatch.dates.SLED?.unadjusted
-              crdDate = concurrentMatch.dates.CRD?.adjusted || concurrentMatch.dates.CRD?.unadjusted
-            }
+              if (concurrentMatch?.dates) {
+                sledDate = concurrentMatch.dates.SLED?.adjusted || concurrentMatch.dates.SLED?.unadjusted
+                crdDate = concurrentMatch.dates.CRD?.adjusted || concurrentMatch.dates.CRD?.unadjusted
+              }
 
-            // Store with composite key
-            if (sledDate || crdDate) {
-              sentenceReleaseDates.set(compositeKey, { sled: sledDate, crd: crdDate })
-              logger.debug(`Stored release dates for sentence with key: ${compositeKey}`)
+              // Store with UUID as key
+              if (sledDate || crdDate) {
+                sentenceReleaseDates.set(dpsUuid, { sled: sledDate, crd: crdDate })
+                logger.debug(`Stored release dates for sentence with UUID: ${dpsUuid}`)
+              }
+            } else {
+              logger.warn(`No UUID mapping found for NOMIS sentence ${sentence.bookingId}-${sentence.sentenceSequence}`)
             }
           })
         }
@@ -283,7 +304,7 @@ async function getReleaseDates(
         // try using the breakdown as fallback
         if (sentenceReleaseDates.size === 0 && breakdown?.breakdownByReleaseDateType) {
           logger.warn(
-            `No individual sentence dates found from sentencesAndReleaseDates, using overall breakdown as fallback`,
+            `No individual sentence dates found, using overall breakdown as fallback, can lead to expired sentences being treated as eligible`,
           )
           const sledBreakdown = breakdown.breakdownByReleaseDateType.SLED
           const crdBreakdown = breakdown.breakdownByReleaseDateType.CRD
@@ -299,7 +320,7 @@ async function getReleaseDates(
         logger.warn(`Could not fetch sentence-specific release dates: ${error.message}`)
       }
     } else {
-      logger.info(`No calculation request ID available - using NOMIS dates only`)
+      logger.debug(`No calculation request ID available - using NOMIS dates only`)
     }
 
     return {
@@ -333,27 +354,24 @@ function applyReleaseDatesToCases(
     ...courtCase,
     sentences:
       courtCase.sentences?.map((sentence: EnhancedRecallableSentence): EnhancedRecallableSentence => {
-        // Create composite key using sentenceDate and offenceCode for matching
-        const compositeKey =
-          sentence.sentenceDate && sentence.offenceCode ? `${sentence.sentenceDate}-${sentence.offenceCode}` : null
+        // Match using the sentence UUID
+        const { sentenceUuid } = sentence
 
-        // Try to find sentence-specific dates using the composite key
+        // Try to find sentence-specific dates using the UUID
         let specificDates: { sled?: string; crd?: string } | undefined
 
-        if (compositeKey) {
-          specificDates = releaseDates.sentenceReleaseDates?.get(compositeKey)
+        if (sentenceUuid) {
+          specificDates = releaseDates.sentenceReleaseDates?.get(sentenceUuid)
           if (specificDates) {
-            logger.debug(`Found specific dates for sentence with key: ${compositeKey}`)
+            logger.debug(`Found specific dates for sentence with UUID: ${sentenceUuid}`)
           }
         }
 
-        // If no specific dates found with composite key, try the overall fallback
+        // If no specific dates found with UUID, try the overall fallback
         if (!specificDates) {
           specificDates = releaseDates.sentenceReleaseDates?.get('overall')
-          if (specificDates) {
-            logger.warn(
-              `Using overall dates as fallback for sentence without matching key, could lead to expired sentences showing up as eligible`,
-            )
+          if (specificDates && sentenceUuid) {
+            logger.debug(`Using overall dates as fallback for sentence ${sentenceUuid}`)
           }
         }
 
