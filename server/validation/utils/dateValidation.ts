@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DateTime } from 'luxon'
+import { format, isAfter, isValid, parse, parseISO, startOfDay } from 'date-fns'
 
 /**
  * Parses date parts from GOV.UK form inputs
@@ -18,16 +18,12 @@ export function parseDateParts(
     return null
   }
 
-  const dt = DateTime.fromObject(
-    {
-      year: yearNum,
-      month: monthNum,
-      day: dayNum,
-    },
-    { zone: 'Europe/London' },
-  )
+  // Create a date string in format that parse can handle
+  // Note: months are 1-indexed in the input but JavaScript Date expects 0-indexed
+  const dateString = `${yearNum}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+  const date = parse(dateString, 'yyyy-MM-dd', new Date())
 
-  return dt.isValid ? dt.toJSDate() : null
+  return isValid(date) ? date : null
 }
 
 /**
@@ -116,9 +112,10 @@ export function datePartsSchema(
     finalSchema = finalSchema.refine(
       date => {
         if (!date) return true
-        const today = DateTime.now().setZone('Europe/London').endOf('day')
-        const inputDate = DateTime.fromJSDate(date)
-        return inputDate <= today
+        const today = new Date()
+        // Set to end of today to allow dates from today
+        today.setHours(23, 59, 59, 999)
+        return date <= today
       },
       {
         message: `${fieldName} must be today or in the past`,
@@ -133,7 +130,7 @@ export function datePartsSchema(
         return date > options.mustBeAfter
       },
       {
-        message: `${fieldName} must be after ${DateTime.fromJSDate(options.mustBeAfter).toFormat('d MMMM yyyy')}`,
+        message: `${fieldName} must be after ${format(options.mustBeAfter, 'd MMMM yyyy')}`,
       },
     )
   }
@@ -148,8 +145,8 @@ export function datePartsSchema(
 export function dateStringSchema(fieldName: string, options?: { required?: boolean; todayOrInPast?: boolean }) {
   const baseSchema = z.preprocess((input: unknown) => {
     if (!input || typeof input !== 'string') return null
-    const dt = DateTime.fromISO(input)
-    return dt.isValid ? dt.toJSDate() : null
+    const date = parseISO(input)
+    return isValid(date) ? date : null
   }, z.date().nullable())
 
   let schema = baseSchema
@@ -167,9 +164,10 @@ export function dateStringSchema(fieldName: string, options?: { required?: boole
     schema = schema.refine(
       date => {
         if (!date) return true
-        const today = DateTime.now().setZone('Europe/London').endOf('day')
-        const inputDate = DateTime.fromJSDate(date)
-        return inputDate <= today
+        const today = new Date()
+        // Set to end of today to allow dates from today
+        today.setHours(23, 59, 59, 999)
+        return date <= today
       },
       {
         message: `${fieldName} must be today or in the past`,

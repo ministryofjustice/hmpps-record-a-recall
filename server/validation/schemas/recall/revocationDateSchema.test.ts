@@ -1,13 +1,13 @@
-import { DateTime } from 'luxon'
+import { addDays, subDays } from 'date-fns'
 import { revocationDateSchema } from './revocationDateSchema'
 
 describe('revocationDateSchema', () => {
   it('should validate a valid revocation date', () => {
-    const yesterday = DateTime.now().minus({ days: 1 })
+    const yesterday = subDays(new Date(), 1)
     const result = revocationDateSchema.safeParse({
-      'revocationDate-day': yesterday.day.toString(),
-      'revocationDate-month': yesterday.month.toString(),
-      'revocationDate-year': yesterday.year.toString(),
+      'revocationDate-day': yesterday.getDate().toString(),
+      'revocationDate-month': (yesterday.getMonth() + 1).toString(),
+      'revocationDate-year': yesterday.getFullYear().toString(),
     })
 
     expect(result.success).toBe(true)
@@ -17,22 +17,22 @@ describe('revocationDateSchema', () => {
   })
 
   it('should accept today as a valid date', () => {
-    const today = DateTime.now()
+    const today = new Date()
     const result = revocationDateSchema.safeParse({
-      'revocationDate-day': today.day.toString(),
-      'revocationDate-month': today.month.toString(),
-      'revocationDate-year': today.year.toString(),
+      'revocationDate-day': today.getDate().toString(),
+      'revocationDate-month': (today.getMonth() + 1).toString(),
+      'revocationDate-year': today.getFullYear().toString(),
     })
 
     expect(result.success).toBe(true)
   })
 
   it('should reject future dates', () => {
-    const tomorrow = DateTime.now().plus({ days: 1 })
+    const tomorrow = addDays(new Date(), 1)
     const result = revocationDateSchema.safeParse({
-      'revocationDate-day': tomorrow.day.toString(),
-      'revocationDate-month': tomorrow.month.toString(),
-      'revocationDate-year': tomorrow.year.toString(),
+      'revocationDate-day': tomorrow.getDate().toString(),
+      'revocationDate-month': (tomorrow.getMonth() + 1).toString(),
+      'revocationDate-year': tomorrow.getFullYear().toString(),
     })
 
     expect(result.success).toBe(false)

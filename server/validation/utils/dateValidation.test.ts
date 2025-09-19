@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon'
+import { addDays, subDays, format } from 'date-fns'
 import { parseDateParts, datePartsSchema, dateStringSchema } from './dateValidation'
 
 describe('dateValidation', () => {
@@ -70,19 +70,19 @@ describe('dateValidation', () => {
     it('should validate todayOrInPast constraint', () => {
       const pastSchema = datePartsSchema('testDate', { required: true, todayOrInPast: true })
 
-      const tomorrow = DateTime.now().plus({ days: 1 })
+      const tomorrow = addDays(new Date(), 1)
       const futureResult = pastSchema.safeParse({
-        'testDate-day': tomorrow.day.toString(),
-        'testDate-month': tomorrow.month.toString(),
-        'testDate-year': tomorrow.year.toString(),
+        'testDate-day': tomorrow.getDate().toString(),
+        'testDate-month': (tomorrow.getMonth() + 1).toString(),
+        'testDate-year': tomorrow.getFullYear().toString(),
       })
       expect(futureResult.success).toBe(false)
 
-      const yesterday = DateTime.now().minus({ days: 1 })
+      const yesterday = subDays(new Date(), 1)
       const pastResult = pastSchema.safeParse({
-        'testDate-day': yesterday.day.toString(),
-        'testDate-month': yesterday.month.toString(),
-        'testDate-year': yesterday.year.toString(),
+        'testDate-day': yesterday.getDate().toString(),
+        'testDate-month': (yesterday.getMonth() + 1).toString(),
+        'testDate-year': yesterday.getFullYear().toString(),
       })
       expect(pastResult.success).toBe(true)
     })
@@ -120,11 +120,11 @@ describe('dateValidation', () => {
     it('should validate todayOrInPast constraint', () => {
       const pastSchema = dateStringSchema('testDate', { required: true, todayOrInPast: true })
 
-      const tomorrow = DateTime.now().plus({ days: 1 }).toISODate()
+      const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd')
       const futureResult = pastSchema.safeParse(tomorrow)
       expect(futureResult.success).toBe(false)
 
-      const yesterday = DateTime.now().minus({ days: 1 }).toISODate()
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd')
       const pastResult = pastSchema.safeParse(yesterday)
       expect(pastResult.success).toBe(true)
     })
