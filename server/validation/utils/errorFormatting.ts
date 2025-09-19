@@ -37,11 +37,15 @@ const ERROR_TYPE_MESSAGES: Record<string, (fieldName: string, issue: ZodIssue) =
   dateTodayOrInPast: fieldName => `${fieldName} must be today or in the past`,
   required: fieldName => `Enter ${fieldName.toLowerCase()}`,
   invalid_type: fieldName => `${fieldName} is invalid`,
-  too_small: (fieldName, issue: any) => {
-    if (issue.minimum === 1) return `Select ${fieldName.toLowerCase()}`
-    return `${fieldName} must be at least ${issue.minimum}`
+  too_small: (fieldName, issue: ZodIssue) => {
+    if ('minimum' in issue && issue.minimum === 1) return `Select ${fieldName.toLowerCase()}`
+    if ('minimum' in issue) return `${fieldName} must be at least ${issue.minimum}`
+    return `${fieldName} is too small`
   },
-  too_big: (fieldName, issue: any) => `${fieldName} must be no more than ${issue.maximum}`,
+  too_big: (fieldName, issue: ZodIssue) => {
+    if ('maximum' in issue) return `${fieldName} must be no more than ${issue.maximum}`
+    return `${fieldName} is too big`
+  },
 }
 
 /**

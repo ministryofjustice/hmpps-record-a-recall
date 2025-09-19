@@ -27,7 +27,7 @@ export const prisonNumberSchema = z
 export const courtCaseNumberSchema = z
   .string()
   .min(1, 'Enter a court case number')
-  .regex(/^[A-Z0-9\-\/]+$/i, 'Court case number can only contain letters, numbers, hyphens and forward slashes')
+  .regex(/^[A-Z0-9\-/]+$/i, 'Court case number can only contain letters, numbers, hyphens and forward slashes')
 
 /**
  * Recall type validation

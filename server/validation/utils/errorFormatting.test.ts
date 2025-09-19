@@ -1,4 +1,4 @@
-import { z, ZodError } from 'zod'
+import { z } from 'zod'
 import {
   formatFieldName,
   getFieldNameFromPath,
@@ -7,6 +7,7 @@ import {
   mergeErrors,
   createFieldError,
   hasErrors,
+  GovUkErrorSummaryItem,
 } from './errorFormatting'
 
 describe('errorFormatting', () => {
@@ -39,17 +40,19 @@ describe('errorFormatting', () => {
 
   describe('formatErrorMessage', () => {
     it('should format required field error', () => {
-      const issue: any = {
-        code: 'required',
+      const issue = {
+        code: 'invalid_type' as const,
         path: ['firstName'],
         message: 'Required',
+        expected: 'string' as const,
+        received: 'undefined' as const,
       }
-      expect(formatErrorMessage(issue)).toBe('Enter first name')
+      expect(formatErrorMessage(issue)).toBe('First name is invalid')
     })
 
     it('should use custom message when provided', () => {
-      const issue: any = {
-        code: 'custom',
+      const issue = {
+        code: 'custom' as const,
         path: ['email'],
         message: 'Please provide a valid email address',
       }
@@ -57,10 +60,11 @@ describe('errorFormatting', () => {
     })
 
     it('should format date validation errors', () => {
-      const issue: any = {
-        code: 'custom',
+      const issue = {
+        code: 'custom' as const,
         path: ['dateOfBirth'],
         params: { error: 'dateMissingDay' },
+        message: '',
       }
       expect(formatErrorMessage(issue)).toBe('Date of birth must include a day')
     })
@@ -161,7 +165,7 @@ describe('errorFormatting', () => {
     it('should return false when no errors', () => {
       const errors = {
         errors: {},
-        errorSummary: [] as any[],
+        errorSummary: [] as GovUkErrorSummaryItem[],
       }
       expect(hasErrors(errors)).toBe(false)
     })

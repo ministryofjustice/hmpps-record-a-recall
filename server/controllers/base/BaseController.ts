@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import SessionManager from '../../services/sessionManager'
+import { SessionManager } from '../../services/sessionManager'
 import ValidationService from '../../validation/service'
 import { createFieldError } from '../../validation/utils/errorFormatting'
 import { prepareSelectedFormWizardFields } from '../../utils/formWizardFieldsHelper'

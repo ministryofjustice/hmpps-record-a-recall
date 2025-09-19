@@ -21,15 +21,15 @@ interface ValidationError {
  * @returns Fields object ready for template rendering with FormWizard macros
  */
 export function prepareFormWizardFields(
-  fieldConfigs: Record<string, any>,
-  formValues?: Record<string, any>,
+  fieldConfigs: Record<string, unknown>,
+  formValues?: Record<string, unknown>,
   validationErrors?: ValidationError[],
-): Record<string, any> {
-  const preparedFields: Record<string, any> = {}
+): Record<string, unknown> {
+  const preparedFields: Record<string, unknown> = {}
 
   Object.entries(fieldConfigs).forEach(([fieldName, config]) => {
     // Clone config to avoid mutation
-    const fieldOptions = { ...config }
+    const fieldOptions = { ...(config as Record<string, unknown>) }
 
     // Add current value if available
     if (formValues?.[fieldName] !== undefined) {
@@ -63,12 +63,12 @@ export function prepareFormWizardFields(
  * @returns Subset of fields ready for template rendering
  */
 export function prepareSelectedFormWizardFields(
-  fieldConfigs: Record<string, any>,
+  fieldConfigs: Record<string, unknown>,
   fieldNames: string[],
-  formValues?: Record<string, any>,
+  formValues?: Record<string, unknown>,
   validationErrors?: ValidationError[],
-): Record<string, any> {
-  const selectedFields: Record<string, any> = {}
+): Record<string, unknown> {
+  const selectedFields: Record<string, unknown> = {}
 
   fieldNames.forEach(fieldName => {
     if (fieldConfigs[fieldName]) {

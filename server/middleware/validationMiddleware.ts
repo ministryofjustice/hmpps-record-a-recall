@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodSchema } from 'zod'
 import ValidationService from '../validation/service'
-import { hasErrors } from '../validation/utils/errorFormatting'
+import { hasErrors, FormattedErrors } from '../validation/utils/errorFormatting'
 import logger from '../../logger'
 
 /**
@@ -23,7 +23,7 @@ export interface ValidationOptions {
   /**
    * Custom business rules to apply after schema validation
    */
-  businessRules?: (validData: any, req: Request) => Promise<any>
+  businessRules?: (validData: unknown, req: Request) => Promise<{ errors?: unknown }>
 
   /**
    * Whether to clear previous errors on successful validation
@@ -34,17 +34,18 @@ export interface ValidationOptions {
   /**
    * Custom error handler
    */
-  onError?: (req: Request, res: Response, errors: any) => void
+  onError?: (req: Request, res: Response, errors: unknown) => void
 
   /**
    * Transform data before validation
    */
-  transformData?: (data: any, req: Request) => any
+  transformData?: (data: unknown, req: Request) => unknown
 }
 
 /**
  * Creates validation middleware for Express routes
  * Can accept either a Zod schema or a registered step name
+ * TODO: Once migration is complete refractor schemaOrStepName to just schema and should only be using ZodSchema type
  */
 export function validate(
   schemaOrStepName: ZodSchema | string,
@@ -84,8 +85,9 @@ export function validate(
           try {
             const businessResult = await options.businessRules(validationResult.data, req)
             if (businessResult && businessResult.errors) {
-              ValidationService.setSessionErrors(req, businessResult.errors)
-              return handleValidationError(req, res, businessResult.errors, options)
+              ValidationService.setSessionErrors(req, businessResult.errors as FormattedErrors)
+              handleValidationError(req, res, businessResult.errors, options)
+              return
             }
           } catch (error) {
             logger.error('Business rule validation failed:', error)
@@ -95,19 +97,21 @@ export function validate(
 
         // Merge data into session if configured
         if (options.mergeToSession !== false) {
-          ValidationService.mergeValidatedData(req, validationResult.data as Record<string, any>)
+          ValidationService.mergeValidatedData(req, validationResult.data as Record<string, unknown>)
         }
 
         // Store validated data for controller use
         res.locals.validatedData = validationResult.data
 
-        return next()
+        next()
+        return
       }
 
       // Handle validation errors
       if (validationResult.errors) {
         ValidationService.setSessionErrors(req, validationResult.errors)
-        return handleValidationError(req, res, validationResult.errors, options)
+        handleValidationError(req, res, validationResult.errors, options)
+        return
       }
 
       // This shouldn't happen but handle it gracefully
@@ -122,7 +126,12 @@ export function validate(
 /**
  * Handle validation errors
  */
-function handleValidationError(req: Request, res: Response, errors: any, options: ValidationOptions): void {
+function handleValidationError(
+  req: Request,
+  res: Response,
+  errors: unknown,
+  options: ValidationOptions,
+): void | Response {
   // Custom error handler
   if (options.onError) {
     return options.onError(req, res, errors)
@@ -140,11 +149,11 @@ function handleValidationError(req: Request, res: Response, errors: any, options
 
   // For AJAX requests, return JSON error
   if (req.xhr || req.headers.accept?.includes('application/json')) {
-    return res.status(400).json({ errors }) as any
+    return res.status(400).json({ errors })
   }
 
   // Redirect with errors stored in session
-  return res.redirect(redirectPath) as any
+  return res.redirect(redirectPath)
 }
 
 /**
@@ -191,7 +200,9 @@ export function validateConditional(
     // Find the first matching condition
     for (const { condition, schema } of conditions) {
       if (condition(req)) {
-        return validate(schema, options)(req, res, next)
+        // eslint-disable-next-line no-await-in-loop
+        await validate(schema, options)(req, res, next)
+        return
       }
     }
 
@@ -209,8 +220,9 @@ export function composeValidators(
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     for (const validator of validators) {
+      // eslint-disable-next-line no-await-in-loop
       await new Promise<void>((resolve, reject) => {
-        validator(req, res, (err?: any) => {
+        validator(req, res, (err?: unknown) => {
           if (err) reject(err)
           else resolve()
         })

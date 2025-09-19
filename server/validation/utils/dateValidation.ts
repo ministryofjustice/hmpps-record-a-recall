@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { format, isAfter, isValid, parse, parseISO, startOfDay } from 'date-fns'
+import { format, isValid, parse, parseISO } from 'date-fns'
 
 /**
  * Parses date parts from GOV.UK form inputs

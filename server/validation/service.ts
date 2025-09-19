@@ -1,22 +1,7 @@
 import { z, ZodSchema, ZodError } from 'zod'
 import { Request } from 'express'
 import { formatZodErrorsForView, FormattedErrors, hasErrors } from './utils/errorFormatting'
-import type { SessionManager as SessionManagerType } from '../services/sessionManager'
-
-// Import actual SessionManager - handle case where it might not exist yet
-let SessionManager: typeof SessionManagerType
-try {
-  SessionManager = require('../services/sessionManager').default
-} catch {
-  // SessionManager not yet implemented - provide stub
-  SessionManager = {
-    getRecallData: (req: any) => req.session?.recallData || {},
-    updateRecallData: (req: any, data: any) => {
-      if (!req.session) req.session = {}
-      req.session.recallData = { ...req.session.recallData, ...data }
-    },
-  } as any
-}
+import { SessionManager } from '../services/sessionManager'
 
 /**
  * Registry of all step schemas
@@ -45,7 +30,7 @@ const fieldLabels: Record<string, string> = {
 /**
  * Validation result type
  */
-export interface ValidationResult<T = any> {
+export interface ValidationResult<T = unknown> {
   success: boolean
   data?: T
   errors?: FormattedErrors
@@ -81,7 +66,7 @@ export default class ValidationService {
   /**
    * Validate data against a step schema
    */
-  static async validateStep(stepName: string, data: unknown): Promise<ValidationResult<any>> {
+  static async validateStep(stepName: string, data: unknown): Promise<ValidationResult<unknown>> {
     const schema = schemaRegistry[stepName]
     if (!schema) {
       throw new Error(`No schema registered for step: ${stepName}`)
@@ -93,7 +78,7 @@ export default class ValidationService {
   /**
    * Validate data against a provided schema
    */
-  static async validate<T = any>(schema: ZodSchema<T>, data: unknown): Promise<ValidationResult<T>> {
+  static async validate<T = unknown>(schema: ZodSchema<T>, data: unknown): Promise<ValidationResult<T>> {
     try {
       const result = await schema.parseAsync(data)
       return {
@@ -130,8 +115,8 @@ export default class ValidationService {
    * Merge validated data into session
    * Integrates with SessionManager
    */
-  static mergeValidatedData(req: Request, validatedData: Record<string, any>): void {
-    const currentData = SessionManager.getRecallData(req as any)
+  static mergeValidatedData(req: Request, validatedData: Record<string, unknown>): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SessionManager.updateRecallData(req as any, validatedData)
   }
 
@@ -139,6 +124,7 @@ export default class ValidationService {
    * Get validation errors from session
    */
   static getSessionErrors(req: Request): FormattedErrors | null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = req.session as any
     if (session.validationErrors) {
       return session.validationErrors
@@ -150,6 +136,7 @@ export default class ValidationService {
    * Store validation errors in session
    */
   static setSessionErrors(req: Request, errors: FormattedErrors | null): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = req.session as any
     if (errors && hasErrors(errors)) {
       session.validationErrors = errors
@@ -164,6 +151,7 @@ export default class ValidationService {
    * Clear validation errors from session
    */
   static clearSessionErrors(req: Request): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = req.session as any
     delete session.validationErrors
     delete session.formValues
@@ -172,7 +160,8 @@ export default class ValidationService {
   /**
    * Get form values from session (for re-populating after error)
    */
-  static getSessionFormValues(req: Request): Record<string, any> {
+  static getSessionFormValues(req: Request): Record<string, unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = req.session as any
     return session.formValues || {}
   }
@@ -213,9 +202,9 @@ export default class ValidationService {
    * Perform conditional validation
    * Validates different schemas based on conditions
    */
-  static async validateConditional<T = any>(
+  static async validateConditional<T = unknown>(
     data: unknown,
-    conditions: Array<{ condition: (data: any) => boolean; schema: ZodSchema<T> }>,
+    conditions: Array<{ condition: (data: unknown) => boolean; schema: ZodSchema<T> }>,
   ): Promise<ValidationResult<T>> {
     for (const { condition, schema } of conditions) {
       if (condition(data)) {
@@ -247,7 +236,7 @@ export default class ValidationService {
    * Transform data before validation
    * Useful for preprocessing form data
    */
-  static transformFormData(data: Record<string, any>): Record<string, any> {
+  static transformFormData(data: Record<string, unknown>): Record<string, unknown> {
     const transformed = { ...data }
 
     // Convert string booleans to actual booleans where needed
@@ -263,7 +252,7 @@ export default class ValidationService {
    * Validate with business rules
    * Applies additional business logic after schema validation
    */
-  static async validateWithBusinessRules<T = any>(
+  static async validateWithBusinessRules<T = unknown>(
     schema: ZodSchema<T>,
     data: unknown,
     businessRules?: (validData: T) => Promise<FormattedErrors | null>,
