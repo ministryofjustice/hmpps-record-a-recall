@@ -21,9 +21,13 @@ import setUpEnvironmentName from './middleware/setUpEnvironmentName'
 
 import routes from './routes'
 import type { Services } from './services'
+import { registerAllSchemas } from './validation/schemas'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
+
+  // Register all validation schemas for the Zod validation system
+  registerAllSchemas()
 
   app.set('json spaces', 2)
   app.set('trust proxy', true)

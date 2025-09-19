@@ -27,6 +27,17 @@ export declare global {
       flash(type: string, message: Array<Record<string, string>>): number
       flash(message: 'errors'): Array<Record<string, string>>
       flash(type: string, message: Record<string, unknown>): number
+      // TODO: Remove sessionModel type once migration from FormWizard is complete
+      // This is a temporary bridge added by sessionModelAdapter middleware
+      // to allow SessionManager to work with both FormWizard and Express routes
+      sessionModel?: {
+        get: <T>(key: string) => T | undefined
+        set: (key: string, value: unknown, options?: { silent?: boolean }) => void
+        unset: (key: string | string[]) => void
+        save: () => void
+        toJSON?: () => Record<string, unknown>
+        reset?: () => void
+      }
     }
 
     interface Locals {
