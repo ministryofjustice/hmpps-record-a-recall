@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-// TODO: Remove FormWizard import once SessionManager is refactored to use Express sessions
-import FormWizard from 'hmpo-form-wizard'
 import { sanitizeString } from '../../utils/utils'
 import logger from '../../../logger'
 import config from '../../config'
@@ -11,7 +9,7 @@ import { prepareSelectedFormWizardFields } from '../../utils/formWizardFieldsHel
 import fields from '../../routes/search/fields'
 
 export default class PersonSearchController {
-  static checkForRedirect(req: Request, res: Response, next: NextFunction): void {
+  static checkForRedirect(_req: Request, res: Response, next: NextFunction): void {
     // Check if not in local development and redirect to DPS home
     const isLocalDevelopment = config.domain.includes('localhost') || config.domain.includes('127.0.0.1')
 
@@ -31,14 +29,10 @@ export default class PersonSearchController {
     const { validationErrors, formValues, errorlist } = res.locals
 
     // Get any existing nomisId from session
-    // TODO: Remove cast once SessionManager is refactored to use Express sessions
-    // Check if sessionModel exists (it won't for non-FormWizard routes)
+    // sessionModel is added by sessionModelAdapter middleware
+    // TODO: Remove 'as any' once SessionManager types are updated to accept Express Request with sessionModel
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let sessionData: any = {}
-    const formWizardReq = req as unknown as FormWizard.Request
-    if (formWizardReq.sessionModel) {
-      sessionData = SessionManager.getAllSessionData(formWizardReq)
-    }
+    const sessionData = SessionManager.getAllSessionData(req as any)
 
     // Prepare fields for template rendering using the helper
     // This bridges FormWizard field configs with our new validation approach
@@ -46,7 +40,7 @@ export default class PersonSearchController {
       fields,
       ['nomisId'], // Only prepare the nomisId field for this page
       formValues || sessionData,
-      validationErrors
+      validationErrors,
     )
 
     res.render('pages/search/search', {
@@ -68,19 +62,11 @@ export default class PersonSearchController {
       // Try to get prisoner details
       const prisoner = await prisonerService.getPrisonerDetails(nomisId, username)
 
-      // Save to session
-      // TODO: Remove cast once SessionManager is refactored to use Express sessions
-      // For now, we need to handle the case where sessionModel doesn't exist
-      const formWizardReq = req as unknown as FormWizard.Request
-      if (formWizardReq.sessionModel) {
-        SessionManager.updateRecallData(formWizardReq, { nomisId })
-      } else if (req.session) {
-        // Store in regular Express session as fallback
-        // This will be the permanent solution once SessionManager is refactored
-        // TODO: Remove any cast once SessionManager migration is complete
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(req.session as any).nomisId = nomisId
-      }
+      // Save to session using SessionManager
+      // sessionModel is added by sessionModelAdapter middleware
+      // TODO: Remove 'as any' once SessionManager types are updated to accept Express Request with sessionModel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      SessionManager.updateRecallData(req as any, { nomisId })
 
       // Store prisoner in locals for potential use
       res.locals.prisoner = prisoner

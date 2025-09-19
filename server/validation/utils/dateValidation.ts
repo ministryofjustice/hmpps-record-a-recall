@@ -40,69 +40,81 @@ export function datePartsSchema(
   options?: { required?: boolean; todayOrInPast?: boolean; mustBeAfter?: Date },
 ) {
   // Create a schema that processes and validates the date parts
-  const schema = z.object({}).passthrough().transform((input) => {
-    const data = input as Record<string, unknown>
-    const day = data[`${fieldName}-day`] as string | undefined
-    const month = data[`${fieldName}-month`] as string | undefined
-    const year = data[`${fieldName}-year`] as string | undefined
+  const schema = z
+    .object({})
+    .passthrough()
+    .transform(input => {
+      const data = input as Record<string, unknown>
+      const day = data[`${fieldName}-day`] as string | undefined
+      const month = data[`${fieldName}-month`] as string | undefined
+      const year = data[`${fieldName}-year`] as string | undefined
 
-    const hasDay = day !== undefined && day !== ''
-    const hasMonth = month !== undefined && month !== ''
-    const hasYear = year !== undefined && year !== ''
+      const hasDay = day !== undefined && day !== ''
+      const hasMonth = month !== undefined && month !== ''
+      const hasYear = year !== undefined && year !== ''
 
-    // If all fields are empty and not required, return null
-    if (!hasDay && !hasMonth && !hasYear && !options?.required) {
-      return { date: null, error: null }
-    }
+      // If all fields are empty and not required, return null
+      if (!hasDay && !hasMonth && !hasYear && !options?.required) {
+        return { date: null, error: null }
+      }
 
-    // For required fields, if all are empty, return error
-    if (options?.required && !hasDay && !hasMonth && !hasYear) {
-      return { 
-        date: null, 
-        error: `Enter the ${fieldName.toLowerCase().replace(/([A-Z])/g, ' $1').trim()}` 
+      // For required fields, if all are empty, return error
+      if (options?.required && !hasDay && !hasMonth && !hasYear) {
+        return {
+          date: null as Date | null,
+          error: `Enter the ${fieldName
+            .toLowerCase()
+            .replace(/([A-Z])/g, ' $1')
+            .trim()}`,
+        }
       }
-    }
 
-    // Check for partial dates
-    if (hasDay || hasMonth || hasYear) {
-      if (!hasDay && hasMonth && hasYear) {
-        return { date: null, error: `${fieldName} must include a day` }
+      // Check for partial dates
+      if (hasDay || hasMonth || hasYear) {
+        if (!hasDay && hasMonth && hasYear) {
+          return { date: null, error: `${fieldName} must include a day` }
+        }
+        if (hasDay && !hasMonth && hasYear) {
+          return { date: null, error: `${fieldName} must include a month` }
+        }
+        if (hasDay && hasMonth && !hasYear) {
+          return { date: null, error: `${fieldName} must include a year` }
+        }
+        if (!hasDay && !hasMonth && hasYear) {
+          return { date: null, error: `${fieldName} must include a day and month` }
+        }
+        if (!hasDay && hasMonth && !hasYear) {
+          return { date: null, error: `${fieldName} must include a day and year` }
+        }
+        if (hasDay && !hasMonth && !hasYear) {
+          return { date: null, error: `${fieldName} must include a month and year` }
+        }
       }
-      if (hasDay && !hasMonth && hasYear) {
-        return { date: null, error: `${fieldName} must include a month` }
-      }
-      if (hasDay && hasMonth && !hasYear) {
-        return { date: null, error: `${fieldName} must include a year` }
-      }
-      if (!hasDay && !hasMonth && hasYear) {
-        return { date: null, error: `${fieldName} must include a day and month` }
-      }
-      if (!hasDay && hasMonth && !hasYear) {
-        return { date: null, error: `${fieldName} must include a day and year` }
-      }
-      if (hasDay && !hasMonth && !hasYear) {
-        return { date: null, error: `${fieldName} must include a month and year` }
-      }
-    }
 
-    // Try to parse the date
-    const date = parseDateParts(day, month, year)
-    if (!date && hasDay && hasMonth && hasYear) {
-      return { date: null, error: `${fieldName} must be a real date` }
-    }
+      // Try to parse the date
+      const date = parseDateParts(day, month, year)
+      if (!date && hasDay && hasMonth && hasYear) {
+        return { date: null, error: `${fieldName} must be a real date` }
+      }
 
-    return { date, error: null }
-  }).refine(
-    (result) => !result.error,
-    (result) => ({ message: result.error || 'Invalid date' })
-  ).transform((result) => result.date)
+      return { date, error: null }
+    })
+    .superRefine((result, ctx) => {
+      if (result.error) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: result.error,
+        })
+      }
+    })
+    .transform(result => result.date)
 
   // Add additional refinements for business rules
   let finalSchema = schema
 
   if (options?.todayOrInPast) {
     finalSchema = finalSchema.refine(
-      (date) => {
+      date => {
         if (!date) return true
         const today = DateTime.now().setZone('Europe/London').endOf('day')
         const inputDate = DateTime.fromJSDate(date)
@@ -116,7 +128,7 @@ export function datePartsSchema(
 
   if (options?.mustBeAfter) {
     finalSchema = finalSchema.refine(
-      (date) => {
+      date => {
         if (!date) return true
         return date > options.mustBeAfter
       },

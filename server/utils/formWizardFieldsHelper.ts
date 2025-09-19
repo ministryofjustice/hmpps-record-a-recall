@@ -10,11 +10,11 @@ interface ValidationError {
 /**
  * Prepares FormWizard field configurations for template rendering during migration period.
  * TODO: Remove this helper once all forms are fully migrated from FormWizard
- * 
+ *
  * This helper bridges the gap between:
  * - FormWizard field configurations (used by templates)
  * - Zod validation (used by new controllers)
- * 
+ *
  * @param fieldConfigs - FormWizard field configuration objects
  * @param formValues - Current form values (from req.body or session)
  * @param validationErrors - Validation errors from Zod validation
@@ -23,7 +23,7 @@ interface ValidationError {
 export function prepareFormWizardFields(
   fieldConfigs: Record<string, any>,
   formValues?: Record<string, any>,
-  validationErrors?: ValidationError[]
+  validationErrors?: ValidationError[],
 ): Record<string, any> {
   const preparedFields: Record<string, any> = {}
 
@@ -38,7 +38,7 @@ export function prepareFormWizardFields(
 
     // Add error message if validation error exists for this field
     if (validationErrors?.length) {
-      const error = validationErrors.find((err) => err.href === `#${fieldName}`)
+      const error = validationErrors.find(err => err.href === `#${fieldName}`)
       if (error) {
         fieldOptions.errorMessage = {
           text: error.text,
@@ -55,7 +55,7 @@ export function prepareFormWizardFields(
 /**
  * Helper to prepare a subset of fields for rendering
  * Useful when only specific fields from a larger field config need to be rendered
- * 
+ *
  * @param fieldConfigs - Complete FormWizard field configuration
  * @param fieldNames - Array of field names to prepare
  * @param formValues - Current form values
@@ -66,11 +66,11 @@ export function prepareSelectedFormWizardFields(
   fieldConfigs: Record<string, any>,
   fieldNames: string[],
   formValues?: Record<string, any>,
-  validationErrors?: ValidationError[]
+  validationErrors?: ValidationError[],
 ): Record<string, any> {
   const selectedFields: Record<string, any> = {}
-  
-  fieldNames.forEach((fieldName) => {
+
+  fieldNames.forEach(fieldName => {
     if (fieldConfigs[fieldName]) {
       selectedFields[fieldName] = fieldConfigs[fieldName]
     }

@@ -1,8 +1,13 @@
 import express from 'express'
 import { validate, populateValidationData } from '../../middleware/validationMiddleware'
 import PersonSearchController from '../../controllers/search/personSearchController'
+import { sessionModelAdapter } from '../../middleware/sessionModelAdapter'
 
 const router = express.Router({ mergeParams: true })
+
+// TODO: Remove sessionModelAdapter once SessionManager is refactored to use Express sessions directly
+// This middleware bridges FormWizard's sessionModel with Express sessions during migration
+router.use(sessionModelAdapter)
 
 // Apply redirect check middleware to all search routes
 router.use(PersonSearchController.checkForRedirect)
@@ -16,7 +21,7 @@ router.get('/', (req, res) => {
 router.get(
   '/nomisId',
   populateValidationData, // Populates errors from session
-  PersonSearchController.get
+  PersonSearchController.get,
 )
 
 // Handle NOMIS ID search submission
@@ -25,13 +30,13 @@ router.post(
   validate('personSearch', {
     mergeToSession: true,
     redirectOnError: req => req.originalUrl,
-    businessRules: async (data, req) => {
+    businessRules: async (_data, _req) => {
       // Business validation happens in the controller
       // This is just for the schema validation
       return null
     },
   }),
-  PersonSearchController.post
+  PersonSearchController.post,
 )
 
 export default router
