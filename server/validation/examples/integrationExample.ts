@@ -12,8 +12,8 @@ import { validate, populateValidationData } from '../../middleware/validationMid
 import { sessionModelAdapter } from '../../middleware/sessionModelAdapter'
 import { prepareSelectedFormWizardFields } from '../../utils/formWizardFieldsHelper'
 import SessionManager from '../../services/sessionManager'
-import ValidationService from '../../validation/service'
-import { createFieldError } from '../../validation/utils/errorFormatting'
+import ValidationService from '../service'
+import { createFieldError } from '../utils/errorFormatting'
 import { sanitizeString } from '../../utils/utils'
 import logger from '../../../logger'
 
@@ -46,7 +46,7 @@ import fields from '../../routes/search/fields'
  */
 // In registerAllSchemas():
 // ValidationService.registerSchema('personSearch', personSearchSchema)
-// 
+//
 // In registerFieldLabels():
 // ValidationService.registerFieldLabels('personSearch', personSearchFieldLabels)
 
@@ -97,7 +97,7 @@ export class PersonSearchController {
       fields,
       ['nomisId'], // Specify which fields to prepare for this page
       formValues || sessionData, // Use form values if available, otherwise session data
-      validationErrors // Pass validation errors to mark fields as invalid
+      validationErrors, // Pass validation errors to mark fields as invalid
     )
 
     // 5. Render with all necessary data
@@ -121,7 +121,7 @@ export class PersonSearchController {
     // 1. Extract and sanitize input
     // Always sanitize user input for security
     const nomisId = sanitizeString(String(req.body.nomisId))
-    
+
     // 2. Get services from request (injected by middleware)
     const { prisonerService } = req.services
     const { username } = req.user
@@ -148,7 +148,7 @@ export class PersonSearchController {
       // 7. Handle business validation errors
       // This is for validation that requires external checks
       const validationError = createFieldError('nomisId', 'No prisoner details found for this NOMIS ID')
-      
+
       // 8. Store error in session for display on redirect
       ValidationService.setSessionErrors(req, validationError)
 
@@ -181,7 +181,7 @@ export function setupPersonSearchRoutes(router: Router): void {
   router.get(
     '/nomisId',
     populateValidationData, // Populates errors from session
-    PersonSearchController.get
+    PersonSearchController.get,
   )
 
   // POST route with validation
@@ -195,9 +195,9 @@ export function setupPersonSearchRoutes(router: Router): void {
         // Business validation happens in the controller for this example
         // Return null if valid, or error object if invalid
         return null
-      }
+      },
     }),
-    PersonSearchController.post
+    PersonSearchController.post,
   )
 }
 
@@ -296,7 +296,7 @@ export function setupPersonSearchRoutes(router: Router): void {
 
 /**
  * COMPLETE WORKING EXAMPLE
- * 
+ *
  * Here's a minimal but complete example of migrating a simple form:
  */
 
@@ -389,7 +389,7 @@ export default router
 
 /**
  * MIGRATION TIMELINE
- * 
+ *
  * Phase 1 (Current): Migrate controllers with sessionModelAdapter
  * Phase 2: Refactor SessionManager to use Express sessions directly
  * Phase 3: Remove sessionModelAdapter and 'as any' casts
