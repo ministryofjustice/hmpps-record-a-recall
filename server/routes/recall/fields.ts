@@ -55,9 +55,6 @@ const fields = {
     validate: ['required'],
     id: 'recallType',
     name: 'recallType',
-    hint: {
-      text: 'We’ve identified these types of recall based on this person’s sentences and offences.',
-    },
     fieldset: {
       legend: {
         text: 'Select the type of recall',
