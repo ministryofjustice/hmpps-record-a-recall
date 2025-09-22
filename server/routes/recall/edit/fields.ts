@@ -3,6 +3,16 @@ import fields from '../fields'
 
 const editFields = {
   ...cloneDeep(fields),
+  revocationDate: {
+    ...cloneDeep(fields.revocationDate),
+    fieldset: {
+      ...cloneDeep(fields.revocationDate.fieldset),
+      legend: {
+        ...cloneDeep(fields.revocationDate.fieldset.legend),
+        text: 'Edit the date of revocation',
+      },
+    },
+  },
   confirmCancel: {
     component: 'govukRadios',
     validate: ['required'],
