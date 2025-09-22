@@ -35,7 +35,13 @@ export default function personRouter(services: Services): Router {
     '/sentences',
     setupCommonData(),
     loadPrisoner(services.prisonerService),
-    loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
+    loadCourtCases(
+      services.courtCaseService,
+      services.manageOffencesService,
+      services.courtService,
+      services.calculationService,
+      services.nomisMappingService,
+    ),
     logPageView(services.auditService, Page.VIEW_ALL_SENTENCES),
     viewSentenceBreakdown,
   )
@@ -44,7 +50,13 @@ export default function personRouter(services: Services): Router {
     '/temporary',
     setupCommonData(),
     loadPrisoner(services.prisonerService),
-    loadCourtCases(services.courtCaseService, services.manageOffencesService, services.courtService),
+    loadCourtCases(
+      services.courtCaseService,
+      services.manageOffencesService,
+      services.courtService,
+      services.calculationService,
+      services.nomisMappingService,
+    ),
     logPageView(services.auditService, Page.VIEW_ALL_SENTENCES),
     viewSentenceBreakdown,
   )
