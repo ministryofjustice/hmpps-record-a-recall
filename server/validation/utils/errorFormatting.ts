@@ -36,16 +36,6 @@ const ERROR_TYPE_MESSAGES: Record<string, (fieldName: string, issue: ZodIssue) =
   dateInvalid: fieldName => `${fieldName} must be a real date`,
   dateTodayOrInPast: fieldName => `${fieldName} must be today or in the past`,
   required: fieldName => `Enter ${fieldName.toLowerCase()}`,
-  invalid_type: fieldName => `${fieldName} is invalid`,
-  too_small: (fieldName, issue: ZodIssue) => {
-    if ('minimum' in issue && issue.minimum === 1) return `Select ${fieldName.toLowerCase()}`
-    if ('minimum' in issue) return `${fieldName} must be at least ${issue.minimum}`
-    return `${fieldName} is too small`
-  },
-  too_big: (fieldName, issue: ZodIssue) => {
-    if ('maximum' in issue) return `${fieldName} must be no more than ${issue.maximum}`
-    return `${fieldName} is too big`
-  },
 }
 
 /**
@@ -136,17 +126,6 @@ export function formatZodErrorsForView(error: ZodError, fieldLabels?: Record<str
   })
 
   return { errors, errorSummary }
-}
-
-/**
- * Merges Zod validation errors with existing errors
- * Useful when combining multiple validation passes
- */
-export function mergeErrors(existing: FormattedErrors, newErrors: FormattedErrors): FormattedErrors {
-  return {
-    errors: { ...existing.errors, ...newErrors.errors },
-    errorSummary: [...existing.errorSummary, ...newErrors.errorSummary],
-  }
 }
 
 /**

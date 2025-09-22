@@ -13,7 +13,6 @@ import { prepareSelectedFormWizardFields } from '../../utils/formWizardFieldsHel
 export default abstract class BaseController {
   /**
    * Get session data using SessionManager
-   * Encapsulates the temporary 'as any' cast needed during migration
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected static getSessionData(req: Request): any {
@@ -71,19 +70,6 @@ export default abstract class BaseController {
     const validationError = createFieldError(fieldName, errorMessage)
     ValidationService.setSessionErrors(req, validationError)
     res.redirect(redirectUrl)
-  }
-
-  /**
-   * Set business error and redirect (alias for setValidationError for clarity)
-   */
-  protected static setBusinessError(
-    req: Request,
-    res: Response,
-    fieldName: string,
-    errorMessage: string,
-    redirectUrl: string,
-  ): void {
-    this.setValidationError(req, res, fieldName, errorMessage, redirectUrl)
   }
 
   /**

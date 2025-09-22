@@ -195,7 +195,7 @@ export default class ValidationService {
     // Merge all schemas into one
     return schemas.reduce((acc, schema) => {
       return z.intersection(acc, schema)
-    }, z.object({}).passthrough())
+    }, z.object({}).loose())
   }
 
   /**

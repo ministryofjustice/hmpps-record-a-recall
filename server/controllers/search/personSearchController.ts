@@ -43,7 +43,7 @@ export default class PersonSearchController extends BaseController {
     } catch (error) {
       logger.error('Error fetching prisoner details', error)
 
-      PersonSearchController.setBusinessError(
+      PersonSearchController.setValidationError(
         req,
         res,
         'nomisId',
