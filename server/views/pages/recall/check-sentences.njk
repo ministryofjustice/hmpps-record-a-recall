@@ -159,23 +159,28 @@
         {% set lineNumberWithText = null %}
     {% endif %}
 
-    {{ offenceCard({
-      countNumber: countNumberWithText,
-      offenceCode: sentence.offenceCode | default('N/A'),
-      offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-      offenceStartDate: offenceStartDate,
-      offenceEndDate: offenceEndDate,
-      hideOutcome: true,
-      outcome: sentence.outcome | default('N/A'),
-      lineNumber: lineNumberWithText,
-      periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
-      sentenceServeType: sentence.sentenceServeType | default(null),
-      sentenceType: sentence.sentenceType | default('N/A'),
-      sentenceDate: sentenceDate,
-      fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-      isSentenced: true,
-      detailsClasses: 'govuk-!-padding-4'
-    }) }}
+    {# Add eligibility information if the sentence is ineligible #}
+    {% set cardHtml %}
+        {{ offenceCard({
+          countNumber: countNumberWithText,
+          offenceCode: sentence.offenceCode | default('N/A'),
+          offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+          offenceStartDate: offenceStartDate,
+          offenceEndDate: offenceEndDate,
+          hideOutcome: true,
+          outcome: sentence.outcome | default('N/A'),
+          lineNumber: lineNumberWithText,
+          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+          sentenceServeType: sentence.sentenceServeType | default(null),
+          sentenceType: sentence.sentenceType | default('N/A'),
+          sentenceDate: sentenceDate,
+          fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+          isSentenced: true,
+          detailsClasses: 'govuk-!-padding-4'
+        }) }}
+    {% endset %}
+
+    {{ cardHtml | safe }}
 {% endmacro %}
 
 
