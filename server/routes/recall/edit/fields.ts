@@ -3,6 +3,7 @@ import fields from '../fields'
 
 const editFields = {
   ...cloneDeep(fields),
+
   revocationDate: {
     ...cloneDeep(fields.revocationDate),
     fieldset: {
@@ -32,4 +33,7 @@ const editFields = {
   },
 }
 
-export default editFields
+// Export pageHeading separately
+const pageHeading = 'Edit a Recall'
+
+export { editFields, pageHeading }
