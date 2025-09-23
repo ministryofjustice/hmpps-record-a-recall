@@ -1,18 +1,5 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
-{# 
-  CRDS-style Error Summary Partial
-  
-  This partial supports the new validation pattern where errors are stored as:
-  { fieldName: ['error message'] }
-  
-  It uses the buildErrorSummaryList filter to transform the errors into the format
-  expected by the GOV.UK error summary component.
-  
-  Usage in templates:
-  {% include "partials/errorSummary.njk" %}
-#}
-
 {% if validationErrors and (validationErrors | length) %}
   {{ govukErrorSummary({
     titleText: "There is a problem",
