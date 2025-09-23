@@ -1,121 +1,137 @@
 import { Request, Response, NextFunction } from 'express'
-import { ZodSchema } from 'zod'
+import { ZodError, ZodSchema } from 'zod'
 import ValidationService from '../validation/service'
-import { hasErrors, FormattedErrors } from '../validation/utils/errorFormatting'
+import { SessionManager } from '../services/sessionManager'
 import logger from '../../logger'
 
 /**
- * Validation middleware options
+ * - Stores errors in a format compatible with new Nunjucks filters: { fieldName: ['error message'] }
+ * - Supports both Zod schemas and registered step names
  */
-export interface ValidationOptions {
-  /**
-   * Redirect path on validation failure
-   * If not provided, redirects back to the referring page
-   */
-  redirectOnError?: string | ((req: Request) => string)
 
-  /**
-   * Whether to merge validated data into session automatically
-   * Default: true
-   */
-  mergeToSession?: boolean
+/**
+ * Deduplicate field errors to prevent duplicate messages
+ */
+function deduplicateFieldErrors(error: ZodError): Record<string, string[]> {
+  const fieldErrors: Record<string, Set<string>> = {}
 
-  /**
-   * Custom business rules to apply after schema validation
-   */
-  businessRules?: (validData: unknown, req: Request) => Promise<{ errors?: unknown }>
+  error.issues.forEach(issue => {
+    // Build path string from path array
+    const path = issue.path.filter(p => typeof p === 'string').join('.')
+    if (path) {
+      fieldErrors[path] = fieldErrors[path] || new Set()
+      fieldErrors[path].add(issue.message)
+    }
+  })
 
-  /**
-   * Whether to clear previous errors on successful validation
-   * Default: true
-   */
-  clearErrorsOnSuccess?: boolean
-
-  /**
-   * Custom error handler
-   */
-  onError?: (req: Request, res: Response, errors: unknown) => void
-
-  /**
-   * Transform data before validation
-   */
-  transformData?: (data: unknown, req: Request) => unknown
+  // Convert Sets back to arrays
+  return Object.fromEntries(Object.entries(fieldErrors).map(([key, value]) => [key, Array.from(value)]))
 }
 
 /**
- * Creates validation middleware for Express routes
- * Can accept either a Zod schema or a registered step name
- * TODO: Once migration is complete refractor schemaOrStepName to just schema and should only be using ZodSchema type
+ * Store data in flash/session with our custom pattern
+ * This uses SessionManager but stores in a way compatible with flash patterns
  */
-export function validate(
-  schemaOrStepName: ZodSchema | string,
-  options: ValidationOptions = {},
-): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function storeInFlash(req: Request, key: string, value: any): void {
+  // Get current session data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = req.session as any
+
+  // Initialize flash storage if it doesn't exist
+  if (!session.flash) {
+    session.flash = {}
+  }
+
+  // Store the value
+  session.flash[key] = JSON.stringify(value)
+}
+
+/**
+ * Read and clear data from flash/session
+ * This ensures errors don't persist across unrelated requests
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function readAndClearFlash(req: Request, key: string): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = req.session as any
+
+  if (!session.flash || !session.flash[key]) {
+    return null
+  }
+
+  const value = session.flash[key]
+  delete session.flash[key]
+
+  try {
+    return JSON.parse(value)
+  } catch {
+    return value
+  }
+}
+
+/**
+ * Schema factory type - allows dynamic schema creation based on request
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SchemaFactory<P = any> = (req: Request<P>) => Promise<ZodSchema> | ZodSchema
+
+/**
+ *
+ * @param schemaOrStepName - Either a Zod schema, a schema factory function, or a registered step name
+ *TODO: refractor to only use Zod schema once migration is complete
+ * @returns Express middleware function
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function validate<P extends { [key: string]: string } = any>(
+  schemaOrStepName: ZodSchema | SchemaFactory<P> | string,
+): (req: Request<P>, res: Response, next: NextFunction) => Promise<void> {
+  // eslint-disable-next-line consistent-return
+  return async (req: Request<P>, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Get the schema
       let schema: ZodSchema
+
+      // Resolve the schema
       if (typeof schemaOrStepName === 'string') {
+        // It's a registered step name
         const registeredSchema = ValidationService.getSchemaForStep(schemaOrStepName)
         if (!registeredSchema) {
           throw new Error(`No schema registered for step: ${schemaOrStepName}`)
         }
         schema = registeredSchema
+      } else if (typeof schemaOrStepName === 'function') {
+        // It's a schema factory
+        schema = await schemaOrStepName(req)
       } else {
+        // It's a direct schema
         schema = schemaOrStepName
       }
 
-      // Transform data if needed
-      let dataToValidate = req.body
-      if (options.transformData) {
-        dataToValidate = options.transformData(req.body, req)
+      // Validate the request body
+      const result = schema.safeParse(req.body)
+
+      if (result.success) {
+        // Replace request body with validated and transformed data
+        req.body = result.data
+        return next()
       }
 
-      // Validate the data
-      const validationResult = await ValidationService.validate(schema, dataToValidate)
+      // Validation failed - prepare errors for template
+      const deduplicatedErrors = deduplicateFieldErrors(result.error)
 
-      if (validationResult.success) {
-        // Clear previous errors if configured
-        if (options.clearErrorsOnSuccess !== false) {
-          ValidationService.clearSessionErrors(req)
-        }
+      // Store errors and form responses in flash
+      storeInFlash(req, 'validationErrors', deduplicatedErrors)
+      storeInFlash(req, 'formResponses', req.body)
 
-        // Apply business rules if provided
-        if (options.businessRules) {
-          try {
-            const businessResult = await options.businessRules(validationResult.data, req)
-            if (businessResult && businessResult.errors) {
-              ValidationService.setSessionErrors(req, businessResult.errors as FormattedErrors)
-              handleValidationError(req, res, businessResult.errors, options)
-              return
-            }
-          } catch (error) {
-            logger.error('Business rule validation failed:', error)
-            throw error
-          }
-        }
+      // Also store in the format expected by sessionModelAdapter for compatibility
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      SessionManager.setSessionValue(req as any, 'validationErrors', deduplicatedErrors)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      SessionManager.setSessionValue(req as any, 'formResponses', req.body)
 
-        // Merge data into session if configured
-        if (options.mergeToSession !== false) {
-          ValidationService.mergeValidatedData(req, validationResult.data as Record<string, unknown>)
-        }
-
-        // Store validated data for controller use
-        res.locals.validatedData = validationResult.data
-
-        next()
-        return
-      }
-
-      // Handle validation errors
-      if (validationResult.errors) {
-        ValidationService.setSessionErrors(req, validationResult.errors)
-        handleValidationError(req, res, validationResult.errors, options)
-        return
-      }
-
-      // This shouldn't happen but handle it gracefully
-      throw new Error('Validation failed without errors')
+      // Redirect back with fragment to prevent field focus
+      const redirectUrl = `${req.originalUrl}#`
+      return res.redirect(redirectUrl)
     } catch (error) {
       logger.error('Validation middleware error:', error)
       next(error)
@@ -124,63 +140,61 @@ export function validate(
 }
 
 /**
- * Handle validation errors
+ * Middleware to populate res.locals from flash data
+ * This should be used on GET routes to display validation errors
  */
-function handleValidationError(
-  req: Request,
-  res: Response,
-  errors: unknown,
-  options: ValidationOptions,
-): void | Response {
-  // Custom error handler
-  if (options.onError) {
-    return options.onError(req, res, errors)
+export function populateValidationData(req: Request, res: Response, next: NextFunction): void {
+  // Try to read from flash first
+  let errors = readAndClearFlash(req, 'validationErrors')
+  let values = readAndClearFlash(req, 'formResponses')
+
+  // If not in flash, check SessionManager (for compatibility during migration)
+  if (!errors && !values) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    errors = SessionManager.getSessionValue(req as any, 'validationErrors')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    values = SessionManager.getSessionValue(req as any, 'formResponses')
+
+    if (errors || values) {
+      // Clear from session after reading
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      SessionManager.setSessionValue(req as any, 'validationErrors', undefined)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      SessionManager.setSessionValue(req as any, 'formResponses', undefined)
+    }
   }
 
-  // Determine redirect path
-  let redirectPath: string
-  if (options.redirectOnError) {
-    redirectPath =
-      typeof options.redirectOnError === 'function' ? options.redirectOnError(req) : options.redirectOnError
-  } else {
-    // Default to redirecting back
-    redirectPath = req.get('Referer') || req.originalUrl
+  // Populate res.locals for template access
+  if (errors) {
+    res.locals.validationErrors = errors
   }
 
-  // For AJAX requests, return JSON error
-  if (req.xhr || req.headers.accept?.includes('application/json')) {
-    return res.status(400).json({ errors })
+  if (values) {
+    res.locals.formResponses = values
+    // Also set formValues for backward compatibility with existing templates
+    res.locals.formValues = values
   }
 
-  // Redirect with errors stored in session
-  return res.redirect(redirectPath)
+  next()
 }
 
 /**
- * Middleware to populate form with previous values and errors
- * Should be used in GET routes to display validation errors
+ * Clear all validation data from session
+ * Useful for ensuring clean state between form submissions
  */
-export function populateValidationData(req: Request, res: Response, next: NextFunction): void {
-  // Get errors from session
-  const errors = ValidationService.getSessionErrors(req)
-  const formValues = ValidationService.getSessionFormValues(req)
+export function clearValidation(req: Request): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = req.session as any
 
-  if (errors && hasErrors(errors)) {
-    // Add to res.locals for template rendering
-    res.locals.validationErrors = errors.errorSummary
-    res.locals.errorlist = Object.entries(errors.errors).map(([key, error]) => ({
-      key,
-      type: 'validation',
-      ...error,
-    }))
-    res.locals.errors = errors.errors
+  // Clear from flash
+  if (session.flash) {
+    delete session.flash.validationErrors
+    delete session.flash.formResponses
   }
 
-  // Add form values for re-population
-  res.locals.formValues = formValues
-
-  // Clear errors after displaying them
-  ValidationService.clearSessionErrors(req)
-
-  next()
+  // Clear from SessionManager
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  SessionManager.setSessionValue(req as any, 'validationErrors', undefined)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  SessionManager.setSessionValue(req as any, 'formResponses', undefined)
 }

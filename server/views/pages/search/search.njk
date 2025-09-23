@@ -1,15 +1,9 @@
 {% extends "../../partials/layout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
-{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% set title = "Find a person" %}
-{% set errors = validationErrors[0].text %}
 
 {% block head %}
     {{ super() }}
@@ -24,19 +18,7 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row govuk-!-margin-bottom-0">
             <div class="govuk-grid-column-two-thirds">
-                {% if errorMessage != '' %}
-                    {{ govukWarningText({
-                        text: errorMessage,
-                        iconFallbackText: "Warning"
-                    }) }}
-                {%  endif %}
-                {% if errorlist.length %}
-                    {{ govukErrorSummary({
-                        titleText: "There is a problem",
-                        errorList: validationErrors,
-                        classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0"
-                    }) }}
-                {% endif %}
+                {% include "partials/errorSummary.njk" %}
             </div>
         </div>
     </div>
@@ -65,12 +47,18 @@
                     {% endif %}
 
                     {% block fields %}
-
-                        {% for key, fieldsOptions in fields %}
-                            {% if fieldsOptions.component and not fieldsOptions.skip %}
-                                {{ callAsMacro(fieldsOptions.component)(fieldsOptions) }}
-                            {% endif %}
-                        {% endfor %}
+                        {{ govukInput({
+                            id: "nomisId",
+                            name: "nomisId",
+                            label: {
+                                text: "NOMIS ID",
+                                classes: "govuk-fieldset__legend--m"
+                            },
+                            classes: "govuk-!-width-three-quarters",
+                            value: formResponses.nomisId or nomisId,
+                            errorMessage: validationErrors | findError('nomisId'),
+                            autocomplete: "off"
+                        }) }}
                     {% endblock %}
 
                     <div class="govuk-button-group">

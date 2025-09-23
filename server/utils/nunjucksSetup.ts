@@ -96,17 +96,17 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   }
   njkEnv.addFilter('pluralize', pluralize)
 
-  // Filter to find a specific error message from an array of errors
-  interface ErrorObject {
-    name?: string
-    text: string
-    href?: string
-  }
-  function findError(errorsArray: ErrorObject[] | undefined, fieldName: string): ErrorObject | undefined {
-    if (!errorsArray) {
-      return undefined
-    }
-    return errorsArray.find(error => error.name === fieldName)
+  // Filter to find error for a specific field from a field errors object
+  function findError(errors: Record<string, string[]> | undefined, fieldName: string): { text: string } | null {
+    if (!errors?.[fieldName]) return null
+    return { text: errors[fieldName][0] }
   }
   njkEnv.addFilter('findError', findError)
+
+  // Build error summary list for GOV.UK error summary from field errors object
+  function buildErrorSummaryList(errors: Record<string, string[]> | undefined): Array<{ text: string; href: string }> {
+    if (!errors) return []
+    return Object.entries(errors).flatMap(([field, messages]) => messages.map(text => ({ text, href: `#${field}` })))
+  }
+  njkEnv.addFilter('buildErrorSummaryList', buildErrorSummaryList)
 }
