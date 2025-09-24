@@ -397,6 +397,34 @@ describe('viewPersonHome', () => {
     )
   })
 
+  it('should order DPS recall above NOMIS recall when DPS recall has later revocationDate', async () => {
+    const dpsRecall = createMockRecall('recall-dps', '2023-01-05T10:00:00.000Z')
+    dpsRecall.revocationDate = new Date('2023-02-01') // later revocation date
+
+    const nomisRecall = createMockRecallFromNomis('recall-nomis', '2023-01-10T10:00:00.000Z')
+    // NOMIS recalls use createdAt, so this one is "older" than the DPS revocationDate
+
+    const recalls = [nomisRecall, dpsRecall]
+
+    res.locals.prisoner = {
+      prisonerNumber: 'A1234BC',
+      firstName: 'TestFirstName',
+      lastName: 'TestLastName',
+    }
+    res.locals.recalls = recalls
+    res.locals.latestRecallId = dpsRecall.recallId
+    res.locals.serviceDefinitions = {}
+
+    await viewPersonHome(req as Request, res as Response)
+
+    const renderArgs = (res.render as jest.Mock).mock.calls[0][1]
+    const sortedRecalls = renderArgs.recalls
+
+    // Assert that DPS recall comes first
+    expect(sortedRecalls[0].recallId).toBe('recall-dps')
+    expect(renderArgs.latestRecallId).toBe('recall-dps')
+  })
+
   it('should render home page with a nomis recall that has a source of NOMIS when there is only one recall and it is from nomis', () => {
     mockCourtCaseService.getAllRecallableCourtCases.mockResolvedValue(mockRecallableCourtCases)
     mockPrisonService.getPrisonNames.mockResolvedValue(new Map<string, string>([['KMI', 'Kirkham']]))
