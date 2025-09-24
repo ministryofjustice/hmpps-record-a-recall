@@ -6,6 +6,7 @@ import addBreadcrumb from '../middleware/addBreadcrumb'
 import ApiRoutes from './apiRoutes'
 import searchRouter from './search'
 import newRecallRouter from './recall'
+import v2RecallFlowRouter from './recall/v2RecallFlow'
 import addServicesToRequest from '../middleware/addServicesToRequest'
 import { Services } from '../services'
 import asyncMiddleware from '../middleware/asyncMiddleware'
@@ -35,7 +36,7 @@ export default function routes(services: Services): Router {
 
   router.use(addServicesToRequest(services))
   router.use('/search', searchRouter)
-  router.use('/person/:nomisId?', populateNomisId(), viewPersonRouter(services))
+  router.use('/person/:nomisId', populateNomisId(), viewPersonRouter(services))
   // HMPO Forms defined route
   router.use(
     '/person/:nomisId/edit-recall/:recallId',
@@ -57,6 +58,26 @@ export default function routes(services: Services): Router {
       services.courtService,
     ),
     editRecallRouter,
+  )
+  // V2 recall flow route (when feature flag is enabled)
+  router.use(
+    '/person/:nomisId/record-recall-v2',
+    populateNomisId(),
+    loadCourtCases(
+      services.courtCaseService,
+      services.manageOffencesService,
+      services.courtService,
+      services.calculationService,
+      services.nomisMappingService,
+    ),
+    loadRecalls(
+      services.recallService,
+      services.prisonService,
+      services.manageOffencesService,
+      services.courtCaseService,
+      services.courtService,
+    ),
+    v2RecallFlowRouter(),
   )
   router.use(
     '/person/:nomisId/record-recall',

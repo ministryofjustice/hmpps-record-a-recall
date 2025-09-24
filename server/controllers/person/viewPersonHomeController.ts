@@ -9,6 +9,7 @@ export default async (req: Request, res: Response) => {
 
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
+    const useV2RecallFlow = process.env.USE_V2_RECALL_FLOW === 'true'
 
     return res.render('pages/person/home', {
       nomisId,
@@ -19,6 +20,7 @@ export default async (req: Request, res: Response) => {
       serviceDefinitions,
       errorMessage,
       latestRecallId: res.locals.latestRecallId,
+      useV2RecallFlow,
     })
   }
 
