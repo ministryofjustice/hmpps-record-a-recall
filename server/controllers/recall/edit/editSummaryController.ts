@@ -17,17 +17,26 @@ export default class EditSummaryController extends RecallBaseController {
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
     // check if the edit journey has been completed
-    const journeyComplete = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE) === true
-    console.log('**************', journeyComplete)
-    console.log('**************2', !journeyComplete)
+    let journeyComplete = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE) === true
+    const lastVisited: string | undefined = (req.journeyModel as unknown as { attributes?: { lastVisited?: string } })
+      ?.attributes?.lastVisited
+    const cameFromFinalEditStep = !!lastVisited && lastVisited.includes('recall-type')
+
+    if (cameFromFinalEditStep) {
+      // mark as complete in the wizard-scoped session so template picks it up
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
+      journeyComplete = true
+    }
+
     return {
       ...super.locals(req, res),
       answerSummaryList,
       ualText: journeyData.ualText,
       ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
       storedRecall: journeyData.storedRecall,
-      showCheckAnswers: journeyComplete, // true only once edits are completed
-      showRecordedOn: !journeyComplete, // show on first landing via edit button
+      // show 'Check answers' only after the edit journey is complete
+      showCheckAnswers: journeyComplete,
+      showRecordedOn: !journeyComplete,
     }
   }
 
@@ -121,8 +130,6 @@ export default class EditSummaryController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
-
-    // mark journey as complete once edits saved
     SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
 
     return super.successHandler(req, res, next)

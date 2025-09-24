@@ -32,13 +32,13 @@
             <div class='govuk-grid-column-two-thirds'>
               <span class="govuk-caption-xl">Edit a recall</span>
 
-              {% if showCheckAnswers %}
-                  <h1 class="govuk-heading-l" id="check-answers-heading">
-                      Check answers
-                  </h1>
-              {% elif showRecordedOn %}
+              {% if showRecordedOn %}
                   <h1 class="govuk-heading-l" id="review-edit-heading">
                       Recorded on {{ storedRecall.createdAt | date }}
+                  </h1>
+              {% elif showCheckAnswers %}
+                  <h1 class="govuk-heading-l" id="check-answers-heading">
+                      Check answers
                   </h1>
               {% endif %}
 

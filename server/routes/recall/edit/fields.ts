@@ -31,6 +31,10 @@ const editFields = {
       { text: 'No, go back to the recall', value: 'false' },
     ],
   },
+  recallType: {
+    ...cloneDeep(fields.recallType),
+    isFinalPage: true,
+  },
 }
 
 // Export pageHeading separately
