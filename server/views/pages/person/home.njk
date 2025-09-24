@@ -36,13 +36,23 @@
       <p>There are no recalls recorded.</p>
     {% endif %}
 
-    {{ govukButton({
-      classes: "govuk-button--secondary",
-      text: "Record a recall",
-      preventDoubleClick: true,
-      href: '/person/' + nomisId + '/record-recall?entrypoint=recalls',
-      attributes: { 'data-qa': 'create-new-recall-btn' }
-    }) }}
+    {% if useV2RecallFlow %}
+      {{ govukButton({
+        classes: "govuk-button--secondary",
+        text: "Record a recall",
+        preventDoubleClick: true,
+        href: '/person/' + nomisId + '/record-recall-v2',
+        attributes: { 'data-qa': 'create-new-recall-btn' }
+      }) }}
+    {% else %}
+      {{ govukButton({
+        classes: "govuk-button--secondary",
+        text: "Record a recall",
+        preventDoubleClick: true,
+        href: '/person/' + nomisId + '/record-recall?entrypoint=recalls',
+        attributes: { 'data-qa': 'create-new-recall-btn' }
+      }) }}
+    {% endif %}
   </div>
 </div>
 
