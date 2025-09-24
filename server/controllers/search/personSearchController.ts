@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 import BaseController from '../base/BaseController'
 import { sanitizeString } from '../../utils/utils'
+import { clearValidation } from '../../middleware/validationMiddleware'
 import logger from '../../../logger'
 import config from '../../config'
-import fields from '../../routes/search/fields'
 
 export default class PersonSearchController extends BaseController {
   static checkForRedirect(_req: Request, res: Response, next: NextFunction): void {
@@ -21,8 +21,16 @@ export default class PersonSearchController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
     const sessionData = PersonSearchController.getSessionData(req)
 
-    PersonSearchController.renderForm(req, res, 'pages/search/search', fields, ['nomisId'], {
-      nomisId: res.locals.formValues?.nomisId || sessionData?.nomisId || '',
+    // If not coming from a validation redirect, load from session
+    if (!res.locals.formResponses) {
+      res.locals.formResponses = sessionData
+    }
+
+    res.render('pages/search/search', {
+      nomisId: res.locals.formResponses?.nomisId || sessionData?.nomisId || '',
+      // Pass validation data explicitly for template access
+      validationErrors: res.locals.validationErrors,
+      formResponses: res.locals.formResponses,
     })
   }
 
@@ -38,6 +46,9 @@ export default class PersonSearchController extends BaseController {
 
       res.locals.prisoner = prisoner
       res.locals.nomisId = nomisId
+
+      // Clear validation state before redirecting to the next page
+      clearValidation(req)
 
       res.redirect(`/person/${nomisId}`)
     } catch (error) {

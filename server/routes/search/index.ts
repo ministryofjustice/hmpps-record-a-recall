@@ -19,25 +19,11 @@ function setupPersonSearchRoutes(router: Router): void {
     res.redirect('/search/nomisId')
   })
 
-  // NOMIS ID search page
-  router.get(
-    '/nomisId',
-    populateValidationData, // Populates errors from session
-    PersonSearchController.get,
-  )
+  router.get('/nomisId', populateValidationData, PersonSearchController.get)
 
-  // Handle NOMIS ID search submission
   router.post(
     '/nomisId',
-    validate('personSearch', {
-      mergeToSession: true,
-      redirectOnError: req => req.originalUrl,
-      businessRules: async (_data, _req) => {
-        // Business validation happens in the controller
-        // This is just for the schema validation
-        return null
-      },
-    }),
+    validate('personSearch'), // Validate using registered schema
     PersonSearchController.post,
   )
 }
