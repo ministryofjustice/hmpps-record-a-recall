@@ -28,6 +28,8 @@ export default class RecallBaseController extends PrisonerDetailsController {
     const locals = super.locals(req, res)
     const journeyData = getJourneyDataFromRequest(req)
     const isEditRecall = journeyData.isEdit
+    const pageHeading = isEditRecall ? 'Edit a Recall' : 'Record a recall'
+    res.locals.pageHeading = pageHeading
     const recallId = journeyData.storedRecall?.recallId
     const calculation = getTemporaryCalc(req)
     const { revocationDate } = journeyData
@@ -67,6 +69,7 @@ export default class RecallBaseController extends PrisonerDetailsController {
       journeyBaseLink,
       cancelLink,
       isEditRecall,
+      pageHeading,
       action,
       selectedRecallType,
       relevantAdjustments,

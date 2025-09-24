@@ -3,7 +3,7 @@ import wizard from 'hmpo-form-wizard'
 
 import steps from './steps'
 import populateRecallId from '../../../middleware/populateRecallId'
-import editFields from './fields'
+import { editFields, pageHeading } from './fields'
 
 const editRecallRouter = express.Router({ mergeParams: true })
 
@@ -14,6 +14,7 @@ editRecallRouter.use(
     templatePath: 'pages/recall',
     csrf: false,
     checkJourney: false,
+    pageHeading,
   }),
 )
 export default editRecallRouter

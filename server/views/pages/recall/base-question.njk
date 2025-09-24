@@ -40,7 +40,10 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
-              <span class="govuk-caption-xl">Record a recall</span>
+              <span class="govuk-caption-xl">
+                {{ options.pageHeading | default('Record a recall') }}
+              </span>
+
 
                 <form method="{{ formMethod }}" action="{{ formAction }}"
                         {% if formEnctype %}

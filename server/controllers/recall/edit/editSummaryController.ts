@@ -16,12 +16,24 @@ export default class EditSummaryController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
+    let journeyComplete = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE) === true
+    const lastVisited: string | undefined = (req.journeyModel as unknown as { attributes?: { lastVisited?: string } })
+      ?.attributes?.lastVisited
+    const cameFromFinalEditStep = !!lastVisited && lastVisited.includes('recall-type')
+
+    if (cameFromFinalEditStep) {
+      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
+      journeyComplete = true
+    }
+
     return {
       ...super.locals(req, res),
       answerSummaryList,
       ualText: journeyData.ualText,
       ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
       storedRecall: journeyData.storedRecall,
+      showCheckAnswers: journeyComplete,
+      showRecordedOn: !journeyComplete,
     }
   }
 
@@ -50,7 +62,6 @@ export default class EditSummaryController extends RecallBaseController {
             logger.warn(
               `Found ${ualAdjustments.length} UAL adjustments for recall ${recallId}. Expected only one. Cleaning up duplicates.`,
             )
-
             // Delete the duplicate UAL adjustments (keep the first one)
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
@@ -63,7 +74,6 @@ export default class EditSummaryController extends RecallBaseController {
 
           // Update existing UAL adjustment with fresh dates
           const existingUal = ualAdjustments[0]
-
           const ualToUpdate = {
             ...newUal,
             nomisId,
@@ -117,6 +127,7 @@ export default class EditSummaryController extends RecallBaseController {
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
     SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
+
     return super.successHandler(req, res, next)
   }
 }
