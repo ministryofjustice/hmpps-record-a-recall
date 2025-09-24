@@ -31,19 +31,30 @@
         <div class='govuk-grid-row'>
             <div class='govuk-grid-column-two-thirds'>
               <span class="govuk-caption-xl">Edit a recall</span>
-                <h1 class="govuk-heading-l" id="review-edit-heading">Recorded on {{ storedRecall.createdAt | date }}</h1>
-                {{ govukSummaryList({
-                    rows: answerSummaryList
-                }) }}
-                {% if ualDiff %}
+
+              {% if showCheckAnswers %}
+                  <h1 class="govuk-heading-l" id="check-answers-heading">
+                      Check answers
+                  </h1>
+              {% elif showRecordedOn %}
+                  <h1 class="govuk-heading-l" id="review-edit-heading">
+                      Recorded on {{ storedRecall.createdAt | date }}
+                  </h1>
+              {% endif %}
+
+              {{ govukSummaryList({
+                  rows: answerSummaryList
+              }) }}
+
+              {% if ualDiff %}
                   {%  set ualHtml %}
-                    These recall dates will create <b>{{ ualText }}</b> of UAL.
-                    Once you have confirmed and saved this recall, you can review all UAL dates in the adjustments service.
+                      These recall dates will create <b>{{ ualText }}</b> of UAL.
+                      Once you have confirmed and saved this recall, you can review all UAL dates in the adjustments service.
                   {% endset %}
                   {{  govukInsetText({
-                    html: ualHtml
+                      html: ualHtml
                   }) }}
-                {% endif %}
+              {% endif %}
             </div>
         </div>
 
@@ -58,13 +69,13 @@
                     }) }}
                 {% endblock %}
                 {% block cancel %}
-                  {{ govukButton({
-                    text: "Cancel changes",
-                    classes: "govuk-button--secondary",
-                    preventDoubleClick: true,
-                    type: "reset",
-                    href: cancelLink
-                  }) }}
+                    {{ govukButton({
+                        text: "Cancel changes",
+                        classes: "govuk-button--secondary",
+                        preventDoubleClick: true,
+                        type: "reset",
+                        href: cancelLink
+                    }) }}
                 {% endblock %}
             {% endblock %}
         </div>

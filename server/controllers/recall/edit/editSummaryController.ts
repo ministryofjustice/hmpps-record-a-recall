@@ -16,12 +16,18 @@ export default class EditSummaryController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
+    // check if the edit journey has been completed
+    const journeyComplete = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE) === true
+    console.log('**************', journeyComplete)
+    console.log('**************2', !journeyComplete)
     return {
       ...super.locals(req, res),
       answerSummaryList,
       ualText: journeyData.ualText,
       ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
       storedRecall: journeyData.storedRecall,
+      showCheckAnswers: journeyComplete, // true only once edits are completed
+      showRecordedOn: !journeyComplete, // show on first landing via edit button
     }
   }
 
@@ -63,7 +69,6 @@ export default class EditSummaryController extends RecallBaseController {
 
           // Update existing UAL adjustment with fresh dates
           const existingUal = ualAdjustments[0]
-
           const ualToUpdate = {
             ...newUal,
             nomisId,
@@ -116,7 +121,10 @@ export default class EditSummaryController extends RecallBaseController {
 
   successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
     req.flash('action', `updated`)
+
+    // mark journey as complete once edits saved
     SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
+
     return super.successHandler(req, res, next)
   }
 }
