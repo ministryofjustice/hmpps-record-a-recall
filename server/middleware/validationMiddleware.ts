@@ -107,6 +107,9 @@ export function validate<P extends { [key: string]: string } = any>(
         schema = schemaOrStepName
       }
 
+      // Preserve original form data before transformation
+      const originalBody = { ...req.body }
+
       // Validate the request body
       const result = schema.safeParse(req.body)
 
@@ -119,15 +122,15 @@ export function validate<P extends { [key: string]: string } = any>(
       // Validation failed - prepare errors for template
       const deduplicatedErrors = deduplicateFieldErrors(result.error)
 
-      // Store errors and form responses in flash
+      // Store errors and ORIGINAL form responses in flash (not transformed)
       storeInFlash(req, 'validationErrors', deduplicatedErrors)
-      storeInFlash(req, 'formResponses', req.body)
+      storeInFlash(req, 'formResponses', originalBody)
 
       // Also store in the format expected by sessionModelAdapter for compatibility
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       SessionManager.setSessionValue(req as any, 'validationErrors', deduplicatedErrors)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      SessionManager.setSessionValue(req as any, 'formResponses', req.body)
+      SessionManager.setSessionValue(req as any, 'formResponses', originalBody)
 
       // Redirect back with fragment to prevent field focus
       const redirectUrl = `${req.originalUrl}#`

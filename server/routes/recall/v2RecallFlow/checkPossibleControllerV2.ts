@@ -21,6 +21,10 @@ export default class CheckPossibleControllerV2 extends BaseController {
   static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
+      // Load prisoner details first
+      const prisoner = await req.services.prisonerService.getPrisonerDetails(nomisId, username)
+      res.locals.prisoner = prisoner
+
       let calculationResult: RecordARecallCalculationResult = null
       let breakdown = null
       let errors: ValidationMessage[] = []
@@ -211,6 +215,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
     // Use BaseController's helper methods where possible
     CheckPossibleControllerV2.updateSessionData(req, { entrypoint: res.locals.entrypoint })
     CheckPossibleControllerV2.updateSessionData(req, { recallEligibility: res.locals.recallEligibility })
+    CheckPossibleControllerV2.updateSessionData(req, { prisoner: res.locals.prisoner })
 
     // Set manual route if STANDARD_RECALL_255 error occurred
     if (res.locals.forceManualRoute) {

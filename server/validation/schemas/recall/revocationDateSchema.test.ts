@@ -12,7 +12,7 @@ describe('revocationDateSchema', () => {
 
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data).toBeInstanceOf(Date)
+      expect(result.data.revocationDate).toBeInstanceOf(Date)
     }
   })
 
