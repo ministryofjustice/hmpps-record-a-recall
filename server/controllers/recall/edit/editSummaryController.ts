@@ -16,14 +16,12 @@ export default class EditSummaryController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
-    // check if the edit journey has been completed
     let journeyComplete = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE) === true
     const lastVisited: string | undefined = (req.journeyModel as unknown as { attributes?: { lastVisited?: string } })
       ?.attributes?.lastVisited
     const cameFromFinalEditStep = !!lastVisited && lastVisited.includes('recall-type')
 
     if (cameFromFinalEditStep) {
-      // mark as complete in the wizard-scoped session so template picks it up
       SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
       journeyComplete = true
     }
@@ -34,7 +32,6 @@ export default class EditSummaryController extends RecallBaseController {
       ualText: journeyData.ualText,
       ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
       storedRecall: journeyData.storedRecall,
-      // show 'Check answers' only after the edit journey is complete
       showCheckAnswers: journeyComplete,
       showRecordedOn: !journeyComplete,
     }
@@ -65,7 +62,6 @@ export default class EditSummaryController extends RecallBaseController {
             logger.warn(
               `Found ${ualAdjustments.length} UAL adjustments for recall ${recallId}. Expected only one. Cleaning up duplicates.`,
             )
-
             // Delete the duplicate UAL adjustments (keep the first one)
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(

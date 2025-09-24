@@ -37,7 +37,6 @@ const editFields = {
   },
 }
 
-// Export pageHeading separately
 const pageHeading = 'Edit a Recall'
 
 export { editFields, pageHeading }
