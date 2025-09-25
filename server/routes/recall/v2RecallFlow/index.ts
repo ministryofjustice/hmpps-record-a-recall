@@ -1,7 +1,7 @@
 import express, { Router } from 'express'
 import asyncMiddleware from '../../../middleware/asyncMiddleware'
 import { validate, populateValidationData } from '../../../middleware/validationMiddleware'
-import loadPrisonerData from '../../../middleware/loadPrisonerData'
+import loadPrisoner from '../../../middleware/loadPrisoner'
 import CheckPossibleControllerV2 from './checkPossibleControllerV2'
 import RevocationDateControllerV2 from './revocationDateControllerV2'
 import NotPossibleControllerV2 from './notPossibleControllerV2'
@@ -21,18 +21,22 @@ export default function routes(): Router {
   router.get('/', asyncMiddleware(CheckPossibleControllerV2.get))
 
   // Not possible page (no form submission)
-  router.get('/not-possible', asyncMiddleware(loadPrisonerData), asyncMiddleware(NotPossibleControllerV2.get))
+  router.get(
+    '/not-possible',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(NotPossibleControllerV2.get),
+  )
 
   // Revocation date page with validation
   router.get(
     '/revocation-date',
-    asyncMiddleware(loadPrisonerData),
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
     asyncMiddleware(RevocationDateControllerV2.get),
   )
   router.post(
     '/revocation-date',
-    asyncMiddleware(loadPrisonerData),
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('revocationDate'),
     asyncMiddleware(RevocationDateControllerV2.post),
   )
@@ -40,13 +44,13 @@ export default function routes(): Router {
   // Return to custody date page with validation
   router.get(
     '/rtc-date',
-    asyncMiddleware(loadPrisonerData),
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
     asyncMiddleware(ReturnToCustodyDateControllerV2.get),
   )
   router.post(
     '/rtc-date',
-    asyncMiddleware(loadPrisonerData),
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('returnToCustody'),
     asyncMiddleware(ReturnToCustodyDateControllerV2.post),
   )
