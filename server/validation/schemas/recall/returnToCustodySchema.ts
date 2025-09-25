@@ -12,7 +12,7 @@ const rtcDateSchema = datePartsSchema('returnToCustodyDate', {
  */
 export const returnToCustodySchema = z
   .object({})
-  .passthrough()
+  .loose()
   .transform((input, ctx) => {
     // Parse yes/no value
     const inPrisonResult = yesNoSchema.safeParse(input.inPrisonAtRecall)
@@ -68,8 +68,7 @@ export const returnToCustodySchema = z
 
 export type ReturnToCustodyData = z.infer<typeof returnToCustodySchema>
 
-// Register field labels for better error messages
 export const returnToCustodyFieldLabels = {
   inPrisonAtRecall: 'Whether the person was in prison when the recall was made',
-  returnToCustodyDate: 'Return to custody date', // Matches legacy 'nameForErrors'
+  returnToCustodyDate: 'Return to custody date',
 }

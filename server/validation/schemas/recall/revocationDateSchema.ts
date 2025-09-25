@@ -13,7 +13,7 @@ const baseDateSchema = datePartsSchema('revocationDate', {
 // Wrap the date schema to return an object with revocationDate property
 export const revocationDateSchema = z
   .object({})
-  .passthrough()
+  .loose()
   .transform((input, ctx) => {
     // Run the date validation on the input
     const dateResult = baseDateSchema.safeParse(input)
@@ -45,5 +45,5 @@ export type RevocationDateData = { revocationDate: Date | null }
 
 // Register field labels for better error messages
 export const revocationDateFieldLabels = {
-  revocationDate: 'Recall date', // Matches legacy 'nameForErrors'
+  revocationDate: 'Recall date',
 }
