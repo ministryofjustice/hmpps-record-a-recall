@@ -18,6 +18,12 @@ import { RecallEligibility } from '../../../@types/recallEligibility'
 export default class CheckPossibleControllerV2 extends BaseController {
   private static recallRoutingService = new RecallRoutingService()
 
+  // TODO: This violates RESTful principles by performing state mutations in a GET handler.
+  // The original FormWizard implementation has the same issue (configure method runs on GET).
+  // Future improvement: Add a loading/processing page that shows progress while data is being
+  // fetched, then POST to process the data. This would make the flow properly RESTful and
+  // provide better UX for slow API calls. For now, we're maintaining parity with the original
+  // behavior to ensure the migration works correctly.
   static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
