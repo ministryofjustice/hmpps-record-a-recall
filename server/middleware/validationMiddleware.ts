@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodError, ZodSchema } from 'zod'
 import ValidationService from '../validation/service'
-import { SessionManager } from '../services/sessionManager'
 import logger from '../../logger'
 
 /**
@@ -30,7 +29,7 @@ function deduplicateFieldErrors(error: ZodError): Record<string, string[]> {
 
 /**
  * Store data in flash/session with our custom pattern
- * This uses SessionManager but stores in a way compatible with flash patterns
+ * This stores validation data in flash storage for ephemeral error handling
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function storeInFlash(req: Request, key: string, value: any): void {
@@ -107,6 +106,9 @@ export function validate<P extends { [key: string]: string } = any>(
         schema = schemaOrStepName
       }
 
+      // Preserve original form data before transformation
+      const originalBody = { ...req.body }
+
       // Validate the request body
       const result = schema.safeParse(req.body)
 
@@ -119,15 +121,9 @@ export function validate<P extends { [key: string]: string } = any>(
       // Validation failed - prepare errors for template
       const deduplicatedErrors = deduplicateFieldErrors(result.error)
 
-      // Store errors and form responses in flash
+      // Store errors and ORIGINAL form responses in flash (not transformed)
       storeInFlash(req, 'validationErrors', deduplicatedErrors)
-      storeInFlash(req, 'formResponses', req.body)
-
-      // Also store in the format expected by sessionModelAdapter for compatibility
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      SessionManager.setSessionValue(req as any, 'validationErrors', deduplicatedErrors)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      SessionManager.setSessionValue(req as any, 'formResponses', req.body)
+      storeInFlash(req, 'formResponses', originalBody)
 
       // Redirect back with fragment to prevent field focus
       const redirectUrl = `${req.originalUrl}#`
@@ -144,25 +140,9 @@ export function validate<P extends { [key: string]: string } = any>(
  * This should be used on GET routes to display validation errors
  */
 export function populateValidationData(req: Request, res: Response, next: NextFunction): void {
-  // Try to read from flash first
-  let errors = readAndClearFlash(req, 'validationErrors')
-  let values = readAndClearFlash(req, 'formResponses')
-
-  // If not in flash, check SessionManager (for compatibility during migration)
-  if (!errors && !values) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    errors = SessionManager.getSessionValue(req as any, 'validationErrors')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    values = SessionManager.getSessionValue(req as any, 'formResponses')
-
-    if (errors || values) {
-      // Clear from session after reading
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      SessionManager.setSessionValue(req as any, 'validationErrors', undefined)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      SessionManager.setSessionValue(req as any, 'formResponses', undefined)
-    }
-  }
+  // Only read from flash
+  const errors = readAndClearFlash(req, 'validationErrors')
+  const values = readAndClearFlash(req, 'formResponses')
 
   // Populate res.locals for template access
   if (errors) {
@@ -186,15 +166,9 @@ export function clearValidation(req: Request): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = req.session as any
 
-  // Clear from flash
+  // Clear from flash only
   if (session.flash) {
     delete session.flash.validationErrors
     delete session.flash.formResponses
   }
-
-  // Clear from SessionManager
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  SessionManager.setSessionValue(req as any, 'validationErrors', undefined)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  SessionManager.setSessionValue(req as any, 'formResponses', undefined)
 }

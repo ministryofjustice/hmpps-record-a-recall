@@ -1,0 +1,49 @@
+{% extends "../../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% set title = "You cannot record a recall" %}
+{% set pageTitle = applicationName + " - " + title %}
+
+{% block beforeContent %}
+    {{ super() }}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row govuk-!-margin-bottom-0">
+            <div class="govuk-grid-column-two-thirds">
+                <nav>
+                    {{ govukBackLink({
+                        text: "Back",
+                        href: backLink
+                    }) }}
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class='govuk-grid-row'>
+        <div class='govuk-grid-column-two-thirds'>
+            {% if isEditRecall %}
+                <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot edit this recall</h1>
+            {% else %}
+                <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot record a recall</h1>
+            {% endif %}
+            {% if crdsValidationErrors and crdsValidationErrors.length == 1 %}
+                <p class="govuk-body" data-qa="single-validation-message">This is because {{ crdsValidationErrors | first | lowercaseFirstLetter}}</p>
+            {% elif crdsValidationErrors and crdsValidationErrors.length > 1 %}
+                <p class="govuk-body" data-qa="multi-validation-message-heading">This is because:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    {% for error in crdsValidationErrors %}
+                        <li data-qa="multi-validation-message-{{loop.index}}">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="govuk-body">This is because there was an issue processing the recall.</p>
+            {% endif %}
+            <h2 class="govuk-heading-m">What you need to do</h2>
+            <p class="govuk-body">Update these details in NOMIS and <a class="govuk-link govuk-link--no-visited-state govuk-!-font-size-19" href="{{ reloadLink }}">start again</a>.</p>
+        </div>
+    </div>
+{% endblock %}
