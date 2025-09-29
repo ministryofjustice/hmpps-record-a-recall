@@ -24,7 +24,7 @@ export default class RevocationDateControllerV2 extends BaseController {
     const backLink = `/person/${prisoner?.prisonerNumber || nomisId}${isEditRecall ? `/recall/${recallId}/edit/edit-summary` : ''}`
 
     // Build cancel URL
-    const cancelUrl = `/person/${prisoner?.prisonerNumber || nomisId}/recall/confirm-cancel`
+    const cancelUrl = `/person/${prisoner?.prisonerNumber || nomisId}/record-recall-v2/confirm-cancel`
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {
