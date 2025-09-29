@@ -7,7 +7,13 @@
 {% block content %}
     <div class='govuk-grid-row'>
         <div class='govuk-grid-column-two-thirds'>
-          {%  set panelText = "Recall " + action %}
+          {% if action == "updated" %}
+              {% set panelText = "Changes to recall saved" %}
+          {% elif action == "recorded" %}
+              {% set panelText = "Recall recorded" %}
+          {% else %}
+              {% set panelText = "Recall saved" %}  {# fallback #}
+          {% endif %}
           {{ govukPanel({
             titleText: panelText,
              attributes: {
