@@ -14,9 +14,7 @@
 {% block beforeContent %}
   {{ super() }}
 
-  {% block subNavigation %}
-    {{ subNavigation(serviceDefinitions.services, 'recalls') }}
-  {% endblock %}
+  {{ subNavigation(serviceDefinitions.services, 'recalls') }}
 
   {% if errorMessage %}
     {{ govukWarningText({
@@ -57,7 +55,7 @@
 </div>
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-full govuk-!-margin-bottom-0">
+  <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
     {% for recall in recalls %}
       {{ recallCard(recall, latestRecallId) }}
     {% endfor %}
