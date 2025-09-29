@@ -1,19 +1,21 @@
 import { Request, Response } from 'express'
+// eslint-disable-next-line import/no-unresolved
+import { Recall } from 'models'
+import logger from '../../../logger'
+import PrisonService from '../../services/PrisonService'
 
-async function enrichRecallWithLocationName(recall: any, prisonService: any, username: string) {
+async function enrichRecallWithLocationName(recall: Recall, prisonService: PrisonService, username: string) {
   if (!recall) return recall
 
   let locationName: string | null = null
-
-  console.log('&&&&&&&&&&&&&&&&&&&&&', recall.location) // e.g., "KMI"
 
   if (recall.location) {
     try {
       const prisonNames = await prisonService.getPrisonNames([recall.location], username)
       locationName = prisonNames.get(recall.location) || null
-      console.log('*************', locationName) // should now show the prison name
     } catch (err) {
       locationName = null
+      logger.error(err)
     }
   }
 

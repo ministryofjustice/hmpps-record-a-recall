@@ -38,7 +38,6 @@ export default function loadRecalls(
       if (recalls && recalls.length > 0) {
         // Get location names for all recalls
         const locationIds = recalls.map(r => r.location)
-        console.log(recalls[0].location) // KMI
         const prisonNames = await prisonService.getPrisonNames(locationIds, user.username)
 
         // Fetch court cases to get offence codes and sentence details
