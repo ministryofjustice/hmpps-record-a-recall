@@ -88,8 +88,8 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       returnToCustodyDate: isInPrison ? null : returnToCustodyDate,
       ualToCreate: processedUalData?.ualToCreate,
       ualToEdit: processedUalData?.ualToEdit,
-      hasMultipleOverlappingUALTypeRecall: processedUalData?.hasMultipleOverlappingUALTypeRecall,
-      relevantAdjustments: processedUalData?.relevantAdjustments,
+      hasMultipleOverlappingUalTypeRecall: processedUalData?.hasMultipleOverlappingUALTypeRecall,
+      relevantAdjustment: processedUalData?.relevantAdjustments,
       incompatibleTypesAndMultipleConflictingAdjustments: processedUalData?.hasConflicts,
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
     })
@@ -298,31 +298,26 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
   private static determineNextPath(req: Request, res: Response): string {
     const basePath = `/person/${res.locals.nomisId}/record-recall-v2`
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
-
-    // TODO: Re-enable navigation logic once pages are migrated to V2
-    // For now, always redirect to under construction page
-    return `${basePath}/check-sentences`
 
     // Complex navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments
-    // if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
-    //   return `${basePath}/conflicting-adjustments-interrupt`
-    // }
+    if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
+      return `${basePath}/conflicting-adjustments-interrupt`
+    }
 
     // Check if manual case selection is required
-    // if (ReturnToCustodyDateControllerV2.isManualCaseSelection(sessionData)) {
-    //   return `${basePath}/manual-recall-intercept`
-    // }
+    if (ReturnToCustodyDateControllerV2.isManualCaseSelection(sessionData)) {
+      return `${basePath}/manual-recall-intercept`
+    }
 
     // Check if no eligible sentences
-    // if (ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData) === 0) {
-    //   return `${basePath}/no-sentences-interrupt`
-    // }
+    if (ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData) === 0) {
+      return `${basePath}/no-sentences-interrupt`
+    }
 
     // Default: go to check-sentences
-    // return `${basePath}/check-sentences`
+    return `${basePath}/check-sentences`
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
