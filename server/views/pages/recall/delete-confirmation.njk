@@ -45,9 +45,12 @@
         </div>
       </div>
 
-      <div class="govuk-inset-text">
-        Deleting this recall will delete the <strong>{{ recall.ual.days | default(0) }} day{{ recall.ual.days | default(0) | pluralize }}</strong> of associated UAL. To delete tagged bail or remand time, please use the adjustments service.
+      <div class="govuk-visually-hidden">
+        Deleting this recall will delete the 
+        <strong>{{ recall.ual.days | default(0) }} day{{ recall.ual.days | default(0) | pluralize }}</strong> 
+        of associated UAL. To delete tagged bail or remand time, please use the adjustments service.
       </div>
+
 
       <form method="post" action="/person/{{ nomisId }}/recall/{{ recall.recallId }}/delete">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
