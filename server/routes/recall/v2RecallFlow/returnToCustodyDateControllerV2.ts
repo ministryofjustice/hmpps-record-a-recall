@@ -25,7 +25,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     }`
 
     // Build cancel URL
-    const cancelUrl = `/person/${prisoner?.prisonerNumber || nomisId}/recall/confirm-cancel`
+    const cancelUrl = `/person/${prisoner?.prisonerNumber || nomisId}/record-recall-v2/confirm-cancel`
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {

@@ -1,13 +1,12 @@
 import { z } from 'zod'
-import { yesNoSchema } from '../../utils/commonValidators'
 
 /**
  * Confirm cancel validation schema
  * Validates user confirmation to cancel recording a recall
  */
 export const confirmCancelSchema = z.object({
-  confirmCancel: yesNoSchema.refine(val => val !== undefined, {
-    message: 'Select if you are sure you want to cancel recording a recall',
+  confirmCancel: z.enum(['true', 'false'], {
+    message: 'Select yes if you are sure you want to cancel recording a recall',
   }),
 })
 
