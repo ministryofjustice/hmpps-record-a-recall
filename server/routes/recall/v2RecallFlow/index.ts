@@ -6,6 +6,7 @@ import CheckPossibleControllerV2 from './checkPossibleControllerV2'
 import RevocationDateControllerV2 from './revocationDateControllerV2'
 import NotPossibleControllerV2 from './notPossibleControllerV2'
 import ReturnToCustodyDateControllerV2 from './returnToCustodyDateControllerV2'
+import ConfirmCancelControllerV2 from './confirmCancelControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -53,6 +54,20 @@ export default function routes(): Router {
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('returnToCustody'),
     asyncMiddleware(ReturnToCustodyDateControllerV2.post),
+  )
+
+  // Confirm cancel page with validation
+  router.get(
+    '/confirm-cancel',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(ConfirmCancelControllerV2.get),
+  )
+  router.post(
+    '/confirm-cancel',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('confirmCancel'),
+    asyncMiddleware(ConfirmCancelControllerV2.post),
   )
 
   // Placeholder routes for pages not yet migrated to V2
