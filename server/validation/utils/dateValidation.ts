@@ -56,41 +56,51 @@ export function datePartsSchema(
 
       // For required fields, if all are empty, return error
       if (options?.required && !hasDay && !hasMonth && !hasYear) {
+        // Format field name for error message - convert from camelCase to proper name
+        const formattedName = fieldName
+          .replace(/([A-Z])/g, ' $1')
+          .trim()
+          .replace(/^./, str => str.toUpperCase())
+
+        // Use "Enter a" for consistency with legacy
         return {
           date: null as Date | null,
-          error: `Enter the ${fieldName
-            .toLowerCase()
-            .replace(/([A-Z])/g, ' $1')
-            .trim()}`,
+          error: `Enter a ${formattedName.toLowerCase()}`,
         }
       }
+
+      // Format field name for error messages - convert from camelCase to proper name
+      const formattedName = fieldName
+        .replace(/([A-Z])/g, ' $1')
+        .trim()
+        .replace(/^./, str => str.toUpperCase())
 
       // Check for partial dates
       if (hasDay || hasMonth || hasYear) {
         if (!hasDay && hasMonth && hasYear) {
-          return { date: null, error: `${fieldName} must include a day` }
+          return { date: null, error: `${formattedName} must include a day` }
         }
         if (hasDay && !hasMonth && hasYear) {
-          return { date: null, error: `${fieldName} must include a month` }
+          return { date: null, error: `${formattedName} must include a month` }
         }
         if (hasDay && hasMonth && !hasYear) {
-          return { date: null, error: `${fieldName} must include a year` }
+          return { date: null, error: `${formattedName} must include a year` }
         }
         if (!hasDay && !hasMonth && hasYear) {
-          return { date: null, error: `${fieldName} must include a day and month` }
+          return { date: null, error: `${formattedName} must include a day and month` }
         }
         if (!hasDay && hasMonth && !hasYear) {
-          return { date: null, error: `${fieldName} must include a day and year` }
+          return { date: null, error: `${formattedName} must include a day and year` }
         }
         if (hasDay && !hasMonth && !hasYear) {
-          return { date: null, error: `${fieldName} must include a month and year` }
+          return { date: null, error: `${formattedName} must include a month and year` }
         }
       }
 
       // Try to parse the date
       const date = parseDateParts(day, month, year)
       if (!date && hasDay && hasMonth && hasYear) {
-        return { date: null, error: `${fieldName} must be a real date` }
+        return { date: null, error: `${formattedName} must be a real date` }
       }
 
       return { date, error: null }
@@ -100,6 +110,7 @@ export function datePartsSchema(
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: result.error,
+          path: [fieldName], // Add the field name to the path
         })
       }
     })
@@ -107,6 +118,12 @@ export function datePartsSchema(
 
   // Add additional refinements for business rules
   let finalSchema = schema
+
+  // Format field name for error messages
+  const formattedName = fieldName
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
+    .replace(/^./, str => str.toUpperCase())
 
   if (options?.todayOrInPast) {
     finalSchema = finalSchema.refine(
@@ -118,7 +135,8 @@ export function datePartsSchema(
         return date <= today
       },
       {
-        message: `${fieldName} must be today or in the past`,
+        message: `${formattedName} must be today or in the past`,
+        path: [fieldName], // Add the field name to the path
       },
     )
   }
@@ -130,7 +148,8 @@ export function datePartsSchema(
         return date > options.mustBeAfter
       },
       {
-        message: `${fieldName} must be after ${format(options.mustBeAfter, 'd MMMM yyyy')}`,
+        message: `${formattedName} must be after ${format(options.mustBeAfter, 'd MMMM yyyy')}`,
+        path: [fieldName], // Add the field name to the path
       },
     )
   }

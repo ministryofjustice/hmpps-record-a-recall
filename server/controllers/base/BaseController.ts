@@ -4,6 +4,21 @@ import ValidationService from '../../validation/service'
 import { createFieldError } from '../../validation/utils/errorFormatting'
 
 /**
+ * Interface for Request with sessionModel for SessionManager compatibility
+ */
+export interface RequestWithSession extends Request {
+  sessionModel?: {
+    get: <T>(key: string) => T | undefined
+    set: (key: string, value: unknown, options?: { silent?: boolean }) => void
+    unset: (key: string | string[]) => void
+    toJSON?: () => Record<string, unknown>
+    save: () => void
+    reset?: () => unknown
+    updateSessionData?: (changes: object) => unknown
+  }
+}
+
+/**
  * Base controller for controllers migrated from FormWizard to Zod validation
  * Encapsulates common patterns and temporary workarounds during migration
  *
@@ -15,8 +30,7 @@ export default abstract class BaseController {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected static getSessionData(req: Request): any {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return SessionManager.getAllSessionData(req as any)
+    return SessionManager.getAllSessionData(req as RequestWithSession)
   }
 
   /**
@@ -24,8 +38,7 @@ export default abstract class BaseController {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected static updateSessionData(req: Request, data: Record<string, any>): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SessionManager.updateRecallData(req as any, data)
+    SessionManager.updateRecallData(req as RequestWithSession, data)
   }
 
   /**

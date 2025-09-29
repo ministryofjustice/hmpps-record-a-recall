@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import logger from '../../logger'
 
 /**
  * Middleware that adds FormWizard-compatible sessionModel to Express requests
@@ -26,15 +27,27 @@ export function sessionModelAdapter(req: Request, res: Response, next: NextFunct
         keys.forEach(k => delete (req.session as any)[k])
       }
     },
-    save: () => {
+    save: (callback?: (err?: Error) => void) => {
       if (req.session?.save) {
         req.session.save(err => {
           if (err) {
-            // Log error but don't throw - sessions auto-save anyway
-            // eslint-disable-next-line no-console
-            console.error('Session save error:', err)
+            logger.error('Session save error:', err)
+            // Propagate error to callback if provided
+            if (callback) {
+              callback(err)
+              return
+            }
+            // Also propagate to Express error handler if no callback
+            // This ensures session save failures are properly handled
+            next(err)
+            return
+          }
+          if (callback) {
+            callback(null)
           }
         })
+      } else if (callback) {
+        callback(null)
       }
     },
     toJSON: () => req.session || {},
