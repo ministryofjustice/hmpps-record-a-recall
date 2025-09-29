@@ -7,6 +7,8 @@ import RevocationDateControllerV2 from './revocationDateControllerV2'
 import NotPossibleControllerV2 from './notPossibleControllerV2'
 import ReturnToCustodyDateControllerV2 from './returnToCustodyDateControllerV2'
 import ConfirmCancelControllerV2 from './confirmCancelControllerV2'
+import ConflictingAdjustmentsInterruptControllerV2 from './conflictingAdjustmentsInterruptControllerV2'
+import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -70,11 +72,22 @@ export default function routes(): Router {
     asyncMiddleware(ConfirmCancelControllerV2.post),
   )
 
+  // Interrupt pages (GET only, no POST needed)
+  router.get(
+    '/conflicting-adjustments-interrupt',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(ConflictingAdjustmentsInterruptControllerV2.get),
+  )
+
+  router.get(
+    '/no-sentences-interrupt',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(NoSentencesInterruptControllerV2.get),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
   router.get('/check-sentences', asyncMiddleware(underConstructionController))
   router.get('/manual-recall-intercept', asyncMiddleware(underConstructionController))
-  router.get('/no-sentences-interrupt', asyncMiddleware(underConstructionController))
-  router.get('/conflicting-adjustments-interrupt', asyncMiddleware(underConstructionController))
 
   // TODO: As more controllers are migrated to V2, replace underConstructionController with the actual V2 controller
 
