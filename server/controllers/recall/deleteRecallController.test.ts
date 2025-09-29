@@ -9,6 +9,7 @@ import { RecallTypes } from '../../@types/recallTypes'
 import HmppsAuthClient from '../../data/hmppsAuthClient'
 import RecallService from '../../services/recallService'
 import PrisonerService from '../../services/prisonerService'
+import PrisonService from '../../services/PrisonService'
 
 interface DeleteRecallTestRequest {
   params: { nomisId: string; recallId: string }
@@ -18,6 +19,7 @@ interface DeleteRecallTestRequest {
   services: {
     recallService: RecallService
     prisonerService: PrisonerService
+    prisonService?: PrisonService
   }
   flash: jest.Mock
 }
@@ -148,11 +150,41 @@ describe('deleteRecallController', () => {
       expect(mockPrisonerService.getPrisonerDetails).toHaveBeenCalledWith(nomisId, user.username)
       expect(res.render).toHaveBeenCalledWith('pages/recall/delete-confirmation.njk', {
         nomisId,
-        recall: mockApiRecall,
+        recall: expect.objectContaining({ ...mockApiRecall, locationName: null }),
         prisoner: mockApiPrisoner,
         fromPage: 'overview',
         backLink: `/person/${nomisId}`,
       })
+    })
+
+    it('should include the enriched locationName in the rendered template', async () => {
+      ;(mockRecallService.getRecall as jest.Mock).mockResolvedValue(mockApiRecall)
+      ;(mockPrisonerService.getPrisonerDetails as jest.Mock).mockResolvedValue(mockApiPrisoner)
+
+      const mockPrisonService = {
+        getPrisonNames: jest.fn().mockResolvedValue(new Map([[mockApiRecall.location, 'Moorland Prison']])),
+      }
+
+      await getDeleteRecallConfirmation(
+        {
+          ...req,
+          services: {
+            ...req.services,
+            prisonService: mockPrisonService, // pass the object directly
+          },
+        } as unknown as Request,
+        res as Response,
+      )
+
+      expect(mockPrisonService.getPrisonNames).toHaveBeenCalledWith([mockApiRecall.location], user.username)
+      expect(res.render).toHaveBeenCalledWith(
+        'pages/recall/delete-confirmation.njk',
+        expect.objectContaining({
+          recall: expect.objectContaining({
+            locationName: 'Moorland Prison',
+          }),
+        }),
+      )
     })
 
     it('should handle error if getRecall fails', async () => {
@@ -204,7 +236,7 @@ describe('deleteRecallController', () => {
       expect(req.flash).not.toHaveBeenCalled()
       expect(res.render).toHaveBeenCalledWith('pages/recall/delete-confirmation.njk', {
         nomisId,
-        recall: mockApiRecall,
+        recall: expect.objectContaining({ ...mockApiRecall, locationName: null }),
         prisoner: mockApiPrisoner,
         errors: [
           { text: 'Select if you are sure you want to delete the recall', href: '#delete-yes', name: 'confirmDelete' },
