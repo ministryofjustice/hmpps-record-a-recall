@@ -21,7 +21,10 @@
       <div class="govuk-summary-card govuk-!-margin-bottom-6">
         <div class="govuk-summary-card__title-wrapper">
           <h2 class="govuk-summary-card__title">
-            Recorded on {{ recall.revocationDate | date }} at {{ recall.locationName or recall.location }}
+            {# Recorded on {{ recall.createdAt | date }} at {{ recall.locationName or recall.location }} #}
+            Recorded on {{ recall.createdAt | date }} at {{ recall.locationName or recall.createdByPrison or 'Unknown prison' }}
+
+            {# Recorded on {{ recall.createdAt | date }}{% if recall.locationName %} at {{ recall.locationName }}{% endif %} #}
           </h2>
         </div>
         <div class="govuk-summary-card__content" id="recall-summary">
