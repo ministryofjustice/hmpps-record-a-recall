@@ -1,8 +1,5 @@
 import { Request, Response } from 'express'
 
-/**
- * Helper to get the location name for a recall from PrisonService
- */
 async function enrichRecallWithLocationName(recall: any, prisonService: any, username: string) {
   if (!recall) return recall
 
@@ -12,12 +9,10 @@ async function enrichRecallWithLocationName(recall: any, prisonService: any, use
 
   if (recall.location) {
     try {
-      // Get prison names for the recall's location code
       const prisonNames = await prisonService.getPrisonNames([recall.location], username)
       locationName = prisonNames.get(recall.location) || null
       console.log('*************', locationName) // should now show the prison name
     } catch (err) {
-      // fallback silently if prisonService fails
       locationName = null
     }
   }
@@ -38,11 +33,9 @@ export async function getDeleteRecallConfirmation(req: Request, res: Response) {
   const { recallService, prisonerService, prisonService } = req.services
   const username = req.user?.username
 
-  // Fetch the recall and enrich it with locationName
   const recall = await recallService.getRecall(recallId, username)
   const enrichedRecall = await enrichRecallWithLocationName(recall, prisonService, username)
 
-  // Fetch prisoner details
   const prisoner = await prisonerService.getPrisonerDetails(nomisId, username)
 
   // Determine the back link dynamically based on the 'from' query
@@ -51,7 +44,6 @@ export async function getDeleteRecallConfirmation(req: Request, res: Response) {
     backLink = `/person/${nomisId}`
   }
 
-  // Render the delete confirmation template
   res.render('pages/recall/delete-confirmation.njk', {
     nomisId,
     recall: enrichedRecall,
@@ -71,13 +63,11 @@ export async function postDeleteRecallConfirmation(req: Request, res: Response) 
   const { recallService, prisonerService, prisonService } = req.services
   const username = req.user?.username
 
-  // Determine redirect URL based on the originating page
   let redirectUrl = `/person/${nomisId}#recalls`
   if (fromPage === 'overview') {
     redirectUrl = `/person/${nomisId}`
   }
 
-  // If the user didn't confirm deletion, re-render the page with errors
   if (!confirmDelete) {
     const recall = await recallService.getRecall(recallId, username)
     const enrichedRecall = await enrichRecallWithLocationName(recall, prisonService, username)
@@ -100,12 +90,10 @@ export async function postDeleteRecallConfirmation(req: Request, res: Response) 
     })
   }
 
-  // If confirmed, delete the recall and redirect
   if (confirmDelete === 'yes') {
     await recallService.deleteRecall(nomisId, recallId, username)
     return res.redirect(redirectUrl)
   }
 
-  // Default redirect if confirmDelete has unexpected value
   return res.redirect(redirectUrl)
 }
