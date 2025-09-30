@@ -9,6 +9,7 @@ import ReturnToCustodyDateControllerV2 from './returnToCustodyDateControllerV2'
 import ConfirmCancelControllerV2 from './confirmCancelControllerV2'
 import ConflictingAdjustmentsInterruptControllerV2 from './conflictingAdjustmentsInterruptControllerV2'
 import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2'
+import ManualRecallInterceptControllerV2 from './manualRecallInterceptControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -85,9 +86,21 @@ export default function routes(): Router {
     asyncMiddleware(NoSentencesInterruptControllerV2.get),
   )
 
+  // Manual recall intercept page (no validation needed as it's just a continue button)
+  router.get(
+    '/manual-recall-intercept',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(ManualRecallInterceptControllerV2.get),
+  )
+  router.post(
+    '/manual-recall-intercept',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(ManualRecallInterceptControllerV2.post),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
   router.get('/check-sentences', asyncMiddleware(underConstructionController))
-  router.get('/manual-recall-intercept', asyncMiddleware(underConstructionController))
 
   // TODO: As more controllers are migrated to V2, replace underConstructionController with the actual V2 controller
 
