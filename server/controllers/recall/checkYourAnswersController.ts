@@ -19,10 +19,14 @@ export default class CheckYourAnswersController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/record-recall/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
+    console.log('ualText:', journeyData.ualText)
+    console.log('ualDiff:', journeyData.ual && journeyData.storedRecall?.ual?.days !== journeyData.ual)
+
     return {
       ...super.locals(req, res),
       answerSummaryList,
       ualText: journeyData.ualText,
+      ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
     }
   }
 
