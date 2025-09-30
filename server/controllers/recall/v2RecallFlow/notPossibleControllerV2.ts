@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import BaseController, { RequestWithSession } from '../../../controllers/base/BaseController'
+import BaseController, { RequestWithSession } from '../../base/BaseController'
 import { entrypointUrl } from '../../../utils/utils'
 import { SessionManager } from '../../../services/sessionManager'
 

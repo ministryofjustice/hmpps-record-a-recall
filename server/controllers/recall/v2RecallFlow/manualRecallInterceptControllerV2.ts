@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import BaseController from '../../../controllers/base/BaseController'
+import BaseController from '../../base/BaseController'
 import { clearValidation } from '../../../middleware/validationMiddleware'
 import logger from '../../../../logger'
 
