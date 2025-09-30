@@ -13,6 +13,7 @@ import ManualRecallInterceptControllerV2 from './manualRecallInterceptController
 import CheckSentencesControllerV2 from './checkSentencesControllerV2'
 import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
 import RecallTypeControllerV2 from './recallTypeControllerV2'
+import CheckYourAnswersControllerV2 from './checkYourAnswersControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -143,9 +144,22 @@ export default function routes(): Router {
     asyncMiddleware(RecallTypeControllerV2.post),
   )
 
+  // Check your answers page
+  router.get(
+    '/check-your-answers',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(CheckYourAnswersControllerV2.get),
+  )
+  router.post(
+    '/check-your-answers',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('checkYourAnswers'),
+    asyncMiddleware(CheckYourAnswersControllerV2.post),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
   router.get('/recall-type-interrupt', asyncMiddleware(underConstructionController))
-  router.get('/check-your-answers', asyncMiddleware(underConstructionController))
   router.get('/no-cases-selected', asyncMiddleware(underConstructionController))
   router.get('/update-sentence-types-summary', asyncMiddleware(underConstructionController))
 
