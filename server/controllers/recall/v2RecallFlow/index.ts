@@ -14,6 +14,7 @@ import CheckSentencesControllerV2 from './checkSentencesControllerV2'
 import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
 import RecallTypeControllerV2 from './recallTypeControllerV2'
 import CheckYourAnswersControllerV2 from './checkYourAnswersControllerV2'
+import RecallRecordedControllerV2 from './recallRecordedControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -156,6 +157,13 @@ export default function routes(): Router {
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('checkYourAnswers'),
     asyncMiddleware(CheckYourAnswersControllerV2.post),
+  )
+
+  // Recall recorded success page (GET only, no POST)
+  router.get(
+    '/recall-recorded',
+    loadPrisoner(null, { checkSession: true, updateSession: false }),
+    asyncMiddleware(RecallRecordedControllerV2.get),
   )
 
   // Placeholder routes for pages not yet migrated to V2

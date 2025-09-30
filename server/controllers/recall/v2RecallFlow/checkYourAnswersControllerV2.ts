@@ -196,8 +196,8 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       // Clear validation and redirect to success
       clearValidation(req)
 
-      // Redirect to the person page with success message
-      return res.redirect(`/person/${nomisId}`)
+      // Redirect to the recall-recorded page
+      return res.redirect(`/person/${nomisId}/record-recall-v2/recall-recorded`)
     } catch (error) {
       logger.error('Error creating recall:', error)
       throw error
