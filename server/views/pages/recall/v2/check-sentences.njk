@@ -6,7 +6,6 @@
 
 {% set title = "Check that the sentences and offences are correct" %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
 
 {% block beforeContent %}
     {{ super() }}
@@ -27,7 +26,7 @@
         <span class="govuk-caption-xl">{{ pageCaption }}</span>
         {{ title }}
     </h1>
-    
+
     <p>
         {% if latestSled %}
             The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
@@ -35,11 +34,11 @@
             The SLED (Sentence and licence expiry date) is not available.
         {% endif %}
     </p>
-    
+
     <h2 class="govuk-heading-l">
         Court cases with sentences eligible for recall ({{ summarisedSentencesGroups.length }})
     </h2>
-    
+
     {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
 
     <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
@@ -62,7 +61,7 @@
                     id: "submit"
                 }
             }) }}
-            
+
             {{ govukButton({
                 text: "Cancel",
                 classes: "govuk-button--secondary",
@@ -80,18 +79,18 @@
         {% for sentence in group.eligibleSentences %}
             {{ sentenceCard(sentence, offenceNameMap) }}
         {% endfor %}
-        
+
         {% if group.hasIneligibleSentences %}
             {% set ineligibleHtml %}
                 {% for sentence in group.ineligibleSentences %}
                     {{ sentenceCard(sentence, offenceNameMap) }}
                 {% endfor %}
             {% endset %}
-            
+
             {% set summaryHtml %}
                 View sentences that are ineligible for recall ({{ group.ineligibleSentences | length }})
             {% endset %}
-            
+
             {{ govukDetails({
                 summaryHtml: summaryHtml,
                 html: ineligibleHtml
@@ -104,7 +103,7 @@
     {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
     {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
     {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not available' %}
-    
+
     {# Determine numeric values for count and line number #}
     {% if sentence.countNumber and sentence.countNumber != '-1' %}
         {% set countNumberWithText = sentence.countNumber %}

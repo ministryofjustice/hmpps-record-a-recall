@@ -5,14 +5,13 @@
 
 {% set title = "Select all cases that had an active sentence" %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
 
 {% block pageContent %}
   <h1 class="govuk-heading-l">
     <span class="govuk-caption-l">{{ pageCaption }}</span>
     {{ title }}
   </h1>
-  
+
   <p class="govuk-body">The sentence must have been active when the person's licence was revoked. Any missing sentence types can be added later.</p>
   <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
 
@@ -145,7 +144,7 @@
       {{ govukButton({
         text: "Continue",
         preventDoubleClick: true,
-        attributes: { 
+        attributes: {
           id: "submit",
           "data-qa": "continue-btn"
         }
