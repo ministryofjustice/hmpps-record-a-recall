@@ -55,4 +55,22 @@ export default abstract class BaseController {
     ValidationService.setSessionErrors(req, validationError)
     res.redirect(redirectUrl)
   }
+
+  /**
+   * Get UAL to create from session
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected static getUalToCreate(req: Request): any {
+    const sessionData = BaseController.getSessionData(req)
+    return sessionData?.ualToCreate || null
+  }
+
+  /**
+   * Get UAL to edit from session
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected static getUalToEdit(req: Request): any {
+    const sessionData = BaseController.getSessionData(req)
+    return sessionData?.ualToEdit || null
+  }
 }
