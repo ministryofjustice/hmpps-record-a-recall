@@ -10,6 +10,8 @@ import ConfirmCancelControllerV2 from './confirmCancelControllerV2'
 import ConflictingAdjustmentsInterruptControllerV2 from './conflictingAdjustmentsInterruptControllerV2'
 import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2'
 import ManualRecallInterceptControllerV2 from './manualRecallInterceptControllerV2'
+import CheckSentencesControllerV2 from './checkSentencesControllerV2'
+import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -99,8 +101,37 @@ export default function routes(): Router {
     asyncMiddleware(ManualRecallInterceptControllerV2.post),
   )
 
+  // Select court case page (manual recall flow)
+  router.get(
+    '/select-court-case',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(SelectCourtCaseControllerV2.get),
+  )
+  router.post(
+    '/select-court-case',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('selectCourtCase'),
+    asyncMiddleware(SelectCourtCaseControllerV2.post),
+  )
+
+  // Check sentences page (no validation needed as it's just a confirmation page)
+  router.get(
+    '/check-sentences',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(CheckSentencesControllerV2.get),
+  )
+  router.post(
+    '/check-sentences',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(CheckSentencesControllerV2.post),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
-  router.get('/check-sentences', asyncMiddleware(underConstructionController))
+  router.get('/recall-type', asyncMiddleware(underConstructionController))
+  router.get('/no-cases-selected', asyncMiddleware(underConstructionController))
+  router.get('/update-sentence-types-summary', asyncMiddleware(underConstructionController))
 
   // TODO: As more controllers are migrated to V2, replace underConstructionController with the actual V2 controller
 
