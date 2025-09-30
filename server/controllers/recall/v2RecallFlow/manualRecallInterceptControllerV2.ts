@@ -47,6 +47,6 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
 
     // Clear validation and redirect to next step
     clearValidation(req)
-    return res.redirect(`/person/${nomisId}/record-recall-v2/select-cases`)
+    return res.redirect(`/person/${nomisId}/record-recall-v2/select-court-cases`)
   }
 }
