@@ -6,7 +6,7 @@ import { personSearchSchema, personSearchFieldLabels } from './search/personSear
 // Import recall schemas
 import { revocationDateSchema, revocationDateFieldLabels } from './recall/revocationDateSchema'
 import { returnToCustodySchema, returnToCustodyFieldLabels } from './recall/returnToCustodySchema'
-import { recallTypeValidationSchema, recallTypeFieldLabels } from './recall/recallTypeSchema'
+import { recallTypeSchema, recallTypeFieldLabels } from './recall/recallTypeSchema'
 import { confirmCancelSchema, confirmCancelFieldLabels } from './recall/confirmCancelSchema'
 import { selectCourtCaseSchema, selectCourtCaseFieldLabels } from './recall/selectCourtCaseSchema'
 
@@ -21,7 +21,7 @@ export function registerAllSchemas(): void {
   // Register recall schemas
   ValidationService.registerSchema('revocationDate', revocationDateSchema)
   ValidationService.registerSchema('returnToCustody', returnToCustodySchema)
-  ValidationService.registerSchema('recallType', recallTypeValidationSchema)
+  ValidationService.registerSchema('recallType', recallTypeSchema)
   ValidationService.registerSchema('confirmCancel', confirmCancelSchema)
   ValidationService.registerSchema('selectCourtCase', selectCourtCaseSchema)
 
@@ -44,7 +44,7 @@ export {
   // Recall schemas
   revocationDateSchema,
   returnToCustodySchema,
-  recallTypeValidationSchema,
+  recallTypeSchema,
   confirmCancelSchema,
   selectCourtCaseSchema,
 }

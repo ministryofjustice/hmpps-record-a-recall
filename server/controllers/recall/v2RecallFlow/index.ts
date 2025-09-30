@@ -12,6 +12,7 @@ import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2
 import ManualRecallInterceptControllerV2 from './manualRecallInterceptControllerV2'
 import CheckSentencesControllerV2 from './checkSentencesControllerV2'
 import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
+import RecallTypeControllerV2 from './recallTypeControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -103,13 +104,13 @@ export default function routes(): Router {
 
   // Select court case page (manual recall flow)
   router.get(
-    '/select-court-case',
+    '/select-court-cases',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
     asyncMiddleware(SelectCourtCaseControllerV2.get),
   )
   router.post(
-    '/select-court-case',
+    '/select-court-cases',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('selectCourtCase'),
     asyncMiddleware(SelectCourtCaseControllerV2.post),
@@ -128,8 +129,23 @@ export default function routes(): Router {
     asyncMiddleware(CheckSentencesControllerV2.post),
   )
 
+  // Recall type selection page
+  router.get(
+    '/recall-type',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(RecallTypeControllerV2.get),
+  )
+  router.post(
+    '/recall-type',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('recallType'),
+    asyncMiddleware(RecallTypeControllerV2.post),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
-  router.get('/recall-type', asyncMiddleware(underConstructionController))
+  router.get('/recall-type-interrupt', asyncMiddleware(underConstructionController))
+  router.get('/check-your-answers', asyncMiddleware(underConstructionController))
   router.get('/no-cases-selected', asyncMiddleware(underConstructionController))
   router.get('/update-sentence-types-summary', asyncMiddleware(underConstructionController))
 

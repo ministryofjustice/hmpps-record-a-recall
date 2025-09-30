@@ -1,0 +1,51 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% set title = "Select the type of recall" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set pageCaption = "Record a recall" %}
+
+{% block pageContent %}
+    <h1 class="govuk-heading-l">{{ title }}</h1>
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% set recallTypeError = validationErrors | findError('recallType') %}
+
+        {{ govukRadios({
+            id: "recallType",
+            name: "recallType",
+            fieldset: {
+                legend: {
+                    text: "Select the type of recall",
+                    isPageHeading: false,
+                    classes: "govuk-visually-hidden"
+                }
+            },
+            errorMessage: recallTypeError,
+            items: recallTypeOptions
+        }) }}
+
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Continue",
+                preventDoubleClick: true,
+                attributes: { 
+                    id: "submit",
+                    "data-qa": "continue-btn"
+                }
+            }) }}
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl,
+                attributes: {
+                    "data-qa": "cancel-btn"
+                }
+            }) }}
+        </div>
+    </form>
+{% endblock %}
