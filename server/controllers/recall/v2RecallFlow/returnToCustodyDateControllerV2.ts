@@ -211,10 +211,15 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     existingAdjustments: AdjustmentDto[],
   ): { valid: boolean; hasMultiple: boolean } {
     const conflictingRecallUALAdjustments = existingAdjustments.filter(adjustment => {
+      // Guard against null/undefined dates
+      if (!adjustment.fromDate || !adjustment.toDate || !proposedUal?.firstDay || !proposedUal?.lastDay) {
+        return false
+      }
+
       return (
         !ReturnToCustodyDateControllerV2.isRelevantAdjustment(adjustment).isRelevant &&
-        isBefore(adjustment.fromDate, proposedUal.lastDay) &&
-        isAfter(adjustment.toDate, proposedUal.firstDay)
+        isBefore(new Date(adjustment.fromDate), proposedUal.lastDay) &&
+        isAfter(new Date(adjustment.toDate), proposedUal.firstDay)
       )
     })
 
@@ -232,10 +237,15 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     existingAdjustments: AdjustmentDto[],
   ): { valid: boolean; relevantAdjustments: AdjustmentDto[] } {
     const conflictingNonRecallUALAdjustments = existingAdjustments.filter(adjustment => {
+      // Guard against null/undefined dates
+      if (!adjustment.fromDate || !adjustment.toDate || !proposedUal?.firstDay || !proposedUal?.lastDay) {
+        return false
+      }
+
       return (
         ReturnToCustodyDateControllerV2.isRelevantAdjustment(adjustment).isRelevant &&
-        isBefore(adjustment.fromDate, proposedUal.lastDay) &&
-        isAfter(adjustment.toDate, proposedUal.firstDay)
+        isBefore(new Date(adjustment.fromDate), proposedUal.lastDay) &&
+        isAfter(new Date(adjustment.toDate), proposedUal.firstDay)
       )
     })
 

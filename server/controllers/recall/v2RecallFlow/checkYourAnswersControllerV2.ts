@@ -3,7 +3,7 @@ import BaseController from '../../base/BaseController'
 import { clearValidation } from '../../../middleware/validationMiddleware'
 import logger from '../../../../logger'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { createAnswerSummaryList } from '../../../utils/utils'
+import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
 import { getRecallType, RecallType } from '../../../@types/recallTypes'
 
@@ -90,6 +90,16 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       storedRecall: sessionData?.storedRecall,
     }
 
+    // Calculate UAL text + diff
+    let ualText: string | undefined
+    let ualDiff: boolean | undefined
+    const calculatedUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+
+    if (calculatedUal) {
+      ualText = `${calculatedUal.days} day${calculatedUal.days === 1 ? '' : 's'}`
+      ualDiff = journeyData.storedRecall?.ual?.days !== calculatedUal.days
+    }
+
     // Build navigation URLs - back to recall type
     const backLink = `/person/${nomisId}/record-recall-v2/recall-type`
     const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
@@ -114,7 +124,8 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       validationErrors: res.locals.validationErrors,
       formResponses: res.locals.formResponses,
       answerSummaryList,
-      ualText: journeyData.ualText,
+      ualText,  
+      ualDiff,  
     })
   }
 
