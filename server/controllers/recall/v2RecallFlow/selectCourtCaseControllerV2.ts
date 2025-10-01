@@ -202,8 +202,8 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Get prisoner data from session or res.locals
       const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-      // Determine if this is an edit recall flow
-      const isEditRecall = !!recallId
+      // Detect if this is edit mode from URL path
+      const isEditMode = req.path.includes('/edit-recall-v2/')
 
       // Get or initialize reviewable cases
       let reviewableCases = sessionData?.reviewableCourtCases as CourtCase[] | undefined
@@ -253,7 +253,10 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       }
 
       if (currentCaseIndex === undefined || !reviewableCases || currentCaseIndex >= reviewableCases.length) {
-        res.redirect(`/person/${nomisId}/record-recall-v2/check-sentences`)
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall-v2/${recallId}/check-sentences`
+          : `/person/${nomisId}/record-recall-v2/check-sentences`
+        res.redirect(redirectUrl)
         return
       }
 
@@ -261,9 +264,13 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       const currentCase = SelectCourtCaseControllerV2.prepareCourtCaseForView(originalCase)
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
-      // Build navigation URLs
-      const backLink = `/person/${nomisId}/record-recall-v2/manual-recall-intercept`
-      const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+      // Build navigation URLs based on mode
+      const backLink = isEditMode
+        ? `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+        : `/person/${nomisId}/record-recall-v2/manual-recall-intercept`
+      const cancelUrl = isEditMode
+        ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
+        : `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
       // Store return URL for cancel flow
       SelectCourtCaseControllerV2.updateSessionData(req, {
@@ -278,7 +285,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       res.render('pages/recall/v2/select-court-cases', {
         prisoner,
         nomisId,
-        isEditRecall,
+        isEditRecall: isEditMode,
         backLink,
         cancelUrl,
         currentCase,
@@ -298,8 +305,9 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
   static async post(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const sessionData = SelectCourtCaseControllerV2.getSessionData(req)
-      const { nomisId } = res.locals
+      const { nomisId, recallId } = res.locals
       const { activeSentenceChoice } = req.body
+      const isEditMode = req.path.includes('/edit-recall-v2/')
 
       const reviewableCases = sessionData?.reviewableCourtCases as CourtCase[]
       const currentCaseIndex = sessionData?.currentCaseIndex as number
@@ -307,7 +315,10 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
 
       if (!reviewableCases || typeof currentCaseIndex !== 'number' || !manualRecallDecisions) {
         logger.error('Session not properly initialized for case review')
-        return res.redirect(`/person/${nomisId}/record-recall-v2/check-sentences`)
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall-v2/${recallId}/check-sentences`
+          : `/person/${nomisId}/record-recall-v2/check-sentences`
+        return res.redirect(redirectUrl)
       }
 
       // Store the decision for this case
@@ -397,15 +408,29 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Check if there are unknown sentences to update
       const unknownSentenceIds = sessionData?.unknownSentencesToUpdate as string[]
       if (unknownSentenceIds && unknownSentenceIds.length > 0) {
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall-v2/${recallId}/update-sentence-types-summary`
+          : `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
+        return res.redirect(redirectUrl)
       }
 
       // Check if no cases were selected
       if (summarisedSentenceGroupsArray.length === 0) {
-        return res.redirect(`/person/${nomisId}/record-recall-v2/no-cases-selected`)
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall-v2/${recallId}/no-cases-selected`
+          : `/person/${nomisId}/record-recall-v2/no-cases-selected`
+        return res.redirect(redirectUrl)
       }
 
-      // Proceed to check sentences
+      // Proceed to next step
+      if (isEditMode) {
+        // Mark that this step was edited
+        SelectCourtCaseControllerV2.updateSessionData(req, {
+          lastEditedStep: 'select-court-cases',
+        })
+        return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+      }
+      // Normal flow - proceed to check sentences
       return res.redirect(`/person/${nomisId}/record-recall-v2/check-sentences`)
     } catch (err) {
       logger.error('Error in SelectCourtCaseControllerV2.post:', err)

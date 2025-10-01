@@ -166,6 +166,59 @@ export default function routes(): Router {
     asyncMiddleware(RecallRecordedControllerV2.get),
   )
 
+  // Edit routes for main flow (allow editing before recall is saved)
+  // These routes allow going back from check-your-answers to edit individual steps
+  router.get(
+    '/revocation-date/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(RevocationDateControllerV2.get),
+  )
+  router.post(
+    '/revocation-date/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('revocationDate'),
+    asyncMiddleware(RevocationDateControllerV2.post),
+  )
+
+  router.get(
+    '/rtc-date/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(ReturnToCustodyDateControllerV2.get),
+  )
+  router.post(
+    '/rtc-date/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('returnToCustody'),
+    asyncMiddleware(ReturnToCustodyDateControllerV2.post),
+  )
+
+  router.get(
+    '/check-sentences/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(CheckSentencesControllerV2.get),
+  )
+  router.post(
+    '/check-sentences/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(CheckSentencesControllerV2.post),
+  )
+
+  router.get(
+    '/recall-type/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(RecallTypeControllerV2.get),
+  )
+  router.post(
+    '/recall-type/edit',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('recallType'),
+    asyncMiddleware(RecallTypeControllerV2.post),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
   router.get('/recall-type-interrupt', asyncMiddleware(underConstructionController))
   router.get('/no-cases-selected', asyncMiddleware(underConstructionController))
