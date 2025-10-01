@@ -9,6 +9,12 @@ import ReturnToCustodyDateControllerV2 from './returnToCustodyDateControllerV2'
 import ConfirmCancelControllerV2 from './confirmCancelControllerV2'
 import ConflictingAdjustmentsInterruptControllerV2 from './conflictingAdjustmentsInterruptControllerV2'
 import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2'
+import ManualRecallInterceptControllerV2 from './manualRecallInterceptControllerV2'
+import CheckSentencesControllerV2 from './checkSentencesControllerV2'
+import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
+import RecallTypeControllerV2 from './recallTypeControllerV2'
+import CheckYourAnswersControllerV2 from './checkYourAnswersControllerV2'
+import RecallRecordedControllerV2 from './recallRecordedControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -85,9 +91,85 @@ export default function routes(): Router {
     asyncMiddleware(NoSentencesInterruptControllerV2.get),
   )
 
+  // Manual recall intercept page (no validation needed as it's just a continue button)
+  router.get(
+    '/manual-recall-intercept',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(ManualRecallInterceptControllerV2.get),
+  )
+  router.post(
+    '/manual-recall-intercept',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(ManualRecallInterceptControllerV2.post),
+  )
+
+  // Select court case page (manual recall flow)
+  router.get(
+    '/select-court-cases',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(SelectCourtCaseControllerV2.get),
+  )
+  router.post(
+    '/select-court-cases',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('selectCourtCase'),
+    asyncMiddleware(SelectCourtCaseControllerV2.post),
+  )
+
+  // Check sentences page (no validation needed as it's just a confirmation page)
+  router.get(
+    '/check-sentences',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(CheckSentencesControllerV2.get),
+  )
+  router.post(
+    '/check-sentences',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    asyncMiddleware(CheckSentencesControllerV2.post),
+  )
+
+  // Recall type selection page
+  router.get(
+    '/recall-type',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(RecallTypeControllerV2.get),
+  )
+  router.post(
+    '/recall-type',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('recallType'),
+    asyncMiddleware(RecallTypeControllerV2.post),
+  )
+
+  // Check your answers page
+  router.get(
+    '/check-your-answers',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(CheckYourAnswersControllerV2.get),
+  )
+  router.post(
+    '/check-your-answers',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('checkYourAnswers'),
+    asyncMiddleware(CheckYourAnswersControllerV2.post),
+  )
+
+  // Recall recorded success page (GET only, no POST)
+  router.get(
+    '/recall-recorded',
+    loadPrisoner(null, { checkSession: true, updateSession: false }),
+    asyncMiddleware(RecallRecordedControllerV2.get),
+  )
+
   // Placeholder routes for pages not yet migrated to V2
-  router.get('/check-sentences', asyncMiddleware(underConstructionController))
-  router.get('/manual-recall-intercept', asyncMiddleware(underConstructionController))
+  router.get('/recall-type-interrupt', asyncMiddleware(underConstructionController))
+  router.get('/no-cases-selected', asyncMiddleware(underConstructionController))
+  router.get('/update-sentence-types-summary', asyncMiddleware(underConstructionController))
 
   // TODO: As more controllers are migrated to V2, replace underConstructionController with the actual V2 controller
 

@@ -1,17 +1,18 @@
 import { z } from 'zod'
-import { recallTypeSchema as baseRecallTypeSchema } from '../../utils/commonValidators'
 
 /**
  * Recall type validation schema
  * Validates the type of recall being recorded
  */
-export const recallTypeValidationSchema = z.object({
-  recallType: baseRecallTypeSchema,
+export const recallTypeSchema = z.object({
+  recallType: z.enum(['LR', 'FTR_14', 'FTR_28', 'FTR_HDC_14', 'FTR_HDC_28', 'CUR_HDC', 'IN_HDC'], {
+    message: 'Select a recall type',
+  }),
 })
 
-export type RecallTypeData = z.infer<typeof recallTypeValidationSchema>
+export type RecallTypeData = z.infer<typeof recallTypeSchema>
 
-// Register field labels for better error messages
+// IMPORTANT: Export field labels for better error messages
 export const recallTypeFieldLabels = {
   recallType: 'Recall type',
 }

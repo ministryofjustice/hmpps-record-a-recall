@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import BaseController from '../../../controllers/base/BaseController'
+import BaseController from '../../base/BaseController'
 
 export default class ConflictingAdjustmentsInterruptControllerV2 extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {

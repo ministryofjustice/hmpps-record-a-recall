@@ -6,8 +6,10 @@ import { personSearchSchema, personSearchFieldLabels } from './search/personSear
 // Import recall schemas
 import { revocationDateSchema, revocationDateFieldLabels } from './recall/revocationDateSchema'
 import { returnToCustodySchema, returnToCustodyFieldLabels } from './recall/returnToCustodySchema'
-import { recallTypeValidationSchema, recallTypeFieldLabels } from './recall/recallTypeSchema'
+import { recallTypeSchema, recallTypeFieldLabels } from './recall/recallTypeSchema'
 import { confirmCancelSchema, confirmCancelFieldLabels } from './recall/confirmCancelSchema'
+import { selectCourtCaseSchema, selectCourtCaseFieldLabels } from './recall/selectCourtCaseSchema'
+import { checkYourAnswersSchema, checkYourAnswersFieldLabels } from './recall/checkYourAnswersSchema'
 
 /**
  * Register all schemas with the ValidationService
@@ -20,8 +22,10 @@ export function registerAllSchemas(): void {
   // Register recall schemas
   ValidationService.registerSchema('revocationDate', revocationDateSchema)
   ValidationService.registerSchema('returnToCustody', returnToCustodySchema)
-  ValidationService.registerSchema('recallType', recallTypeValidationSchema)
+  ValidationService.registerSchema('recallType', recallTypeSchema)
   ValidationService.registerSchema('confirmCancel', confirmCancelSchema)
+  ValidationService.registerSchema('selectCourtCase', selectCourtCaseSchema)
+  ValidationService.registerSchema('checkYourAnswers', checkYourAnswersSchema)
 
   // Register all field labels
   ValidationService.registerFieldLabels({
@@ -30,6 +34,8 @@ export function registerAllSchemas(): void {
     ...returnToCustodyFieldLabels,
     ...recallTypeFieldLabels,
     ...confirmCancelFieldLabels,
+    ...selectCourtCaseFieldLabels,
+    ...checkYourAnswersFieldLabels,
   })
 }
 
@@ -41,8 +47,10 @@ export {
   // Recall schemas
   revocationDateSchema,
   returnToCustodySchema,
-  recallTypeValidationSchema,
+  recallTypeSchema,
   confirmCancelSchema,
+  selectCourtCaseSchema,
+  checkYourAnswersSchema,
 }
 
 // Export type definitions
@@ -51,3 +59,5 @@ export type { RevocationDateData } from './recall/revocationDateSchema'
 export type { ReturnToCustodyData } from './recall/returnToCustodySchema'
 export type { RecallTypeData } from './recall/recallTypeSchema'
 export type { ConfirmCancelData } from './recall/confirmCancelSchema'
+export type { SelectCourtCaseData } from './recall/selectCourtCaseSchema'
+export type { CheckYourAnswersData } from './recall/checkYourAnswersSchema'

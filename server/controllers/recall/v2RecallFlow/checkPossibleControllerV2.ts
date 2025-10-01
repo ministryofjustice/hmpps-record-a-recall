@@ -6,7 +6,7 @@ import {
   ValidationMessage,
 } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../../logger'
-import BaseController from '../../../controllers/base/BaseController'
+import BaseController from '../../base/BaseController'
 import { SessionManager } from '../../../services/sessionManager'
 import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../../@types/nomisMappingApi/nomisMappingApiTypes'
