@@ -80,6 +80,7 @@ export function createAnswerSummaryList(
   journeyData: RecallJourneyData,
   editLink: (page: string) => string,
 ): SummaryListRow[] {
+  // TO DO eligibleSentenceCount and courtCaseCount not giving back correct numbers
   const sentences = journeyData.eligibleSentenceCount === 1 ? 'sentence' : 'sentences'
   const cases = journeyData.courtCaseCount === 1 ? 'case' : 'cases'
   return compact([

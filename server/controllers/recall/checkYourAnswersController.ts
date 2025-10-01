@@ -29,9 +29,6 @@ export default class CheckYourAnswersController extends RecallBaseController {
       ualDiff = journeyData.storedRecall?.ual?.days !== calculatedUal.days
     }
 
-    console.log('ualText (calculated):', ualText)
-    console.log('ualDiff (calculated):', ualDiff)
-
     return {
       ...super.locals(req, res),
       answerSummaryList,
