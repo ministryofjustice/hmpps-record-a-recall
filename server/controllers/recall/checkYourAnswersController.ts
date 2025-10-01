@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express'
 
 import RecallBaseController from './recallBaseController'
 import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { createAnswerSummaryList } from '../../utils/utils'
+import { createAnswerSummaryList, calculateUal } from '../../utils/utils'
 import getJourneyDataFromRequest, {
   getUalToCreate,
   RecallJourneyData,
@@ -19,14 +19,24 @@ export default class CheckYourAnswersController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/record-recall/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
-    console.log('ualText:', journeyData.ualText)
-    console.log('ualDiff:', journeyData.ual && journeyData.storedRecall?.ual?.days !== journeyData.ual)
+    // 🔥 Calculate UAL dynamically if available
+    let ualText: string | undefined
+    let ualDiff: boolean | undefined
+    const calculatedUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+
+    if (calculatedUal) {
+      ualText = `${calculatedUal.days} day${calculatedUal.days === 1 ? '' : 's'}`
+      ualDiff = journeyData.storedRecall?.ual?.days !== calculatedUal.days
+    }
+
+    console.log('ualText (calculated):', ualText)
+    console.log('ualDiff (calculated):', ualDiff)
 
     return {
       ...super.locals(req, res),
       answerSummaryList,
-      ualText: journeyData.ualText,
-      ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
+      ualText,
+      ualDiff,
     }
   }
 
