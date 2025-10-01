@@ -99,10 +99,15 @@ export default class ReturnToCustodyDateController extends RecallBaseController 
     existingAdjustments: AdjustmentDto[],
   ) {
     const conflictingRecallUALAdjustments = existingAdjustments.filter(adjustment => {
+      // Guard against null/undefined dates
+      if (!adjustment.fromDate || !adjustment.toDate || !proposedUal?.firstDay || !proposedUal?.lastDay) {
+        return false
+      }
+
       return (
         this.isRelevantAdjustment(adjustment).isRelevant === false &&
-        isBefore(adjustment.fromDate, proposedUal.lastDay) &&
-        isAfter(adjustment.toDate, proposedUal.firstDay)
+        isBefore(new Date(adjustment.fromDate), proposedUal.lastDay) &&
+        isAfter(new Date(adjustment.toDate), proposedUal.firstDay)
       )
     })
     if (conflictingRecallUALAdjustments.length === 1) {

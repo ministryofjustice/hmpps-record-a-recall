@@ -30,7 +30,6 @@ export default class EditSummaryController extends RecallBaseController {
       ...super.locals(req, res),
       answerSummaryList,
       ualText: journeyData.ualText,
-      ualDiff: journeyData.ual && journeyData.storedRecall.ual.days !== journeyData.ual,
       storedRecall: journeyData.storedRecall,
       showCheckAnswers: journeyComplete,
       showRecordedOn: !journeyComplete,
