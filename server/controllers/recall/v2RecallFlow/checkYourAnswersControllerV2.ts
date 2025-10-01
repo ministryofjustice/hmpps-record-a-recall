@@ -124,8 +124,8 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       validationErrors: res.locals.validationErrors,
       formResponses: res.locals.formResponses,
       answerSummaryList,
-      ualText,  
-      ualDiff,  
+      ualText,
+      ualDiff,
     })
   }
 
