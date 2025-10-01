@@ -37,6 +37,6 @@ const editFields = {
   },
 }
 
-const pageHeading = 'Edit a Recall'
+const pageHeading = 'Edit a recall'
 
 export { editFields, pageHeading }
