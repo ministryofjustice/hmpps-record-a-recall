@@ -7,6 +7,7 @@ import ApiRoutes from './apiRoutes'
 import searchRouter from './search'
 import newRecallRouter from './recall'
 import v2RecallFlowRouter from '../controllers/recall/v2RecallFlow'
+import v2EditRecallRouter from '../controllers/recall/v2RecallFlow/edit'
 import addServicesToRequest from '../middleware/addServicesToRequest'
 import { Services } from '../services'
 import asyncMiddleware from '../middleware/asyncMiddleware'
@@ -78,6 +79,27 @@ export default function routes(services: Services): Router {
       services.courtService,
     ),
     v2RecallFlowRouter(),
+  )
+  // V2 edit recall flow route
+  router.use(
+    '/person/:nomisId/edit-recall-v2/:recallId',
+    populateNomisId(),
+    populateRecallId(),
+    loadCourtCases(
+      services.courtCaseService,
+      services.manageOffencesService,
+      services.courtService,
+      services.calculationService,
+      services.nomisMappingService,
+    ),
+    loadRecalls(
+      services.recallService,
+      services.prisonService,
+      services.manageOffencesService,
+      services.courtCaseService,
+      services.courtService,
+    ),
+    v2EditRecallRouter(),
   )
   router.use(
     '/person/:nomisId/record-recall',

@@ -16,16 +16,24 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Determine if this is an edit recall flow
-    const isEditRecall = !!recallId
+    // Detect if this is edit mode from URL path
+    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
 
-    // Build back link
-    const backLink = `/person/${prisoner?.prisonerNumber || nomisId}${
-      isEditRecall ? `/recall/${recallId}/edit/edit-summary` : '/record-recall-v2/revocation-date'
-    }`
+    // Build back link based on mode
+    let backLink: string
+    if (isEditMode) {
+      backLink = `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+    } else if (isEditFromCheckYourAnswers) {
+      backLink = `/person/${nomisId}/record-recall-v2/check-your-answers`
+    } else {
+      backLink = `/person/${nomisId}/record-recall-v2/revocation-date`
+    }
 
-    // Build cancel URL
-    const cancelUrl = `/person/${prisoner?.prisonerNumber || nomisId}/record-recall-v2/confirm-cancel`
+    // Build cancel URL based on mode
+    const cancelUrl = isEditMode
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
+      : `/person/${prisoner?.prisonerNumber || nomisId}/record-recall-v2/confirm-cancel`
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {
@@ -38,7 +46,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     res.render('pages/recall/v2/rtc-date', {
       prisoner,
       nomisId,
-      isEditRecall,
+      isEditRecall: isEditMode,
       backLink,
       cancelUrl,
       revocationDate: sessionData?.revocationDate,
@@ -50,26 +58,33 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
   // eslint-disable-next-line consistent-return
   static async post(req: Request, res: Response): Promise<void> {
     const { inPrisonAtRecall, returnToCustodyDate } = req.body
-    const { nomisId } = res.locals
+    const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
+    const isEditMode = req.path.includes('/edit-recall-v2/')
 
     // Get revocation date from session
     const revocationDate = sessionData?.revocationDate
     if (!revocationDate) {
       logger.error('No revocation date found in session')
-      return res.redirect(`/person/${nomisId}/record-recall-v2/revocation-date`)
+      const redirectUrl = isEditMode
+        ? `/person/${nomisId}/edit-recall-v2/${recallId}/revocation-date`
+        : `/person/${nomisId}/record-recall-v2/revocation-date`
+      return res.redirect(redirectUrl)
     }
 
     // Additional validation for return to custody date
     const isInPrison = inPrisonAtRecall === true || inPrisonAtRecall === 'true'
     if (!isInPrison && returnToCustodyDate) {
       if (isBefore(new Date(returnToCustodyDate), new Date(revocationDate))) {
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall-v2/${recallId}/rtc-date`
+          : `/person/${nomisId}/record-recall-v2/rtc-date`
         ReturnToCustodyDateControllerV2.setValidationError(
           req,
           res,
           'returnToCustodyDate',
           'Return to custody date must be on or after the recall date',
-          `/person/${nomisId}/record-recall-v2/rtc-date`,
+          redirectUrl,
         )
         // eslint-disable-next-line consistent-return
         return
@@ -307,8 +322,27 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
   }
 
   private static determineNextPath(req: Request, res: Response): string {
-    const basePath = `/person/${res.locals.nomisId}/record-recall-v2`
+    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
+
+    // If in edit mode, always return to edit-summary
+    if (isEditMode) {
+      // Mark that this step was edited
+      ReturnToCustodyDateControllerV2.updateSessionData(req, {
+        lastEditedStep: 'rtc-date',
+      })
+      return `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+    }
+
+    // If editing from check-your-answers, return there
+    if (isEditFromCheckYourAnswers) {
+      return `/person/${nomisId}/record-recall-v2/check-your-answers`
+    }
+
+    // Normal flow navigation logic
+    const basePath = `/person/${nomisId}/record-recall-v2`
 
     // Complex navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments

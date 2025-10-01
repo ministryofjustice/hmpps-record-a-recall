@@ -29,8 +29,9 @@ export default class CheckSentencesControllerV2 extends BaseController {
     // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Determine if this is an edit recall flow
-    const isEditRecall = !!recallId
+    // Detect if this is edit mode from URL path
+    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
 
     // Get court cases from middleware
     const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
@@ -57,16 +58,27 @@ export default class CheckSentencesControllerV2 extends BaseController {
     // Determine if this is a manual journey
     const manualJourney = sessionData?.manualCaseSelection || casesWithEligibleSentences === 0
 
-    // Build navigation URLs
-    let backLink = `/person/${nomisId}/record-recall-v2/rtc-date`
-    const lastVisited = sessionData?.lastVisited
-    if (lastVisited?.includes('update-sentence-types-summary')) {
-      backLink = `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
-    } else if (isEditRecall) {
-      backLink = `/person/${nomisId}/recall/${recallId}/edit/edit-summary`
+    // Build navigation URLs based on mode
+    let backLink: string
+    if (isEditMode) {
+      backLink = `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+    } else if (isEditFromCheckYourAnswers) {
+      backLink = `/person/${nomisId}/record-recall-v2/check-your-answers`
+    } else {
+      backLink = `/person/${nomisId}/record-recall-v2/rtc-date`
     }
 
-    const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+    // Handle special case for non-edit mode
+    if (!isEditMode && !isEditFromCheckYourAnswers) {
+      const lastVisited = sessionData?.lastVisited
+      if (lastVisited?.includes('update-sentence-types-summary')) {
+        backLink = `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
+      }
+    }
+
+    const cancelUrl = isEditMode
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
     // Store the current page for confirm-cancel return
     CheckSentencesControllerV2.updateSessionData(req, { returnTo: req.originalUrl })
@@ -79,7 +91,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
     res.render('pages/recall/v2/check-sentences', {
       prisoner,
       nomisId,
-      isEditRecall,
+      isEditRecall: isEditMode,
       backLink,
       cancelUrl,
       latestSled,
@@ -94,16 +106,30 @@ export default class CheckSentencesControllerV2 extends BaseController {
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const { nomisId } = res.locals
+    const { nomisId, recallId } = res.locals
+    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
 
     // This page doesn't have any form fields to process,
     // it's just a confirmation page that continues to the next step
 
-    // Clear validation and redirect to the next step
+    // Clear validation and redirect
     clearValidation(req)
 
-    // The next step is recall-type, but we'll redirect to the under construction page for now
-    // TODO: Update this when recall-type is migrated to V2
+    if (isEditMode) {
+      // Mark that this step was reviewed
+      CheckSentencesControllerV2.updateSessionData(req, {
+        lastEditedStep: 'check-sentences',
+      })
+      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+    }
+
+    if (isEditFromCheckYourAnswers) {
+      // Return to check-your-answers
+      return res.redirect(`/person/${nomisId}/record-recall-v2/check-your-answers`)
+    }
+
+    // Normal flow - continue to recall-type
     return res.redirect(`/person/${nomisId}/record-recall-v2/recall-type`)
   }
 

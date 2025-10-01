@@ -14,17 +14,27 @@ export default class RecallTypeControllerV2 extends BaseController {
     // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Determine if this is an edit recall flow
-    const isEditRecall = !!recallId
+    // Detect if this is edit mode from URL path
+    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
 
-    // Build navigation URLs based on whether it's edit or new recall
-    const backLink = isEditRecall
-      ? `/person/${nomisId}/recall/${recallId}/edit/edit-summary`
-      : `/person/${nomisId}/record-recall-v2/check-sentences`
-    const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+    // Build navigation URLs based on mode
+    let backLink: string
+    if (isEditMode) {
+      backLink = `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+    } else if (isEditFromCheckYourAnswers) {
+      backLink = `/person/${nomisId}/record-recall-v2/check-your-answers`
+    } else {
+      backLink = `/person/${nomisId}/record-recall-v2/check-sentences`
+    }
+    const cancelUrl = isEditMode
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
     // Store the current URL for cancel confirmation return
-    const currentPath = `/person/${nomisId}/record-recall-v2/recall-type`
+    const currentPath = isEditMode
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/recall-type`
+      : `/person/${nomisId}/record-recall-v2/recall-type`
     RecallTypeControllerV2.updateSessionData(req, { returnTo: currentPath })
 
     // Load form data from session if not coming from validation
@@ -44,7 +54,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     res.render('pages/recall/v2/recall-type', {
       prisoner,
       nomisId,
-      isEditRecall,
+      isEditRecall: isEditMode,
       backLink,
       cancelUrl,
       recallTypeOptions,
@@ -55,8 +65,10 @@ export default class RecallTypeControllerV2 extends BaseController {
 
   static async post(req: Request, res: Response): Promise<void> {
     const sessionData = RecallTypeControllerV2.getSessionData(req)
-    const { nomisId } = res.locals
+    const { nomisId, recallId } = res.locals
     const { recallType } = req.body
+    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
 
     logger.info(`Processing recall type selection: ${recallType} for prisoner ${nomisId}`)
 
@@ -77,10 +89,24 @@ export default class RecallTypeControllerV2 extends BaseController {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SessionManager.setSessionValue(req as any, SessionManager.SESSION_KEYS.RECALL_TYPE_MISMATCH, recallTypeMismatch)
 
-    // Clear validation and redirect to next step
+    // Clear validation and redirect
     clearValidation(req)
 
-    // Determine next route based on mismatch
+    // If in edit mode, return to edit-summary
+    if (isEditMode) {
+      // Mark that this step was edited
+      RecallTypeControllerV2.updateSessionData(req, {
+        lastEditedStep: 'recall-type',
+      })
+      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+    }
+
+    // If editing from check-your-answers, return there
+    if (isEditFromCheckYourAnswers) {
+      return res.redirect(`/person/${nomisId}/record-recall-v2/check-your-answers`)
+    }
+
+    // Normal flow - determine next route based on mismatch
     if (recallTypeMismatch) {
       logger.info(`Recall type mismatch detected for ${nomisId}, redirecting to interrupt page`)
       return res.redirect(`/person/${nomisId}/record-recall-v2/recall-type-interrupt`)
