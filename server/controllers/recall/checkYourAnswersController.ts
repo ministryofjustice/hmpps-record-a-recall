@@ -19,7 +19,6 @@ export default class CheckYourAnswersController extends RecallBaseController {
     const editLink = (step: string) => `/person/${nomisId}/record-recall/${step}/edit`
     const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
-    // 🔥 Calculate UAL dynamically if available
     let ualText: string | undefined
     let ualDiff: boolean | undefined
     const calculatedUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
