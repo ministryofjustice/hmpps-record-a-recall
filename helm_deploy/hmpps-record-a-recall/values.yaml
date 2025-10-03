@@ -8,7 +8,7 @@ generic-service:
   replicaCount: 4
 
   image:
-    repository: quay.io/hmpps/hmpps-record-a-recall
+    repository: ghcr.io/ministryofjustice/hmpps-record-a-recall
     tag: app_version # override at deployment time
     port: 3000
 
