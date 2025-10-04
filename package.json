@@ -101,9 +101,9 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.879.0",
+    "@aws-sdk/client-sqs": "^3.899.0",
     "@ministryofjustice/frontend": "^4.0.2",
-    "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.14.0",
+    "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.14.2",
     "@types/cookie-parser": "^1.4.9",
     "agentkeepalive": "^4.6.0",
     "applicationinsights": "^2.9.8",
@@ -120,9 +120,9 @@
     "dayjs": "^1.11.18",
     "express": "^4.21.2",
     "express-session": "^1.18.2",
-    "govuk-frontend": "^5.11.2",
+    "govuk-frontend": "^5.12.0",
     "helmet": "^8.1.0",
-    "hmpo-form-wizard": "^15.0.3",
+    "hmpo-form-wizard": "^15.0.5",
     "http-errors": "^2.0.0",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
@@ -134,11 +134,11 @@
     "superagent": "^10.2.3",
     "url-value-parser": "^2.2.0",
     "uuid": "^11.1.0",
-    "zod": "^4.1.9"
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@ministryofjustice/eslint-config-hmpps": "^0.0.3",
+    "@ministryofjustice/eslint-config-hmpps": "^0.0.5",
     "@testing-library/cypress": "^10.1.0",
     "@types/bunyan": "^1.8.11",
     "@types/bunyan-format": "^0.2.9",
@@ -151,7 +151,7 @@
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.17.20",
-    "@types/node": "^20.19.12",
+    "@types/node": "^20.19.18",
     "@types/nunjucks": "^3.2.6",
     "@types/passport": "^1.0.17",
     "@types/passport-oauth2": "^1.8.0",
@@ -171,20 +171,20 @@
     "jest-html-reporter": "^4.3.0",
     "jest-junit": "^16.0.0",
     "jsonwebtoken": "^9.0.2",
-    "lint-staged": "^16.1.6",
+    "lint-staged": "^16.2.3",
     "mocha-junit-reporter": "^2.2.1",
     "nock": "^14.0.10",
     "nodemon": "^3.1.10",
     "openapi-typescript": "^7.9.1",
     "prettier": "^3.6.2",
     "prettier-plugin-jinja-template": "^2.1.0",
-    "sass": "^1.92.0",
+    "sass": "^1.93.2",
     "supertest": "^7.1.4",
-    "ts-jest": "^29.4.1",
-    "typescript": "^5.9.2"
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.9.3"
   },
   "overrides": {
-    "error-ex": "1.3.2",
-    "debug": "4.4.1"
+    "error-ex": "1.3.4",
+    "debug": "4.4.3"
   }
 }
