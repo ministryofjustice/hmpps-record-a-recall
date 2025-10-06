@@ -10,6 +10,16 @@ import { recallTypeSchema, recallTypeFieldLabels } from './recall/recallTypeSche
 import { confirmCancelSchema, confirmCancelFieldLabels } from './recall/confirmCancelSchema'
 import { selectCourtCaseSchema, selectCourtCaseFieldLabels } from './recall/selectCourtCaseSchema'
 import { checkYourAnswersSchema, checkYourAnswersFieldLabels } from './recall/checkYourAnswersSchema'
+import {
+  updateSentenceTypesSummarySchema,
+  updateSentenceTypesSummaryFieldLabels,
+} from './recall/updateSentenceTypesSummarySchema'
+import { selectSentenceTypeSchema, selectSentenceTypeFieldLabels } from './recall/selectSentenceTypeSchema'
+import {
+  multipleSentenceDecisionSchema,
+  multipleSentenceDecisionFieldLabels,
+} from './recall/multipleSentenceDecisionSchema'
+import { bulkSentenceTypeSchema, bulkSentenceTypeFieldLabels } from './recall/bulkSentenceTypeSchema'
 
 /**
  * Register all schemas with the ValidationService
@@ -26,6 +36,10 @@ export function registerAllSchemas(): void {
   ValidationService.registerSchema('confirmCancel', confirmCancelSchema)
   ValidationService.registerSchema('selectCourtCase', selectCourtCaseSchema)
   ValidationService.registerSchema('checkYourAnswers', checkYourAnswersSchema)
+  ValidationService.registerSchema('updateSentenceTypesSummary', updateSentenceTypesSummarySchema)
+  ValidationService.registerSchema('selectSentenceType', selectSentenceTypeSchema)
+  ValidationService.registerSchema('multipleSentenceDecision', multipleSentenceDecisionSchema)
+  ValidationService.registerSchema('bulkSentenceType', bulkSentenceTypeSchema)
 
   // Register all field labels
   ValidationService.registerFieldLabels({
@@ -36,6 +50,10 @@ export function registerAllSchemas(): void {
     ...confirmCancelFieldLabels,
     ...selectCourtCaseFieldLabels,
     ...checkYourAnswersFieldLabels,
+    ...updateSentenceTypesSummaryFieldLabels,
+    ...selectSentenceTypeFieldLabels,
+    ...multipleSentenceDecisionFieldLabels,
+    ...bulkSentenceTypeFieldLabels,
   })
 }
 
@@ -51,6 +69,10 @@ export {
   confirmCancelSchema,
   selectCourtCaseSchema,
   checkYourAnswersSchema,
+  updateSentenceTypesSummarySchema,
+  selectSentenceTypeSchema,
+  multipleSentenceDecisionSchema,
+  bulkSentenceTypeSchema,
 }
 
 // Export type definitions
@@ -61,3 +83,7 @@ export type { RecallTypeData } from './recall/recallTypeSchema'
 export type { ConfirmCancelData } from './recall/confirmCancelSchema'
 export type { SelectCourtCaseData } from './recall/selectCourtCaseSchema'
 export type { CheckYourAnswersData } from './recall/checkYourAnswersSchema'
+export type { UpdateSentenceTypesSummaryData } from './recall/updateSentenceTypesSummarySchema'
+export type { SelectSentenceTypeData } from './recall/selectSentenceTypeSchema'
+export type { MultipleSentenceDecisionData } from './recall/multipleSentenceDecisionSchema'
+export type { BulkSentenceTypeData } from './recall/bulkSentenceTypeSchema'

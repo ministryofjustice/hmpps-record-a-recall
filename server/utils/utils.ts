@@ -166,24 +166,25 @@ export interface SentenceLength {
 const getDisplayDescription = (type: PeriodLength['periodLengthType']): string => {
   switch (type) {
     case 'SENTENCE_LENGTH':
-      return 'Sentence Length'
+      return 'Sentence length'
     case 'CUSTODIAL_TERM':
-      return 'Custodial Term'
+      return 'Custodial term'
+    case 'LICENCE_PERIOD':
+      return 'Licence period'
     case 'TARIFF_LENGTH':
-      return 'Tariff Length'
+      return 'Tariff length'
     case 'TERM_LENGTH':
-      return 'Term Length'
+      return 'Term length'
     case 'OVERALL_SENTENCE_LENGTH':
-      return 'Overall Sentence Length'
+      return 'Overall sentence length'
     case 'UNSUPPORTED':
-      return 'Unsupported Period'
+      return 'Unsupported period'
     default: {
-      // Fallback for any unhandled types: convert to Title Case
+      // Fallback for any unhandled types: convert to readable form
       // This ensures that if new types are added, they get a reasonable default display
       const ensuredType: string = type || '' // Ensure type is a string for manipulation
-      return ensuredType
-        .replace(/_/g, ' ')
-        .replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
+      const formatted = ensuredType.replace(/_/g, ' ').toLowerCase()
+      return formatted.charAt(0).toUpperCase() + formatted.slice(1)
     }
   }
 }
