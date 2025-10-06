@@ -211,7 +211,11 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       let manualRecallDecisions = sessionData?.manualRecallDecisions as (string | undefined)[] | undefined
 
       if (!reviewableCases) {
-        if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
+        // First check if we have court cases from the session (stored by checkPossibleControllerV2)
+        const courtCaseOptions = sessionData?.courtCaseOptions as CourtCase[] | undefined
+        if (courtCaseOptions && courtCaseOptions.length > 0) {
+          reviewableCases = courtCaseOptions
+        } else if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
           const enhancedCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
           reviewableCases = enhancedCases
@@ -295,6 +299,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         validationErrors: res.locals.validationErrors,
         formResponses: res.locals.formResponses,
         pageHeading: 'Record a recall',
+        forceUnknownSentenceTypes: process.env.FORCE_UNKNOWN_SENTENCE_TYPES === 'true',
       })
     } catch (err) {
       logger.error('Error in SelectCourtCaseControllerV2.get:', err)
@@ -350,7 +355,14 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         }
       })
 
+      // Store both as selectedCases and courtCaseOptions for consistency
+      SelectCourtCaseControllerV2.updateSessionData(req, {
+        selectedCases,
+        courtCaseOptions: selectedCases,
+      })
+
       let summarisedSentenceGroupsArray: SummarisedSentenceGroup[] = []
+      let unknownSentenceIds: string[] = []
 
       if (selectedCases.length > 0) {
         // Enhance selected cases with court names
@@ -374,7 +386,8 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         summarisedSentenceGroupsArray = summariseRasCases(enhancedSelectedCases)
 
         // Check for unknown sentences in selected cases
-        const unknownSentenceIds: string[] = []
+        // Reset and populate unknownSentenceIds
+        unknownSentenceIds = []
         selectedCases.forEach(courtCase => {
           if (courtCase.sentences) {
             courtCase.sentences.forEach(sentence => {
@@ -405,20 +418,18 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Clear validation and redirect to the next appropriate step
       clearValidation(req)
 
-      // Check if there are unknown sentences to update
-      const unknownSentenceIds = sessionData?.unknownSentencesToUpdate as string[]
-      if (unknownSentenceIds && unknownSentenceIds.length > 0) {
-        const redirectUrl = isEditMode
-          ? `/person/${nomisId}/edit-recall-v2/${recallId}/update-sentence-types-summary`
-          : `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
-        return res.redirect(redirectUrl)
-      }
-
       // Check if no cases were selected
       if (summarisedSentenceGroupsArray.length === 0) {
         const redirectUrl = isEditMode
           ? `/person/${nomisId}/edit-recall-v2/${recallId}/no-cases-selected`
           : `/person/${nomisId}/record-recall-v2/no-cases-selected`
+        return res.redirect(redirectUrl)
+      }
+
+      if (unknownSentenceIds.length > 0) {
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall-v2/${recallId}/update-sentence-types-summary`
+          : `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
         return res.redirect(redirectUrl)
       }
 

@@ -12,6 +12,7 @@ import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2
 import ManualRecallInterceptControllerV2 from './manualRecallInterceptControllerV2'
 import CheckSentencesControllerV2 from './checkSentencesControllerV2'
 import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
+import UpdateSentenceTypesSummaryControllerV2 from './updateSentenceTypesSummaryControllerV2'
 import RecallTypeControllerV2 from './recallTypeControllerV2'
 import CheckYourAnswersControllerV2 from './checkYourAnswersControllerV2'
 import RecallRecordedControllerV2 from './recallRecordedControllerV2'
@@ -118,6 +119,28 @@ export default function routes(): Router {
     asyncMiddleware(SelectCourtCaseControllerV2.post),
   )
 
+  // Update sentence types summary page
+  router.get(
+    '/update-sentence-types-summary',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(UpdateSentenceTypesSummaryControllerV2.get),
+  )
+  router.post(
+    '/update-sentence-types-summary',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('updateSentenceTypesSummary'),
+    asyncMiddleware(UpdateSentenceTypesSummaryControllerV2.post),
+  )
+
+  // TODO: Select sentence type controller (to be migrated in Step 2)
+  router.get('/select-sentence-type/:sentenceUuid', asyncMiddleware(underConstructionController))
+  router.post('/select-sentence-type/:sentenceUuid', asyncMiddleware(underConstructionController))
+
+  // TODO: Multiple sentence decision controller (to be migrated in Step 3)
+  router.get('/multiple-sentence-decision/:caseId', asyncMiddleware(underConstructionController))
+  router.post('/multiple-sentence-decision/:caseId', asyncMiddleware(underConstructionController))
+
   // Check sentences page (no validation needed as it's just a confirmation page)
   router.get(
     '/check-sentences',
@@ -222,7 +245,6 @@ export default function routes(): Router {
   // Placeholder routes for pages not yet migrated to V2
   router.get('/recall-type-interrupt', asyncMiddleware(underConstructionController))
   router.get('/no-cases-selected', asyncMiddleware(underConstructionController))
-  router.get('/update-sentence-types-summary', asyncMiddleware(underConstructionController))
 
   // TODO: As more controllers are migrated to V2, replace underConstructionController with the actual V2 controller
 

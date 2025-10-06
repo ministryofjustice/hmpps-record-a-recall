@@ -10,6 +10,10 @@ import { recallTypeSchema, recallTypeFieldLabels } from './recall/recallTypeSche
 import { confirmCancelSchema, confirmCancelFieldLabels } from './recall/confirmCancelSchema'
 import { selectCourtCaseSchema, selectCourtCaseFieldLabels } from './recall/selectCourtCaseSchema'
 import { checkYourAnswersSchema, checkYourAnswersFieldLabels } from './recall/checkYourAnswersSchema'
+import {
+  updateSentenceTypesSummarySchema,
+  updateSentenceTypesSummaryFieldLabels,
+} from './recall/updateSentenceTypesSummarySchema'
 
 /**
  * Register all schemas with the ValidationService
@@ -26,6 +30,7 @@ export function registerAllSchemas(): void {
   ValidationService.registerSchema('confirmCancel', confirmCancelSchema)
   ValidationService.registerSchema('selectCourtCase', selectCourtCaseSchema)
   ValidationService.registerSchema('checkYourAnswers', checkYourAnswersSchema)
+  ValidationService.registerSchema('updateSentenceTypesSummary', updateSentenceTypesSummarySchema)
 
   // Register all field labels
   ValidationService.registerFieldLabels({
@@ -36,6 +41,7 @@ export function registerAllSchemas(): void {
     ...confirmCancelFieldLabels,
     ...selectCourtCaseFieldLabels,
     ...checkYourAnswersFieldLabels,
+    ...updateSentenceTypesSummaryFieldLabels,
   })
 }
 
@@ -51,6 +57,7 @@ export {
   confirmCancelSchema,
   selectCourtCaseSchema,
   checkYourAnswersSchema,
+  updateSentenceTypesSummarySchema,
 }
 
 // Export type definitions
@@ -61,3 +68,4 @@ export type { RecallTypeData } from './recall/recallTypeSchema'
 export type { ConfirmCancelData } from './recall/confirmCancelSchema'
 export type { SelectCourtCaseData } from './recall/selectCourtCaseSchema'
 export type { CheckYourAnswersData } from './recall/checkYourAnswersSchema'
+export type { UpdateSentenceTypesSummaryData } from './recall/updateSentenceTypesSummarySchema'
