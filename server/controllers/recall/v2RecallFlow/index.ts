@@ -13,9 +13,12 @@ import ManualRecallInterceptControllerV2 from './manualRecallInterceptController
 import CheckSentencesControllerV2 from './checkSentencesControllerV2'
 import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
 import UpdateSentenceTypesSummaryControllerV2 from './updateSentenceTypesSummaryControllerV2'
+import SelectSentenceTypeControllerV2 from './selectSentenceTypeControllerV2'
 import RecallTypeControllerV2 from './recallTypeControllerV2'
 import CheckYourAnswersControllerV2 from './checkYourAnswersControllerV2'
 import RecallRecordedControllerV2 from './recallRecordedControllerV2'
+import MultipleSentenceDecisionControllerV2 from './multipleSentenceDecisionControllerV2'
+import BulkSentenceTypeControllerV2 from './bulkSentenceTypeControllerV2'
 import underConstructionController from './underConstructionController'
 import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
 
@@ -133,13 +136,47 @@ export default function routes(): Router {
     asyncMiddleware(UpdateSentenceTypesSummaryControllerV2.post),
   )
 
-  // TODO: Select sentence type controller (to be migrated in Step 2)
-  router.get('/select-sentence-type/:sentenceUuid', asyncMiddleware(underConstructionController))
-  router.post('/select-sentence-type/:sentenceUuid', asyncMiddleware(underConstructionController))
+  // Select sentence type page (individual sentence update)
+  router.get(
+    '/select-sentence-type/:sentenceUuid',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(SelectSentenceTypeControllerV2.get),
+  )
+  router.post(
+    '/select-sentence-type/:sentenceUuid',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('selectSentenceType'),
+    asyncMiddleware(SelectSentenceTypeControllerV2.post),
+  )
 
-  // TODO: Multiple sentence decision controller (to be migrated in Step 3)
-  router.get('/multiple-sentence-decision/:caseId', asyncMiddleware(underConstructionController))
-  router.post('/multiple-sentence-decision/:caseId', asyncMiddleware(underConstructionController))
+  // Multiple sentence decision page
+  router.get(
+    '/multiple-sentence-decision/:courtCaseId',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(MultipleSentenceDecisionControllerV2.get),
+  )
+  router.post(
+    '/multiple-sentence-decision/:courtCaseId',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('multipleSentenceDecision'),
+    asyncMiddleware(MultipleSentenceDecisionControllerV2.post),
+  )
+
+  // Bulk sentence type page
+  router.get(
+    '/bulk-sentence-type/:courtCaseId',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    populateValidationData,
+    asyncMiddleware(BulkSentenceTypeControllerV2.get),
+  )
+  router.post(
+    '/bulk-sentence-type/:courtCaseId',
+    loadPrisoner(null, { checkSession: true, updateSession: true }),
+    validate('bulkSentenceType'),
+    asyncMiddleware(BulkSentenceTypeControllerV2.post),
+  )
 
   // Check sentences page (no validation needed as it's just a confirmation page)
   router.get(
