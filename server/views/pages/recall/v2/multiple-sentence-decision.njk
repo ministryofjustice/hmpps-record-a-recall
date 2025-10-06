@@ -1,0 +1,62 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% set title = "Do all sentences have the same type?" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set pageCaption = "Record a recall" %}
+
+{% block pageContent %}
+    <h1 class="govuk-heading-l">{{ title }}</h1>
+
+    <p class="govuk-body">
+        This court case has {{ sentenceCount }} sentences that need their type updating.
+    </p>
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% set fieldError = validationErrors | findError('sameSentenceType') %}
+
+        {{ govukRadios({
+            id: "sameSentenceType",
+            name: "sameSentenceType",
+            fieldset: {
+                legend: {
+                    text: "Do all sentences have the same sentence type?",
+                    classes: "govuk-fieldset__legend--m"
+                }
+            },
+            hint: {
+                text: "Select yes if all sentences should have the same type, or no if you need to select different types for each sentence"
+            },
+            items: [
+                {
+                    value: "yes",
+                    text: "Yes - they all have the same type",
+                    checked: formResponses.sameSentenceType === "yes"
+                },
+                {
+                    value: "no",
+                    text: "No - they have different types",
+                    checked: formResponses.sameSentenceType === "no"
+                }
+            ],
+            errorMessage: fieldError
+        }) }}
+
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Continue",
+                preventDoubleClick: true,
+                attributes: { id: "submit" }
+            }) }}
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl
+            }) }}
+        </div>
+    </form>
+{% endblock %}
