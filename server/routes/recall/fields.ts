@@ -25,7 +25,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'Was this person in prison when the recall was made?',
-        classes: 'govuk-fieldset__legend--l',
+        classes: 'govuk-heading-m',
       },
     },
     errorMessages: { required: 'Select whether the person was in prison when the recall was made' },
