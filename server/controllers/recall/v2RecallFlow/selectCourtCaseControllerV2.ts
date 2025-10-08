@@ -203,7 +203,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       const prisoner = res.locals.prisoner || sessionData?.prisoner
 
       // Detect if this is edit mode from URL path
-      const isEditMode = req.path.includes('/edit-recall-v2/')
+      const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
 
       // Get or initialize reviewable cases
       let reviewableCases = sessionData?.reviewableCourtCases as CourtCase[] | undefined
@@ -312,7 +312,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       const sessionData = SelectCourtCaseControllerV2.getSessionData(req)
       const { nomisId, recallId } = res.locals
       const { activeSentenceChoice } = req.body
-      const isEditMode = req.path.includes('/edit-recall-v2/')
+      const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
 
       const reviewableCases = sessionData?.reviewableCourtCases as CourtCase[]
       const currentCaseIndex = sessionData?.currentCaseIndex as number
@@ -439,7 +439,8 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         SelectCourtCaseControllerV2.updateSessionData(req, {
           lastEditedStep: 'select-court-cases',
         })
-        return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+        // Continue to next step in edit flow
+        return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/check-sentences`)
       }
       // Normal flow - proceed to check sentences
       return res.redirect(`/person/${nomisId}/record-recall-v2/check-sentences`)

@@ -5,7 +5,7 @@
 
 {% set title = "Select the type of recall" %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
+{% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
 
 {% block pageContent %}
     <h1 class="govuk-heading-l">{{ title }}</h1>

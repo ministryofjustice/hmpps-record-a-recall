@@ -12,11 +12,15 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Determine if this is an edit recall flow
-    const isEditRecall = !!recallId
+    const isEditRecall = !!recallId && req.originalUrl.includes('/edit-recall-v2/')
 
     // Build navigation URLs
-    const backLink = `/person/${nomisId}/record-recall-v2/rtc-date`
-    const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+    const backLink = isEditRecall
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/rtc-date`
+      : `/person/${nomisId}/record-recall-v2/rtc-date`
+    const cancelUrl = isEditRecall
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
     // If not coming from a validation redirect, clear form responses
     // This is an intercept page that doesn't have form fields to preserve
@@ -36,7 +40,8 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const { nomisId } = res.locals
+    const { nomisId, recallId } = res.locals
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
 
     // Mark that the user has confirmed they understand the manual process
     ManualRecallInterceptControllerV2.updateSessionData(req, {
@@ -47,6 +52,9 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
 
     // Clear validation and redirect to next step
     clearValidation(req)
-    return res.redirect(`/person/${nomisId}/record-recall-v2/select-court-cases`)
+    const nextPath = isEditMode
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}/select-court-cases`
+      : `/person/${nomisId}/record-recall-v2/select-court-cases`
+    return res.redirect(nextPath)
   }
 }
