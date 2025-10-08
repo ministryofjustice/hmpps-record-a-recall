@@ -17,8 +17,8 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Detect if this is edit mode from URL path
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // Build back link based on mode
     let backLink: string
@@ -60,7 +60,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const { inPrisonAtRecall, returnToCustodyDate } = req.body
     const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
-    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
 
     // Get revocation date from session
     const revocationDate = sessionData?.revocationDate
@@ -322,18 +322,16 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
   }
 
   private static determineNextPath(req: Request, res: Response): string {
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
     const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
 
-    // If in edit mode, always return to edit-summary
-    if (isEditMode) {
-      // Mark that this step was edited
+    // Mark that this step was edited
+    if (isEditMode || isEditFromCheckYourAnswers) {
       ReturnToCustodyDateControllerV2.updateSessionData(req, {
         lastEditedStep: 'rtc-date',
       })
-      return `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
     }
 
     // If editing from check-your-answers, return there
@@ -341,8 +339,10 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       return `/person/${nomisId}/record-recall-v2/check-your-answers`
     }
 
-    // Normal flow navigation logic
-    const basePath = `/person/${nomisId}/record-recall-v2`
+    // Set base path based on mode
+    const basePath = isEditMode
+      ? `/person/${nomisId}/edit-recall-v2/${recallId}`
+      : `/person/${nomisId}/record-recall-v2`
 
     // Complex navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments

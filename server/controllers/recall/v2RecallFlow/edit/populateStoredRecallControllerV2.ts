@@ -9,6 +9,14 @@ export default class PopulateStoredRecallControllerV2 extends BaseController {
     const { nomisId, recallId } = res.locals
     const { username } = res.locals.user
 
+    // Check if we already have session data from previous edits
+    const sessionData = PopulateStoredRecallControllerV2.getSessionData(req)
+    if (sessionData?.isEdit && sessionData?.storedRecall && sessionData?.recallId === recallId) {
+      // Already loaded and possibly edited - skip reloading
+      logger.info(`Recall ${recallId} already in session, skipping reload`)
+      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+    }
+
     try {
       // Load the stored recall from API
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +55,9 @@ export default class PopulateStoredRecallControllerV2 extends BaseController {
         entrypoint: res.locals.entrypoint || 'edit',
         inPrisonAtRecall: !storedRecall.returnToCustodyDate,
         prisoner: res.locals.prisoner,
+        // Set journeyComplete to true since we're editing an existing recall
+        // The user can immediately save without visiting all steps
+        journeyComplete: true,
       })
 
       logger.info(`Loaded recall ${recallId} for editing`)

@@ -45,7 +45,6 @@ export default function editRoutes(): Router {
     '/edit-summary',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    validate('editSummary'), // No validation rules needed, but kept for consistency
     asyncMiddleware(EditSummaryControllerV2.post),
   )
 

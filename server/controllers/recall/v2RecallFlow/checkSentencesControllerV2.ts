@@ -30,8 +30,8 @@ export default class CheckSentencesControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Detect if this is edit mode from URL path
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // Get court cases from middleware
     const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
@@ -107,8 +107,8 @@ export default class CheckSentencesControllerV2 extends BaseController {
 
   static async post(req: Request, res: Response): Promise<void> {
     const { nomisId, recallId } = res.locals
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // This page doesn't have any form fields to process,
     // it's just a confirmation page that continues to the next step
@@ -121,7 +121,8 @@ export default class CheckSentencesControllerV2 extends BaseController {
       CheckSentencesControllerV2.updateSessionData(req, {
         lastEditedStep: 'check-sentences',
       })
-      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+      // Continue to next step in edit flow
+      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/recall-type`)
     }
 
     if (isEditFromCheckYourAnswers) {
