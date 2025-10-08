@@ -52,11 +52,6 @@ export default class RevocationDateControllerV2 extends BaseController {
             'revocationDate-month': (utcDate.getUTCMonth() + 1).toString(), // Month is 0-indexed
             'revocationDate-year': utcDate.getUTCFullYear().toString(),
           }
-
-          logger.info('Populating form with date parts:', {
-            originalDateStr: dateStr,
-            parsedDateParts: dateParts,
-          })
         }
       }
       res.locals.formResponses = dateParts
