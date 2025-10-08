@@ -12,22 +12,22 @@ const RecallTypes = {
   },
   FOURTEEN_DAY_FIXED_TERM_RECALL: {
     code: 'FTR_14',
-    description: '14-day fixed term',
+    description: '14-day fixed-term',
     fixedTerm: true,
   },
   TWENTY_EIGHT_DAY_FIXED_TERM_RECALL: {
     code: 'FTR_28',
-    description: '28-day fixed term',
+    description: '28-day fixed-term',
     fixedTerm: true,
   },
   HDC_FOURTEEN_DAY_RECALL: {
     code: 'FTR_HDC_14',
-    description: '14-day fixed term from HDC',
+    description: '14-day fixed-term from HDC',
     fixedTerm: true,
   },
   HDC_TWENTY_EIGHT_DAY_RECALL: {
     code: 'FTR_HDC_28',
-    description: '28-day fixed term from HDC',
+    description: '28-day fixed-term from HDC',
     fixedTerm: true,
   },
   HDC_CURFEW_VIOLATION_RECALL: {
