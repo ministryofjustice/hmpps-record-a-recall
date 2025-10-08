@@ -38,9 +38,28 @@ export default class RevocationDateControllerV2 extends BaseController {
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {
-      res.locals.formResponses = {
-        revocationDate: sessionData?.revocationDate,
+      // Parse the date string from session to populate the form fields
+      let dateParts = {}
+      if (sessionData?.revocationDate) {
+        // Date is stored as 'yyyy-MM-dd' string in session
+        const dateStr = sessionData.revocationDate
+        const date = new Date(dateStr)
+        if (!Number.isNaN(date.getTime())) {
+          // Need to account for timezone - use UTC to avoid date shifts
+          const utcDate = new Date(`${dateStr}T00:00:00Z`)
+          dateParts = {
+            'revocationDate-day': utcDate.getUTCDate().toString(),
+            'revocationDate-month': (utcDate.getUTCMonth() + 1).toString(), // Month is 0-indexed
+            'revocationDate-year': utcDate.getUTCFullYear().toString(),
+          }
+
+          logger.info('Populating form with date parts:', {
+            originalDateStr: dateStr,
+            parsedDateParts: dateParts,
+          })
+        }
       }
+      res.locals.formResponses = dateParts
     }
 
     // Get earliest sentence date for validation display (if needed)
@@ -68,6 +87,14 @@ export default class RevocationDateControllerV2 extends BaseController {
     const { nomisId, recallId } = res.locals
     const sessionData = RevocationDateControllerV2.getSessionData(req)
     const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+
+    // Debug logging to see what's being submitted
+    logger.info('Revocation date POST received:', {
+      revocationDate,
+      revocationDateType: typeof revocationDate,
+      reqBodyFull: req.body,
+      isEditMode,
+    })
 
     // Get prisoner data from session or res.locals if needed for future use
 
@@ -99,7 +126,40 @@ export default class RevocationDateControllerV2 extends BaseController {
     }
 
     try {
-      // Get required data from session
+      // Format date as string to match API expectations
+      // Use local date components to avoid timezone conversion issues
+      const year = revocationDateObj.getFullYear()
+      const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
+      const day = String(revocationDateObj.getDate()).padStart(2, '0')
+      const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
+
+      // If in edit mode, skip routing validation and just update the date
+      if (isEditMode) {
+        const beforeUpdate = RevocationDateControllerV2.getSessionData(req)
+        logger.info(`Edit mode - BEFORE update:`, {
+          currentRevocationDate: beforeUpdate?.revocationDate,
+          storedRevocationDate: beforeUpdate?.storedRecall?.revocationDate,
+        })
+
+        RevocationDateControllerV2.updateSessionData(req, {
+          revocationDate: revocationDateString,
+          lastEditedStep: 'revocation-date',
+        })
+
+        const afterUpdate = RevocationDateControllerV2.getSessionData(req)
+        logger.info(`Edit mode - AFTER update:`, {
+          newRevocationDate: afterUpdate?.revocationDate,
+          formattedDate: revocationDateString,
+          updateSuccessful: afterUpdate?.revocationDate === revocationDateString,
+        })
+
+        // Clear validation and redirect back to edit-summary
+        clearValidation(req)
+        res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+        return
+      }
+
+      // Get required data from session for new recall flow
       const courtCases = (sessionData?.courtCaseOptions || []).filter((c: CourtCase) => c.status !== 'DRAFT')
       const adjustments = sessionData?.existingAdjustments || []
       const existingRecalls = res.locals.recalls || []
@@ -110,9 +170,7 @@ export default class RevocationDateControllerV2 extends BaseController {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const earliestSentenceDate = min(crdsSentences.map((s: any) => new Date(s.sentenceDate)))
         if (revocationDateObj < earliestSentenceDate) {
-          const redirectUrl = isEditMode
-            ? `/person/${nomisId}/edit-recall-v2/${recallId}/revocation-date`
-            : `/person/${nomisId}/record-recall-v2/revocation-date`
+          const redirectUrl = `/person/${nomisId}/record-recall-v2/revocation-date`
           RevocationDateControllerV2.setValidationError(
             req,
             res,
@@ -155,16 +213,20 @@ export default class RevocationDateControllerV2 extends BaseController {
         const errorMessage = RevocationDateControllerV2.mapRoutingValidationError(
           routingResponse.validationMessages[0].code,
         )
-        const redirectUrl = isEditMode
-          ? `/person/${nomisId}/edit-recall-v2/${recallId}/revocation-date`
-          : `/person/${nomisId}/record-recall-v2/revocation-date`
+        const redirectUrl = `/person/${nomisId}/record-recall-v2/revocation-date`
         RevocationDateControllerV2.setValidationError(req, res, 'revocationDate', errorMessage, redirectUrl)
         return
       }
 
       // Store routing response data in session
+      logger.info(`Storing revocation date in session for ${nomisId}:`, {
+        originalDate: revocationDateObj,
+        formattedDate: revocationDateString,
+        isEditMode: false,
+      })
+
       RevocationDateControllerV2.updateSessionData(req, {
-        revocationDate: revocationDateObj,
+        revocationDate: revocationDateString,
         invalidRecallTypes: routingResponse.eligibilityDetails.invalidRecallTypes,
         eligibleSentenceCount: routingResponse.eligibilityDetails.eligibleSentenceCount,
         manualCaseSelection: routingResponse.eligibilityDetails.hasNonSdsSentences,
@@ -174,17 +236,8 @@ export default class RevocationDateControllerV2 extends BaseController {
       // Clear validation state before redirecting
       clearValidation(req)
 
-      // Different redirect based on mode
+      // Check if editing from check-your-answers page
       const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
-      if (isEditMode) {
-        // Mark that this step was edited
-        RevocationDateControllerV2.updateSessionData(req, {
-          lastEditedStep: 'revocation-date',
-        })
-        res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
-        return
-      }
-
       if (isEditFromCheckYourAnswers) {
         // Editing from check-your-answers page - go back there
         res.redirect(`/person/${nomisId}/record-recall-v2/check-your-answers`)
@@ -196,20 +249,34 @@ export default class RevocationDateControllerV2 extends BaseController {
     } catch (error) {
       logger.error('Error in revocation date controller:', error)
 
-      // Fall back to manual review on routing service error
+      // In edit mode, still save the date and return to edit-summary
+      if (isEditMode) {
+        const year = revocationDateObj.getFullYear()
+        const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
+        const day = String(revocationDateObj.getDate()).padStart(2, '0')
+        const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
+        RevocationDateControllerV2.updateSessionData(req, {
+          revocationDate: revocationDateString,
+          lastEditedStep: 'revocation-date',
+        })
+        clearValidation(req)
+        res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+        return
+      }
+
+      // Fall back to manual review on routing service error for new recalls
       logger.warn('Routing service failed, falling back to manual review')
+      const year = revocationDateObj.getFullYear()
+      const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
+      const day = String(revocationDateObj.getDate()).padStart(2, '0')
+      const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
       RevocationDateControllerV2.updateSessionData(req, {
-        revocationDate: revocationDateObj,
+        revocationDate: revocationDateString,
         manualCaseSelection: true,
       })
 
       // Clear validation and proceed
       clearValidation(req)
-
-      if (isEditMode) {
-        res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/rtc-date`)
-        return
-      }
       res.redirect(`/person/${nomisId}/record-recall-v2/rtc-date`)
     }
   }
