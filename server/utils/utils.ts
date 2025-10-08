@@ -80,7 +80,6 @@ export function createAnswerSummaryList(
   journeyData: RecallJourneyData,
   editLink: (page: string) => string,
 ): SummaryListRow[] {
-  console.log(JSON.stringify(journeyData, undefined, 2))
   // TO DO eligibleSentenceCount and courtCaseCount not giving back correct numbers
   const sentences = journeyData.sentenceIds.length === 1 ? 'sentence' : 'sentences'
   const cases = journeyData.courtCaseCount === 1 ? 'case' : 'cases'
