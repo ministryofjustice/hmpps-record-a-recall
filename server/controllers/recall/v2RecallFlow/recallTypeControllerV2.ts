@@ -15,8 +15,8 @@ export default class RecallTypeControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Detect if this is edit mode from URL path
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // Build navigation URLs based on mode
     let backLink: string
@@ -67,8 +67,8 @@ export default class RecallTypeControllerV2 extends BaseController {
     const sessionData = RecallTypeControllerV2.getSessionData(req)
     const { nomisId, recallId } = res.locals
     const { recallType } = req.body
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     logger.info(`Processing recall type selection: ${recallType} for prisoner ${nomisId}`)
 

@@ -18,8 +18,8 @@ export default class RevocationDateControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Detect if this is edit mode from URL path
-    const isEditMode = req.path.includes('/edit-recall-v2/')
-    const isEditFromCheckYourAnswers = req.path.endsWith('/edit')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // Build back link based on mode
     let backLink: string
@@ -67,7 +67,7 @@ export default class RevocationDateControllerV2 extends BaseController {
     const { revocationDate } = req.body
     const { nomisId, recallId } = res.locals
     const sessionData = RevocationDateControllerV2.getSessionData(req)
-    const isEditMode = req.path.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
 
     // Get prisoner data from session or res.locals if needed for future use
 
@@ -207,7 +207,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       clearValidation(req)
 
       if (isEditMode) {
-        res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+        res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/rtc-date`)
         return
       }
       res.redirect(`/person/${nomisId}/record-recall-v2/rtc-date`)
