@@ -6,7 +6,7 @@
 
 {% set title = "Was this person in prison when the recall was made?" %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
+{% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
 
 {% block pageContent %}
     
