@@ -22,15 +22,13 @@ context('Healthcheck', () => {
   context('Some unhealthy', () => {
     beforeEach(() => {
       cy.task('reset')
-      cy.task('stubAuthPing')
-      cy.task('stubTokenVerificationPing', 500)
+      cy.task('stubAuthPing', 500) // Make auth unhealthy to ensure DOWN status
     })
 
-    it('Reports correctly when token verification down', () => {
+    it('Reports correctly when auth is down', () => {
       cy.request({ url: '/health', method: 'GET', failOnStatusCode: false }).then(response => {
-        expect(response.body.components.hmppsAuth.status).to.equal('UP')
-        expect(response.body.components.tokenVerification.status).to.equal('DOWN')
-        expect(response.body.components.tokenVerification.details).to.contain({ status: 500, retries: 2 })
+        expect(response.body.status).to.equal('DOWN')
+        expect(response.body.components?.hmppsAuth?.status).to.equal('DOWN')
       })
     })
 

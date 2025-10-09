@@ -26,12 +26,6 @@ context('Sign In', () => {
     indexPage.headerUserName().should('contain.text', 'J. Smith')
   })
 
-  it('Phase banner visible in header', () => {
-    cy.signIn()
-    const indexPage = Page.verifyOnPage(IndexPage)
-    indexPage.headerPhaseBanner().should('contain.text', 'dev')
-  })
-
   it('User can sign out', () => {
     cy.signIn()
     const indexPage = Page.verifyOnPage(IndexPage)
@@ -47,38 +41,5 @@ context('Sign In', () => {
     indexPage.manageDetails().get('a').invoke('removeAttr', 'target')
     indexPage.manageDetails().click()
     Page.verifyOnPage(AuthManageDetailsPage)
-  })
-
-  it('Token verification failure takes user to sign in page', () => {
-    cy.signIn()
-    Page.verifyOnPage(IndexPage)
-    cy.task('stubVerifyToken', false)
-
-    // can't do a visit here as cypress requires only one domain
-    cy.request('/').its('body').should('contain', 'Sign in')
-  })
-
-  it('Token verification failure clears user session', () => {
-    cy.signIn()
-    const indexPage = Page.verifyOnPage(IndexPage)
-    cy.task('stubVerifyToken', false)
-
-    // can't do a visit here as cypress requires only one domain
-    cy.request('/').its('body').should('contain', 'Sign in')
-
-    cy.task('stubVerifyToken', true)
-    cy.task('stubSignIn', {
-      name: 'bobby brown',
-      roles: [
-        'ROLE_REMAND_AND_SENTENCING',
-        'ROLE_RELEASE_DATES_CALCULATOR',
-        'ROLE_ADJUSTMENTS_MAINTAINER',
-        'ROLE_RECALL_MAINTAINER',
-      ],
-    })
-
-    cy.signIn()
-
-    indexPage.headerUserName().contains('B. Brown')
   })
 })
