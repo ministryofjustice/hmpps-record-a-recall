@@ -237,8 +237,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
               }
             })
         } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          reviewableCases = await getCourtCaseOptionsFromRas(req as any, res)
+          reviewableCases = await getCourtCaseOptionsFromRas(req, res)
         }
 
         // Filter out cases with only non-recallable sentences

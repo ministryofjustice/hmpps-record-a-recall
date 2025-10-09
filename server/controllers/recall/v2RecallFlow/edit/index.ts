@@ -18,8 +18,9 @@ import ManualRecallInterceptControllerV2 from '../manualRecallInterceptControlle
 import NoSentencesInterruptControllerV2 from '../noSentencesInterruptControllerV2'
 import ConflictingAdjustmentsInterruptControllerV2 from '../conflictingAdjustmentsInterruptControllerV2'
 import { sessionModelAdapter } from '../../../../middleware/sessionModelAdapter'
+import { Services } from '../../../../services'
 
-export default function editRoutes(): Router {
+export default function editRoutes(_services?: Services): Router {
   const router = express.Router({ mergeParams: true })
 
   // Apply session model adapter for compatibility with SessionManager

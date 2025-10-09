@@ -327,6 +327,18 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
 
+    const eligibleCount = ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData)
+
+    logger.info('ReturnToCustodyDateControllerV2 - determineNextPath:', {
+      eligibleSentenceCount: eligibleCount,
+      sessionEligibleSentenceCount: sessionData?.eligibleSentenceCount,
+      manualCaseSelection: sessionData?.manualCaseSelection,
+      hasCourtCaseOptions: !!sessionData?.courtCaseOptions,
+      courtCaseOptionsLength: sessionData?.courtCaseOptions?.length,
+      isEditMode,
+      nomisId,
+    })
+
     // Mark that this step was edited
     if (isEditMode || isEditFromCheckYourAnswers) {
       ReturnToCustodyDateControllerV2.updateSessionData(req, {
@@ -347,20 +359,24 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     // Complex navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments
     if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
+      logger.info('Redirecting to conflicting-adjustments-interrupt')
       return `${basePath}/conflicting-adjustments-interrupt`
     }
 
     // Check if manual case selection is required
     if (ReturnToCustodyDateControllerV2.isManualCaseSelection(sessionData)) {
+      logger.info('Redirecting to manual-recall-intercept')
       return `${basePath}/manual-recall-intercept`
     }
 
     // Check if no eligible sentences
-    if (ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData) === 0) {
+    if (eligibleCount === 0) {
+      logger.info(`No eligible sentences found, redirecting to: ${basePath}/no-sentences-interrupt`)
       return `${basePath}/no-sentences-interrupt`
     }
 
     // Default: go to check-sentences
+    logger.info(`Redirecting to check-sentences, eligibleCount: ${eligibleCount}`)
     return `${basePath}/check-sentences`
   }
 

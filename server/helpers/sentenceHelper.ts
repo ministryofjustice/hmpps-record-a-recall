@@ -1,4 +1,3 @@
-import FormWizard from 'hmpo-form-wizard'
 import type { CourtCase } from 'models'
 import dayjs from 'dayjs'
 import { RecallableCourtCaseSentence, SentenceType } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -18,7 +17,8 @@ export function findSentenceAndCourtCase(
 }
 
 export async function getApplicableSentenceTypes(
-  req: FormWizard.Request,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  req: any,
   sentence: RecallableCourtCaseSentence,
   courtCase: CourtCase,
   username: string,

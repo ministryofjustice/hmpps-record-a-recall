@@ -2,12 +2,25 @@ import { addDays, subDays } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
 import { RecallTypes } from '../@types/recallTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
 import {
   validateRevocationDateAgainstRecalls,
   getRecallsToConsiderForValidation,
   getRecallsForValidation,
 } from './recallOverlapValidation'
+
+// Type definition for recall journey data
+interface RecallJourneyData {
+  isEdit?: boolean
+  storedRecall?: {
+    recallId?: string
+    createdAt?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
+  revocationDate?: Date | string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
 
 describe('Recall Overlap Validation', () => {
   const baseDate = new Date('2024-01-15')

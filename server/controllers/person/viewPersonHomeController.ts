@@ -11,7 +11,6 @@ export default async (req: Request, res: Response) => {
 
   if (prisoner) {
     const urls = getServiceUrls(nomisId)
-    const useV2RecallFlow = process.env.USE_V2_RECALL_FLOW === 'true'
 
     const sortedRecalls = [...recalls].sort((a, b) => {
       const getDate = (recall: Recall) => {
@@ -33,7 +32,6 @@ export default async (req: Request, res: Response) => {
       serviceDefinitions,
       errorMessage,
       latestRecallId: res.locals.latestRecallId,
-      useV2RecallFlow,
     })
   }
 

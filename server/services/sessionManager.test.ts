@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import FormWizard from 'hmpo-form-wizard'
 import { SessionManager } from './sessionManager'
 
 // Mock the getRecallType function
@@ -26,7 +25,7 @@ describe('SessionManager', () => {
 
     req = {
       sessionModel: mockSessionModel,
-    } as FormWizard.Request
+    } as any
   })
 
   describe('getRecallData', () => {
@@ -204,7 +203,7 @@ describe('SessionManager', () => {
     })
 
     it('should return false when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+      const reqWithoutSession = {} as any
       expect(SessionManager.hasSessionModel(reqWithoutSession)).toBe(false)
     })
   })
@@ -220,7 +219,7 @@ describe('SessionManager', () => {
     })
 
     it('should return undefined when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+      const reqWithoutSession = {} as any
       const result = SessionManager.getSessionValue(reqWithoutSession, 'testKey')
 
       expect(result).toBeUndefined()
@@ -245,7 +244,7 @@ describe('SessionManager', () => {
     })
 
     it('should not throw when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+      const reqWithoutSession = {} as any
 
       expect(() => {
         SessionManager.setSessionValue(reqWithoutSession, 'testKey', 'testValue')
@@ -271,7 +270,7 @@ describe('SessionManager', () => {
     })
 
     it('should not throw when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+      const reqWithoutSession = {} as any
 
       expect(() => {
         SessionManager.save(reqWithoutSession)

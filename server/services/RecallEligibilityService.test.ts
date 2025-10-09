@@ -6,8 +6,21 @@ import { RecallEligibilityService } from './RecallEligibilityService'
 
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { ValidationMessage, CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+
+// Type definition for recall journey data
+interface RecallJourneyData {
+  isEdit?: boolean
+  storedRecall?: {
+    recallId?: string
+    createdAt?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
+  revocationDate?: Date | string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
 
 jest.mock('../../logger')
 

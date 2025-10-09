@@ -6,6 +6,7 @@ import BaseController from '../../base/BaseController'
 import { clearValidation } from '../../../middleware/validationMiddleware'
 import { RecallRoutingService } from '../../../services/RecallRoutingService'
 import logger from '../../../../logger'
+import { EnhancedRecallableCourtCase } from '../../../middleware/loadCourtCases'
 
 export default class RevocationDateControllerV2 extends BaseController {
   private static recallRoutingService = new RecallRoutingService()
@@ -155,7 +156,41 @@ export default class RevocationDateControllerV2 extends BaseController {
       }
 
       // Get required data from session for new recall flow
-      const courtCases = (sessionData?.courtCaseOptions || []).filter((c: CourtCase) => c.status !== 'DRAFT')
+      // Try to get court cases from res.locals first (if loadCourtCases middleware ran), then fall back to session
+      logger.info('RevocationDateControllerV2 - Checking for court cases:', {
+        hasRecallableCourtCases: !!res.locals.recallableCourtCases,
+        recallableCourtCasesLength: res.locals.recallableCourtCases?.length,
+        sessionCourtCaseOptionsLength: sessionData?.courtCaseOptions?.length,
+        firstRecallableCase: res.locals.recallableCourtCases?.[0],
+        firstSentence: res.locals.recallableCourtCases?.[0]?.sentences?.[0],
+      })
+      const courtCasesFromLocals = res.locals.recallableCourtCases
+        ? res.locals.recallableCourtCases
+            .filter((c: EnhancedRecallableCourtCase) => c.status !== 'DRAFT' && c.isSentenced)
+            .map((recallableCase: EnhancedRecallableCourtCase) => {
+              const mapped = {
+                caseId: recallableCase.courtCaseUuid,
+                status: recallableCase.status,
+                date: recallableCase.date,
+                location: recallableCase.courtCode,
+                locationName: recallableCase.courtName,
+                reference: recallableCase.reference,
+                sentenced: recallableCase.isSentenced,
+                sentences: recallableCase.sentences || [],
+              }
+              logger.info('Mapped court case with sentences:', {
+                caseId: mapped.caseId,
+                sentenceCount: mapped.sentences.length,
+                firstSentence: mapped.sentences[0],
+                hasSentenceUuid: !!mapped.sentences[0]?.sentenceUuid,
+                hasSentenceType: !!mapped.sentences[0]?.sentenceType,
+                hasClassification: !!mapped.sentences[0]?.classification,
+              })
+              return mapped
+            })
+        : null
+      const courtCases =
+        courtCasesFromLocals || (sessionData?.courtCaseOptions || []).filter((c: CourtCase) => c.status !== 'DRAFT')
       const adjustments = sessionData?.existingAdjustments || []
       const existingRecalls = res.locals.recalls || []
       const crdsSentences = sessionData?.crdsSentences || []
@@ -214,10 +249,12 @@ export default class RevocationDateControllerV2 extends BaseController {
       }
 
       // Store routing response data in session
-      logger.info(`Storing revocation date in session for ${nomisId}:`, {
-        originalDate: revocationDateObj,
-        formattedDate: revocationDateString,
-        isEditMode: false,
+      logger.info('RevocationDateControllerV2 - Routing response:', {
+        isValid: routingResponse.isValid,
+        routing: routingResponse.routing,
+        eligibleSentenceCount: routingResponse.eligibilityDetails?.eligibleSentenceCount,
+        hasNonSdsSentences: routingResponse.eligibilityDetails?.hasNonSdsSentences,
+        courtCasesUsed: courtCases.length,
       })
 
       RevocationDateControllerV2.updateSessionData(req, {
@@ -226,6 +263,8 @@ export default class RevocationDateControllerV2 extends BaseController {
         eligibleSentenceCount: routingResponse.eligibilityDetails.eligibleSentenceCount,
         manualCaseSelection: routingResponse.eligibilityDetails.hasNonSdsSentences,
         routingResponse,
+        // Store court cases if they came from res.locals
+        ...(courtCasesFromLocals ? { courtCaseOptions: courtCasesFromLocals } : {}),
       })
 
       // Clear validation state before redirecting
