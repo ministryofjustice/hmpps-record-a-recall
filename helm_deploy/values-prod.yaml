@@ -6,7 +6,6 @@ generic-service:
     host: record-a-recall.hmpps.service.justice.gov.uk
 
   env:
-    AUDIT_ENABLED: "false"
     INGRESS_URL: "https://record-a-recall.hmpps.service.justice.gov.uk"
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     MANAGE_USERS_API_URL: "https://manage-users-api.hmpps.service.justice.gov.uk"
@@ -18,13 +17,17 @@ generic-service:
     CALCULATE_RELEASE_DATES_API_URL: "https://calculate-release-dates-api.hmpps.service.justice.gov.uk"
     REMAND_AND_SENTENCING_API_URL: "https://remand-and-sentencing-api.hmpps.service.justice.gov.uk"
     COMPONENT_API_URL: "https://frontend-components.hmpps.service.justice.gov.uk"
-
+    COURT_REGISTER_API_URL: "https://court-register-api.hmpps.service.justice.gov.uk"
+    PRISON_REGISTER_API_URL: "https://prison-register.hmpps.service.justice.gov.uk"
     DIGITAL_PRISON_SERVICES_URL: "https://digital.prison.service.justice.gov.uk"
     ADJUSTMENTS_URL: "https://adjust-release-dates.hmpps.service.justice.gov.uk"
     CRDS_URL: "https://calculate-release-dates.hmpps.service.justice.gov.uk"
     CCARDS_URL: "https://court-cases-release-dates.hmpps.service.justice.gov.uk"
     COURT_CASES_RELEASE_DATES_API_URL: "https://court-cases-release-dates-api.hmpps.service.justice.gov.uk"
     NOMIS_MAPPING_SERVICE_URL: "https://nomis-sync-prisoner-mapping.hmpps.service.justice.gov.uk"
+
+    ENVIRONMENT_NAME: PROD
+    AUDIT_ENABLED: "false"
 
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts
