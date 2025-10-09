@@ -31,7 +31,7 @@ export default function routes(services?: Services): Router {
   // TODO: Remove once SessionManager is refactored to use Express sessions directly
   router.use(sessionModelAdapter)
 
-  // V2 recall flow route - /person/:nomisId/record-recall-v2
+  // V2 recall flow route - /person/:nomisId/record-recall
   // Entry point - check if recall is possible (matches original '/' route in steps.ts)
   router.get('/', asyncMiddleware(CheckPossibleControllerV2.get))
 

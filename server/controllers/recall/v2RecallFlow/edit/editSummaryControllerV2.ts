@@ -35,7 +35,7 @@ export default class EditSummaryControllerV2 extends BaseController {
     const storedRecall = sessionData?.storedRecall
     if (!storedRecall) {
       // If no stored recall, redirect to populate
-      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}`)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}`)
     }
 
     // Get prisoner data
@@ -94,7 +94,7 @@ export default class EditSummaryControllerV2 extends BaseController {
     }
 
     // Build edit links - point to individual steps in edit flow
-    const editLink = (step: string) => `/person/${nomisId}/edit-recall-v2/${recallId}/${step}`
+    const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const answerSummaryList = createAnswerSummaryList(journeyData as any, editLink)
 
@@ -116,7 +116,7 @@ export default class EditSummaryControllerV2 extends BaseController {
       showCheckAnswers: journeyComplete,
       showRecordedOn: !journeyComplete,
       backLink: `/person/${nomisId}`,
-      cancelUrl: `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`,
+      cancelUrl: `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`,
       validationErrors: res.locals.validationErrors,
       formResponses: res.locals.formResponses,
     })
@@ -241,7 +241,7 @@ export default class EditSummaryControllerV2 extends BaseController {
 
       // Clear validation and redirect to success
       clearValidation(req)
-      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/recall-updated`)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/recall-updated`)
     } catch (error) {
       logger.error('Error updating recall:', error)
       throw error

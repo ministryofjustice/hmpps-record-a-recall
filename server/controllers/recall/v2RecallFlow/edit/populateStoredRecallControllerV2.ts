@@ -14,7 +14,7 @@ export default class PopulateStoredRecallControllerV2 extends BaseController {
     if (sessionData?.isEdit && sessionData?.storedRecall && sessionData?.recallId === recallId) {
       // Already loaded and possibly edited - skip reloading
       logger.info(`Recall ${recallId} already in session, skipping reload`)
-      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/edit-summary`)
     }
 
     try {
@@ -63,7 +63,7 @@ export default class PopulateStoredRecallControllerV2 extends BaseController {
       logger.info(`Loaded recall ${recallId} for editing`)
 
       // Redirect to edit-summary
-      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/edit-summary`)
     } catch (error) {
       logger.error('Error loading recall for edit:', error)
       // Redirect to person page on error
