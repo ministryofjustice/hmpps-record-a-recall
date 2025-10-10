@@ -4,25 +4,8 @@ import ValidationService from '../../validation/service'
 import { createFieldError } from '../../validation/utils/errorFormatting'
 
 /**
- * Interface for Request with sessionModel for SessionManager compatibility
- */
-export interface RequestWithSession extends Request {
-  sessionModel?: {
-    get: <T>(key: string) => T | undefined
-    set: (key: string, value: unknown, options?: { silent?: boolean }) => void
-    unset: (key: string | string[]) => void
-    toJSON?: () => Record<string, unknown>
-    save: () => void
-    reset?: () => unknown
-    updateSessionData?: (changes: object) => unknown
-  }
-}
-
-/**
  * Base controller for controllers migrated from FormWizard to Zod validation
- * Encapsulates common patterns and temporary workarounds during migration
- *
- * TODO: Refactor once SessionManager is updated to use Express sessions directly
+ * Encapsulates common patterns for session management and validation
  */
 export default abstract class BaseController {
   /**
@@ -30,7 +13,7 @@ export default abstract class BaseController {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected static getSessionData(req: Request): any {
-    return SessionManager.getAllSessionData(req as RequestWithSession)
+    return SessionManager.getAllSessionData(req)
   }
 
   /**
@@ -38,7 +21,7 @@ export default abstract class BaseController {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected static updateSessionData(req: Request, data: Record<string, any>): void {
-    SessionManager.updateRecallData(req as RequestWithSession, data)
+    SessionManager.updateRecallData(req, data)
   }
 
   /**

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import BaseController, { RequestWithSession } from '../../base/BaseController'
+import BaseController from '../../base/BaseController'
 import { entrypointUrl } from '../../../utils/utils'
 import { SessionManager } from '../../../services/sessionManager'
 
@@ -12,8 +12,7 @@ export default class NotPossibleControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Get validation errors from session
-    const crdsValidationErrors =
-      SessionManager.getSessionValue(req as RequestWithSession, SessionManager.SESSION_KEYS.CRDS_ERRORS) || []
+    const crdsValidationErrors = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.CRDS_ERRORS) || []
 
     // Get entrypoint from query params or session
     const entrypoint = (req.query.entrypoint as string) || sessionData?.entrypoint

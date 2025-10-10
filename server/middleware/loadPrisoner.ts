@@ -38,7 +38,7 @@ export default function loadPrisoner(
         }
       }
 
-      // Also check direct session storage (V2 pattern via sessionModelAdapter)
+      // Also check direct session storage (V2 pattern)
       if (sessionData?.prisoner) {
         res.locals.prisoner = sessionData.prisoner
         return next()
