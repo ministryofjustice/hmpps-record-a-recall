@@ -8,9 +8,6 @@ generic-service:
     host: record-a-recall-dev.hmpps.service.justice.gov.uk
 
   env:
-    ENVIRONMENT_NAME: DEV
-    AUDIT_ENABLED: "false"
-
     INGRESS_URL: "https://record-a-recall-dev.hmpps.service.justice.gov.uk"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     MANAGE_USERS_API_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
@@ -23,13 +20,15 @@ generic-service:
     REMAND_AND_SENTENCING_API_URL: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
     COURT_REGISTER_API_URL: "https://court-register-api-dev.hmpps.service.justice.gov.uk"
     PRISON_REGISTER_API_URL: "https://prison-register-dev.hmpps.service.justice.gov.uk"
-
     DIGITAL_PRISON_SERVICES_URL: "https://digital-dev.prison.service.justice.gov.uk"
     ADJUSTMENTS_URL: "https://adjustments-dev.hmpps.service.justice.gov.uk"
     CRDS_URL: "https://calculate-release-dates-dev.hmpps.service.justice.gov.uk"
     CCARDS_URL: "https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk"
     COURT_CASES_RELEASE_DATES_API_URL: "https://court-cases-release-dates-api-dev.hmpps.service.justice.gov.uk"
     NOMIS_MAPPING_SERVICE_URL: "https://nomis-sync-prisoner-mapping-dev.hmpps.service.justice.gov.uk"
+
+    ENVIRONMENT_NAME: DEV
+    AUDIT_ENABLED: "false"
 
   # Switches off the allow list in the DEV env only.
   allowlist: null
