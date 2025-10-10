@@ -59,7 +59,10 @@
             {{ govukButton({
                 text: "Continue",
                 preventDoubleClick: true,
-                attributes: { id: "submit" }
+                attributes: { 
+                    id: "submit",
+                    "data-qa": "continue-btn"
+                }
             }) }}
             {{ govukButton({
                 text: "Cancel",

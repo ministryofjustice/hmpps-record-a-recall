@@ -29,7 +29,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
 
       if (!targetCase) {
         logger.error(`Court case not found: ${courtCaseId}`)
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Filter for sentences with unknown pre-recall sentence type
@@ -43,7 +43,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
 
       if (unknownSentences.length === 0) {
         logger.warn('No unknown sentences found for court case', { courtCaseId })
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Store sentences in session for later use
@@ -53,8 +53,8 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       })
 
       // Set navigation
-      const backLink = `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
-      const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+      const backLink = `/person/${nomisId}/record-recall/update-sentence-types-summary`
+      const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
       // Store return URL for cancel flow
       MultipleSentenceDecisionControllerV2.updateSessionData(req, {
@@ -83,7 +83,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       })
     } catch (error) {
       logger.error('Error in MultipleSentenceDecisionControllerV2.get', { error: error.message })
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 
@@ -107,7 +107,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
 
       if (isSameType) {
         // For bulk flow, navigate to bulk sentence type page
-        return res.redirect(`/person/${nomisId}/record-recall-v2/bulk-sentence-type/${courtCaseId}`)
+        return res.redirect(`/person/${nomisId}/record-recall/bulk-sentence-type/${courtCaseId}`)
       }
 
       // For individual flow, initialize the sentence index
@@ -123,18 +123,16 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
 
       if (sentencesInCase && sentencesInCase.length > 0) {
         // Navigate to the first sentence
-        return res.redirect(
-          `/person/${nomisId}/record-recall-v2/select-sentence-type/${sentencesInCase[0].sentenceUuid}`,
-        )
+        return res.redirect(`/person/${nomisId}/record-recall/select-sentence-type/${sentencesInCase[0].sentenceUuid}`)
       }
 
       // Fallback if no sentences found
       logger.error('No sentences in current case found in session during POST')
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     } catch (error) {
       logger.error('Error in MultipleSentenceDecisionControllerV2.post', { error: error.message })
       clearValidation(req)
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 }

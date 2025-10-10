@@ -2,6 +2,7 @@ import express, { Router } from 'express'
 import asyncMiddleware from '../../../middleware/asyncMiddleware'
 import { validate, populateValidationData } from '../../../middleware/validationMiddleware'
 import loadPrisoner from '../../../middleware/loadPrisoner'
+import loadCourtCases from '../../../middleware/loadCourtCases'
 import CheckPossibleControllerV2 from './checkPossibleControllerV2'
 import RevocationDateControllerV2 from './revocationDateControllerV2'
 import NotPossibleControllerV2 from './notPossibleControllerV2'
@@ -20,16 +21,12 @@ import RecallRecordedControllerV2 from './recallRecordedControllerV2'
 import MultipleSentenceDecisionControllerV2 from './multipleSentenceDecisionControllerV2'
 import BulkSentenceTypeControllerV2 from './bulkSentenceTypeControllerV2'
 import underConstructionController from './underConstructionController'
-import { sessionModelAdapter } from '../../../middleware/sessionModelAdapter'
+import { Services } from '../../../services'
 
-export default function routes(): Router {
+export default function routes(services?: Services): Router {
   const router = express.Router()
 
-  // Apply session model adapter for compatibility with SessionManager
-  // TODO: Remove once SessionManager is refactored to use Express sessions directly
-  router.use(sessionModelAdapter)
-
-  // V2 recall flow route - /person/:nomisId/record-recall-v2
+  // V2 recall flow route - /person/:nomisId/record-recall
   // Entry point - check if recall is possible (matches original '/' route in steps.ts)
   router.get('/', asyncMiddleware(CheckPossibleControllerV2.get))
 
@@ -50,6 +47,13 @@ export default function routes(): Router {
   router.post(
     '/revocation-date',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
+    loadCourtCases(
+      services?.courtCaseService,
+      services?.manageOffencesService,
+      services?.courtService,
+      services?.calculationService,
+      services?.nomisMappingService,
+    ),
     validate('revocationDate'),
     asyncMiddleware(RevocationDateControllerV2.post),
   )
@@ -182,12 +186,26 @@ export default function routes(): Router {
   router.get(
     '/check-sentences',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
+    loadCourtCases(
+      services?.courtCaseService,
+      services?.manageOffencesService,
+      services?.courtService,
+      services?.calculationService,
+      services?.nomisMappingService,
+    ),
     populateValidationData,
     asyncMiddleware(CheckSentencesControllerV2.get),
   )
   router.post(
     '/check-sentences',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
+    loadCourtCases(
+      services?.courtCaseService,
+      services?.manageOffencesService,
+      services?.courtService,
+      services?.calculationService,
+      services?.nomisMappingService,
+    ),
     asyncMiddleware(CheckSentencesControllerV2.post),
   )
 
@@ -257,12 +275,26 @@ export default function routes(): Router {
   router.get(
     '/check-sentences/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
+    loadCourtCases(
+      services?.courtCaseService,
+      services?.manageOffencesService,
+      services?.courtService,
+      services?.calculationService,
+      services?.nomisMappingService,
+    ),
     populateValidationData,
     asyncMiddleware(CheckSentencesControllerV2.get),
   )
   router.post(
     '/check-sentences/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
+    loadCourtCases(
+      services?.courtCaseService,
+      services?.manageOffencesService,
+      services?.courtService,
+      services?.calculationService,
+      services?.nomisMappingService,
+    ),
     asyncMiddleware(CheckSentencesControllerV2.post),
   )
 

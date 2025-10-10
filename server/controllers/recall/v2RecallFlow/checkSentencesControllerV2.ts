@@ -30,7 +30,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Detect if this is edit mode from URL path
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // Get court cases from middleware
@@ -61,24 +61,24 @@ export default class CheckSentencesControllerV2 extends BaseController {
     // Build navigation URLs based on mode
     let backLink: string
     if (isEditMode) {
-      backLink = `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+      backLink = `/person/${nomisId}/edit-recall/${recallId}/edit-summary`
     } else if (isEditFromCheckYourAnswers) {
-      backLink = `/person/${nomisId}/record-recall-v2/check-your-answers`
+      backLink = `/person/${nomisId}/record-recall/check-your-answers`
     } else {
-      backLink = `/person/${nomisId}/record-recall-v2/rtc-date`
+      backLink = `/person/${nomisId}/record-recall/rtc-date`
     }
 
     // Handle special case for non-edit mode
     if (!isEditMode && !isEditFromCheckYourAnswers) {
       const lastVisited = sessionData?.lastVisited
       if (lastVisited?.includes('update-sentence-types-summary')) {
-        backLink = `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
+        backLink = `/person/${nomisId}/record-recall/update-sentence-types-summary`
       }
     }
 
     const cancelUrl = isEditMode
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
-      : `/person/${nomisId}/record-recall-v2/confirm-cancel`
+      ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall/confirm-cancel`
 
     // Store the current page for confirm-cancel return
     CheckSentencesControllerV2.updateSessionData(req, { returnTo: req.originalUrl })
@@ -107,7 +107,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
 
   static async post(req: Request, res: Response): Promise<void> {
     const { nomisId, recallId } = res.locals
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // This page doesn't have any form fields to process,
@@ -122,16 +122,16 @@ export default class CheckSentencesControllerV2 extends BaseController {
         lastEditedStep: 'check-sentences',
       })
       // Continue to next step in edit flow
-      return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/recall-type`)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/recall-type`)
     }
 
     if (isEditFromCheckYourAnswers) {
       // Return to check-your-answers
-      return res.redirect(`/person/${nomisId}/record-recall-v2/check-your-answers`)
+      return res.redirect(`/person/${nomisId}/record-recall/check-your-answers`)
     }
 
     // Normal flow - continue to recall-type
-    return res.redirect(`/person/${nomisId}/record-recall-v2/recall-type`)
+    return res.redirect(`/person/${nomisId}/record-recall/recall-type`)
   }
 
   private static filterSentencesByEligibility(

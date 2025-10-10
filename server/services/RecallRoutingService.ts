@@ -8,12 +8,21 @@ import {
 } from './RecallEligibilityService'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { CalculationBreakdown, ValidationMessage } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import { RecallType } from '../@types/recallTypes'
 import { isCriticalValidationError } from '../utils/constants'
 import logger from '../../logger'
+
+// Type definition for recall journey data
+interface RecallJourneyData {
+  isEdit?: boolean
+  storedRecall?: {
+    recallId?: string
+    createdAt?: string
+  }
+  revocationDate?: Date | string
+}
 
 /**
  * Centralized service for recall routing decisions
@@ -207,7 +216,10 @@ export class RecallRoutingService {
           existingRecalls,
           breakdown: calculationBreakdown,
           validationMessages,
-          revocationDate: journeyData.revocationDate,
+          revocationDate:
+            typeof journeyData.revocationDate === 'string'
+              ? new Date(journeyData.revocationDate)
+              : journeyData.revocationDate,
           journeyData,
         })
       }

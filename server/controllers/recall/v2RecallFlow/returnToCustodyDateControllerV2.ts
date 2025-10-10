@@ -17,23 +17,23 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Detect if this is edit mode from URL path
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
     // Build back link based on mode
     let backLink: string
     if (isEditMode) {
-      backLink = `/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`
+      backLink = `/person/${nomisId}/edit-recall/${recallId}/edit-summary`
     } else if (isEditFromCheckYourAnswers) {
-      backLink = `/person/${nomisId}/record-recall-v2/check-your-answers`
+      backLink = `/person/${nomisId}/record-recall/check-your-answers`
     } else {
-      backLink = `/person/${nomisId}/record-recall-v2/revocation-date`
+      backLink = `/person/${nomisId}/record-recall/revocation-date`
     }
 
     // Build cancel URL based on mode
     const cancelUrl = isEditMode
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
-      : `/person/${prisoner?.prisonerNumber || nomisId}/record-recall-v2/confirm-cancel`
+      ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
+      : `/person/${prisoner?.prisonerNumber || nomisId}/record-recall/confirm-cancel`
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {
@@ -60,15 +60,15 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const { inPrisonAtRecall, returnToCustodyDate } = req.body
     const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
 
     // Get revocation date from session
     const revocationDate = sessionData?.revocationDate
     if (!revocationDate) {
       logger.error('No revocation date found in session')
       const redirectUrl = isEditMode
-        ? `/person/${nomisId}/edit-recall-v2/${recallId}/revocation-date`
-        : `/person/${nomisId}/record-recall-v2/revocation-date`
+        ? `/person/${nomisId}/edit-recall/${recallId}/revocation-date`
+        : `/person/${nomisId}/record-recall/revocation-date`
       return res.redirect(redirectUrl)
     }
 
@@ -77,8 +77,8 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     if (!isInPrison && returnToCustodyDate) {
       if (isBefore(new Date(returnToCustodyDate), new Date(revocationDate))) {
         const redirectUrl = isEditMode
-          ? `/person/${nomisId}/edit-recall-v2/${recallId}/rtc-date`
-          : `/person/${nomisId}/record-recall-v2/rtc-date`
+          ? `/person/${nomisId}/edit-recall/${recallId}/rtc-date`
+          : `/person/${nomisId}/record-recall/rtc-date`
         ReturnToCustodyDateControllerV2.setValidationError(
           req,
           res,
@@ -322,10 +322,22 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
   }
 
   private static determineNextPath(req: Request, res: Response): string {
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
     const { nomisId, recallId } = res.locals
     const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
+
+    const eligibleCount = ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData)
+
+    logger.info('ReturnToCustodyDateControllerV2 - determineNextPath:', {
+      eligibleSentenceCount: eligibleCount,
+      sessionEligibleSentenceCount: sessionData?.eligibleSentenceCount,
+      manualCaseSelection: sessionData?.manualCaseSelection,
+      hasCourtCaseOptions: !!sessionData?.courtCaseOptions,
+      courtCaseOptionsLength: sessionData?.courtCaseOptions?.length,
+      isEditMode,
+      nomisId,
+    })
 
     // Mark that this step was edited
     if (isEditMode || isEditFromCheckYourAnswers) {
@@ -336,31 +348,33 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // If editing from check-your-answers, return there
     if (isEditFromCheckYourAnswers) {
-      return `/person/${nomisId}/record-recall-v2/check-your-answers`
+      return `/person/${nomisId}/record-recall/check-your-answers`
     }
 
     // Set base path based on mode
-    const basePath = isEditMode
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}`
-      : `/person/${nomisId}/record-recall-v2`
+    const basePath = isEditMode ? `/person/${nomisId}/edit-recall/${recallId}` : `/person/${nomisId}/record-recall`
 
     // Complex navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments
     if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
+      logger.info('Redirecting to conflicting-adjustments-interrupt')
       return `${basePath}/conflicting-adjustments-interrupt`
     }
 
     // Check if manual case selection is required
     if (ReturnToCustodyDateControllerV2.isManualCaseSelection(sessionData)) {
+      logger.info('Redirecting to manual-recall-intercept')
       return `${basePath}/manual-recall-intercept`
     }
 
     // Check if no eligible sentences
-    if (ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData) === 0) {
+    if (eligibleCount === 0) {
+      logger.info(`No eligible sentences found, redirecting to: ${basePath}/no-sentences-interrupt`)
       return `${basePath}/no-sentences-interrupt`
     }
 
     // Default: go to check-sentences
+    logger.info(`Redirecting to check-sentences, eligibleCount: ${eligibleCount}`)
     return `${basePath}/check-sentences`
   }
 

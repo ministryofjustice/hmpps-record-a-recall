@@ -16,12 +16,12 @@ export default class ConflictingAdjustmentsInterruptControllerV2 extends BaseCon
     const hasMultipleOverlappingUALTypeRecall = sessionData?.hasMultipleOverlappingUalTypeRecall || false
 
     // Determine if this is an edit recall flow
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
 
     // Build navigation URLs for V2
     const journeyBaseLink = isEditMode
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}`
-      : `/person/${nomisId}/record-recall-v2`
+      ? `/person/${nomisId}/edit-recall/${recallId}`
+      : `/person/${nomisId}/record-recall`
     const backLink = `${journeyBaseLink}/rtc-date`
     const cancelLink = `${journeyBaseLink}/confirm-cancel`
 

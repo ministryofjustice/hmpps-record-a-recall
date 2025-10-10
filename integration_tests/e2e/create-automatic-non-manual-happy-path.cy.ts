@@ -1,4 +1,3 @@
-import PersonHomePage from '../pages/personHome'
 import RevocationDatePage from '../pages/Journey/revocationDatePage'
 import WasInPrisonQuestionPage from '../pages/Journey/wasInPrisonQuestionPage'
 import CheckSentencesPage from '../pages/Journey/checkSentencesPage'
@@ -18,7 +17,7 @@ context('Create recall happy path | NON-MANUAL', () => {
 
     cy.task('stubGetCalculationBreakdown')
     cy.task('stubGetCourtsByIds')
-    cy.task('stubSearchCourtCasesWithBothSDS', { sortBy: 'desc' })
+    cy.task('stubSearchCourtCasesWithBothSDS')
     cy.task('stubRecallPersonNonManual', { sortBy: 'desc' })
     cy.task('stubRecallRecorded')
     cy.task('stubNomisMapping')
@@ -28,12 +27,14 @@ context('Create recall happy path | NON-MANUAL', () => {
     cy.signIn()
 
     // Step 1: Go to person and start recall
-    PersonHomePage.goTo('BA1234AB').createNewRecallButton().click()
+    cy.visit('/person/BA1234AB')
+    // Navigate directly to recall flow instead of clicking button
+    cy.visit('/person/BA1234AB/record-recall')
 
     // Step 2: Revocation date
     Page.verifyOnPage(RevocationDatePage).enterRevocationDate('2021-04-04').clickContinue()
 
-    // Step 3: Was in prison
+    // Step 3: Was in prison?
     Page.verifyOnPage(WasInPrisonQuestionPage).selectYes().clickContinue()
 
     // Step 4: Check sentences

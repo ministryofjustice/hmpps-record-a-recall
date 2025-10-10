@@ -5,9 +5,24 @@ import { UAL } from 'models'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
 import logger from '../../logger'
 import config from '../config'
+
+// Type definition for recall journey data
+interface RecallJourneyData {
+  sentenceIds: string[]
+  courtCaseCount: number
+  revocationDate: string
+  returnToCustodyDate?: string
+  storedRecall?: {
+    recallType?: {
+      fixedTerm?: boolean
+    }
+  }
+  recallType: {
+    description: string
+  }
+}
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word

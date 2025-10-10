@@ -43,12 +43,12 @@
                             {{ updatedSentenceTypeDescriptions[sentence.sentenceUuid] or updatedSentenceTypes[sentence.sentenceUuid] }}
                         {% else %}
                             {% if courtCase.sentences.length === 1 %}
-                                <a class="govuk-link" href="/person/{{ nomisId }}/record-recall-v2/select-sentence-type/{{ sentence.sentenceUuid }}">
+                                <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/select-sentence-type/{{ sentence.sentenceUuid }}">
                                     Update sentence type
                                 </a>
                             {% else %}
                                 {% if courtCase.caseId %}
-                                    <a class="govuk-link" href="/person/{{ nomisId }}/record-recall-v2/multiple-sentence-decision/{{ courtCase.caseId }}">
+                                    <a class="govuk-link" href="/person/{{ nomisId }}/record-recall/multiple-sentence-decision/{{ courtCase.caseId }}">
                                         Update sentence type
                                     </a>
                                 {% else %}

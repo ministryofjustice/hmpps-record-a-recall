@@ -114,8 +114,8 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     // Build navigation URLs
     const backLink = isEditRecall
       ? `/person/${nomisId}/edit-recall/${recallId}/select-cases`
-      : `/person/${nomisId}/record-recall-v2/select-court-cases`
-    const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+      : `/person/${nomisId}/record-recall/select-court-cases`
+    const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
     // Load form data from session if not from validation
     if (!res.locals.formResponses) {
@@ -161,7 +161,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
         res,
         'sentenceTypes',
         'You must update all sentence types before continuing',
-        `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`,
+        `/person/${nomisId}/record-recall/update-sentence-types-summary`,
       )
     }
 
@@ -282,7 +282,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     clearValidation(req)
     const nextStep = recallId
       ? `/person/${nomisId}/edit-recall/${recallId}/check-sentences`
-      : `/person/${nomisId}/record-recall-v2/check-sentences`
+      : `/person/${nomisId}/record-recall/check-sentences`
     res.redirect(nextStep)
   }
 }

@@ -269,7 +269,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
   }
 
   private static determineNextPath(res: Response): string {
-    const basePath = `/person/${res.locals.nomisId}/record-recall-v2`
+    const basePath = `/person/${res.locals.nomisId}/record-recall`
 
     // Check if recall is possible
     const recallPossible = CheckPossibleControllerV2.isRecallPossible(res)

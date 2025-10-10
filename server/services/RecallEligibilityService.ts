@@ -8,9 +8,16 @@ import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibili
 import { RecallType, RecallTypes } from '../@types/recallTypes'
 import { SummarisedSentence, SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
 import { isCriticalValidationError } from '../utils/constants'
 import logger from '../../logger'
+
+// Minimal type definition for recall journey data
+interface RecallJourneyData {
+  isEdit?: boolean
+  storedRecall?: {
+    recallId?: string
+  }
+}
 
 export interface RecallEligibilityRequest {
   courtCases: CourtCase[]
@@ -89,12 +96,32 @@ export class RecallEligibilityService {
   // RAS sentence eligibility assessment
   private assessRasSentenceEligibility(sentence: RecallableCourtCaseSentence): RecallEligibility {
     const { sentenceType } = sentence
+
+    logger.info('RecallEligibilityService - assessRasSentenceEligibility:', {
+      sentenceUuid: sentence.sentenceUuid,
+      sentenceType,
+      classification: sentence.classification,
+      hasSentenceType: !!sentenceType,
+    })
+
     if (!sentenceType) {
+      logger.info('No sentenceType - returning RAS_LEGACY_SENTENCE')
       return eligibilityReasons.RAS_LEGACY_SENTENCE
     }
-    if (this.isNonSDS(sentenceType)) {
+
+    const isNonSDS = this.isNonSDS(sentenceType)
+    logger.info('RecallEligibilityService - SDS check:', {
+      sentenceType,
+      isNonSDS,
+      includesStandardDeterminate: sentenceType.includes('Standard Determinate Sentence'),
+    })
+
+    if (isNonSDS) {
+      logger.info('Sentence is NON_SDS')
       return eligibilityReasons.NON_SDS
     }
+
+    logger.info('Sentence is SDS - eligible for recall')
     return eligibilityReasons.SDS
   }
 
@@ -298,10 +325,42 @@ export class RecallEligibilityService {
       hasEligibleSentences: false,
     }
 
-    courtCase.sentences?.forEach(sentence => {
-      if (!sentence) return
+    logger.info('RecallEligibilityService - Processing court case:', {
+      courtCaseId: courtCase.caseId,
+      courtName,
+      hasSentences: !!courtCase.sentences,
+      sentenceCount: courtCase.sentences?.length || 0,
+      firstSentence: courtCase.sentences?.[0],
+      sentencesArray: Array.isArray(courtCase.sentences),
+      sentencesType: typeof courtCase.sentences,
+    })
+
+    if (!courtCase.sentences || !Array.isArray(courtCase.sentences)) {
+      logger.warn('RecallEligibilityService - No sentences array found for court case:', {
+        courtCaseId: courtCase.caseId,
+        sentencesValue: courtCase.sentences,
+      })
+      return null
+    }
+
+    courtCase.sentences?.forEach((sentence, index) => {
+      if (!sentence) {
+        logger.warn(`RecallEligibilityService - Null sentence at index ${index}`)
+        return
+      }
 
       const recallEligibility = this.assessRasSentenceEligibility(sentence)
+
+      logger.info('RecallEligibilityService - Assessed sentence eligibility:', {
+        sentenceIndex: index,
+        sentenceUuid: sentence.sentenceUuid,
+        sentenceType: sentence.sentenceType,
+        classification: sentence.classification,
+        eligibilityCode: recallEligibility.code,
+        recallRoute: recallEligibility.recallRoute,
+        isEligible: recallEligibility.recallRoute !== 'NOT_POSSIBLE',
+      })
+
       const summarisedSentence: SummarisedSentence = {
         sentenceId: sentence.sentenceUuid,
         recallEligibility,
@@ -317,12 +376,22 @@ export class RecallEligibilityService {
       if (recallEligibility.recallRoute !== 'NOT_POSSIBLE') {
         summarisedGroup.hasEligibleSentences = true
         summarisedGroup.eligibleSentences.push(summarisedSentence)
+        logger.info(`Added sentence to eligibleSentences, count now: ${summarisedGroup.eligibleSentences.length}`)
       } else {
         summarisedGroup.hasIneligibleSentences = true
         summarisedGroup.ineligibleSentences.push(summarisedSentence)
+        logger.info(`Added sentence to ineligibleSentences, count now: ${summarisedGroup.ineligibleSentences.length}`)
       }
 
       summarisedGroup.sentences.push(sentence)
+    })
+
+    logger.info('RecallEligibilityService - Finished processing court case:', {
+      courtCaseId: courtCase.caseId,
+      totalSentences: summarisedGroup.sentences.length,
+      eligibleCount: summarisedGroup.eligibleSentences.length,
+      ineligibleCount: summarisedGroup.ineligibleSentences.length,
+      hasEligibleSentences: summarisedGroup.hasEligibleSentences,
     })
 
     return summarisedGroup.sentences.length > 0 ? summarisedGroup : null
@@ -419,7 +488,19 @@ export class RecallEligibilityService {
   }
 
   private calculateEligibleSentenceCount(cases: SummarisedSentenceGroup[]): number {
-    return cases.flatMap(g => g.eligibleSentences.flatMap(s => s.sentenceId)).length
+    const count = cases.flatMap(g => g.eligibleSentences.flatMap(s => s.sentenceId)).length
+    logger.info('RecallEligibilityService - calculateEligibleSentenceCount:', {
+      casesCount: cases.length,
+      cases: cases.map(c => ({
+        caseRef: c.caseRefAndCourt,
+        hasEligibleSentences: c.hasEligibleSentences,
+        eligibleCount: c.eligibleSentences.length,
+        ineligibleCount: c.ineligibleSentences.length,
+        eligibleSentences: c.eligibleSentences,
+      })),
+      totalEligibleCount: count,
+    })
+    return count
   }
 
   private buildCourtCaseSummary(cases: SummarisedSentenceGroup[]): CourtCaseSummary[] {
