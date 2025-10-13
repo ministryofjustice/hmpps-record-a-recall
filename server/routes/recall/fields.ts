@@ -42,7 +42,7 @@ const fields = {
     fieldset: {
       legend: {
         text: 'Date they were arrested',
-        classes: 'govuk-fieldset__legend--s',
+        classes: 'govuk-fieldset__legend--m',
       },
     },
     hint: {
