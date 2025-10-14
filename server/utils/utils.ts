@@ -9,6 +9,7 @@ import { formatLongDate } from '../formatters/formatDate'
 import { RecallJourneyData } from '../helpers/formWizardHelper'
 import logger from '../../logger'
 import config from '../config'
+import { GroupedPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -108,7 +109,7 @@ export function createAnswerSummaryList(
   ])
 }
 
-export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]) => {
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]) : GroupedPeriodLengths[]=> {
   if (!periodLengths) return null
   const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
   const ordered = mapped.sort((a, b) => {

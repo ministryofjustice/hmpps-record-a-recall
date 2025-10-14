@@ -11,7 +11,6 @@ import {
   formatLengths,
   consecutiveToDetailsToDescription,
   formatCountNumber,
-  groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import dayjs from 'dayjs'
 import { initialiseName, lowercaseFirstLetter, periodLengthsToSentenceLengths } from './utils'
@@ -85,7 +84,6 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('lowercaseFirstLetter', lowercaseFirstLetter)
   njkEnv.addFilter('formatCountNumber', formatCountNumber)
-  // njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 
   njkEnv.addFilter('groupAndSortPeriodLengths', (periods: Array<{ length: number }>) => {
     if (!Array.isArray(periods)) return []
