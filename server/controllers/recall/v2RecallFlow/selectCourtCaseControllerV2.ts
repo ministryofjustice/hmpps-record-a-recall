@@ -219,7 +219,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
           const enhancedCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
           reviewableCases = enhancedCases
-            .filter(c => c.status !== 'DRAFT' && c.isSentenced)
+            .filter(c => c.status !== 'ACTIVE' && c.isSentenced)
             .map(recallableCase => {
               const caseReference = recallableCase.reference?.trim() || ''
 
