@@ -142,9 +142,6 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
 
-    // Verify session was updated
-    const updatedSession = ReturnToCustodyDateControllerV2.getSessionData(req)
-
     // Clear validation state before redirecting
     clearValidation(req)
 
@@ -380,7 +377,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       ? `/person/${nomisId}/edit-recall-v2/${recallId}`
       : `/person/${nomisId}/record-recall-v2`
 
-    // Complex navigation logic from steps.ts lines 53-65
+    // navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments
     if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
       return `${basePath}/conflicting-adjustments-interrupt`
