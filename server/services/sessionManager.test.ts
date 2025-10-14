@@ -177,10 +177,10 @@ describe('SessionManager', () => {
       const result = SessionManager.getAllSessionData(req)
 
       expect(result).toEqual({
-        ual: 5,
+        UAL: 5,
         recallId: 'recall123',
         inPrisonAtRecall: true,
-        rtcDate: '2024-01-10', // This is how the session key is stored
+        returnToCustodyDate: '2024-01-10', // Using actual session key value now
       })
     })
 
@@ -193,7 +193,7 @@ describe('SessionManager', () => {
       const result = SessionManager.getAllSessionData(req)
 
       expect(result).toEqual({
-        ual: 5,
+        UAL: 5,
       })
     })
   })
@@ -266,7 +266,6 @@ describe('SessionManager', () => {
   describe('save', () => {
     it('should call save on sessionModel when it exists', () => {
       SessionManager.save(req)
-
       expect(mockSessionModel.save).toHaveBeenCalled()
     })
 

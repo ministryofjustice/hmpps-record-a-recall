@@ -37,10 +37,24 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {
-      res.locals.formResponses = {
+      const formResponses: Record<string, string | boolean> = {
         inPrisonAtRecall: sessionData?.inPrisonAtRecall,
-        returnToCustodyDate: sessionData?.returnToCustodyDate,
       }
+
+      // If returnToCustodyDate exists in session, split it into day/month/year parts for the form
+      if (sessionData?.returnToCustodyDate) {
+        const dateString = sessionData.returnToCustodyDate
+        // Parse date string (expected format: yyyy-MM-dd)
+        const dateParts = dateString.split('-')
+        if (dateParts.length === 3) {
+          const [year, month, day] = dateParts
+          formResponses['returnToCustodyDate-year'] = year
+          formResponses['returnToCustodyDate-month'] = month
+          formResponses['returnToCustodyDate-day'] = day
+        }
+      }
+
+      res.locals.formResponses = formResponses
     }
 
     res.render('pages/recall/v2/rtc-date', {
@@ -91,23 +105,42 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       }
     }
 
+    // Convert Date to string format for session storage (yyyy-MM-dd format)
+    // The Zod schema returns a Date object, but we need to store it as a string
+    // Use local date components to avoid timezone conversion issues
+    let returnToCustodyDateString: string | null = null
+    if (!isInPrison && returnToCustodyDate) {
+      if (returnToCustodyDate instanceof Date) {
+        const year = returnToCustodyDate.getFullYear()
+        const month = String(returnToCustodyDate.getMonth() + 1).padStart(2, '0')
+        const day = String(returnToCustodyDate.getDate()).padStart(2, '0')
+        returnToCustodyDateString = `${year}-${month}-${day}`
+      } else {
+        returnToCustodyDateString = returnToCustodyDate
+      }
+    }
+
     // Process UAL calculations and conflicts
-    const ual = !isInPrison && returnToCustodyDate ? calculateUal(revocationDate, returnToCustodyDate) : null
+    const ual =
+      !isInPrison && returnToCustodyDateString ? calculateUal(revocationDate, returnToCustodyDateString) : null
     const processedUalData = ual
-      ? ReturnToCustodyDateControllerV2.processUalConflicts(req, ual, returnToCustodyDate, sessionData)
+      ? ReturnToCustodyDateControllerV2.processUalConflicts(req, ual, returnToCustodyDateString, sessionData)
       : null
 
     // Update session with form data and UAL information
-    ReturnToCustodyDateControllerV2.updateSessionData(req, {
+    const sessionUpdate = {
       inPrisonAtRecall: isInPrison,
-      returnToCustodyDate: isInPrison ? null : returnToCustodyDate,
+      returnToCustodyDate: returnToCustodyDateString,
+      UAL: ual, // Store the calculated UAL
       ualToCreate: processedUalData?.ualToCreate,
       ualToEdit: processedUalData?.ualToEdit,
       hasMultipleOverlappingUalTypeRecall: processedUalData?.hasMultipleOverlappingUALTypeRecall,
       relevantAdjustment: processedUalData?.relevantAdjustments,
       incompatibleTypesAndMultipleConflictingAdjustments: processedUalData?.hasConflicts,
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
-    })
+    }
+
+    ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
 
     // Clear validation state before redirecting
     clearValidation(req)
@@ -344,7 +377,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       ? `/person/${nomisId}/edit-recall-v2/${recallId}`
       : `/person/${nomisId}/record-recall-v2`
 
-    // Complex navigation logic from steps.ts lines 53-65
+    // navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments
     if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
       return `${basePath}/conflicting-adjustments-interrupt`

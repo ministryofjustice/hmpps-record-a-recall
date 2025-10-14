@@ -39,6 +39,7 @@ export default abstract class BaseController {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected static updateSessionData(req: Request, data: Record<string, any>): void {
     SessionManager.updateRecallData(req as RequestWithSession, data)
+    SessionManager.save(req as RequestWithSession)
   }
 
   /**
