@@ -10,12 +10,13 @@ interface FormWizardRequest {
     set: (key: string, value: unknown, options?: { silent?: boolean }) => void
     unset: (key: string | string[]) => void
     toJSON?: () => Record<string, unknown>
-    save: () => void
+    save: (callback?: (err?: Error) => void) => void
     reset?: () => unknown
     updateSessionData?: (changes: object) => unknown
   }
 }
 
+// TODO can we remove this after form wizard is removed?
 class SessionManager {
   static readonly SESSION_KEYS = {
     ENTRYPOINT: 'entrypoint',
@@ -106,14 +107,19 @@ class SessionManager {
 
   static updateRecallData(req: FormWizardRequest, data: Partial<RecallSessionData>) {
     try {
+      logger.info('SessionManager.updateRecallData called with:', data)
       Object.entries(data).forEach(([key, value]) => {
         const sessionKey = this.getSessionKeyForDataKey(key)
         if (sessionKey) {
           if (value === undefined || value === null) {
+            logger.info(`SessionManager: Unsetting ${key} (sessionKey: ${sessionKey})`)
             req.sessionModel.unset(sessionKey)
           } else {
+            logger.info(`SessionManager: Setting ${key} (sessionKey: ${sessionKey}) to:`, value)
             req.sessionModel.set(sessionKey, value)
           }
+        } else {
+          logger.warn(`SessionManager: No session key found for data key: ${key}`)
         }
       })
     } catch (error) {
@@ -137,12 +143,11 @@ class SessionManager {
     try {
       const data: RecallSessionData = {}
 
-      Object.entries(this.SESSION_KEYS).forEach(([dataKey, sessionKey]) => {
+      Object.entries(this.SESSION_KEYS).forEach(([_, sessionKey]) => {
         const value = req.sessionModel.get(sessionKey)
         if (value !== undefined) {
-          const camelCaseKey = this.toCamelCase(dataKey)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(data as any)[camelCaseKey] = value
+          ;(data as any)[sessionKey] = value
         }
       })
 
@@ -154,23 +159,12 @@ class SessionManager {
   }
 
   private static getSessionKeyForDataKey(dataKey: string): string | undefined {
-    const upperSnakeKey = this.toUpperSnakeCase(dataKey)
-
-    for (const [key, value] of Object.entries(this.SESSION_KEYS)) {
-      if (key === upperSnakeKey || value === dataKey) {
-        return value
-      }
+    // Check if the dataKey exists as a session key value (all are in camelCase)
+    const sessionKeyValues = Object.values(this.SESSION_KEYS)
+    if (sessionKeyValues.includes(dataKey)) {
+      return dataKey
     }
-
     return undefined
-  }
-
-  private static toUpperSnakeCase(str: string): string {
-    return str.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase()
-  }
-
-  private static toCamelCase(str: string): string {
-    return str.toLowerCase().replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
   }
 
   static hasSessionModel(req: FormWizardRequest): boolean {
@@ -204,10 +198,15 @@ class SessionManager {
   static save(req: FormWizardRequest) {
     try {
       if (!req.sessionModel) {
+        logger.warn('SessionManager.save called but no sessionModel exists')
         return
       }
       if (typeof req.sessionModel.save === 'function') {
+        logger.info('SessionManager.save: Calling sessionModel.save()')
         req.sessionModel.save()
+        logger.info('SessionManager.save: Session save called')
+      } else {
+        logger.warn('SessionManager.save: sessionModel.save is not a function')
       }
     } catch (error) {
       logger.error('Error saving session', error)

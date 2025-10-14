@@ -93,7 +93,12 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
     // Calculate UAL text + diff
     let ualText: string | undefined
     let ualDiff: boolean | undefined
-    const calculatedUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+
+    // Only calculate UAL if person was not in prison at recall (they have a return to custody date)
+    const calculatedUal =
+      !journeyData.inPrisonAtRecall && journeyData.returnToCustodyDateString
+        ? calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+        : null
 
     if (calculatedUal) {
       ualText = `${calculatedUal.days} day${calculatedUal.days === 1 ? '' : 's'}`
