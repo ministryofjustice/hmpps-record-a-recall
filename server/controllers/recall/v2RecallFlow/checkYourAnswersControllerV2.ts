@@ -99,7 +99,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       isEdit: isEditRecall,
       storedRecall: sessionData?.storedRecall,
     }
-    
+
     logger.info('Check Your Answers - Journey Data:', {
       returnToCustodyDate: journeyData.returnToCustodyDate,
       returnToCustodyDateString: journeyData.returnToCustodyDateString,
@@ -110,7 +110,23 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
     // Calculate UAL text + diff
     let ualText: string | undefined
     let ualDiff: boolean | undefined
-    const calculatedUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+
+    logger.info('UAL Calculation Input:', {
+      revDateString: journeyData.revDateString,
+      returnToCustodyDateString: journeyData.returnToCustodyDateString,
+      inPrisonAtRecall: journeyData.inPrisonAtRecall,
+    })
+
+    // Only calculate UAL if person was not in prison at recall (they have a return to custody date)
+    const calculatedUal =
+      !journeyData.inPrisonAtRecall && journeyData.returnToCustodyDateString
+        ? calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+        : null
+
+    logger.info('UAL Calculation Result:', {
+      calculatedUal,
+      shouldCalculate: !journeyData.inPrisonAtRecall && !!journeyData.returnToCustodyDateString,
+    })
 
     if (calculatedUal) {
       ualText = `${calculatedUal.days} day${calculatedUal.days === 1 ? '' : 's'}`
@@ -131,6 +147,12 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
     if (!res.locals.formResponses) {
       res.locals.formResponses = {}
     }
+
+    logger.info('Rendering check-your-answers with:', {
+      ualText,
+      ualDiff,
+      hasUalText: !!ualText,
+    })
 
     res.render('pages/recall/v2/check-your-answers', {
       prisoner,

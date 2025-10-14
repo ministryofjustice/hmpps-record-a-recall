@@ -107,11 +107,14 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // Convert Date to string format for session storage (yyyy-MM-dd format)
     // The Zod schema returns a Date object, but we need to store it as a string
+    // Use local date components to avoid timezone conversion issues
     let returnToCustodyDateString: string | null = null
     if (!isInPrison && returnToCustodyDate) {
       if (returnToCustodyDate instanceof Date) {
-        const [datePart] = returnToCustodyDate.toISOString().split('T')
-        returnToCustodyDateString = datePart
+        const year = returnToCustodyDate.getFullYear()
+        const month = String(returnToCustodyDate.getMonth() + 1).padStart(2, '0')
+        const day = String(returnToCustodyDate.getDate()).padStart(2, '0')
+        returnToCustodyDateString = `${year}-${month}-${day}`
       } else {
         returnToCustodyDateString = returnToCustodyDate
       }
@@ -153,11 +156,11 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       incompatibleTypesAndMultipleConflictingAdjustments: processedUalData?.hasConflicts,
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
     }
-    
+
     logger.info('RTC Controller - Session Update:', sessionUpdate)
-    
+
     await ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
-    
+
     // Verify session was updated
     const updatedSession = ReturnToCustodyDateControllerV2.getSessionData(req)
     logger.info('RTC Controller - Updated Session Data:', {

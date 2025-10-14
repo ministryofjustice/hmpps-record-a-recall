@@ -177,10 +177,10 @@ describe('SessionManager', () => {
       const result = SessionManager.getAllSessionData(req)
 
       expect(result).toEqual({
-        ual: 5,
+        UAL: 5,
         recallId: 'recall123',
         inPrisonAtRecall: true,
-        rtcDate: '2024-01-10', // This is how the session key is stored
+        returnToCustodyDate: '2024-01-10', // Using actual session key value now
       })
     })
 
@@ -193,7 +193,7 @@ describe('SessionManager', () => {
       const result = SessionManager.getAllSessionData(req)
 
       expect(result).toEqual({
-        ual: 5,
+        UAL: 5,
       })
     })
   })
@@ -264,36 +264,33 @@ describe('SessionManager', () => {
   })
 
   describe('save', () => {
-    it('should call save on sessionModel when it exists', () => {
-      SessionManager.save(req)
+    it('should call save on sessionModel when it exists', async () => {
+      mockSessionModel.save.mockImplementation((callback: (err?: Error) => void) => {
+        callback()
+      })
 
+      await SessionManager.save(req)
       expect(mockSessionModel.save).toHaveBeenCalled()
     })
 
-    it('should not throw when sessionModel does not exist', () => {
+    it('should not throw when sessionModel does not exist', async () => {
       const reqWithoutSession = {} as FormWizard.Request
 
-      expect(() => {
-        SessionManager.save(reqWithoutSession)
-      }).not.toThrow()
+      await expect(SessionManager.save(reqWithoutSession)).resolves.toBeUndefined()
     })
 
-    it('should not throw when save is not a function', () => {
+    it('should not throw when save is not a function', async () => {
       req.sessionModel.save = undefined
 
-      expect(() => {
-        SessionManager.save(req)
-      }).not.toThrow()
+      await expect(SessionManager.save(req)).resolves.toBeUndefined()
     })
 
-    it('should throw when save fails', () => {
-      mockSessionModel.save.mockImplementation(() => {
-        throw new Error('Save error')
+    it('should throw when save fails', async () => {
+      mockSessionModel.save.mockImplementation((callback: (err?: Error) => void) => {
+        callback(new Error('Save error'))
       })
 
-      expect(() => {
-        SessionManager.save(req)
-      }).toThrow('Save error')
+      await expect(SessionManager.save(req)).rejects.toThrow('Save error')
     })
   })
 })
