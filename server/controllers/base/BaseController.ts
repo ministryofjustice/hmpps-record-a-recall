@@ -37,9 +37,9 @@ export default abstract class BaseController {
    * Update session data using SessionManager
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected static async updateSessionData(req: Request, data: Record<string, any>): Promise<void> {
+  protected static updateSessionData(req: Request, data: Record<string, any>): void {
     SessionManager.updateRecallData(req as RequestWithSession, data)
-    await SessionManager.save(req as RequestWithSession)
+    SessionManager.save(req as RequestWithSession)
   }
 
   /**

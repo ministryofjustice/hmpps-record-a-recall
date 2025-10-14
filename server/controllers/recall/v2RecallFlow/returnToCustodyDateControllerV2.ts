@@ -157,9 +157,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
     }
 
-    logger.info('RTC Controller - Session Update:', sessionUpdate)
-
-    await ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
+    ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
 
     // Verify session was updated
     const updatedSession = ReturnToCustodyDateControllerV2.getSessionData(req)

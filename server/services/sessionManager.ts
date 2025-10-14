@@ -142,11 +142,9 @@ class SessionManager {
     try {
       const data: RecallSessionData = {}
 
-      Object.entries(this.SESSION_KEYS).forEach(([dataKey, sessionKey]) => {
+      Object.entries(this.SESSION_KEYS).forEach(([_, sessionKey]) => {
         const value = req.sessionModel.get(sessionKey)
         if (value !== undefined) {
-          // Use the sessionKey directly as the property name (it's already in camelCase)
-          // e.g., 'returnToCustodyDate', 'revocationDate', etc.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(data as any)[sessionKey] = value
         }
@@ -160,7 +158,9 @@ class SessionManager {
   }
 
   private static getSessionKeyForDataKey(dataKey: string): string | undefined {
-    // First check if the dataKey matches a session key value directly
+    // TODO simplify this, do we need to check both camel and upperSnakeKey?
+    //
+    // check if the dataKey matches a session key value directly
     for (const [, value] of Object.entries(this.SESSION_KEYS)) {
       if (value === dataKey) {
         return value
@@ -210,34 +210,23 @@ class SessionManager {
     }
   }
 
-  static save(req: FormWizardRequest): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        if (!req.sessionModel) {
-          logger.warn('SessionManager.save called but no sessionModel exists')
-          resolve()
-          return
-        }
-        if (typeof req.sessionModel.save === 'function') {
-          logger.info('SessionManager.save: Calling sessionModel.save()')
-          req.sessionModel.save((err?: Error) => {
-            if (err) {
-              logger.error('Session save error:', err)
-              reject(err)
-            } else {
-              logger.info('SessionManager.save: Session saved successfully')
-              resolve()
-            }
-          })
-        } else {
-          logger.warn('SessionManager.save: sessionModel.save is not a function')
-          resolve()
-        }
-      } catch (error) {
-        logger.error('Error saving session', error)
-        reject(error)
+  static save(req: FormWizardRequest) {
+    try {
+      if (!req.sessionModel) {
+        logger.warn('SessionManager.save called but no sessionModel exists')
+        return
       }
-    })
+      if (typeof req.sessionModel.save === 'function') {
+        logger.info('SessionManager.save: Calling sessionModel.save()')
+        req.sessionModel.save()
+        logger.info('SessionManager.save: Session save called')
+      } else {
+        logger.warn('SessionManager.save: sessionModel.save is not a function')
+      }
+    } catch (error) {
+      logger.error('Error saving session', error)
+      throw error
+    }
   }
 }
 
