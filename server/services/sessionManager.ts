@@ -16,6 +16,7 @@ interface FormWizardRequest {
   }
 }
 
+// TODO can we remove this after form wizard is removed?
 class SessionManager {
   static readonly SESSION_KEYS = {
     ENTRYPOINT: 'entrypoint',
@@ -158,28 +159,12 @@ class SessionManager {
   }
 
   private static getSessionKeyForDataKey(dataKey: string): string | undefined {
-    // TODO simplify this, do we need to check both camel and upperSnakeKey?
-    //
-    // check if the dataKey matches a session key value directly
-    for (const [, value] of Object.entries(this.SESSION_KEYS)) {
-      if (value === dataKey) {
-        return value
-      }
+    // Check if the dataKey exists as a session key value (all are in camelCase)
+    const sessionKeyValues = Object.values(this.SESSION_KEYS)
+    if (sessionKeyValues.includes(dataKey)) {
+      return dataKey
     }
-
-    // If not found, try converting to upper snake case to match SESSION_KEYS entries
-    const upperSnakeKey = this.toUpperSnakeCase(dataKey)
-    for (const [key, value] of Object.entries(this.SESSION_KEYS)) {
-      if (key === upperSnakeKey) {
-        return value
-      }
-    }
-
     return undefined
-  }
-
-  private static toUpperSnakeCase(str: string): string {
-    return str.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase()
   }
 
   static hasSessionModel(req: FormWizardRequest): boolean {
