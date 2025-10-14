@@ -10,7 +10,7 @@ interface FormWizardRequest {
     set: (key: string, value: unknown, options?: { silent?: boolean }) => void
     unset: (key: string | string[]) => void
     toJSON?: () => Record<string, unknown>
-    save: () => void
+    save: (callback?: (err?: Error) => void) => void
     reset?: () => unknown
     updateSessionData?: (changes: object) => unknown
   }
@@ -106,14 +106,19 @@ class SessionManager {
 
   static updateRecallData(req: FormWizardRequest, data: Partial<RecallSessionData>) {
     try {
+      logger.info('SessionManager.updateRecallData called with:', data)
       Object.entries(data).forEach(([key, value]) => {
         const sessionKey = this.getSessionKeyForDataKey(key)
         if (sessionKey) {
           if (value === undefined || value === null) {
+            logger.info(`SessionManager: Unsetting ${key} (sessionKey: ${sessionKey})`)
             req.sessionModel.unset(sessionKey)
           } else {
+            logger.info(`SessionManager: Setting ${key} (sessionKey: ${sessionKey}) to:`, value)
             req.sessionModel.set(sessionKey, value)
           }
+        } else {
+          logger.warn(`SessionManager: No session key found for data key: ${key}`)
         }
       })
     } catch (error) {
@@ -140,9 +145,10 @@ class SessionManager {
       Object.entries(this.SESSION_KEYS).forEach(([dataKey, sessionKey]) => {
         const value = req.sessionModel.get(sessionKey)
         if (value !== undefined) {
-          const camelCaseKey = this.toCamelCase(dataKey)
+          // Use the sessionKey directly as the property name (it's already in camelCase)
+          // e.g., 'returnToCustodyDate', 'revocationDate', etc.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(data as any)[camelCaseKey] = value
+          ;(data as any)[sessionKey] = value
         }
       })
 
@@ -154,10 +160,17 @@ class SessionManager {
   }
 
   private static getSessionKeyForDataKey(dataKey: string): string | undefined {
-    const upperSnakeKey = this.toUpperSnakeCase(dataKey)
+    // First check if the dataKey matches a session key value directly
+    for (const [, value] of Object.entries(this.SESSION_KEYS)) {
+      if (value === dataKey) {
+        return value
+      }
+    }
 
+    // If not found, try converting to upper snake case to match SESSION_KEYS entries
+    const upperSnakeKey = this.toUpperSnakeCase(dataKey)
     for (const [key, value] of Object.entries(this.SESSION_KEYS)) {
-      if (key === upperSnakeKey || value === dataKey) {
+      if (key === upperSnakeKey) {
         return value
       }
     }
@@ -167,10 +180,6 @@ class SessionManager {
 
   private static toUpperSnakeCase(str: string): string {
     return str.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase()
-  }
-
-  private static toCamelCase(str: string): string {
-    return str.toLowerCase().replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
   }
 
   static hasSessionModel(req: FormWizardRequest): boolean {
@@ -201,18 +210,34 @@ class SessionManager {
     }
   }
 
-  static save(req: FormWizardRequest) {
-    try {
-      if (!req.sessionModel) {
-        return
+  static save(req: FormWizardRequest): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (!req.sessionModel) {
+          logger.warn('SessionManager.save called but no sessionModel exists')
+          resolve()
+          return
+        }
+        if (typeof req.sessionModel.save === 'function') {
+          logger.info('SessionManager.save: Calling sessionModel.save()')
+          req.sessionModel.save((err?: Error) => {
+            if (err) {
+              logger.error('Session save error:', err)
+              reject(err)
+            } else {
+              logger.info('SessionManager.save: Session saved successfully')
+              resolve()
+            }
+          })
+        } else {
+          logger.warn('SessionManager.save: sessionModel.save is not a function')
+          resolve()
+        }
+      } catch (error) {
+        logger.error('Error saving session', error)
+        reject(error)
       }
-      if (typeof req.sessionModel.save === 'function') {
-        req.sessionModel.save()
-      }
-    } catch (error) {
-      logger.error('Error saving session', error)
-      throw error
-    }
+    })
   }
 }
 

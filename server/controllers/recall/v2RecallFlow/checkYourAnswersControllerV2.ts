@@ -46,6 +46,16 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
     const recallTypeCode = sessionData?.recallType
     const recallType = getRecallType(recallTypeCode)
 
+    // Debug logging
+    logger.info('Check Your Answers - Session Data:', {
+      revocationDate: sessionData?.revocationDate,
+      returnToCustodyDate: sessionData?.returnToCustodyDate,
+      returnToCustodyDateType: typeof sessionData?.returnToCustodyDate,
+      inPrisonAtRecall: sessionData?.inPrisonAtRecall,
+      parsedReturnToCustodyDate: returnToCustodyDate,
+      UAL: sessionData?.UAL,
+    })
+
     // Calculate eligible sentences and get sentence IDs from court cases
     let eligibleSentenceCount = 0
     const sentenceIds: string[] = []
@@ -89,6 +99,13 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       isEdit: isEditRecall,
       storedRecall: sessionData?.storedRecall,
     }
+    
+    logger.info('Check Your Answers - Journey Data:', {
+      returnToCustodyDate: journeyData.returnToCustodyDate,
+      returnToCustodyDateString: journeyData.returnToCustodyDateString,
+      inPrisonAtRecall: journeyData.inPrisonAtRecall,
+      ual: journeyData.ual,
+    })
 
     // Calculate UAL text + diff
     let ualText: string | undefined

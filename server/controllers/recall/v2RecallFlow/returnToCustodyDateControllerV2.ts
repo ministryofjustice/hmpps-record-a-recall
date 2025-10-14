@@ -37,10 +37,24 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // If not coming from a validation redirect, load from session
     if (!res.locals.formResponses) {
-      res.locals.formResponses = {
+      const formResponses: Record<string, string | boolean> = {
         inPrisonAtRecall: sessionData?.inPrisonAtRecall,
-        returnToCustodyDate: sessionData?.returnToCustodyDate,
       }
+
+      // If returnToCustodyDate exists in session, split it into day/month/year parts for the form
+      if (sessionData?.returnToCustodyDate) {
+        const dateString = sessionData.returnToCustodyDate
+        // Parse date string (expected format: yyyy-MM-dd)
+        const dateParts = dateString.split('-')
+        if (dateParts.length === 3) {
+          const [year, month, day] = dateParts
+          formResponses['returnToCustodyDate-year'] = year
+          formResponses['returnToCustodyDate-month'] = month
+          formResponses['returnToCustodyDate-day'] = day
+        }
+      }
+
+      res.locals.formResponses = formResponses
     }
 
     res.render('pages/recall/v2/rtc-date', {
@@ -91,22 +105,65 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       }
     }
 
+    // Convert Date to string format for session storage (yyyy-MM-dd format)
+    // The Zod schema returns a Date object, but we need to store it as a string
+    let returnToCustodyDateString: string | null = null
+    if (!isInPrison && returnToCustodyDate) {
+      if (returnToCustodyDate instanceof Date) {
+        const [datePart] = returnToCustodyDate.toISOString().split('T')
+        returnToCustodyDateString = datePart
+      } else {
+        returnToCustodyDateString = returnToCustodyDate
+      }
+    }
+
+    // Debug logging
+    logger.info('RTC Date Controller POST:', {
+      inPrisonAtRecall,
+      inPrisonAtRecallType: typeof inPrisonAtRecall,
+      isInPrison,
+      returnToCustodyDate,
+      returnToCustodyDateType: typeof returnToCustodyDate,
+      returnToCustodyDateString,
+      revocationDate,
+    })
+
     // Process UAL calculations and conflicts
-    const ual = !isInPrison && returnToCustodyDate ? calculateUal(revocationDate, returnToCustodyDate) : null
+    const ual =
+      !isInPrison && returnToCustodyDateString ? calculateUal(revocationDate, returnToCustodyDateString) : null
     const processedUalData = ual
-      ? ReturnToCustodyDateControllerV2.processUalConflicts(req, ual, returnToCustodyDate, sessionData)
+      ? ReturnToCustodyDateControllerV2.processUalConflicts(req, ual, returnToCustodyDateString, sessionData)
       : null
 
+    // Debug UAL calculation
+    logger.info('UAL Calculation:', {
+      ual,
+      hasConflicts: processedUalData?.hasConflicts,
+    })
+
     // Update session with form data and UAL information
-    ReturnToCustodyDateControllerV2.updateSessionData(req, {
+    const sessionUpdate = {
       inPrisonAtRecall: isInPrison,
-      returnToCustodyDate: isInPrison ? null : returnToCustodyDate,
+      returnToCustodyDate: returnToCustodyDateString,
+      UAL: ual, // Store the calculated UAL
       ualToCreate: processedUalData?.ualToCreate,
       ualToEdit: processedUalData?.ualToEdit,
       hasMultipleOverlappingUalTypeRecall: processedUalData?.hasMultipleOverlappingUALTypeRecall,
       relevantAdjustment: processedUalData?.relevantAdjustments,
       incompatibleTypesAndMultipleConflictingAdjustments: processedUalData?.hasConflicts,
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
+    }
+    
+    logger.info('RTC Controller - Session Update:', sessionUpdate)
+    
+    await ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
+    
+    // Verify session was updated
+    const updatedSession = ReturnToCustodyDateControllerV2.getSessionData(req)
+    logger.info('RTC Controller - Updated Session Data:', {
+      returnToCustodyDate: updatedSession?.returnToCustodyDate,
+      inPrisonAtRecall: updatedSession?.inPrisonAtRecall,
+      UAL: updatedSession?.UAL,
     })
 
     // Clear validation state before redirecting
