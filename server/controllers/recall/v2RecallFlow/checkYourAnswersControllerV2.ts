@@ -90,13 +90,6 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       storedRecall: sessionData?.storedRecall,
     }
 
-    logger.info('Check Your Answers - Journey Data:', {
-      returnToCustodyDate: journeyData.returnToCustodyDate,
-      returnToCustodyDateString: journeyData.returnToCustodyDateString,
-      inPrisonAtRecall: journeyData.inPrisonAtRecall,
-      ual: journeyData.ual,
-    })
-
     // Calculate UAL text + diff
     let ualText: string | undefined
     let ualDiff: boolean | undefined

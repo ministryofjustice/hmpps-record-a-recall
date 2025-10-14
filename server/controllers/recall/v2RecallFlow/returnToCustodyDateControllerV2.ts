@@ -120,29 +120,12 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       }
     }
 
-    // Debug logging
-    logger.info('RTC Date Controller POST:', {
-      inPrisonAtRecall,
-      inPrisonAtRecallType: typeof inPrisonAtRecall,
-      isInPrison,
-      returnToCustodyDate,
-      returnToCustodyDateType: typeof returnToCustodyDate,
-      returnToCustodyDateString,
-      revocationDate,
-    })
-
     // Process UAL calculations and conflicts
     const ual =
       !isInPrison && returnToCustodyDateString ? calculateUal(revocationDate, returnToCustodyDateString) : null
     const processedUalData = ual
       ? ReturnToCustodyDateControllerV2.processUalConflicts(req, ual, returnToCustodyDateString, sessionData)
       : null
-
-    // Debug UAL calculation
-    logger.info('UAL Calculation:', {
-      ual,
-      hasConflicts: processedUalData?.hasConflicts,
-    })
 
     // Update session with form data and UAL information
     const sessionUpdate = {
@@ -161,11 +144,6 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // Verify session was updated
     const updatedSession = ReturnToCustodyDateControllerV2.getSessionData(req)
-    logger.info('RTC Controller - Updated Session Data:', {
-      returnToCustodyDate: updatedSession?.returnToCustodyDate,
-      inPrisonAtRecall: updatedSession?.inPrisonAtRecall,
-      UAL: updatedSession?.UAL,
-    })
 
     // Clear validation state before redirecting
     clearValidation(req)
