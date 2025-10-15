@@ -2,6 +2,8 @@ import { addDays, differenceInCalendarDays, format, isEqual, subDays, parseISO }
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { UAL } from 'models'
+import { groupAndSortPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
+import { GroupedPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
@@ -107,27 +109,23 @@ export function createAnswerSummaryList(
   ])
 }
 
-export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): SentenceLength[] => {
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
   if (!periodLengths) return null
-
   const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
-
-  // enforce order: Sentence Length first, then Licence Period, then everything else
-  const order = {
-    SENTENCE_LENGTH: 1,
-    LICENCE_PERIOD: 2,
-    CUSTODIAL_TERM: 3,
-    TARIFF_LENGTH: 4,
-    TERM_LENGTH: 5,
-    OVERALL_SENTENCE_LENGTH: 6,
-    UNSUPPORTED: 99,
-  }
-
-  return mapped.sort((a, b) => {
-    const aRank = order[a.periodLengthType] || 50
-    const bRank = order[b.periodLengthType] || 50
-    return aRank - bRank
+  const ordered = mapped.sort((a, b) => {
+    const order = {
+      SENTENCE_LENGTH: 1,
+      LICENCE_PERIOD: 2,
+      CUSTODIAL_TERM: 3,
+      TARIFF_LENGTH: 4,
+      TERM_LENGTH: 5,
+      OVERALL_SENTENCE_LENGTH: 6,
+      UNSUPPORTED: 99,
+    }
+    return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
   })
+
+  return groupAndSortPeriodLengths(ordered)
 }
 
 export const lowercaseFirstLetter = (s: string): string => {
