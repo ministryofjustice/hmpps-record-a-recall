@@ -1,7 +1,5 @@
 import { Request, Response } from 'express'
 import { min } from 'date-fns'
-// eslint-disable-next-line import/no-unresolved
-import { CourtCase } from 'models'
 import BaseController from '../../base/BaseController'
 import { clearValidation } from '../../../middleware/validationMiddleware'
 import { RecallRoutingService } from '../../../services/RecallRoutingService'
@@ -155,7 +153,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       }
 
       // Get required data from session for new recall flow
-      const courtCases = (sessionData?.courtCaseOptions || []).filter((c: CourtCase) => c.status !== 'DRAFT')
+      const courtCases = sessionData?.courtCaseOptions || []
       const adjustments = sessionData?.existingAdjustments || []
       const existingRecalls = res.locals.recalls || []
       const crdsSentences = sessionData?.crdsSentences || []

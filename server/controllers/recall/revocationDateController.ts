@@ -1,8 +1,6 @@
 import FormWizard from 'hmpo-form-wizard'
 import { NextFunction, Response } from 'express'
 import { min } from 'date-fns'
-// eslint-disable-next-line import/no-unresolved
-import { CourtCase } from 'models'
 import RecallBaseController from './recallBaseController'
 import { SessionManager } from '../../services/sessionManager'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
@@ -46,7 +44,7 @@ export default class RevocationDateController extends RecallBaseController {
 
       try {
         const revocationDate = new Date(values.revocationDate as string)
-        const courtCases = getCourtCaseOptions(req).filter((c: CourtCase) => c.status !== 'DRAFT')
+        const courtCases = getCourtCaseOptions(req)
         const adjustments = getExistingAdjustments(req)
         const existingRecalls = res.locals.recalls || []
         const journeyData = getJourneyDataFromRequest(req)
