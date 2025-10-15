@@ -12,7 +12,7 @@ export interface RequestWithSession extends Request {
     set: (key: string, value: unknown, options?: { silent?: boolean }) => void
     unset: (key: string | string[]) => void
     toJSON?: () => Record<string, unknown>
-    save: () => void
+    save: () => Promise<void>
     reset?: () => unknown
     updateSessionData?: (changes: object) => unknown
   }
@@ -37,9 +37,9 @@ export default abstract class BaseController {
    * Update session data using SessionManager
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected static updateSessionData(req: Request, data: Record<string, any>): void {
+  protected static async updateSessionData(req: Request, data: Record<string, any>): Promise<void> {
     SessionManager.updateRecallData(req as RequestWithSession, data)
-    SessionManager.save(req as RequestWithSession)
+    await SessionManager.save(req as RequestWithSession)
   }
 
   /**

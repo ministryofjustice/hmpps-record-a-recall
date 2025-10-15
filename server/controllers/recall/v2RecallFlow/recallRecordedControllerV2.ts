@@ -22,7 +22,7 @@ export default class RecallRecordedControllerV2 extends BaseController {
 
     // Clear session data (reset journey)
     // This mimics the resetJourney: true behavior from FormWizard
-    RecallRecordedControllerV2.updateSessionData(req, {
+    await RecallRecordedControllerV2.updateSessionData(req, {
       revocationDate: null,
       returnToCustodyDate: null,
       inPrisonAtRecall: null,

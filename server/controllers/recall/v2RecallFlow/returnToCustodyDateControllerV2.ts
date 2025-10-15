@@ -140,13 +140,13 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
     }
 
-    ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
+    await ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
 
     // Clear validation state before redirecting
     clearValidation(req)
 
     // Determine next path based on complex navigation logic
-    const nextPath = ReturnToCustodyDateControllerV2.determineNextPath(req, res)
+    const nextPath = await ReturnToCustodyDateControllerV2.determineNextPath(req, res)
     res.redirect(nextPath)
   }
 
@@ -354,7 +354,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     }
   }
 
-  private static determineNextPath(req: Request, res: Response): string {
+  private static async determineNextPath(req: Request, res: Response): Promise<string> {
     const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
     const { nomisId, recallId } = res.locals
@@ -362,7 +362,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // Mark that this step was edited
     if (isEditMode || isEditFromCheckYourAnswers) {
-      ReturnToCustodyDateControllerV2.updateSessionData(req, {
+      await ReturnToCustodyDateControllerV2.updateSessionData(req, {
         lastEditedStep: 'rtc-date',
       })
     }

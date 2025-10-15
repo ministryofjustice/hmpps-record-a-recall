@@ -27,28 +27,21 @@ export function sessionModelAdapter(req: Request, res: Response, next: NextFunct
         keys.forEach(k => delete (req.session as any)[k])
       }
     },
-    save: (callback?: (err?: Error) => void) => {
-      if (req.session?.save) {
-        req.session.save(err => {
-          if (err) {
-            logger.error('Session save error:', err)
-            // Propagate error to callback if provided
-            if (callback) {
-              callback(err)
-              return
+    save: (): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        if (req.session?.save) {
+          req.session.save(err => {
+            if (err) {
+              logger.error('Session save error:', err)
+              reject(err)
+            } else {
+              resolve()
             }
-            // Also propagate to Express error handler if no callback
-            // This ensures session save failures are properly handled
-            next(err)
-            return
-          }
-          if (callback) {
-            callback(null)
-          }
-        })
-      } else if (callback) {
-        callback(null)
-      }
+          })
+        } else {
+          resolve()
+        }
+      })
     },
     toJSON: () => req.session || {},
     reset: () => {

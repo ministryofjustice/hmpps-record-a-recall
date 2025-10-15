@@ -233,7 +233,7 @@ export default class EditSummaryControllerV2 extends BaseController {
       req.flash('action', 'updated')
 
       // Clear edit session data
-      EditSummaryControllerV2.updateSessionData(req, {
+      await EditSummaryControllerV2.updateSessionData(req, {
         isEdit: false,
         storedRecall: null,
         journeyComplete: null,

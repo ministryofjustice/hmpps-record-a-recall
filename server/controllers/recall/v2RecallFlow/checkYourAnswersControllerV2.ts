@@ -204,7 +204,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       req.flash('action', 'recorded')
 
       // Mark journey as complete in session
-      CheckYourAnswersControllerV2.updateSessionData(req, {
+      await CheckYourAnswersControllerV2.updateSessionData(req, {
         journeyComplete: true,
         recallId: createResponse.recallUuid,
       })

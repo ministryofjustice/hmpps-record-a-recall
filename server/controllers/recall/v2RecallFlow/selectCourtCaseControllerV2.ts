@@ -249,7 +249,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
 
         // Update session with initial data
-        SelectCourtCaseControllerV2.updateSessionData(req, {
+        await SelectCourtCaseControllerV2.updateSessionData(req, {
           reviewableCourtCases: reviewableCases,
           currentCaseIndex,
           manualRecallDecisions,
@@ -277,7 +277,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         : `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
       // Store return URL for cancel flow
-      SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseControllerV2.updateSessionData(req, {
         returnTo: req.originalUrl,
       })
 
@@ -329,14 +329,14 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Store the decision for this case
       if (activeSentenceChoice) {
         manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
-        SelectCourtCaseControllerV2.updateSessionData(req, {
+        await SelectCourtCaseControllerV2.updateSessionData(req, {
           manualRecallDecisions,
         })
       }
 
       // Move to the next case
       const nextCaseIndex = currentCaseIndex + 1
-      SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseControllerV2.updateSessionData(req, {
         currentCaseIndex: nextCaseIndex,
       })
 
@@ -356,7 +356,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       })
 
       // Store both as selectedCases and courtCaseOptions for consistency
-      SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseControllerV2.updateSessionData(req, {
         selectedCases,
         courtCaseOptions: selectedCases,
       })
@@ -403,7 +403,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
 
         // Set session data for unknown sentences
         if (unknownSentenceIds.length > 0) {
-          SelectCourtCaseControllerV2.updateSessionData(req, {
+          await SelectCourtCaseControllerV2.updateSessionData(req, {
             unknownSentencesToUpdate: unknownSentenceIds,
             updatedSentenceTypes: {},
           })
@@ -411,7 +411,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       }
 
       // Store the summarized sentences
-      SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseControllerV2.updateSessionData(req, {
         summarisedSentences: summarisedSentenceGroupsArray,
       })
 
@@ -436,7 +436,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Proceed to next step
       if (isEditMode) {
         // Mark that this step was edited
-        SelectCourtCaseControllerV2.updateSessionData(req, {
+        await SelectCourtCaseControllerV2.updateSessionData(req, {
           lastEditedStep: 'select-court-cases',
         })
         // Continue to next step in edit flow

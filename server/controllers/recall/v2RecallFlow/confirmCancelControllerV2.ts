@@ -32,7 +32,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     // Store the return URL if this is the first visit to confirm-cancel
     const currentReturnTo = sessionData?.returnTo
     if (!currentReturnTo && referrerPath && !referrerPath.includes('confirm-cancel')) {
-      ConfirmCancelControllerV2.updateSessionData(req, { returnTo: referrerPath })
+      await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: referrerPath })
     }
 
     // Get the return URL for the back link
@@ -66,7 +66,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     // Check if user confirmed cancellation
     if (confirmCancel === 'true') {
       // Clear the return URL
-      ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })
+      await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })
 
       // Determine where to redirect based on entry point
       const entrypoint = sessionData?.entrypoint || 'search'
@@ -83,7 +83,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     const returnTo = sessionData?.returnTo || `/person/${nomisId}/record-recall-v2/revocation-date`
 
     // Clear the stored return URL
-    ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })
+    await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })
 
     logger.info(`User declined cancellation, returning to ${returnTo}`)
 

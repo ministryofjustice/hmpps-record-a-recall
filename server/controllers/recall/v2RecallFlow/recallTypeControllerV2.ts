@@ -35,7 +35,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     const currentPath = isEditMode
       ? `/person/${nomisId}/edit-recall-v2/${recallId}/recall-type`
       : `/person/${nomisId}/record-recall-v2/recall-type`
-    RecallTypeControllerV2.updateSessionData(req, { returnTo: currentPath })
+    await RecallTypeControllerV2.updateSessionData(req, { returnTo: currentPath })
 
     // Load form data from session if not coming from validation
     if (!res.locals.formResponses) {
@@ -73,7 +73,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     logger.info(`Processing recall type selection: ${recallType} for prisoner ${nomisId}`)
 
     // Store the recall type in session
-    RecallTypeControllerV2.updateSessionData(req, {
+    await RecallTypeControllerV2.updateSessionData(req, {
       recallType,
     })
 
@@ -95,7 +95,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     // If in edit mode, return to edit-summary
     if (isEditMode) {
       // Mark that this step was edited
-      RecallTypeControllerV2.updateSessionData(req, {
+      await RecallTypeControllerV2.updateSessionData(req, {
         lastEditedStep: 'recall-type',
       })
       return res.redirect(`/person/${nomisId}/edit-recall-v2/${recallId}/edit-summary`)

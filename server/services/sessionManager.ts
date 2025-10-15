@@ -10,7 +10,7 @@ interface FormWizardRequest {
     set: (key: string, value: unknown, options?: { silent?: boolean }) => void
     unset: (key: string | string[]) => void
     toJSON?: () => Record<string, unknown>
-    save: (callback?: (err?: Error) => void) => void
+    save: () => Promise<void>
     reset?: () => unknown
     updateSessionData?: (changes: object) => unknown
   }
@@ -195,7 +195,7 @@ class SessionManager {
     }
   }
 
-  static save(req: FormWizardRequest) {
+  static async save(req: FormWizardRequest): Promise<void> {
     try {
       if (!req.sessionModel) {
         logger.warn('SessionManager.save called but no sessionModel exists')
@@ -203,8 +203,8 @@ class SessionManager {
       }
       if (typeof req.sessionModel.save === 'function') {
         logger.info('SessionManager.save: Calling sessionModel.save()')
-        req.sessionModel.save()
-        logger.info('SessionManager.save: Session save called')
+        await req.sessionModel.save()
+        logger.info('SessionManager.save: Session save completed')
       } else {
         logger.warn('SessionManager.save: sessionModel.save is not a function')
       }

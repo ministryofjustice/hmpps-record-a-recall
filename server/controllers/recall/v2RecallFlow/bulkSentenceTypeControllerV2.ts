@@ -97,7 +97,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
       // Store return URL for cancel flow
-      BulkSentenceTypeControllerV2.updateSessionData(req, {
+      await BulkSentenceTypeControllerV2.updateSessionData(req, {
         returnTo: req.originalUrl,
       })
 
@@ -190,12 +190,12 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       })
 
       // Update session with all sentence type mappings
-      BulkSentenceTypeControllerV2.updateSessionData(req, {
+      await BulkSentenceTypeControllerV2.updateSessionData(req, {
         updatedSentenceTypes: updatedSentences,
       })
 
       // Clear session keys: bulkUpdateMode, sentencesInCurrentCase, currentSentenceIndex
-      BulkSentenceTypeControllerV2.updateSessionData(req, {
+      await BulkSentenceTypeControllerV2.updateSessionData(req, {
         bulkUpdateMode: null,
         sentencesInCurrentCase: null,
         currentSentenceIndex: null,

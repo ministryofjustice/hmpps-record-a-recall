@@ -31,7 +31,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     const isEditRecall = !!recallId
 
     // Clean up session state from any sub-flows
-    UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+    await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
       bulkUpdateMode: null,
       sentencesInCurrentCase: null,
       currentSentenceIndex: null,
@@ -84,7 +84,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     const unknownSentenceIds = courtCasesWithUnknownSentences.flatMap((courtCase: CourtCaseWithUnknownSentences) =>
       courtCase.unknownSentences.map(s => s.sentenceUuid),
     )
-    UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+    await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
       unknownSentencesToUpdate: unknownSentenceIds,
     })
 
@@ -246,7 +246,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
 
         // Re-summarize the cases with updated sentence types
         const summarisedSentenceGroupsArray = summariseRasCases(updatedCourtCases)
-        UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+        await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
           summarisedSentences: summarisedSentenceGroupsArray,
           courtCaseOptions: updatedCourtCases,
         })
@@ -273,7 +273,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     }
 
     // Clear the temporary session data on success
-    UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+    await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
       updatedSentenceTypes: null,
       unknownSentencesToUpdate: null,
     })

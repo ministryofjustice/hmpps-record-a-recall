@@ -20,7 +20,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
 
   // TODO: This violates RESTful principles by performing state mutations in a GET handler.
   // The original FormWizard implementation has the same issue (configure method runs on GET).
-  // Future improvement: Add a loading/processing page that shows progress while data is being
+  // Future improvement: Add a loading/processing page/button that shows progress while data is being
   // fetched, then POST to process the data. This would make the flow properly RESTful and
   // provide better UX for slow API calls. For now, we're maintaining parity with the original
   // behavior to ensure the migration works correctly.
@@ -205,7 +205,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
       res.locals.existingAdjustments = existingAdjustments
 
       // Store data in session
-      CheckPossibleControllerV2.storeSessionData(req, res)
+      await CheckPossibleControllerV2.storeSessionData(req, res)
 
       // Determine redirect path
       const nextPath = CheckPossibleControllerV2.determineNextPath(res)
@@ -216,16 +216,16 @@ export default class CheckPossibleControllerV2 extends BaseController {
     }
   }
 
-  private static storeSessionData(req: Request, res: Response): void {
+  private static async storeSessionData(req: Request, res: Response): Promise<void> {
     // Store all the calculated data in session
     // Use BaseController's helper methods where possible
-    CheckPossibleControllerV2.updateSessionData(req, { entrypoint: res.locals.entrypoint })
-    CheckPossibleControllerV2.updateSessionData(req, { recallEligibility: res.locals.recallEligibility })
-    CheckPossibleControllerV2.updateSessionData(req, { prisoner: res.locals.prisoner })
+    await CheckPossibleControllerV2.updateSessionData(req, { entrypoint: res.locals.entrypoint })
+    await CheckPossibleControllerV2.updateSessionData(req, { recallEligibility: res.locals.recallEligibility })
+    await CheckPossibleControllerV2.updateSessionData(req, { prisoner: res.locals.prisoner })
 
     // Set manual route if STANDARD_RECALL_255 error occurred
     if (res.locals.forceManualRoute) {
-      CheckPossibleControllerV2.updateSessionData(req, { manualCaseSelection: true })
+      await CheckPossibleControllerV2.updateSessionData(req, { manualCaseSelection: true })
     }
 
     const { routingResponse } = res.locals
@@ -239,12 +239,15 @@ export default class CheckPossibleControllerV2 extends BaseController {
           SessionManager.setSessionValue(req as any, sessionField, value)
         }
       })
+      // Save session after setting values
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await SessionManager.save(req as any)
 
       // Note: localUpdates are already set in res.locals
     }
 
     // Store remaining session data
-    CheckPossibleControllerV2.updateSessionData(req, {
+    await CheckPossibleControllerV2.updateSessionData(req, {
       courtCaseOptions: res.locals.courtCases,
       crdsSentences: res.locals.crdsSentences,
       rasSentences: res.locals.rasSentences,

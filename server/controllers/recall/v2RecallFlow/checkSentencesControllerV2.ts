@@ -81,7 +81,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
       : `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
     // Store the current page for confirm-cancel return
-    CheckSentencesControllerV2.updateSessionData(req, { returnTo: req.originalUrl })
+    await CheckSentencesControllerV2.updateSessionData(req, { returnTo: req.originalUrl })
 
     // If not coming from a validation redirect, clear form responses
     if (!res.locals.formResponses) {
@@ -118,7 +118,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
 
     if (isEditMode) {
       // Mark that this step was reviewed
-      CheckSentencesControllerV2.updateSessionData(req, {
+      await CheckSentencesControllerV2.updateSessionData(req, {
         lastEditedStep: 'check-sentences',
       })
       // Continue to next step in edit flow

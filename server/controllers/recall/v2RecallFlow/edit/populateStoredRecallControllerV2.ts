@@ -42,7 +42,7 @@ export default class PopulateStoredRecallControllerV2 extends BaseController {
       storedRecall.ual = calculateUal(revocationDate, returnToCustodyDate)
 
       // Populate session with stored recall data using BaseController's updateSessionData
-      PopulateStoredRecallControllerV2.updateSessionData(req, {
+      await PopulateStoredRecallControllerV2.updateSessionData(req, {
         storedRecall,
         recallId,
         isEdit: true,

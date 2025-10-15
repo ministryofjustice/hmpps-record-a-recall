@@ -134,7 +134,7 @@ export default class RevocationDateControllerV2 extends BaseController {
           storedRevocationDate: beforeUpdate?.storedRecall?.revocationDate,
         })
 
-        RevocationDateControllerV2.updateSessionData(req, {
+        await RevocationDateControllerV2.updateSessionData(req, {
           revocationDate: revocationDateString,
           lastEditedStep: 'revocation-date',
         })
@@ -218,7 +218,7 @@ export default class RevocationDateControllerV2 extends BaseController {
         isEditMode: false,
       })
 
-      RevocationDateControllerV2.updateSessionData(req, {
+      await RevocationDateControllerV2.updateSessionData(req, {
         revocationDate: revocationDateString,
         invalidRecallTypes: routingResponse.eligibilityDetails.invalidRecallTypes,
         eligibleSentenceCount: routingResponse.eligibilityDetails.eligibleSentenceCount,
@@ -248,7 +248,7 @@ export default class RevocationDateControllerV2 extends BaseController {
         const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
         const day = String(revocationDateObj.getDate()).padStart(2, '0')
         const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
-        RevocationDateControllerV2.updateSessionData(req, {
+        await RevocationDateControllerV2.updateSessionData(req, {
           revocationDate: revocationDateString,
           lastEditedStep: 'revocation-date',
         })
@@ -263,7 +263,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
       const day = String(revocationDateObj.getDate()).padStart(2, '0')
       const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
-      RevocationDateControllerV2.updateSessionData(req, {
+      await RevocationDateControllerV2.updateSessionData(req, {
         revocationDate: revocationDateString,
         manualCaseSelection: true,
       })

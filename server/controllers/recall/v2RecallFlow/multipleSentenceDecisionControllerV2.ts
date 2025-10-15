@@ -47,7 +47,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       }
 
       // Store sentences in session for later use
-      MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
         [SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE]: unknownSentences,
         [SessionManager.SESSION_KEYS.SELECTED_COURT_CASE_UUID]: courtCaseId,
       })
@@ -57,7 +57,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
       // Store return URL for cancel flow
-      MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
         returnTo: req.originalUrl,
       })
 
@@ -97,7 +97,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       // Store decision in session
       const isSameType = sameSentenceType === 'yes'
 
-      MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
         sameSentenceType,
         [SessionManager.SESSION_KEYS.BULK_UPDATE_MODE]: isSameType,
       })
@@ -111,7 +111,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       }
 
       // For individual flow, initialize the sentence index
-      MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
         [SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX]: 0,
       })
 

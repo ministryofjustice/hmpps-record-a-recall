@@ -44,7 +44,7 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
     const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
 
     // Mark that the user has confirmed they understand the manual process
-    ManualRecallInterceptControllerV2.updateSessionData(req, {
+    await ManualRecallInterceptControllerV2.updateSessionData(req, {
       'select-court-case-details.njk': 'confirmed',
     })
 

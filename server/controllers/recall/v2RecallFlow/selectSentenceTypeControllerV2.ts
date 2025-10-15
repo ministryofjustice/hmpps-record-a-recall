@@ -75,7 +75,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
     const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
 
     // Store return URL for cancel flow
-    SelectSentenceTypeControllerV2.updateSessionData(req, {
+    await SelectSentenceTypeControllerV2.updateSessionData(req, {
       returnTo: req.originalUrl,
     })
 
@@ -157,7 +157,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
       description: selectedTypeDesc || sentenceType,
     }
 
-    SelectSentenceTypeControllerV2.updateSessionData(req, {
+    await SelectSentenceTypeControllerV2.updateSessionData(req, {
       updatedSentenceTypes: updatedSentences,
     })
 
@@ -176,7 +176,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
       if (sentencesInCase && typeof currentIndex === 'number') {
         // Move to the next sentence
         const nextIndex = currentIndex + 1
-        SelectSentenceTypeControllerV2.updateSessionData(req, {
+        await SelectSentenceTypeControllerV2.updateSessionData(req, {
           currentSentenceIndex: nextIndex,
         })
 
@@ -196,7 +196,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
         logger.info('Completed individual sentence update flow', {
           totalSentences: sentencesInCase.length,
         })
-        SelectSentenceTypeControllerV2.updateSessionData(req, {
+        await SelectSentenceTypeControllerV2.updateSessionData(req, {
           bulkUpdateMode: null,
           sentencesInCurrentCase: null,
           currentSentenceIndex: null,
