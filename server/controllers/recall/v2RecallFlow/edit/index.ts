@@ -17,13 +17,9 @@ import SelectCourtCaseControllerV2 from '../selectCourtCaseControllerV2'
 import ManualRecallInterceptControllerV2 from '../manualRecallInterceptControllerV2'
 import NoSentencesInterruptControllerV2 from '../noSentencesInterruptControllerV2'
 import ConflictingAdjustmentsInterruptControllerV2 from '../conflictingAdjustmentsInterruptControllerV2'
-import { sessionModelAdapter } from '../../../../middleware/sessionModelAdapter'
 
 export default function editRoutes(): Router {
   const router = express.Router({ mergeParams: true })
-
-  // Apply session model adapter for compatibility with SessionManager
-  router.use(sessionModelAdapter)
 
   // Entry point - populate stored recall data
   router.get(

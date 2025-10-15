@@ -4,7 +4,7 @@ import BaseController from '../../base/BaseController'
 import { clearValidation } from '../../../middleware/validationMiddleware'
 import logger from '../../../../logger'
 import { SentenceType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { findSentenceAndCourtCase } from '../../../helpers/sentenceHelper'
+import { findSentenceAndCourtCase } from '../../../utils/sentenceHelperV2'
 import { formatDateStringToDDMMYYYY } from '../../../utils/utils'
 import SelectSentenceTypeControllerV2 from './selectSentenceTypeControllerV2'
 
@@ -61,7 +61,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
 
       if (!targetCase) {
         logger.error(`Court case not found: ${courtCaseId}`)
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Get sentences from session
@@ -72,7 +72,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
 
       if (!sentencesInCase || sentencesInCase.length === 0) {
         logger.error('No sentences found in session')
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Get common applicable sentence types
@@ -93,8 +93,8 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       const selectedType = updatedSentences[firstSentence.sentenceUuid]?.uuid
 
       // Set navigation
-      const backLink = `/person/${nomisId}/record-recall-v2/multiple-sentence-decision/${courtCaseId}`
-      const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+      const backLink = `/person/${nomisId}/record-recall/multiple-sentence-decision/${courtCaseId}`
+      const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
       // Store return URL for cancel flow
       await BulkSentenceTypeControllerV2.updateSessionData(req, {
@@ -132,7 +132,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
     } catch (error) {
       logger.error('Error in BulkSentenceTypeControllerV2.get', { error: error.message })
       const { nomisId } = res.locals
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 
@@ -152,7 +152,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       if (!sentencesInCase || sentencesInCase.length === 0) {
         logger.error('No sentences found in session during POST')
         clearValidation(req)
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Get court cases to find the sentence type description
@@ -162,7 +162,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       if (!targetCase) {
         logger.error(`Court case not found during POST: ${courtCaseId}`)
         clearValidation(req)
-        return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Get the sentence types again to find the description
@@ -209,12 +209,12 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
 
       // Clear validation and redirect to summary
       clearValidation(req)
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     } catch (error) {
       logger.error('Error in BulkSentenceTypeControllerV2.post', { error: error.message })
       const { nomisId } = res.locals
       clearValidation(req)
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 }

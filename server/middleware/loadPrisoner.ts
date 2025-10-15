@@ -29,16 +29,7 @@ export default function loadPrisoner(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sessionData = req.session as any
 
-      // Check FormWizard session namespaces
-      const wizardKeys = ['hmpo-wizard-record-recall', 'hmpo-wizard-edit-recall']
-      for (const key of wizardKeys) {
-        if (sessionData?.[key]?.prisoner) {
-          res.locals.prisoner = sessionData[key].prisoner
-          return next()
-        }
-      }
-
-      // Also check direct session storage (V2 pattern via sessionModelAdapter)
+      // Check direct session storage
       if (sessionData?.prisoner) {
         res.locals.prisoner = sessionData.prisoner
         return next()
@@ -61,19 +52,11 @@ export default function loadPrisoner(
       const prisoner = await service.getPrisonerDetails(nomisId, userUsername)
       res.locals.prisoner = prisoner
 
-      // Update session if enabled (for V2 compatibility)
+      // Update session if enabled
       if (options.updateSession && req.session) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sessionData = req.session as any
         sessionData.prisoner = prisoner
-
-        // Also update FormWizard namespaces if they exist
-        if (sessionData['hmpo-wizard-record-recall']) {
-          sessionData['hmpo-wizard-record-recall'].prisoner = prisoner
-        }
-        if (sessionData['hmpo-wizard-edit-recall']) {
-          sessionData['hmpo-wizard-edit-recall'].prisoner = prisoner
-        }
       }
 
       logger.debug(`Prisoner details loaded for ${nomisId}`)

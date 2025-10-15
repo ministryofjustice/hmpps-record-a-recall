@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import FormWizard from 'hmpo-form-wizard'
+import { Request } from 'express'
 import { SessionManager } from './sessionManager'
 
 // Mock the getRecallType function
@@ -14,42 +14,33 @@ jest.mock('../@types/recallTypes', () => ({
 
 describe('SessionManager', () => {
   let req: any
-  let mockSessionModel: any
 
   beforeEach(() => {
-    mockSessionModel = {
-      get: jest.fn(),
-      set: jest.fn(),
-      unset: jest.fn(),
-      save: jest.fn(),
-    }
-
     req = {
-      sessionModel: mockSessionModel,
-    } as FormWizard.Request
+      session: {},
+    } as Request
+
+    // Mock the session save method
+    ;(req.session as any).save = jest.fn((callback: (err?: any) => void) => callback())
   })
 
   describe('getRecallData', () => {
     it('should return formatted recall journey data', () => {
-      mockSessionModel.get.mockImplementation((key: string) => {
-        const values: Record<string, unknown> = {
-          courtCases: ['case1', 'case2'],
-          summarisedSentenceGroups: [
-            {
-              eligibleSentences: [{ sentenceId: 'sent1' }, { sentenceId: 'sent2' }],
-            },
-          ],
-          revocationDate: '2024-01-15',
-          returnToCustodyDate: '2024-01-10',
-          UAL: 5,
-          recallType: 'FIXED',
-          inPrisonAtRecall: true,
-          manualCaseSelection: false,
-          eligibleSentenceCount: 3,
-          isEdit: false,
-        }
-        return values[key]
-      })
+      // Set session data directly
+      ;(req.session as any).courtCases = ['case1', 'case2']
+      ;(req.session as any).summarisedSentenceGroups = [
+        {
+          eligibleSentences: [{ sentenceId: 'sent1' }, { sentenceId: 'sent2' }],
+        },
+      ]
+      ;(req.session as any).revocationDate = '2024-01-15'
+      ;(req.session as any).returnToCustodyDate = '2024-01-10'
+      ;(req.session as any).UAL = 5
+      ;(req.session as any).recallType = 'FIXED'
+      ;(req.session as any).inPrisonAtRecall = true
+      ;(req.session as any).manualCaseSelection = false
+      ;(req.session as any).eligibleSentenceCount = 3
+      ;(req.session as any).isEdit = false
 
       const result = SessionManager.getRecallData(req)
 
@@ -75,7 +66,7 @@ describe('SessionManager', () => {
     })
 
     it('should handle missing optional values', () => {
-      mockSessionModel.get.mockReturnValue(undefined)
+      // Session is already empty from beforeEach
 
       const result = SessionManager.getRecallData(req)
 
@@ -98,10 +89,7 @@ describe('SessionManager', () => {
     })
 
     it('should handle UAL text formatting for single day', () => {
-      mockSessionModel.get.mockImplementation((key: string) => {
-        if (key === 'UAL') return 1
-        return undefined
-      })
+      ;(req.session as any).UAL = 1
 
       const result = SessionManager.getRecallData(req)
 
@@ -119,9 +107,9 @@ describe('SessionManager', () => {
 
       SessionManager.updateRecallData(req, data)
 
-      expect(mockSessionModel.set).toHaveBeenCalledWith('UAL', 10)
-      expect(mockSessionModel.set).toHaveBeenCalledWith('inPrisonAtRecall', true)
-      expect(mockSessionModel.set).toHaveBeenCalledWith('recallType', 'STANDARD')
+      expect((req.session as any).UAL).toBe(10)
+      expect((req.session as any).inPrisonAtRecall).toBe(true)
+      expect((req.session as any).recallType).toBe('STANDARD')
     })
 
     it('should unset values that are null or undefined', () => {
@@ -132,9 +120,8 @@ describe('SessionManager', () => {
 
       SessionManager.updateRecallData(req, data)
 
-      expect(mockSessionModel.unset).toHaveBeenCalledWith('UAL')
-      expect(mockSessionModel.unset).toHaveBeenCalledWith('recallType')
-      expect(mockSessionModel.set).not.toHaveBeenCalled()
+      expect((req.session as any).UAL).toBeUndefined()
+      expect((req.session as any).recallType).toBeUndefined()
     })
 
     it('should ignore keys that do not map to session keys', () => {
@@ -142,37 +129,37 @@ describe('SessionManager', () => {
         unknownKey: 'value',
       } as any
 
+      const initialSession = { ...(req.session as any) }
+
       SessionManager.updateRecallData(req, data)
 
-      expect(mockSessionModel.set).not.toHaveBeenCalled()
-      expect(mockSessionModel.unset).not.toHaveBeenCalled()
+      // Session should remain unchanged
+      expect(req.session).toEqual(initialSession)
     })
   })
 
   describe('clearRecallData', () => {
     it('should unset all session keys', () => {
+      // Pre-populate session with some data
+      Object.values(SessionManager.SESSION_KEYS).forEach(key => {
+        ;(req.session as any)[key] = 'someValue'
+      })
+
       SessionManager.clearRecallData(req)
 
       const expectedKeys = Object.values(SessionManager.SESSION_KEYS)
-      expect(mockSessionModel.unset).toHaveBeenCalledTimes(expectedKeys.length)
-
       expectedKeys.forEach(key => {
-        expect(mockSessionModel.unset).toHaveBeenCalledWith(key)
+        expect((req.session as any)[key]).toBeUndefined()
       })
     })
   })
 
   describe('getAllSessionData', () => {
     it('should return all session data with camelCase keys', () => {
-      mockSessionModel.get.mockImplementation((key: string) => {
-        const values: Record<string, unknown> = {
-          UAL: 5,
-          recallId: 'recall123',
-          inPrisonAtRecall: true,
-          returnToCustodyDate: '2024-01-10',
-        }
-        return values[key]
-      })
+      ;(req.session as any).UAL = 5
+      ;(req.session as any).recallId = 'recall123'
+      ;(req.session as any).inPrisonAtRecall = true
+      ;(req.session as any).returnToCustodyDate = '2024-01-10'
 
       const result = SessionManager.getAllSessionData(req)
 
@@ -185,10 +172,8 @@ describe('SessionManager', () => {
     })
 
     it('should exclude undefined values', () => {
-      mockSessionModel.get.mockImplementation((key: string) => {
-        if (key === 'UAL') return 5
-        return undefined
-      })
+      ;(req.session as any).UAL = 5
+      // Other values are undefined by default
 
       const result = SessionManager.getAllSessionData(req)
 
@@ -198,40 +183,35 @@ describe('SessionManager', () => {
     })
   })
 
-  describe('hasSessionModel', () => {
-    it('should return true when sessionModel exists', () => {
-      expect(SessionManager.hasSessionModel(req)).toBe(true)
+  describe('hasSession', () => {
+    it('should return true when session exists', () => {
+      expect(SessionManager.hasSession(req)).toBe(true)
     })
 
-    it('should return false when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
-      expect(SessionManager.hasSessionModel(reqWithoutSession)).toBe(false)
+    it('should return false when session does not exist', () => {
+      const reqWithoutSession = {} as Request
+      expect(SessionManager.hasSession(reqWithoutSession)).toBe(false)
     })
   })
 
   describe('getSessionValue', () => {
     it('should return the value from session', () => {
-      mockSessionModel.get.mockReturnValue('testValue')
+      ;(req.session as any).testKey = 'testValue'
 
       const result = SessionManager.getSessionValue(req, 'testKey')
 
       expect(result).toBe('testValue')
-      expect(mockSessionModel.get).toHaveBeenCalledWith('testKey')
     })
 
-    it('should return undefined when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+    it('should return undefined when session does not exist', () => {
+      const reqWithoutSession = {} as Request
       const result = SessionManager.getSessionValue(reqWithoutSession, 'testKey')
 
       expect(result).toBeUndefined()
     })
 
-    it('should return undefined and not throw when get fails', () => {
-      mockSessionModel.get.mockImplementation(() => {
-        throw new Error('Session error')
-      })
-
-      const result = SessionManager.getSessionValue(req, 'testKey')
+    it('should return undefined when key does not exist', () => {
+      const result = SessionManager.getSessionValue(req, 'nonExistentKey')
 
       expect(result).toBeUndefined()
     })
@@ -241,58 +221,40 @@ describe('SessionManager', () => {
     it('should set the value in session', () => {
       SessionManager.setSessionValue(req, 'testKey', 'testValue')
 
-      expect(mockSessionModel.set).toHaveBeenCalledWith('testKey', 'testValue')
+      expect((req.session as any).testKey).toBe('testValue')
     })
 
-    it('should not throw when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+    it('should not throw when session does not exist', () => {
+      const reqWithoutSession = {} as Request
 
       expect(() => {
         SessionManager.setSessionValue(reqWithoutSession, 'testKey', 'testValue')
       }).not.toThrow()
     })
 
-    it('should throw when set fails', () => {
-      mockSessionModel.set.mockImplementation(() => {
-        throw new Error('Session error')
-      })
+    it('should handle setting null value', () => {
+      SessionManager.setSessionValue(req, 'testKey', null)
 
-      expect(() => {
-        SessionManager.setSessionValue(req, 'testKey', 'testValue')
-      }).toThrow('Session error')
+      expect((req.session as any).testKey).toBe(null)
     })
   })
 
   describe('save', () => {
-    it('should call save on sessionModel when it exists', () => {
-      SessionManager.save(req)
-      expect(mockSessionModel.save).toHaveBeenCalled()
+    it('should call save on session when it exists', async () => {
+      await SessionManager.save(req)
+      expect(req.session.save).toHaveBeenCalled()
     })
 
-    it('should not throw when sessionModel does not exist', () => {
-      const reqWithoutSession = {} as FormWizard.Request
+    it('should resolve when session does not exist', async () => {
+      const reqWithoutSession = {} as Request
 
-      expect(() => {
-        SessionManager.save(reqWithoutSession)
-      }).not.toThrow()
+      await expect(SessionManager.save(reqWithoutSession)).resolves.toBeUndefined()
     })
 
-    it('should not throw when save is not a function', () => {
-      req.sessionModel.save = undefined
+    it('should reject when save fails', async () => {
+      ;(req.session as any).save = jest.fn((callback: (err?: any) => void) => callback(new Error('Save error')))
 
-      expect(() => {
-        SessionManager.save(req)
-      }).not.toThrow()
-    })
-
-    it('should throw when save fails', () => {
-      mockSessionModel.save.mockImplementation(() => {
-        throw new Error('Save error')
-      })
-
-      expect(() => {
-        SessionManager.save(req)
-      }).toThrow('Save error')
+      await expect(SessionManager.save(req)).rejects.toThrow('Save error')
     })
   })
 })

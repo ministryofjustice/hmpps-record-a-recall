@@ -7,7 +7,7 @@ import { GroupedPeriodLengths } from '@ministryofjustice/hmpps-court-cases-relea
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from '../services/sessionTypes'
 import logger from '../../logger'
 import config from '../config'
 

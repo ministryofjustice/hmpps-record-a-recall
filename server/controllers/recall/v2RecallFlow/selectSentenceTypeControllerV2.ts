@@ -9,7 +9,7 @@ import {
   RecallableCourtCaseSentence,
   SentenceType,
 } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { findSentenceAndCourtCase } from '../../../helpers/sentenceHelper'
+import { findSentenceAndCourtCase } from '../../../utils/sentenceHelperV2'
 import { formatDateStringToDDMMYYYY } from '../../../utils/utils'
 
 export default class SelectSentenceTypeControllerV2 extends BaseController {
@@ -33,7 +33,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
 
     if (!targetSentence || !targetCourtCase) {
       logger.error(`Sentence not found: ${sentenceUuid}`)
-      const redirectUrl = `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
+      const redirectUrl = `/person/${nomisId}/record-recall/update-sentence-types-summary`
       return res.redirect(redirectUrl)
     }
 
@@ -63,16 +63,16 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
       | undefined
 
     // Determine navigation
-    let backLink = `/person/${nomisId}/record-recall-v2/update-sentence-types-summary`
+    let backLink = `/person/${nomisId}/record-recall/update-sentence-types-summary`
     if (bulkUpdateMode === false && typeof currentSentenceIndex === 'number' && currentSentenceIndex > 0) {
       // In iterative flow and not the first sentence
       const previousSentenceUuid = sentencesInCurrentCase?.[currentSentenceIndex - 1]?.sentenceUuid
       if (previousSentenceUuid) {
-        backLink = `/person/${nomisId}/record-recall-v2/select-sentence-type/${previousSentenceUuid}`
+        backLink = `/person/${nomisId}/record-recall/select-sentence-type/${previousSentenceUuid}`
       }
     }
 
-    const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+    const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
     // Store return URL for cancel flow
     await SelectSentenceTypeControllerV2.updateSessionData(req, {
@@ -135,7 +135,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
     if (!targetSentence || !targetCourtCase) {
       logger.error(`Sentence not found during POST: ${sentenceUuid}`)
       clearValidation(req)
-      return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
 
     // Get the sentence types again to find the description
@@ -189,7 +189,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
             nextSentenceUuid,
           })
           clearValidation(req)
-          return res.redirect(`/person/${nomisId}/record-recall-v2/select-sentence-type/${nextSentenceUuid}`)
+          return res.redirect(`/person/${nomisId}/record-recall/select-sentence-type/${nextSentenceUuid}`)
         }
 
         // This was the last sentence, clean up session state
@@ -206,7 +206,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
 
     // Default behavior: navigate back to summary page after updating
     clearValidation(req)
-    return res.redirect(`/person/${nomisId}/record-recall-v2/update-sentence-types-summary`)
+    return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
   }
 
   static async getApplicableSentenceTypes(

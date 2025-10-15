@@ -80,7 +80,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     }
 
     // User selected 'No' - return to previous page
-    const returnTo = sessionData?.returnTo || `/person/${nomisId}/record-recall-v2/revocation-date`
+    const returnTo = sessionData?.returnTo || `/person/${nomisId}/record-recall/revocation-date`
 
     // Clear the stored return URL
     await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })

@@ -1,22 +1,9 @@
+import { Request } from 'express'
 import { RecallSessionData, RecallJourneyData } from './sessionTypes'
 import { getRecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import logger from '../../logger'
 
-// Type definition for FormWizard Request
-interface FormWizardRequest {
-  sessionModel?: {
-    get: <T>(key: string) => T | undefined
-    set: (key: string, value: unknown, options?: { silent?: boolean }) => void
-    unset: (key: string | string[]) => void
-    toJSON?: () => Record<string, unknown>
-    save: () => Promise<void>
-    reset?: () => unknown
-    updateSessionData?: (changes: object) => unknown
-  }
-}
-
-// TODO can we remove this after form wizard is removed?
 class SessionManager {
   static readonly SESSION_KEYS = {
     ENTRYPOINT: 'entrypoint',
@@ -69,7 +56,7 @@ class SessionManager {
     SENTENCE_GROUPS: 'sentenceGroups',
   }
 
-  static getRecallData(req: FormWizardRequest): RecallJourneyData {
+  static getRecallData(req: Request): RecallJourneyData {
     try {
       const courtCases = this.getSessionValue<string[]>(req, this.SESSION_KEYS.COURT_CASES)
       const courtCaseCount = courtCases ? courtCases.length : 0
@@ -105,7 +92,7 @@ class SessionManager {
     }
   }
 
-  static updateRecallData(req: FormWizardRequest, data: Partial<RecallSessionData>) {
+  static updateRecallData(req: Request, data: Partial<RecallSessionData>) {
     try {
       logger.info('SessionManager.updateRecallData called with:', data)
       Object.entries(data).forEach(([key, value]) => {
@@ -113,10 +100,12 @@ class SessionManager {
         if (sessionKey) {
           if (value === undefined || value === null) {
             logger.info(`SessionManager: Unsetting ${key} (sessionKey: ${sessionKey})`)
-            req.sessionModel.unset(sessionKey)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (req.session as any)[sessionKey]
           } else {
             logger.info(`SessionManager: Setting ${key} (sessionKey: ${sessionKey}) to:`, value)
-            req.sessionModel.set(sessionKey, value)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(req.session as any)[sessionKey] = value
           }
         } else {
           logger.warn(`SessionManager: No session key found for data key: ${key}`)
@@ -128,10 +117,11 @@ class SessionManager {
     }
   }
 
-  static clearRecallData(req: FormWizardRequest) {
+  static clearRecallData(req: Request) {
     try {
       Object.values(this.SESSION_KEYS).forEach(key => {
-        req.sessionModel.unset(key)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (req.session as any)[key]
       })
     } catch (error) {
       logger.error('Error clearing recall data from session', error)
@@ -139,12 +129,13 @@ class SessionManager {
     }
   }
 
-  static getAllSessionData(req: FormWizardRequest): RecallSessionData {
+  static getAllSessionData(req: Request): RecallSessionData {
     try {
       const data: RecallSessionData = {}
 
       Object.entries(this.SESSION_KEYS).forEach(([_, sessionKey]) => {
-        const value = req.sessionModel.get(sessionKey)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const value = (req.session as any)?.[sessionKey]
         if (value !== undefined) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(data as any)[sessionKey] = value
@@ -167,51 +158,53 @@ class SessionManager {
     return undefined
   }
 
-  static hasSessionModel(req: FormWizardRequest): boolean {
-    return !!req.sessionModel
+  static hasSession(req: Request): boolean {
+    return !!req.session
   }
 
-  static getSessionValue<T>(req: FormWizardRequest, key: string): T | undefined {
+  static getSessionValue<T>(req: Request, key: string): T | undefined {
     try {
-      if (!req.sessionModel) {
+      if (!req.session) {
         return undefined
       }
-      return req.sessionModel.get<T>(key)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (req.session as any)[key] as T
     } catch (error) {
       logger.error(`Error getting session value for key ${key}`, error)
       return undefined
     }
   }
 
-  static setSessionValue(req: FormWizardRequest, key: string, value: unknown) {
+  static setSessionValue(req: Request, key: string, value: unknown) {
     try {
-      if (!req.sessionModel) {
+      if (!req.session) {
         return
       }
-      req.sessionModel.set(key, value)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(req.session as any)[key] = value
     } catch (error) {
       logger.error(`Error setting session value for key ${key}`, error)
       throw error
     }
   }
 
-  static async save(req: FormWizardRequest): Promise<void> {
-    try {
-      if (!req.sessionModel) {
-        logger.warn('SessionManager.save called but no sessionModel exists')
-        return
-      }
-      if (typeof req.sessionModel.save === 'function') {
-        logger.info('SessionManager.save: Calling sessionModel.save()')
-        await req.sessionModel.save()
-        logger.info('SessionManager.save: Session save completed')
-      } else {
-        logger.warn('SessionManager.save: sessionModel.save is not a function')
-      }
-    } catch (error) {
-      logger.error('Error saving session', error)
-      throw error
+  static async save(req: Request): Promise<void> {
+    if (!req.session) {
+      logger.warn('SessionManager.save called but no session exists')
+      return Promise.resolve()
     }
+
+    return new Promise((resolve, reject) => {
+      req.session.save(err => {
+        if (err) {
+          logger.error('Session save error:', err)
+          reject(err)
+        } else {
+          logger.info('SessionManager.save: Session save completed')
+          resolve()
+        }
+      })
+    })
   }
 }
 

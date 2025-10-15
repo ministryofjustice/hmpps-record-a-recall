@@ -1,7 +1,7 @@
 import { isBefore, isAfter, isEqual, addDays } from 'date-fns'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from '../services/sessionTypes'
 
 /**
  * Validates if a revocation date overlaps with existing recalls

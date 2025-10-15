@@ -106,11 +106,11 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
     }
 
     // Build navigation URLs - back to recall type
-    const backLink = `/person/${nomisId}/record-recall-v2/recall-type`
-    const cancelUrl = `/person/${nomisId}/record-recall-v2/confirm-cancel`
+    const backLink = `/person/${nomisId}/record-recall/recall-type`
+    const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
     // Build edit links for V2 flow
-    const editLink = (step: string) => `/person/${nomisId}/record-recall-v2/${step}/edit`
+    const editLink = (step: string) => `/person/${nomisId}/record-recall/${step}/edit`
     // Cast to any to work with existing createAnswerSummaryList that expects RecallJourneyData
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const answerSummaryList = createAnswerSummaryList(journeyData as any, editLink)
@@ -213,7 +213,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       clearValidation(req)
 
       // Redirect to the recall-recorded page
-      return res.redirect(`/person/${nomisId}/record-recall-v2/recall-recorded`)
+      return res.redirect(`/person/${nomisId}/record-recall/recall-recorded`)
     } catch (error) {
       logger.error('Error creating recall:', error)
       throw error

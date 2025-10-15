@@ -8,7 +8,7 @@ import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibili
 import { RecallType, RecallTypes } from '../@types/recallTypes'
 import { SummarisedSentence, SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from './sessionTypes'
 import { isCriticalValidationError } from '../utils/constants'
 import logger from '../../logger'
 

@@ -12,15 +12,15 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
     // Determine if this is an edit recall flow
-    const isEditRecall = !!recallId && req.originalUrl.includes('/edit-recall-v2/')
+    const isEditRecall = !!recallId && req.originalUrl.includes('/edit-recall/')
 
     // Build navigation URLs
     const backLink = isEditRecall
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}/rtc-date`
-      : `/person/${nomisId}/record-recall-v2/rtc-date`
+      ? `/person/${nomisId}/edit-recall/${recallId}/rtc-date`
+      : `/person/${nomisId}/record-recall/rtc-date`
     const cancelUrl = isEditRecall
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}/confirm-cancel`
-      : `/person/${nomisId}/record-recall-v2/confirm-cancel`
+      ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall/confirm-cancel`
 
     // If not coming from a validation redirect, clear form responses
     // This is an intercept page that doesn't have form fields to preserve
@@ -41,7 +41,7 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
 
   static async post(req: Request, res: Response): Promise<void> {
     const { nomisId, recallId } = res.locals
-    const isEditMode = req.originalUrl.includes('/edit-recall-v2/')
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
 
     // Mark that the user has confirmed they understand the manual process
     await ManualRecallInterceptControllerV2.updateSessionData(req, {
@@ -53,8 +53,8 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
     // Clear validation and redirect to next step
     clearValidation(req)
     const nextPath = isEditMode
-      ? `/person/${nomisId}/edit-recall-v2/${recallId}/select-court-cases`
-      : `/person/${nomisId}/record-recall-v2/select-court-cases`
+      ? `/person/${nomisId}/edit-recall/${recallId}/select-court-cases`
+      : `/person/${nomisId}/record-recall/select-court-cases`
     return res.redirect(nextPath)
   }
 }
