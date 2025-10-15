@@ -42,6 +42,21 @@ export default abstract class BaseController {
     await SessionManager.save(req as RequestWithSession)
   }
 
+  protected static async batchUpdateSessionData(
+    req: Request,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...dataUpdates: Array<Record<string, any>>
+  ): Promise<void> {
+    // Merge all data updates into a single object
+    const mergedData = dataUpdates.reduce((acc, update) => ({ ...acc, ...update }), {})
+
+    // Update all fields at once
+    SessionManager.updateRecallData(req as RequestWithSession, mergedData)
+
+    // Save session once after all updates
+    await SessionManager.save(req as RequestWithSession)
+  }
+
   /**
    * Set validation error and redirect
    */

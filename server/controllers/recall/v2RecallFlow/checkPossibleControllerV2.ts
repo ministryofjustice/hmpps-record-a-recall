@@ -217,37 +217,43 @@ export default class CheckPossibleControllerV2 extends BaseController {
   }
 
   private static async storeSessionData(req: Request, res: Response): Promise<void> {
-    // Store all the calculated data in session
-    // Use BaseController's helper methods where possible
-    await CheckPossibleControllerV2.updateSessionData(req, { entrypoint: res.locals.entrypoint })
-    await CheckPossibleControllerV2.updateSessionData(req, { recallEligibility: res.locals.recallEligibility })
-    await CheckPossibleControllerV2.updateSessionData(req, { prisoner: res.locals.prisoner })
+    // Collect all session updates for batching
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sessionUpdates: Array<Record<string, any>> = []
 
-    // Set manual route if STANDARD_RECALL_255 error occurred
+    // Add base data
+    sessionUpdates.push({
+      entrypoint: res.locals.entrypoint,
+      recallEligibility: res.locals.recallEligibility,
+      prisoner: res.locals.prisoner,
+    })
+
+    // Add manual route if needed
     if (res.locals.forceManualRoute) {
-      await CheckPossibleControllerV2.updateSessionData(req, { manualCaseSelection: true })
+      sessionUpdates.push({ manualCaseSelection: true })
     }
 
+    // Handle routing response updates
     const { routingResponse } = res.locals
     if (routingResponse) {
-      // Store session updates from routing response
+      // Convert routing response updates to session field names
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const routingUpdates: Record<string, any> = {}
       Object.entries(routingResponse.sessionUpdates).forEach(([key, value]) => {
         const sessionField = CheckPossibleControllerV2.mapToSessionField(key)
         if (sessionField) {
-          // Use SessionManager directly for dynamic field names
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          SessionManager.setSessionValue(req as any, sessionField, value)
+          // Store using the original key for now, will be handled by updateRecallData
+          routingUpdates[key] = value
         }
       })
-      // Save session after setting values
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await SessionManager.save(req as any)
 
-      // Note: localUpdates are already set in res.locals
+      if (Object.keys(routingUpdates).length > 0) {
+        sessionUpdates.push(routingUpdates)
+      }
     }
 
-    // Store remaining session data
-    await CheckPossibleControllerV2.updateSessionData(req, {
+    // Add remaining session data
+    sessionUpdates.push({
       courtCaseOptions: res.locals.courtCases,
       crdsSentences: res.locals.crdsSentences,
       rasSentences: res.locals.rasSentences,
@@ -257,6 +263,9 @@ export default class CheckPossibleControllerV2 extends BaseController {
       dpsSentenceIds: res.locals.dpsSentenceIds,
       summarisedSentenceGroups: res.locals.summarisedSentenceGroups,
     })
+
+    // Perform a single batched update and save
+    await CheckPossibleControllerV2.batchUpdateSessionData(req, ...sessionUpdates)
   }
 
   /**

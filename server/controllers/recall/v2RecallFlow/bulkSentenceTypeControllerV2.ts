@@ -189,17 +189,18 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
         }
       })
 
-      // Update session with all sentence type mappings
-      await BulkSentenceTypeControllerV2.updateSessionData(req, {
-        updatedSentenceTypes: updatedSentences,
-      })
-
-      // Clear session keys: bulkUpdateMode, sentencesInCurrentCase, currentSentenceIndex
-      await BulkSentenceTypeControllerV2.updateSessionData(req, {
-        bulkUpdateMode: null,
-        sentencesInCurrentCase: null,
-        currentSentenceIndex: null,
-      })
+      // Batch update session with all sentence type mappings and clear temporary keys
+      await BulkSentenceTypeControllerV2.batchUpdateSessionData(
+        req,
+        {
+          updatedSentenceTypes: updatedSentences,
+        },
+        {
+          bulkUpdateMode: null,
+          sentencesInCurrentCase: null,
+          currentSentenceIndex: null,
+        },
+      )
 
       logger.info('Bulk sentence type update completed', {
         courtCaseId,
