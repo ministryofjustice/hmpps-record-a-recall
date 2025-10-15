@@ -46,7 +46,7 @@ export default class RevocationDateController extends RecallBaseController {
 
       try {
         const revocationDate = new Date(values.revocationDate as string)
-        const courtCases = getCourtCaseOptions(req).filter((c: CourtCase) => c.status !== 'DRAFT')
+        const courtCases = getCourtCaseOptions(req)
         const adjustments = getExistingAdjustments(req)
         const existingRecalls = res.locals.recalls || []
         const journeyData = getJourneyDataFromRequest(req)

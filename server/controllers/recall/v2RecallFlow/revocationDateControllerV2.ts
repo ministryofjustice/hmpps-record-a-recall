@@ -155,7 +155,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       }
 
       // Get required data from session for new recall flow
-      const courtCases = (sessionData?.courtCaseOptions || []).filter((c: CourtCase) => c.status !== 'DRAFT')
+      const courtCases = sessionData?.courtCaseOptions || []
       const adjustments = sessionData?.existingAdjustments || []
       const existingRecalls = res.locals.recalls || []
       const crdsSentences = sessionData?.crdsSentences || []

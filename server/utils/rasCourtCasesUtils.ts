@@ -30,5 +30,5 @@ export default function getCourtCaseOptionsFromRas(req: FormWizard.Request, res:
         )
       : []
 
-  return cases.filter((c: CourtCase) => c.status !== 'DRAFT').filter((c: CourtCase) => c.sentenced)
+  return cases.filter((c: CourtCase) => c.sentenced)
 }
