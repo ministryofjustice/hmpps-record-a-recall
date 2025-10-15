@@ -12,7 +12,7 @@ export default function loadCourtCaseOptions(req: FormWizard.Request, res: Respo
     const enhancedCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
     const courtCaseOptions = enhancedCases
-      .filter(c =>  c.isSentenced)
+      .filter(c => c.isSentenced)
       .map(recallableCase => ({
         caseId: recallableCase.courtCaseUuid,
         status: recallableCase.status,
