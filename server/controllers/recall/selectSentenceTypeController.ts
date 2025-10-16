@@ -6,7 +6,7 @@ import BaseController from '../base/BaseController'
 import { clearValidation } from '../../middleware/validationMiddleware'
 import logger from '../../../logger'
 import { RecallableCourtCaseSentence, SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { findSentenceAndCourtCase } from '../../utils/sentenceHelperV2'
+import { findSentenceAndCourtCase } from '../../utils/sentenceHelper'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 
 export default class SelectSentenceTypeController extends BaseController {

@@ -10,7 +10,7 @@ import {
   RecallableCourtCaseSentence,
 } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
-import { createSentenceToCourtCaseMap } from '../../utils/sentenceHelperV2'
+import { createSentenceToCourtCaseMap } from '../../utils/sentenceHelper'
 
 // Types for court cases with unknown sentences
 interface CourtCaseWithUnknownSentences extends CourtCase {
