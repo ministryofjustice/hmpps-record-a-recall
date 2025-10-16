@@ -286,7 +286,7 @@ export default class SelectCourtCaseController extends BaseController {
         res.locals.formResponses = previousDecision ? { activeSentenceChoice: previousDecision } : {}
       }
 
-      res.render('pages/recall/v2/select-court-cases', {
+      res.render('pages/recall/select-court-cases', {
         prisoner,
         nomisId,
         isEditRecall: isEditMode,

@@ -115,7 +115,7 @@ export default class BulkSentenceTypeController extends BaseController {
         courtName: targetCase.locationName || 'Court name not available',
       }
 
-      return res.render('pages/recall/v2/bulk-sentence-type', {
+      return res.render('pages/recall/bulk-sentence-type', {
         prisoner,
         nomisId,
         isEditRecall,

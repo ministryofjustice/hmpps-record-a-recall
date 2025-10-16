@@ -102,7 +102,7 @@ export default class CheckYourAnswersController extends BaseController {
       res.locals.formResponses = {}
     }
 
-    res.render('pages/recall/v2/check-your-answers', {
+    res.render('pages/recall/check-your-answers', {
       prisoner,
       nomisId,
       isEditRecall,

@@ -63,7 +63,7 @@ export default class RevocationDateController extends BaseController {
       earliestSentenceDate = min(crdsSentences.map((s: any) => new Date(s.sentenceDate)))
     }
 
-    res.render('pages/recall/v2/revocation-date', {
+    res.render('pages/recall/revocation-date', {
       prisoner,
       nomisId,
       isEditRecall: isEditMode,

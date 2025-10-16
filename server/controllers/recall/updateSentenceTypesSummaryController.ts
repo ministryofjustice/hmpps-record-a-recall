@@ -122,7 +122,7 @@ export default class UpdateSentenceTypesSummaryController extends BaseController
       res.locals.formResponses = {}
     }
 
-    res.render('pages/recall/v2/update-sentence-types-summary', {
+    res.render('pages/recall/update-sentence-types-summary', {
       prisoner,
       nomisId,
       isEditRecall,

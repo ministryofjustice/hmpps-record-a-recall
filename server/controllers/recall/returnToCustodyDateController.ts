@@ -57,7 +57,7 @@ export default class ReturnToCustodyDateController extends BaseController {
       res.locals.formResponses = formResponses
     }
 
-    res.render('pages/recall/v2/rtc-date', {
+    res.render('pages/recall/rtc-date', {
       prisoner,
       nomisId,
       isEditRecall: isEditMode,

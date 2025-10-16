@@ -68,7 +68,7 @@ export default class MultipleSentenceDecisionController extends BaseController {
         }
       }
 
-      return res.render('pages/recall/v2/multiple-sentence-decision', {
+      return res.render('pages/recall/multiple-sentence-decision', {
         prisoner,
         nomisId,
         isEditRecall,
