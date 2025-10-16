@@ -6,19 +6,15 @@ export default class ConflictingAdjustmentsInterruptControllerV2 extends BaseCon
     const sessionData = ConflictingAdjustmentsInterruptControllerV2.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
-    // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Get data needed by template from session
     const revocationDate = sessionData?.revocationDate
     const arrestDate = sessionData?.returnToCustodyDate // Template calls it arrestDate
-    const relevantAdjustments = sessionData?.relevantAdjustment || [] // Note: session key is singular
+    const relevantAdjustments = sessionData?.relevantAdjustment || []
     const hasMultipleOverlappingUALTypeRecall = sessionData?.hasMultipleOverlappingUalTypeRecall || false
 
-    // Determine if this is an edit recall flow
     const isEditMode = req.originalUrl.includes('/edit-recall/')
 
-    // Build navigation URLs for V2
     const journeyBaseLink = isEditMode
       ? `/person/${nomisId}/edit-recall/${recallId}`
       : `/person/${nomisId}/record-recall`

@@ -62,8 +62,6 @@ export function invalidateCacheOnDataUpdate(): RequestHandler {
 export function cleanupExpiredCaches(): RequestHandler {
   return (req, res, next) => {
     try {
-      // This would typically be called by a scheduled job
-      // For now, we'll rely on the TTL checks in getCachedData
       logger.debug('Cache cleanup check performed')
     } catch (error) {
       logger.error('Error during cache cleanup:', error)

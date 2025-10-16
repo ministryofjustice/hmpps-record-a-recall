@@ -8,13 +8,10 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
     const sessionData = ManualRecallInterceptControllerV2.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
-    // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Determine if this is an edit recall flow
     const isEditRecall = !!recallId && req.originalUrl.includes('/edit-recall/')
 
-    // Build navigation URLs
     const backLink = isEditRecall
       ? `/person/${nomisId}/edit-recall/${recallId}/rtc-date`
       : `/person/${nomisId}/record-recall/rtc-date`

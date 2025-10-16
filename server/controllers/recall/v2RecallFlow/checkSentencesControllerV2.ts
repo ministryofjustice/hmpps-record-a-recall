@@ -26,17 +26,13 @@ export default class CheckSentencesControllerV2 extends BaseController {
     const sessionData = CheckSentencesControllerV2.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
-    // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Detect if this is edit mode from URL path
     const isEditMode = req.originalUrl.includes('/edit-recall/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
-    // Get court cases from middleware
     const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
-    // Get revocation date from session
     const revocationDate = sessionData?.revocationDate ? new Date(sessionData.revocationDate) : null
 
     // Filter sentences by eligibility
@@ -45,20 +41,15 @@ export default class CheckSentencesControllerV2 extends BaseController {
       revocationDate,
     )
 
-    // Load offence names
     const offenceNameMap = await CheckSentencesControllerV2.loadOffenceNames(req, filteredCourtCases)
 
-    // Get calculation from session
     const temporaryCalculation = sessionData?.temporaryCalculation as CalculatedReleaseDates
     const latestSled = temporaryCalculation?.dates?.SLED || null
 
-    // Count eligible sentences
     const casesWithEligibleSentences = filteredCourtCases.reduce((sum, cc) => sum + cc.eligibleSentences.length, 0)
 
-    // Determine if this is a manual journey
     const manualJourney = sessionData?.manualCaseSelection || casesWithEligibleSentences === 0
 
-    // Build navigation URLs based on mode
     let backLink: string
     if (isEditMode) {
       backLink = `/person/${nomisId}/edit-recall/${recallId}/edit-summary`

@@ -9,16 +9,13 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     const sessionData = ConfirmCancelControllerV2.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
-    // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    // Determine if this is an edit recall flow
     const isEditRecall = !!recallId
 
     // Get the referring page from the request header
     const referrer = req.get('Referrer') || ''
 
-    // Parse the referrer to get the path only (remove protocol and host)
     let referrerPath = ''
     if (referrer) {
       try {

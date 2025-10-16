@@ -5,26 +5,9 @@ import logger from '../../../../logger'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
-import { getRecallType, RecallType } from '../../../@types/recallTypes'
+import { getRecallType } from '../../../@types/recallTypes'
 import { SessionManager } from '../../../services/sessionManager'
-
-// Local type for journey data to avoid FormWizard dependency
-type V2JourneyData = {
-  revocationDate?: Date
-  revDateString?: string
-  inPrisonAtRecall: boolean
-  returnToCustodyDate?: Date
-  returnToCustodyDateString?: string
-  ual?: number
-  ualText?: string
-  manualCaseSelection: boolean
-  recallType: RecallType
-  courtCaseCount: number
-  eligibleSentenceCount: number
-  sentenceIds?: string[]
-  isEdit: boolean
-  storedRecall?: any // eslint-disable-line @typescript-eslint/no-explicit-any
-}
+import { RecallJourneyData } from '../../../services/sessionTypes'
 
 export default class CheckYourAnswersControllerV2 extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
@@ -74,7 +57,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       : recallableCourtCases?.length || 0
 
     // Build journey data object for the summary list
-    const journeyData: V2JourneyData = {
+    const journeyData: RecallJourneyData = {
       revocationDate,
       revDateString: sessionData?.revocationDate,
       inPrisonAtRecall,
@@ -112,9 +95,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
 
     // Build edit links for V2 flow
     const editLink = (step: string) => `/person/${nomisId}/record-recall/${step}/edit`
-    // Cast to any to work with existing createAnswerSummaryList that expects RecallJourneyData
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const answerSummaryList = createAnswerSummaryList(journeyData as any, editLink)
+    const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
 
     // Load form data from session if not from validation
     if (!res.locals.formResponses) {

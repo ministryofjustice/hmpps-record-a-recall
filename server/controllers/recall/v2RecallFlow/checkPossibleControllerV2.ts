@@ -264,7 +264,6 @@ export default class CheckPossibleControllerV2 extends BaseController {
       summarisedSentenceGroups: res.locals.summarisedSentenceGroups,
     })
 
-    // Perform a single batched update and save
     await CheckPossibleControllerV2.batchUpdateSessionData(req, ...sessionUpdates)
   }
 
