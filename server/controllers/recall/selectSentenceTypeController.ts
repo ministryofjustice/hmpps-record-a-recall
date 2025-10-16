@@ -2,19 +2,16 @@ import { Request, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
 import dayjs from 'dayjs'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import {
-  RecallableCourtCaseSentence,
-  SentenceType,
-} from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { findSentenceAndCourtCase } from '../../../utils/sentenceHelperV2'
-import { formatDateStringToDDMMYYYY } from '../../../utils/utils'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import { RecallableCourtCaseSentence, SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { findSentenceAndCourtCase } from '../../utils/sentenceHelperV2'
+import { formatDateStringToDDMMYYYY } from '../../utils/utils'
 
-export default class SelectSentenceTypeControllerV2 extends BaseController {
+export default class SelectSentenceTypeController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = SelectSentenceTypeControllerV2.getSessionData(req)
+    const sessionData = SelectSentenceTypeController.getSessionData(req)
     const { nomisId } = res.locals
     const { sentenceUuid } = req.params
     const recallId = res.locals.recallId || null
@@ -38,7 +35,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
     }
 
     // Get applicable sentence types from API
-    const sentenceTypes = await SelectSentenceTypeControllerV2.getApplicableSentenceTypes(
+    const sentenceTypes = await SelectSentenceTypeController.getApplicableSentenceTypes(
       req,
       res,
       targetSentence,
@@ -75,7 +72,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
     const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
     // Store return URL for cancel flow
-    await SelectSentenceTypeControllerV2.updateSessionData(req, {
+    await SelectSentenceTypeController.updateSessionData(req, {
       returnTo: req.originalUrl,
     })
 
@@ -121,7 +118,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const sessionData = SelectSentenceTypeControllerV2.getSessionData(req)
+    const sessionData = SelectSentenceTypeController.getSessionData(req)
     const { nomisId } = res.locals
     const { sentenceUuid } = req.params
     const { sentenceType } = req.body
@@ -139,7 +136,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
     }
 
     // Get the sentence types again to find the description
-    const sentenceTypes = await SelectSentenceTypeControllerV2.getApplicableSentenceTypes(
+    const sentenceTypes = await SelectSentenceTypeController.getApplicableSentenceTypes(
       req,
       res,
       targetSentence,
@@ -157,7 +154,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
       description: selectedTypeDesc || sentenceType,
     }
 
-    await SelectSentenceTypeControllerV2.updateSessionData(req, {
+    await SelectSentenceTypeController.updateSessionData(req, {
       updatedSentenceTypes: updatedSentences,
     })
 
@@ -176,7 +173,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
       if (sentencesInCase && typeof currentIndex === 'number') {
         // Move to the next sentence
         const nextIndex = currentIndex + 1
-        await SelectSentenceTypeControllerV2.updateSessionData(req, {
+        await SelectSentenceTypeController.updateSessionData(req, {
           currentSentenceIndex: nextIndex,
         })
 
@@ -196,7 +193,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
         logger.info('Completed individual sentence update flow', {
           totalSentences: sentencesInCase.length,
         })
-        await SelectSentenceTypeControllerV2.updateSessionData(req, {
+        await SelectSentenceTypeController.updateSessionData(req, {
           bulkUpdateMode: null,
           sentencesInCurrentCase: null,
           currentSentenceIndex: null,
@@ -216,7 +213,7 @@ export default class SelectSentenceTypeControllerV2 extends BaseController {
     courtCase: CourtCase,
   ): Promise<SentenceType[]> {
     try {
-      const sessionData = SelectSentenceTypeControllerV2.getSessionData(req)
+      const sessionData = SelectSentenceTypeController.getSessionData(req)
       const prisoner = res.locals.prisoner || sessionData?.prisoner
 
       if (!prisoner?.dateOfBirth) {

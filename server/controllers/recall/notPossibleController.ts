@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
-import BaseController, { RequestWithSession } from '../../base/BaseController'
-import { entrypointUrl } from '../../../utils/utils'
-import { SessionManager } from '../../../services/sessionManager'
+import BaseController, { RequestWithSession } from '../base/BaseController'
+import { entrypointUrl } from '../../utils/utils'
+import { SessionManager } from '../../services/sessionManager'
 
-export default class NotPossibleControllerV2 extends BaseController {
+export default class NotPossibleController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
     const { nomisId, recallId } = res.locals
-    const sessionData = NotPossibleControllerV2.getSessionData(req)
+    const sessionData = NotPossibleController.getSessionData(req)
 
     // Get prisoner data from session or res.locals
     const prisoner = res.locals.prisoner || sessionData?.prisoner

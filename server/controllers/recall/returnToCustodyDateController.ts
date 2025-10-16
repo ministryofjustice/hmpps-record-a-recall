@@ -2,15 +2,15 @@ import { Request, Response } from 'express'
 import { isBefore, isAfter, isEqual } from 'date-fns'
 import _ from 'lodash'
 import type { UAL } from 'models'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import { calculateUal } from '../../../utils/utils'
-import { AdjustmentDto, ConflictingAdjustments } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
-import logger from '../../../../logger'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import { calculateUal } from '../../utils/utils'
+import { AdjustmentDto, ConflictingAdjustments } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import logger from '../../../logger'
 
-export default class ReturnToCustodyDateControllerV2 extends BaseController {
+export default class ReturnToCustodyDateController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
+    const sessionData = ReturnToCustodyDateController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     // Get prisoner data from session or res.locals
@@ -73,7 +73,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
   static async post(req: Request, res: Response): Promise<void> {
     const { inPrisonAtRecall, returnToCustodyDate } = req.body
     const { nomisId, recallId } = res.locals
-    const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
+    const sessionData = ReturnToCustodyDateController.getSessionData(req)
     const isEditMode = req.originalUrl.includes('/edit-recall/')
 
     // Get revocation date from session
@@ -93,7 +93,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
         const redirectUrl = isEditMode
           ? `/person/${nomisId}/edit-recall/${recallId}/rtc-date`
           : `/person/${nomisId}/record-recall/rtc-date`
-        ReturnToCustodyDateControllerV2.setValidationError(
+        ReturnToCustodyDateController.setValidationError(
           req,
           res,
           'returnToCustodyDate',
@@ -124,7 +124,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const ual =
       !isInPrison && returnToCustodyDateString ? calculateUal(revocationDate, returnToCustodyDateString) : null
     const processedUalData = ual
-      ? ReturnToCustodyDateControllerV2.processUalConflicts(req, ual, returnToCustodyDateString, sessionData)
+      ? ReturnToCustodyDateController.processUalConflicts(req, ual, returnToCustodyDateString, sessionData)
       : null
 
     // Update session with form data and UAL information
@@ -140,13 +140,13 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       conflictingAdjustments: processedUalData?.conflictingAdjustments,
     }
 
-    await ReturnToCustodyDateControllerV2.updateSessionData(req, sessionUpdate)
+    await ReturnToCustodyDateController.updateSessionData(req, sessionUpdate)
 
     // Clear validation state before redirecting
     clearValidation(req)
 
     // Determine next path based on complex navigation logic
-    const nextPath = await ReturnToCustodyDateControllerV2.determineNextPath(req, res)
+    const nextPath = await ReturnToCustodyDateController.determineNextPath(req, res)
     res.redirect(nextPath)
   }
 
@@ -157,19 +157,21 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const existingAdjustments: AdjustmentDto[] = sessionData?.existingAdjustments || []
 
     // Filter adjustments to consider based on journey data
-    const adjustmentsToConsider = ReturnToCustodyDateControllerV2.getAdjustmentsToConsider(
+    const adjustmentsToConsider = ReturnToCustodyDateController.getAdjustmentsToConsider(
       sessionData,
       existingAdjustments,
     )
 
     // Check for UAL conflicts
-    const hasNoRecallUalConflicts = ReturnToCustodyDateControllerV2.validateAgainstExistingRecallUalAdjustments(
+    const hasNoRecallUalConflicts = ReturnToCustodyDateController.validateAgainstExistingRecallUalAdjustments(
       proposedUal,
       adjustmentsToConsider,
     )
 
-    const hasNoOtherAdjustmentConflicts =
-      ReturnToCustodyDateControllerV2.validateAgainstExistingNonRecallUalAdjustments(proposedUal, adjustmentsToConsider)
+    const hasNoOtherAdjustmentConflicts = ReturnToCustodyDateController.validateAgainstExistingNonRecallUalAdjustments(
+      proposedUal,
+      adjustmentsToConsider,
+    )
 
     const hasConflicts = !hasNoRecallUalConflicts.valid || !hasNoOtherAdjustmentConflicts.valid
 
@@ -180,7 +182,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
         bookingId: prisonerDetails.bookingId,
       }
 
-      const conflictingAdjustments = ReturnToCustodyDateControllerV2.identifyConflictingAdjustments(
+      const conflictingAdjustments = ReturnToCustodyDateController.identifyConflictingAdjustments(
         proposedUal,
         adjustmentsToConsider,
       )
@@ -192,7 +194,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       ]
 
       const relevantAdjustments = allConflicting
-        .filter(adj => ReturnToCustodyDateControllerV2.isRelevantAdjustment(adj).isRelevant)
+        .filter(adj => ReturnToCustodyDateController.isRelevantAdjustment(adj).isRelevant)
         .filter((adj, index, self) => index === self.findIndex(t => t.id === adj.id))
 
       if (relevantAdjustments.length === 0) {
@@ -265,7 +267,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       }
 
       return (
-        !ReturnToCustodyDateControllerV2.isRelevantAdjustment(adjustment).isRelevant &&
+        !ReturnToCustodyDateController.isRelevantAdjustment(adjustment).isRelevant &&
         isBefore(new Date(adjustment.fromDate), proposedUal.lastDay) &&
         isAfter(new Date(adjustment.toDate), proposedUal.firstDay)
       )
@@ -291,7 +293,7 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
       }
 
       return (
-        ReturnToCustodyDateControllerV2.isRelevantAdjustment(adjustment).isRelevant &&
+        ReturnToCustodyDateController.isRelevantAdjustment(adjustment).isRelevant &&
         isBefore(new Date(adjustment.fromDate), proposedUal.lastDay) &&
         isAfter(new Date(adjustment.toDate), proposedUal.firstDay)
       )
@@ -358,11 +360,11 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
     const isEditMode = req.originalUrl.includes('/edit-recall/')
     const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
     const { nomisId, recallId } = res.locals
-    const sessionData = ReturnToCustodyDateControllerV2.getSessionData(req)
+    const sessionData = ReturnToCustodyDateController.getSessionData(req)
 
     // Mark that this step was edited
     if (isEditMode || isEditFromCheckYourAnswers) {
-      await ReturnToCustodyDateControllerV2.updateSessionData(req, {
+      await ReturnToCustodyDateController.updateSessionData(req, {
         lastEditedStep: 'rtc-date',
       })
     }
@@ -377,17 +379,17 @@ export default class ReturnToCustodyDateControllerV2 extends BaseController {
 
     // navigation logic from steps.ts lines 53-65
     // Check for multiple conflicting adjustments
-    if (ReturnToCustodyDateControllerV2.hasMultipleConflicting(sessionData)) {
+    if (ReturnToCustodyDateController.hasMultipleConflicting(sessionData)) {
       return `${basePath}/conflicting-adjustments-interrupt`
     }
 
     // Check if manual case selection is required
-    if (ReturnToCustodyDateControllerV2.isManualCaseSelection(sessionData)) {
+    if (ReturnToCustodyDateController.isManualCaseSelection(sessionData)) {
       return `${basePath}/manual-recall-intercept`
     }
 
     // Check if no eligible sentences
-    if (ReturnToCustodyDateControllerV2.getEligibleSentenceCount(sessionData) === 0) {
+    if (ReturnToCustodyDateController.getEligibleSentenceCount(sessionData) === 0) {
       return `${basePath}/no-sentences-interrupt`
     }
 

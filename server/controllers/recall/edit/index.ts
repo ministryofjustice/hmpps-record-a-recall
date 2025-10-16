@@ -1,22 +1,22 @@
 import express, { Router } from 'express'
-import asyncMiddleware from '../../../../middleware/asyncMiddleware'
-import { validate, populateValidationData } from '../../../../middleware/validationMiddleware'
-import loadPrisoner from '../../../../middleware/loadPrisoner'
-import populateRecallId from '../../../../middleware/populateRecallId'
-import PopulateStoredRecallControllerV2 from './populateStoredRecallControllerV2'
-import EditSummaryControllerV2 from './editSummaryControllerV2'
-import RecallRecordedControllerV2 from '../recallRecordedControllerV2'
+import asyncMiddleware from '../../../middleware/asyncMiddleware'
+import { validate, populateValidationData } from '../../../middleware/validationMiddleware'
+import loadPrisoner from '../../../middleware/loadPrisoner'
+import populateRecallId from '../../../middleware/populateRecallId'
+import PopulateStoredRecallController from './populateStoredRecallController'
+import EditSummaryController from './editSummaryController'
+import RecallRecordedController from '../recallRecordedController'
 
 // Import existing V2 controllers that will be reused
-import RevocationDateControllerV2 from '../revocationDateControllerV2'
-import ReturnToCustodyDateControllerV2 from '../returnToCustodyDateControllerV2'
-import CheckSentencesControllerV2 from '../checkSentencesControllerV2'
-import RecallTypeControllerV2 from '../recallTypeControllerV2'
-import ConfirmCancelControllerV2 from '../confirmCancelControllerV2'
-import SelectCourtCaseControllerV2 from '../selectCourtCaseControllerV2'
-import ManualRecallInterceptControllerV2 from '../manualRecallInterceptControllerV2'
-import NoSentencesInterruptControllerV2 from '../noSentencesInterruptControllerV2'
-import ConflictingAdjustmentsInterruptControllerV2 from '../conflictingAdjustmentsInterruptControllerV2'
+import RevocationDateController from '../revocationDateController'
+import ReturnToCustodyDateController from '../returnToCustodyDateController'
+import CheckSentencesController from '../checkSentencesController'
+import RecallTypeController from '../recallTypeController'
+import ConfirmCancelController from '../confirmCancelController'
+import SelectCourtCaseController from '../selectCourtCaseController'
+import ManualRecallInterceptController from '../manualRecallInterceptController'
+import NoSentencesInterruptController from '../noSentencesInterruptController'
+import ConflictingAdjustmentsInterruptController from '../conflictingAdjustmentsInterruptController'
 
 export default function editRoutes(): Router {
   const router = express.Router({ mergeParams: true })
@@ -26,7 +26,7 @@ export default function editRoutes(): Router {
     '/',
     populateRecallId(),
     loadPrisoner(null, { checkSession: false, updateSession: true }),
-    asyncMiddleware(PopulateStoredRecallControllerV2.get),
+    asyncMiddleware(PopulateStoredRecallController.get),
   )
 
   // Edit summary page
@@ -35,13 +35,13 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(EditSummaryControllerV2.get),
+    asyncMiddleware(EditSummaryController.get),
   )
   router.post(
     '/edit-summary',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(EditSummaryControllerV2.post),
+    asyncMiddleware(EditSummaryController.post),
   )
 
   // Reuse existing V2 controllers for individual steps
@@ -53,14 +53,14 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(RevocationDateControllerV2.get),
+    asyncMiddleware(RevocationDateController.get),
   )
   router.post(
     '/revocation-date',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('revocationDate'),
-    asyncMiddleware(RevocationDateControllerV2.post),
+    asyncMiddleware(RevocationDateController.post),
   )
 
   // Return to custody date
@@ -69,14 +69,14 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ReturnToCustodyDateControllerV2.get),
+    asyncMiddleware(ReturnToCustodyDateController.get),
   )
   router.post(
     '/rtc-date',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('returnToCustody'),
-    asyncMiddleware(ReturnToCustodyDateControllerV2.post),
+    asyncMiddleware(ReturnToCustodyDateController.post),
   )
 
   // Check sentences
@@ -85,13 +85,13 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(CheckSentencesControllerV2.get),
+    asyncMiddleware(CheckSentencesController.get),
   )
   router.post(
     '/check-sentences',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(CheckSentencesControllerV2.post),
+    asyncMiddleware(CheckSentencesController.post),
   )
 
   // Select court cases (for manual flow)
@@ -100,14 +100,14 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(SelectCourtCaseControllerV2.get),
+    asyncMiddleware(SelectCourtCaseController.get),
   )
   router.post(
     '/select-court-cases',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('selectCourtCase'),
-    asyncMiddleware(SelectCourtCaseControllerV2.post),
+    asyncMiddleware(SelectCourtCaseController.post),
   )
 
   // Recall type
@@ -116,14 +116,14 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(RecallTypeControllerV2.get),
+    asyncMiddleware(RecallTypeController.get),
   )
   router.post(
     '/recall-type',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('recallType'),
-    asyncMiddleware(RecallTypeControllerV2.post),
+    asyncMiddleware(RecallTypeController.post),
   )
 
   // Manual recall intercept
@@ -132,13 +132,13 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ManualRecallInterceptControllerV2.get),
+    asyncMiddleware(ManualRecallInterceptController.get),
   )
   router.post(
     '/manual-recall-intercept',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(ManualRecallInterceptControllerV2.post),
+    asyncMiddleware(ManualRecallInterceptController.post),
   )
 
   // Interrupt pages (GET only)
@@ -146,14 +146,14 @@ export default function editRoutes(): Router {
     '/no-sentences-interrupt',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(NoSentencesInterruptControllerV2.get),
+    asyncMiddleware(NoSentencesInterruptController.get),
   )
 
   router.get(
     '/conflicting-adjustments-interrupt',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(ConflictingAdjustmentsInterruptControllerV2.get),
+    asyncMiddleware(ConflictingAdjustmentsInterruptController.get),
   )
 
   // Confirm cancel
@@ -162,14 +162,14 @@ export default function editRoutes(): Router {
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ConfirmCancelControllerV2.get),
+    asyncMiddleware(ConfirmCancelController.get),
   )
   router.post(
     '/confirm-cancel',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('confirmCancel'),
-    asyncMiddleware(ConfirmCancelControllerV2.post),
+    asyncMiddleware(ConfirmCancelController.post),
   )
 
   // Success page
@@ -177,7 +177,7 @@ export default function editRoutes(): Router {
     '/recall-updated',
     populateRecallId(),
     loadPrisoner(null, { checkSession: true, updateSession: false }),
-    asyncMiddleware(RecallRecordedControllerV2.get),
+    asyncMiddleware(RecallRecordedController.get),
   )
 
   return router

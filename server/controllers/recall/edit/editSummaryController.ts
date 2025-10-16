@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
-import BaseController from '../../../base/BaseController'
-import { clearValidation } from '../../../../middleware/validationMiddleware'
-import logger from '../../../../../logger'
-import { createAnswerSummaryList, calculateUal } from '../../../../utils/utils'
-import { getRecallType, RecallType } from '../../../../@types/recallTypes'
-import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../../middleware/loadCourtCases'
-import { CreateRecall } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { SessionManager } from '../../../../services/sessionManager'
+import BaseController from '../../base/BaseController'
+import { clearValidation } from '../../../middleware/validationMiddleware'
+import logger from '../../../../logger'
+import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
+import { getRecallType, RecallType } from '../../../@types/recallTypes'
+import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
+import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { SessionManager } from '../../../services/sessionManager'
 
 // Local type for journey data
 type V2EditJourneyData = {
@@ -27,9 +27,9 @@ type V2EditJourneyData = {
   storedRecall?: any
 }
 
-export default class EditSummaryControllerV2 extends BaseController {
+export default class EditSummaryController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = EditSummaryControllerV2.getSessionData(req)
+    const sessionData = EditSummaryController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     // Get stored recall from session
@@ -124,7 +124,7 @@ export default class EditSummaryControllerV2 extends BaseController {
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const sessionData = EditSummaryControllerV2.getSessionData(req)
+    const sessionData = EditSummaryController.getSessionData(req)
     const { nomisId, recallId } = res.locals
     const { username, activeCaseload } = res.locals.user
 
@@ -238,7 +238,7 @@ export default class EditSummaryControllerV2 extends BaseController {
       logger.info(`Cache invalidated after recall update for prisoner ${nomisId}`)
 
       // Clear edit session data
-      await EditSummaryControllerV2.updateSessionData(req, {
+      await EditSummaryController.updateSessionData(req, {
         isEdit: false,
         storedRecall: null,
         journeyComplete: null,

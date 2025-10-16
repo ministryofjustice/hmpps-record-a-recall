@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
+import BaseController from '../base/BaseController'
 
-export default class ConflictingAdjustmentsInterruptControllerV2 extends BaseController {
+export default class ConflictingAdjustmentsInterruptController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = ConflictingAdjustmentsInterruptControllerV2.getSessionData(req)
+    const sessionData = ConflictingAdjustmentsInterruptController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     const prisoner = res.locals.prisoner || sessionData?.prisoner

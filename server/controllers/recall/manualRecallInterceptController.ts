@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
 
-export default class ManualRecallInterceptControllerV2 extends BaseController {
+export default class ManualRecallInterceptController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = ManualRecallInterceptControllerV2.getSessionData(req)
+    const sessionData = ManualRecallInterceptController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     const prisoner = res.locals.prisoner || sessionData?.prisoner
@@ -41,7 +41,7 @@ export default class ManualRecallInterceptControllerV2 extends BaseController {
     const isEditMode = req.originalUrl.includes('/edit-recall/')
 
     // Mark that the user has confirmed they understand the manual process
-    await ManualRecallInterceptControllerV2.updateSessionData(req, {
+    await ManualRecallInterceptController.updateSessionData(req, {
       'select-court-case-details.njk': 'confirmed',
     })
 

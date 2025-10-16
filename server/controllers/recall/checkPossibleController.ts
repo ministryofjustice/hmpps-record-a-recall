@@ -4,18 +4,18 @@ import { Recall } from 'models'
 import {
   RecordARecallCalculationResult,
   ValidationMessage,
-} from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import logger from '../../../../logger'
-import BaseController from '../../base/BaseController'
-import { SessionManager } from '../../../services/sessionManager'
-import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
-import { NomisDpsSentenceMapping, NomisSentenceId } from '../../../@types/nomisMappingApi/nomisMappingApiTypes'
-import { RecallRoutingService } from '../../../services/RecallRoutingService'
-import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'
-import { COURT_MESSAGES } from '../../../utils/courtConstants'
-import { RecallEligibility } from '../../../@types/recallEligibility'
+} from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import logger from '../../../logger'
+import BaseController from '../base/BaseController'
+import { SessionManager } from '../../services/sessionManager'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
+import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
+import { RecallRoutingService } from '../../services/RecallRoutingService'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { COURT_MESSAGES } from '../../utils/courtConstants'
+import { RecallEligibility } from '../../@types/recallEligibility'
 
-export default class CheckPossibleControllerV2 extends BaseController {
+export default class CheckPossibleController extends BaseController {
   private static recallRoutingService = new RecallRoutingService()
 
   // TODO: This violates RESTful principles by performing state mutations in a GET handler.
@@ -126,7 +126,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
       }
 
       // Use routing service for smart filtering and routing decisions
-      const routingResponse = await CheckPossibleControllerV2.recallRoutingService.routeRecallWithSmartFiltering(
+      const routingResponse = await CheckPossibleController.recallRoutingService.routeRecallWithSmartFiltering(
         nomisId,
         enhancedCases,
         existingAdjustments,
@@ -158,7 +158,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
 
         const sentencesFromRasCases = routingResponse.casesToUse.flatMap(caseItem => caseItem.sentences || [])
 
-        const sentences = await CheckPossibleControllerV2.getCrdsSentences(req, res)
+        const sentences = await CheckPossibleController.getCrdsSentences(req, res)
 
         const nomisSentenceInformation = sentences.map(sentence => {
           return {
@@ -167,10 +167,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
           }
         })
 
-        const dpsSentenceSequenceIds = await CheckPossibleControllerV2.getNomisToDpsMapping(
-          req,
-          nomisSentenceInformation,
-        )
+        const dpsSentenceSequenceIds = await CheckPossibleController.getNomisToDpsMapping(req, nomisSentenceInformation)
 
         res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
@@ -205,10 +202,10 @@ export default class CheckPossibleControllerV2 extends BaseController {
       res.locals.existingAdjustments = existingAdjustments
 
       // Store data in session
-      await CheckPossibleControllerV2.storeSessionData(req, res)
+      await CheckPossibleController.storeSessionData(req, res)
 
       // Determine redirect path
-      const nextPath = CheckPossibleControllerV2.determineNextPath(res)
+      const nextPath = CheckPossibleController.determineNextPath(res)
       return res.redirect(nextPath)
     } catch (error) {
       logger.error(error)
@@ -240,7 +237,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const routingUpdates: Record<string, any> = {}
       Object.entries(routingResponse.sessionUpdates).forEach(([key, value]) => {
-        const sessionField = CheckPossibleControllerV2.mapToSessionField(key)
+        const sessionField = CheckPossibleController.mapToSessionField(key)
         if (sessionField) {
           // Store using the original key for now, will be handled by updateRecallData
           routingUpdates[key] = value
@@ -264,7 +261,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
       summarisedSentenceGroups: res.locals.summarisedSentenceGroups,
     })
 
-    await CheckPossibleControllerV2.batchUpdateSessionData(req, ...sessionUpdates)
+    await CheckPossibleController.batchUpdateSessionData(req, ...sessionUpdates)
   }
 
   /**
@@ -283,7 +280,7 @@ export default class CheckPossibleControllerV2 extends BaseController {
     const basePath = `/person/${res.locals.nomisId}/record-recall`
 
     // Check if recall is possible
-    const recallPossible = CheckPossibleControllerV2.isRecallPossible(res)
+    const recallPossible = CheckPossibleController.isRecallPossible(res)
 
     if (!recallPossible) {
       return `${basePath}/not-possible`

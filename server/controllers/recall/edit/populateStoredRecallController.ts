@@ -1,16 +1,16 @@
 import { Request, Response } from 'express'
 import { format } from 'date-fns'
-import BaseController from '../../../base/BaseController'
-import logger from '../../../../../logger'
-import { calculateUal } from '../../../../utils/utils'
+import BaseController from '../../base/BaseController'
+import logger from '../../../../logger'
+import { calculateUal } from '../../../utils/utils'
 
-export default class PopulateStoredRecallControllerV2 extends BaseController {
+export default class PopulateStoredRecallController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
     const { nomisId, recallId } = res.locals
     const { username } = res.locals.user
 
     // Check if we already have session data from previous edits
-    const sessionData = PopulateStoredRecallControllerV2.getSessionData(req)
+    const sessionData = PopulateStoredRecallController.getSessionData(req)
     if (sessionData?.isEdit && sessionData?.storedRecall && sessionData?.recallId === recallId) {
       // Already loaded and possibly edited - skip reloading
       logger.info(`Recall ${recallId} already in session, skipping reload`)
@@ -42,7 +42,7 @@ export default class PopulateStoredRecallControllerV2 extends BaseController {
       storedRecall.ual = calculateUal(revocationDate, returnToCustodyDate)
 
       // Populate session with stored recall data using BaseController's updateSessionData
-      await PopulateStoredRecallControllerV2.updateSessionData(req, {
+      await PopulateStoredRecallController.updateSessionData(req, {
         storedRecall,
         recallId,
         isEdit: true,

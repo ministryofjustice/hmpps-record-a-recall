@@ -1,15 +1,15 @@
 import { Request, Response } from 'express'
 import { min } from 'date-fns'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import { RecallRoutingService } from '../../../services/RecallRoutingService'
-import logger from '../../../../logger'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import { RecallRoutingService } from '../../services/RecallRoutingService'
+import logger from '../../../logger'
 
-export default class RevocationDateControllerV2 extends BaseController {
+export default class RevocationDateController extends BaseController {
   private static recallRoutingService = new RecallRoutingService()
 
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = RevocationDateControllerV2.getSessionData(req)
+    const sessionData = RevocationDateController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     // Get prisoner data from session or res.locals
@@ -78,7 +78,7 @@ export default class RevocationDateControllerV2 extends BaseController {
   static async post(req: Request, res: Response): Promise<void> {
     const { revocationDate } = req.body
     const { nomisId, recallId } = res.locals
-    const sessionData = RevocationDateControllerV2.getSessionData(req)
+    const sessionData = RevocationDateController.getSessionData(req)
     const isEditMode = req.originalUrl.includes('/edit-recall/')
 
     // Debug logging to see what's being submitted
@@ -108,13 +108,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       const redirectUrl = isEditMode
         ? `/person/${nomisId}/edit-recall/${recallId}/revocation-date`
         : `/person/${nomisId}/record-recall/revocation-date`
-      RevocationDateControllerV2.setValidationError(
-        req,
-        res,
-        'revocationDate',
-        'Enter a valid recall date',
-        redirectUrl,
-      )
+      RevocationDateController.setValidationError(req, res, 'revocationDate', 'Enter a valid recall date', redirectUrl)
       return
     }
 
@@ -128,18 +122,18 @@ export default class RevocationDateControllerV2 extends BaseController {
 
       // If in edit mode, skip routing validation and just update the date
       if (isEditMode) {
-        const beforeUpdate = RevocationDateControllerV2.getSessionData(req)
+        const beforeUpdate = RevocationDateController.getSessionData(req)
         logger.info(`Edit mode - BEFORE update:`, {
           currentRevocationDate: beforeUpdate?.revocationDate,
           storedRevocationDate: beforeUpdate?.storedRecall?.revocationDate,
         })
 
-        await RevocationDateControllerV2.updateSessionData(req, {
+        await RevocationDateController.updateSessionData(req, {
           revocationDate: revocationDateString,
           lastEditedStep: 'revocation-date',
         })
 
-        const afterUpdate = RevocationDateControllerV2.getSessionData(req)
+        const afterUpdate = RevocationDateController.getSessionData(req)
         logger.info(`Edit mode - AFTER update:`, {
           newRevocationDate: afterUpdate?.revocationDate,
           formattedDate: revocationDateString,
@@ -164,7 +158,7 @@ export default class RevocationDateControllerV2 extends BaseController {
         const earliestSentenceDate = min(crdsSentences.map((s: any) => new Date(s.sentenceDate)))
         if (revocationDateObj < earliestSentenceDate) {
           const redirectUrl = `/person/${nomisId}/record-recall/revocation-date`
-          RevocationDateControllerV2.setValidationError(
+          RevocationDateController.setValidationError(
             req,
             res,
             'revocationDate',
@@ -190,7 +184,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       }
 
       // Use routing service to validate the recall
-      const routingResponse = await RevocationDateControllerV2.recallRoutingService.routeRecall({
+      const routingResponse = await RevocationDateController.recallRoutingService.routeRecall({
         nomsId: nomisId,
         revocationDate: revocationDateObj,
         courtCases,
@@ -203,11 +197,11 @@ export default class RevocationDateControllerV2 extends BaseController {
 
       // Check for validation messages from routing service
       if (routingResponse.validationMessages && routingResponse.validationMessages.length > 0) {
-        const errorMessage = RevocationDateControllerV2.mapRoutingValidationError(
+        const errorMessage = RevocationDateController.mapRoutingValidationError(
           routingResponse.validationMessages[0].code,
         )
         const redirectUrl = `/person/${nomisId}/record-recall/revocation-date`
-        RevocationDateControllerV2.setValidationError(req, res, 'revocationDate', errorMessage, redirectUrl)
+        RevocationDateController.setValidationError(req, res, 'revocationDate', errorMessage, redirectUrl)
         return
       }
 
@@ -218,7 +212,7 @@ export default class RevocationDateControllerV2 extends BaseController {
         isEditMode: false,
       })
 
-      await RevocationDateControllerV2.updateSessionData(req, {
+      await RevocationDateController.updateSessionData(req, {
         revocationDate: revocationDateString,
         invalidRecallTypes: routingResponse.eligibilityDetails.invalidRecallTypes,
         eligibleSentenceCount: routingResponse.eligibilityDetails.eligibleSentenceCount,
@@ -248,7 +242,7 @@ export default class RevocationDateControllerV2 extends BaseController {
         const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
         const day = String(revocationDateObj.getDate()).padStart(2, '0')
         const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
-        await RevocationDateControllerV2.updateSessionData(req, {
+        await RevocationDateController.updateSessionData(req, {
           revocationDate: revocationDateString,
           lastEditedStep: 'revocation-date',
         })
@@ -263,7 +257,7 @@ export default class RevocationDateControllerV2 extends BaseController {
       const month = String(revocationDateObj.getMonth() + 1).padStart(2, '0')
       const day = String(revocationDateObj.getDate()).padStart(2, '0')
       const revocationDateString = `${year}-${month}-${day}` // yyyy-MM-dd format
-      await RevocationDateControllerV2.updateSessionData(req, {
+      await RevocationDateController.updateSessionData(req, {
         revocationDate: revocationDateString,
         manualCaseSelection: true,
       })

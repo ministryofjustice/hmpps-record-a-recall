@@ -1,14 +1,14 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import { RecallTypes } from '../../../@types/recallTypes'
-import { SessionManager } from '../../../services/sessionManager'
-import config from '../../../config'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import { RecallTypes } from '../../@types/recallTypes'
+import { SessionManager } from '../../services/sessionManager'
+import config from '../../config'
 
-export default class RecallTypeControllerV2 extends BaseController {
+export default class RecallTypeController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = RecallTypeControllerV2.getSessionData(req)
+    const sessionData = RecallTypeController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     // Get prisoner data from session or res.locals
@@ -35,7 +35,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     const currentPath = isEditMode
       ? `/person/${nomisId}/edit-recall/${recallId}/recall-type`
       : `/person/${nomisId}/record-recall/recall-type`
-    await RecallTypeControllerV2.updateSessionData(req, { returnTo: currentPath })
+    await RecallTypeController.updateSessionData(req, { returnTo: currentPath })
 
     // Load form data from session if not coming from validation
     if (!res.locals.formResponses) {
@@ -64,7 +64,7 @@ export default class RecallTypeControllerV2 extends BaseController {
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const sessionData = RecallTypeControllerV2.getSessionData(req)
+    const sessionData = RecallTypeController.getSessionData(req)
     const { nomisId, recallId } = res.locals
     const { recallType } = req.body
     const isEditMode = req.originalUrl.includes('/edit-recall/')
@@ -73,7 +73,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     logger.info(`Processing recall type selection: ${recallType} for prisoner ${nomisId}`)
 
     // Store the recall type in session
-    await RecallTypeControllerV2.updateSessionData(req, {
+    await RecallTypeController.updateSessionData(req, {
       recallType,
     })
 
@@ -95,7 +95,7 @@ export default class RecallTypeControllerV2 extends BaseController {
     // If in edit mode, return to edit-summary
     if (isEditMode) {
       // Mark that this step was edited
-      await RecallTypeControllerV2.updateSessionData(req, {
+      await RecallTypeController.updateSessionData(req, {
         lastEditedStep: 'recall-type',
       })
       return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/edit-summary`)

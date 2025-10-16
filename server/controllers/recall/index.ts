@@ -1,24 +1,24 @@
 import express, { Router } from 'express'
-import asyncMiddleware from '../../../middleware/asyncMiddleware'
-import { validate, populateValidationData } from '../../../middleware/validationMiddleware'
-import loadPrisoner from '../../../middleware/loadPrisoner'
-import CheckPossibleControllerV2 from './checkPossibleControllerV2'
-import RevocationDateControllerV2 from './revocationDateControllerV2'
-import NotPossibleControllerV2 from './notPossibleControllerV2'
-import ReturnToCustodyDateControllerV2 from './returnToCustodyDateControllerV2'
-import ConfirmCancelControllerV2 from './confirmCancelControllerV2'
-import ConflictingAdjustmentsInterruptControllerV2 from './conflictingAdjustmentsInterruptControllerV2'
-import NoSentencesInterruptControllerV2 from './noSentencesInterruptControllerV2'
-import ManualRecallInterceptControllerV2 from './manualRecallInterceptControllerV2'
-import CheckSentencesControllerV2 from './checkSentencesControllerV2'
-import SelectCourtCaseControllerV2 from './selectCourtCaseControllerV2'
-import UpdateSentenceTypesSummaryControllerV2 from './updateSentenceTypesSummaryControllerV2'
-import SelectSentenceTypeControllerV2 from './selectSentenceTypeControllerV2'
-import RecallTypeControllerV2 from './recallTypeControllerV2'
-import CheckYourAnswersControllerV2 from './checkYourAnswersControllerV2'
-import RecallRecordedControllerV2 from './recallRecordedControllerV2'
-import MultipleSentenceDecisionControllerV2 from './multipleSentenceDecisionControllerV2'
-import BulkSentenceTypeControllerV2 from './bulkSentenceTypeControllerV2'
+import asyncMiddleware from '../../middleware/asyncMiddleware'
+import { validate, populateValidationData } from '../../middleware/validationMiddleware'
+import loadPrisoner from '../../middleware/loadPrisoner'
+import CheckPossibleController from './checkPossibleController'
+import RevocationDateController from './revocationDateController'
+import NotPossibleController from './notPossibleController'
+import ReturnToCustodyDateController from './returnToCustodyDateController'
+import ConfirmCancelController from './confirmCancelController'
+import ConflictingAdjustmentsInterruptController from './conflictingAdjustmentsInterruptController'
+import NoSentencesInterruptController from './noSentencesInterruptController'
+import ManualRecallInterceptController from './manualRecallInterceptController'
+import CheckSentencesController from './checkSentencesController'
+import SelectCourtCaseController from './selectCourtCaseController'
+import UpdateSentenceTypesSummaryController from './updateSentenceTypesSummaryController'
+import SelectSentenceTypeController from './selectSentenceTypeController'
+import RecallTypeController from './recallTypeController'
+import CheckYourAnswersController from './checkYourAnswersController'
+import RecallRecordedController from './recallRecordedController'
+import MultipleSentenceDecisionController from './multipleSentenceDecisionController'
+import BulkSentenceTypeController from './bulkSentenceTypeController'
 import underConstructionController from './underConstructionController'
 
 export default function routes(): Router {
@@ -26,13 +26,13 @@ export default function routes(): Router {
 
   // V2 recall flow route - /person/:nomisId/record-recall
   // Entry point - check if recall is possible (matches original '/' route in steps.ts)
-  router.get('/', asyncMiddleware(CheckPossibleControllerV2.get))
+  router.get('/', asyncMiddleware(CheckPossibleController.get))
 
   // Not possible page (no form submission)
   router.get(
     '/not-possible',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(NotPossibleControllerV2.get),
+    asyncMiddleware(NotPossibleController.get),
   )
 
   // Revocation date page with validation
@@ -40,13 +40,13 @@ export default function routes(): Router {
     '/revocation-date',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(RevocationDateControllerV2.get),
+    asyncMiddleware(RevocationDateController.get),
   )
   router.post(
     '/revocation-date',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('revocationDate'),
-    asyncMiddleware(RevocationDateControllerV2.post),
+    asyncMiddleware(RevocationDateController.post),
   )
 
   // Return to custody date page with validation
@@ -54,13 +54,13 @@ export default function routes(): Router {
     '/rtc-date',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ReturnToCustodyDateControllerV2.get),
+    asyncMiddleware(ReturnToCustodyDateController.get),
   )
   router.post(
     '/rtc-date',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('returnToCustody'),
-    asyncMiddleware(ReturnToCustodyDateControllerV2.post),
+    asyncMiddleware(ReturnToCustodyDateController.post),
   )
 
   // Confirm cancel page with validation
@@ -68,26 +68,26 @@ export default function routes(): Router {
     '/confirm-cancel',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ConfirmCancelControllerV2.get),
+    asyncMiddleware(ConfirmCancelController.get),
   )
   router.post(
     '/confirm-cancel',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('confirmCancel'),
-    asyncMiddleware(ConfirmCancelControllerV2.post),
+    asyncMiddleware(ConfirmCancelController.post),
   )
 
   // Interrupt pages (GET only, no POST needed)
   router.get(
     '/conflicting-adjustments-interrupt',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(ConflictingAdjustmentsInterruptControllerV2.get),
+    asyncMiddleware(ConflictingAdjustmentsInterruptController.get),
   )
 
   router.get(
     '/no-sentences-interrupt',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(NoSentencesInterruptControllerV2.get),
+    asyncMiddleware(NoSentencesInterruptController.get),
   )
 
   // Manual recall intercept page (no validation needed as it's just a continue button)
@@ -95,12 +95,12 @@ export default function routes(): Router {
     '/manual-recall-intercept',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ManualRecallInterceptControllerV2.get),
+    asyncMiddleware(ManualRecallInterceptController.get),
   )
   router.post(
     '/manual-recall-intercept',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(ManualRecallInterceptControllerV2.post),
+    asyncMiddleware(ManualRecallInterceptController.post),
   )
 
   // Select court case page (manual recall flow)
@@ -108,13 +108,13 @@ export default function routes(): Router {
     '/select-court-cases',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(SelectCourtCaseControllerV2.get),
+    asyncMiddleware(SelectCourtCaseController.get),
   )
   router.post(
     '/select-court-cases',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('selectCourtCase'),
-    asyncMiddleware(SelectCourtCaseControllerV2.post),
+    asyncMiddleware(SelectCourtCaseController.post),
   )
 
   // Update sentence types summary page
@@ -122,13 +122,13 @@ export default function routes(): Router {
     '/update-sentence-types-summary',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(UpdateSentenceTypesSummaryControllerV2.get),
+    asyncMiddleware(UpdateSentenceTypesSummaryController.get),
   )
   router.post(
     '/update-sentence-types-summary',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('updateSentenceTypesSummary'),
-    asyncMiddleware(UpdateSentenceTypesSummaryControllerV2.post),
+    asyncMiddleware(UpdateSentenceTypesSummaryController.post),
   )
 
   // Select sentence type page (individual sentence update)
@@ -136,13 +136,13 @@ export default function routes(): Router {
     '/select-sentence-type/:sentenceUuid',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(SelectSentenceTypeControllerV2.get),
+    asyncMiddleware(SelectSentenceTypeController.get),
   )
   router.post(
     '/select-sentence-type/:sentenceUuid',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('selectSentenceType'),
-    asyncMiddleware(SelectSentenceTypeControllerV2.post),
+    asyncMiddleware(SelectSentenceTypeController.post),
   )
 
   // Multiple sentence decision page
@@ -150,13 +150,13 @@ export default function routes(): Router {
     '/multiple-sentence-decision/:courtCaseId',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(MultipleSentenceDecisionControllerV2.get),
+    asyncMiddleware(MultipleSentenceDecisionController.get),
   )
   router.post(
     '/multiple-sentence-decision/:courtCaseId',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('multipleSentenceDecision'),
-    asyncMiddleware(MultipleSentenceDecisionControllerV2.post),
+    asyncMiddleware(MultipleSentenceDecisionController.post),
   )
 
   // Bulk sentence type page
@@ -164,13 +164,13 @@ export default function routes(): Router {
     '/bulk-sentence-type/:courtCaseId',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(BulkSentenceTypeControllerV2.get),
+    asyncMiddleware(BulkSentenceTypeController.get),
   )
   router.post(
     '/bulk-sentence-type/:courtCaseId',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('bulkSentenceType'),
-    asyncMiddleware(BulkSentenceTypeControllerV2.post),
+    asyncMiddleware(BulkSentenceTypeController.post),
   )
 
   // Check sentences page (no validation needed as it's just a confirmation page)
@@ -178,12 +178,12 @@ export default function routes(): Router {
     '/check-sentences',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(CheckSentencesControllerV2.get),
+    asyncMiddleware(CheckSentencesController.get),
   )
   router.post(
     '/check-sentences',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(CheckSentencesControllerV2.post),
+    asyncMiddleware(CheckSentencesController.post),
   )
 
   // Recall type selection page
@@ -191,13 +191,13 @@ export default function routes(): Router {
     '/recall-type',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(RecallTypeControllerV2.get),
+    asyncMiddleware(RecallTypeController.get),
   )
   router.post(
     '/recall-type',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('recallType'),
-    asyncMiddleware(RecallTypeControllerV2.post),
+    asyncMiddleware(RecallTypeController.post),
   )
 
   // Check your answers page
@@ -205,20 +205,20 @@ export default function routes(): Router {
     '/check-your-answers',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(CheckYourAnswersControllerV2.get),
+    asyncMiddleware(CheckYourAnswersController.get),
   )
   router.post(
     '/check-your-answers',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('checkYourAnswers'),
-    asyncMiddleware(CheckYourAnswersControllerV2.post),
+    asyncMiddleware(CheckYourAnswersController.post),
   )
 
   // Recall recorded success page (GET only, no POST)
   router.get(
     '/recall-recorded',
     loadPrisoner(null, { checkSession: true, updateSession: false }),
-    asyncMiddleware(RecallRecordedControllerV2.get),
+    asyncMiddleware(RecallRecordedController.get),
   )
 
   // Edit routes for main flow (allow editing before recall is saved)
@@ -227,51 +227,51 @@ export default function routes(): Router {
     '/revocation-date/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(RevocationDateControllerV2.get),
+    asyncMiddleware(RevocationDateController.get),
   )
   router.post(
     '/revocation-date/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('revocationDate'),
-    asyncMiddleware(RevocationDateControllerV2.post),
+    asyncMiddleware(RevocationDateController.post),
   )
 
   router.get(
     '/rtc-date/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(ReturnToCustodyDateControllerV2.get),
+    asyncMiddleware(ReturnToCustodyDateController.get),
   )
   router.post(
     '/rtc-date/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('returnToCustody'),
-    asyncMiddleware(ReturnToCustodyDateControllerV2.post),
+    asyncMiddleware(ReturnToCustodyDateController.post),
   )
 
   router.get(
     '/check-sentences/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(CheckSentencesControllerV2.get),
+    asyncMiddleware(CheckSentencesController.get),
   )
   router.post(
     '/check-sentences/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
-    asyncMiddleware(CheckSentencesControllerV2.post),
+    asyncMiddleware(CheckSentencesController.post),
   )
 
   router.get(
     '/recall-type/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     populateValidationData,
-    asyncMiddleware(RecallTypeControllerV2.get),
+    asyncMiddleware(RecallTypeController.get),
   )
   router.post(
     '/recall-type/edit',
     loadPrisoner(null, { checkSession: true, updateSession: true }),
     validate('recallType'),
-    asyncMiddleware(RecallTypeControllerV2.post),
+    asyncMiddleware(RecallTypeController.post),
   )
 
   // Placeholder routes for pages not yet migrated to V2

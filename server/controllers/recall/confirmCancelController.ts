@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import { entrypointUrl } from '../../../utils/utils'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import { entrypointUrl } from '../../utils/utils'
 
-export default class ConfirmCancelControllerV2 extends BaseController {
+export default class ConfirmCancelController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = ConfirmCancelControllerV2.getSessionData(req)
+    const sessionData = ConfirmCancelController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     const prisoner = res.locals.prisoner || sessionData?.prisoner
@@ -29,7 +29,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     // Store the return URL if this is the first visit to confirm-cancel
     const currentReturnTo = sessionData?.returnTo
     if (!currentReturnTo && referrerPath && !referrerPath.includes('confirm-cancel')) {
-      await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: referrerPath })
+      await ConfirmCancelController.updateSessionData(req, { returnTo: referrerPath })
     }
 
     // Get the return URL for the back link
@@ -55,7 +55,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
   static async post(req: Request, res: Response): Promise<void> {
     const { confirmCancel } = req.body
     const { nomisId } = res.locals
-    const sessionData = ConfirmCancelControllerV2.getSessionData(req)
+    const sessionData = ConfirmCancelController.getSessionData(req)
 
     // Get prisoner data from session
     const prisoner = res.locals.prisoner || sessionData?.prisoner
@@ -63,11 +63,11 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     // Check if user confirmed cancellation
     if (confirmCancel === 'true') {
       // Clear the return URL
-      await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })
+      await ConfirmCancelController.updateSessionData(req, { returnTo: null })
 
       // Determine where to redirect based on entry point
       const entrypoint = sessionData?.entrypoint || 'search'
-      const cancelRedirectUrl = ConfirmCancelControllerV2.getCancelRedirectUrl(entrypoint, nomisId, prisoner)
+      const cancelRedirectUrl = ConfirmCancelController.getCancelRedirectUrl(entrypoint, nomisId, prisoner)
 
       logger.info(`User confirmed cancellation, redirecting to ${cancelRedirectUrl}`)
 
@@ -80,7 +80,7 @@ export default class ConfirmCancelControllerV2 extends BaseController {
     const returnTo = sessionData?.returnTo || `/person/${nomisId}/record-recall/revocation-date`
 
     // Clear the stored return URL
-    await ConfirmCancelControllerV2.updateSessionData(req, { returnTo: null })
+    await ConfirmCancelController.updateSessionData(req, { returnTo: null })
 
     logger.info(`User declined cancellation, returning to ${returnTo}`)
 

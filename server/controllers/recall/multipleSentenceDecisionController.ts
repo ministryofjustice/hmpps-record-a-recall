@@ -1,15 +1,15 @@
 import { Request, Response } from 'express'
 import type { CourtCase } from 'models'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import SENTENCE_TYPE_UUIDS from '../../../utils/sentenceTypeConstants'
-import { RecallableCourtCaseSentence } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { SessionManager } from '../../../services/sessionManager'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { SessionManager } from '../../services/sessionManager'
 
-export default class MultipleSentenceDecisionControllerV2 extends BaseController {
+export default class MultipleSentenceDecisionController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = MultipleSentenceDecisionControllerV2.getSessionData(req)
+    const sessionData = MultipleSentenceDecisionController.getSessionData(req)
     const { nomisId } = res.locals
     const { courtCaseId } = req.params
     const recallId = res.locals.recallId || null
@@ -47,7 +47,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       }
 
       // Store sentences in session for later use
-      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionController.updateSessionData(req, {
         [SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE]: unknownSentences,
         [SessionManager.SESSION_KEYS.SELECTED_COURT_CASE_UUID]: courtCaseId,
       })
@@ -57,7 +57,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
       // Store return URL for cancel flow
-      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionController.updateSessionData(req, {
         returnTo: req.originalUrl,
       })
 
@@ -82,13 +82,13 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
         pageHeading: 'Record a recall',
       })
     } catch (error) {
-      logger.error('Error in MultipleSentenceDecisionControllerV2.get', { error: error.message })
+      logger.error('Error in MultipleSentenceDecisionController.get', { error: error.message })
       return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const sessionData = MultipleSentenceDecisionControllerV2.getSessionData(req)
+    const sessionData = MultipleSentenceDecisionController.getSessionData(req)
     const { nomisId } = res.locals
     const { courtCaseId } = req.params
     const { sameSentenceType } = req.body
@@ -97,7 +97,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       // Store decision in session
       const isSameType = sameSentenceType === 'yes'
 
-      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionController.updateSessionData(req, {
         sameSentenceType,
         [SessionManager.SESSION_KEYS.BULK_UPDATE_MODE]: isSameType,
       })
@@ -111,7 +111,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       }
 
       // For individual flow, initialize the sentence index
-      await MultipleSentenceDecisionControllerV2.updateSessionData(req, {
+      await MultipleSentenceDecisionController.updateSessionData(req, {
         [SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX]: 0,
       })
 
@@ -130,7 +130,7 @@ export default class MultipleSentenceDecisionControllerV2 extends BaseController
       logger.error('No sentences in current case found in session during POST')
       return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     } catch (error) {
-      logger.error('Error in MultipleSentenceDecisionControllerV2.post', { error: error.message })
+      logger.error('Error in MultipleSentenceDecisionController.post', { error: error.message })
       clearValidation(req)
       return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }

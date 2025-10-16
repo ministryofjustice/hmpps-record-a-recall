@@ -1,22 +1,22 @@
 import { Request, Response, NextFunction } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import getCourtCaseOptionsFromRas from '../../../utils/rasCourtCasesUtils'
-import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'
-import { EnhancedRecallableCourtCase } from '../../../middleware/loadCourtCases'
-import SENTENCE_TYPE_UUIDS from '../../../utils/sentenceTypeConstants'
-import { COURT_MESSAGES } from '../../../utils/courtConstants'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
+import { COURT_MESSAGES } from '../../utils/courtConstants'
 import {
   calculateOverallSentenceLength,
   formatSentenceServeType,
   formatTerm,
   SummarisedSentenceGroup,
-} from '../../../utils/sentenceUtils'
-import { formatDateStringToDDMMYYYY } from '../../../utils/utils'
-import { RecallableCourtCaseSentence } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+} from '../../utils/sentenceUtils'
+import { formatDateStringToDDMMYYYY } from '../../utils/utils'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
   formattedSentenceLength?: string
@@ -51,7 +51,7 @@ export type EnhancedCourtCaseForView = CourtCase & {
   sentences?: EnhancedSentenceForView[]
 }
 
-export default class SelectCourtCaseControllerV2 extends BaseController {
+export default class SelectCourtCaseController extends BaseController {
   /**
    * Filters court cases to exclude those with only non-recallable sentences
    * and determines if cases have mixed sentence types
@@ -196,7 +196,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
 
   static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const sessionData = SelectCourtCaseControllerV2.getSessionData(req)
+      const sessionData = SelectCourtCaseController.getSessionData(req)
       const { nomisId, recallId } = res.locals
 
       // Get prisoner data from session or res.locals
@@ -242,14 +242,14 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         }
 
         // Filter out cases with only non-recallable sentences
-        reviewableCases = SelectCourtCaseControllerV2.filterAndClassifyCourtCases(reviewableCases)
+        reviewableCases = SelectCourtCaseController.filterAndClassifyCourtCases(reviewableCases)
 
-        reviewableCases = SelectCourtCaseControllerV2.sortCourtCasesByMostRecentConviction(reviewableCases)
+        reviewableCases = SelectCourtCaseController.sortCourtCasesByMostRecentConviction(reviewableCases)
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
 
         // Update session with initial data
-        await SelectCourtCaseControllerV2.updateSessionData(req, {
+        await SelectCourtCaseController.updateSessionData(req, {
           reviewableCourtCases: reviewableCases,
           currentCaseIndex,
           manualRecallDecisions,
@@ -265,7 +265,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       }
 
       const originalCase = reviewableCases[currentCaseIndex]
-      const currentCase = SelectCourtCaseControllerV2.prepareCourtCaseForView(originalCase)
+      const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase)
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
       // Build navigation URLs based on mode
@@ -277,7 +277,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         : `/person/${nomisId}/record-recall/confirm-cancel`
 
       // Store return URL for cancel flow
-      await SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseController.updateSessionData(req, {
         returnTo: req.originalUrl,
       })
 
@@ -302,14 +302,14 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
         forceUnknownSentenceTypes: process.env.FORCE_UNKNOWN_SENTENCE_TYPES === 'true',
       })
     } catch (err) {
-      logger.error('Error in SelectCourtCaseControllerV2.get:', err)
+      logger.error('Error in SelectCourtCaseController.get:', err)
       next(err)
     }
   }
 
   static async post(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const sessionData = SelectCourtCaseControllerV2.getSessionData(req)
+      const sessionData = SelectCourtCaseController.getSessionData(req)
       const { nomisId, recallId } = res.locals
       const { activeSentenceChoice } = req.body
       const isEditMode = req.originalUrl.includes('/edit-recall/')
@@ -329,14 +329,14 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Store the decision for this case
       if (activeSentenceChoice) {
         manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
-        await SelectCourtCaseControllerV2.updateSessionData(req, {
+        await SelectCourtCaseController.updateSessionData(req, {
           manualRecallDecisions,
         })
       }
 
       // Move to the next case
       const nextCaseIndex = currentCaseIndex + 1
-      await SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseController.updateSessionData(req, {
         currentCaseIndex: nextCaseIndex,
       })
 
@@ -356,7 +356,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       })
 
       // Store both as selectedCases and courtCaseOptions for consistency
-      await SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseController.updateSessionData(req, {
         selectedCases,
         courtCaseOptions: selectedCases,
       })
@@ -403,7 +403,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
 
         // Set session data for unknown sentences
         if (unknownSentenceIds.length > 0) {
-          await SelectCourtCaseControllerV2.updateSessionData(req, {
+          await SelectCourtCaseController.updateSessionData(req, {
             unknownSentencesToUpdate: unknownSentenceIds,
             updatedSentenceTypes: {},
           })
@@ -411,7 +411,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       }
 
       // Store the summarized sentences
-      await SelectCourtCaseControllerV2.updateSessionData(req, {
+      await SelectCourtCaseController.updateSessionData(req, {
         summarisedSentences: summarisedSentenceGroupsArray,
       })
 
@@ -436,7 +436,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Proceed to next step
       if (isEditMode) {
         // Mark that this step was edited
-        await SelectCourtCaseControllerV2.updateSessionData(req, {
+        await SelectCourtCaseController.updateSessionData(req, {
           lastEditedStep: 'select-court-cases',
         })
         // Continue to next step in edit flow
@@ -445,7 +445,7 @@ export default class SelectCourtCaseControllerV2 extends BaseController {
       // Normal flow - proceed to check sentences
       return res.redirect(`/person/${nomisId}/record-recall/check-sentences`)
     } catch (err) {
-      logger.error('Error in SelectCourtCaseControllerV2.post:', err)
+      logger.error('Error in SelectCourtCaseController.post:', err)
       return next(err)
     }
   }

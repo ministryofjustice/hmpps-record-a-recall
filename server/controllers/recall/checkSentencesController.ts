@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import { CalculatedReleaseDates } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
-import ManageOffencesService from '../../../services/manageOffencesService'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../middleware/loadCourtCases'
+import ManageOffencesService from '../../services/manageOffencesService'
 
 export type EnhancedSentenceWithEligibility = EnhancedRecallableSentence & {
   ineligibilityReason?: string
@@ -21,9 +21,9 @@ export type FilteredCourtCase = {
   hasIneligibleSentences: boolean
 }
 
-export default class CheckSentencesControllerV2 extends BaseController {
+export default class CheckSentencesController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = CheckSentencesControllerV2.getSessionData(req)
+    const sessionData = CheckSentencesController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     const prisoner = res.locals.prisoner || sessionData?.prisoner
@@ -36,12 +36,12 @@ export default class CheckSentencesControllerV2 extends BaseController {
     const revocationDate = sessionData?.revocationDate ? new Date(sessionData.revocationDate) : null
 
     // Filter sentences by eligibility
-    const filteredCourtCases = CheckSentencesControllerV2.filterSentencesByEligibility(
+    const filteredCourtCases = CheckSentencesController.filterSentencesByEligibility(
       recallableCourtCases,
       revocationDate,
     )
 
-    const offenceNameMap = await CheckSentencesControllerV2.loadOffenceNames(req, filteredCourtCases)
+    const offenceNameMap = await CheckSentencesController.loadOffenceNames(req, filteredCourtCases)
 
     const temporaryCalculation = sessionData?.temporaryCalculation as CalculatedReleaseDates
     const latestSled = temporaryCalculation?.dates?.SLED || null
@@ -72,7 +72,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
       : `/person/${nomisId}/record-recall/confirm-cancel`
 
     // Store the current page for confirm-cancel return
-    await CheckSentencesControllerV2.updateSessionData(req, { returnTo: req.originalUrl })
+    await CheckSentencesController.updateSessionData(req, { returnTo: req.originalUrl })
 
     // If not coming from a validation redirect, clear form responses
     if (!res.locals.formResponses) {
@@ -109,7 +109,7 @@ export default class CheckSentencesControllerV2 extends BaseController {
 
     if (isEditMode) {
       // Mark that this step was reviewed
-      await CheckSentencesControllerV2.updateSessionData(req, {
+      await CheckSentencesController.updateSessionData(req, {
         lastEditedStep: 'check-sentences',
       })
       // Continue to next step in edit flow

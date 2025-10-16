@@ -1,16 +1,16 @@
 import { Request, Response } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import SENTENCE_TYPE_UUIDS from '../../../utils/sentenceTypeConstants'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import {
   UpdateSentenceTypesRequest,
   RecallableCourtCaseSentence,
-} from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'
-import { createSentenceToCourtCaseMap } from '../../../utils/sentenceHelperV2'
+} from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { createSentenceToCourtCaseMap } from '../../utils/sentenceHelperV2'
 
 // Types for court cases with unknown sentences
 interface CourtCaseWithUnknownSentences extends CourtCase {
@@ -19,9 +19,9 @@ interface CourtCaseWithUnknownSentences extends CourtCase {
   allSentencesUpdated: boolean
 }
 
-export default class UpdateSentenceTypesSummaryControllerV2 extends BaseController {
+export default class UpdateSentenceTypesSummaryController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = UpdateSentenceTypesSummaryControllerV2.getSessionData(req)
+    const sessionData = UpdateSentenceTypesSummaryController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     // Get prisoner data
@@ -31,7 +31,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     const isEditRecall = !!recallId
 
     // Clean up session state from any sub-flows
-    await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+    await UpdateSentenceTypesSummaryController.updateSessionData(req, {
       bulkUpdateMode: null,
       sentencesInCurrentCase: null,
       currentSentenceIndex: null,
@@ -84,7 +84,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     const unknownSentenceIds = courtCasesWithUnknownSentences.flatMap((courtCase: CourtCaseWithUnknownSentences) =>
       courtCase.unknownSentences.map(s => s.sentenceUuid),
     )
-    await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+    await UpdateSentenceTypesSummaryController.updateSessionData(req, {
       unknownSentencesToUpdate: unknownSentenceIds,
     })
 
@@ -142,7 +142,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const sessionData = UpdateSentenceTypesSummaryControllerV2.getSessionData(req)
+    const sessionData = UpdateSentenceTypesSummaryController.getSessionData(req)
     const { nomisId, recallId, user } = res.locals
 
     // Validate that all sentences have been updated
@@ -156,7 +156,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
 
     if (!allUpdated) {
       // Set error and redisplay the page
-      UpdateSentenceTypesSummaryControllerV2.setValidationError(
+      UpdateSentenceTypesSummaryController.setValidationError(
         req,
         res,
         'sentenceTypes',
@@ -246,7 +246,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
 
         // Re-summarize the cases with updated sentence types
         const summarisedSentenceGroupsArray = summariseRasCases(updatedCourtCases)
-        await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+        await UpdateSentenceTypesSummaryController.updateSessionData(req, {
           summarisedSentences: summarisedSentenceGroupsArray,
           courtCaseOptions: updatedCourtCases,
         })
@@ -273,7 +273,7 @@ export default class UpdateSentenceTypesSummaryControllerV2 extends BaseControll
     }
 
     // Clear the temporary session data on success
-    await UpdateSentenceTypesSummaryControllerV2.updateSessionData(req, {
+    await UpdateSentenceTypesSummaryController.updateSessionData(req, {
       updatedSentenceTypes: null,
       unknownSentencesToUpdate: null,
     })

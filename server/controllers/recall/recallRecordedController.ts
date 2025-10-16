@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
-import logger from '../../../../logger'
+import BaseController from '../base/BaseController'
+import logger from '../../../logger'
 
-export default class RecallRecordedControllerV2 extends BaseController {
+export default class RecallRecordedController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = RecallRecordedControllerV2.getSessionData(req)
+    const sessionData = RecallRecordedController.getSessionData(req)
     const { nomisId } = res.locals
 
     // Get action from flash message (set by checkYourAnswersControllerV2)
@@ -22,7 +22,7 @@ export default class RecallRecordedControllerV2 extends BaseController {
 
     // Clear session data (reset journey)
     // This mimics the resetJourney: true behavior from FormWizard
-    await RecallRecordedControllerV2.updateSessionData(req, {
+    await RecallRecordedController.updateSessionData(req, {
       revocationDate: null,
       returnToCustodyDate: null,
       inPrisonAtRecall: null,

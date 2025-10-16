@@ -1,17 +1,17 @@
 import { Request, Response } from 'express'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
-import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
-import { getRecallType } from '../../../@types/recallTypes'
-import { SessionManager } from '../../../services/sessionManager'
-import { RecallJourneyData } from '../../../services/sessionTypes'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import { CreateRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { createAnswerSummaryList, calculateUal } from '../../utils/utils'
+import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../middleware/loadCourtCases'
+import { getRecallType } from '../../@types/recallTypes'
+import { SessionManager } from '../../services/sessionManager'
+import { RecallJourneyData } from '../../services/sessionTypes'
 
-export default class CheckYourAnswersControllerV2 extends BaseController {
+export default class CheckYourAnswersController extends BaseController {
   static async get(req: Request, res: Response): Promise<void> {
-    const sessionData = CheckYourAnswersControllerV2.getSessionData(req)
+    const sessionData = CheckYourAnswersController.getSessionData(req)
     const { nomisId, recallId } = res.locals
 
     // Get prisoner data
@@ -117,7 +117,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
   }
 
   static async post(req: Request, res: Response): Promise<void> {
-    const sessionData = CheckYourAnswersControllerV2.getSessionData(req)
+    const sessionData = CheckYourAnswersController.getSessionData(req)
     const { nomisId } = res.locals
     const { username, activeCaseload } = res.locals.user
 
@@ -165,8 +165,8 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       const createResponse = await services.recallService.postRecall(recallToSave, username)
 
       // Handle UAL adjustments using BaseController methods
-      const ualToEdit = CheckYourAnswersControllerV2.getUalToEdit(req) ?? null
-      const ualToCreate = CheckYourAnswersControllerV2.getUalToCreate(req) ?? null
+      const ualToEdit = CheckYourAnswersController.getUalToEdit(req) ?? null
+      const ualToCreate = CheckYourAnswersController.getUalToCreate(req) ?? null
 
       if (ualToCreate !== null) {
         ualToCreate.recallId = createResponse.recallUuid
@@ -186,7 +186,7 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
       req.flash('action', 'recorded')
 
       // Mark journey as complete in session
-      await CheckYourAnswersControllerV2.updateSessionData(req, {
+      await CheckYourAnswersController.updateSessionData(req, {
         journeyComplete: true,
         recallId: createResponse.recallUuid,
       })

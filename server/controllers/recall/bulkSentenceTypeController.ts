@@ -1,14 +1,14 @@
 import { Request, Response } from 'express'
 import type { CourtCase } from 'models'
-import BaseController from '../../base/BaseController'
-import { clearValidation } from '../../../middleware/validationMiddleware'
-import logger from '../../../../logger'
-import { SentenceType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { findSentenceAndCourtCase } from '../../../utils/sentenceHelperV2'
-import { formatDateStringToDDMMYYYY } from '../../../utils/utils'
-import SelectSentenceTypeControllerV2 from './selectSentenceTypeControllerV2'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import { SentenceType } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { findSentenceAndCourtCase } from '../../utils/sentenceHelperV2'
+import { formatDateStringToDDMMYYYY } from '../../utils/utils'
+import SelectSentenceTypeController from './selectSentenceTypeController'
 
-export default class BulkSentenceTypeControllerV2 extends BaseController {
+export default class BulkSentenceTypeController extends BaseController {
   private static async getCommonApplicableSentenceTypes(
     req: Request,
     res: Response,
@@ -22,8 +22,8 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       if (!targetSentence) {
         throw new Error(`Sentence not found: ${sentenceUuid}`)
       }
-      // Use the same helper used by SelectSentenceTypeControllerV2
-      return SelectSentenceTypeControllerV2.getApplicableSentenceTypes(req, res, targetSentence, targetCase)
+      // Use the same helper used by SelectSentenceTypeController
+      return SelectSentenceTypeController.getApplicableSentenceTypes(req, res, targetSentence, targetCase)
     })
 
     const allApplicableTypes = await Promise.all(allApplicableTypesPromises)
@@ -42,7 +42,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
 
   static async get(req: Request, res: Response): Promise<void> {
     try {
-      const sessionData = BulkSentenceTypeControllerV2.getSessionData(req)
+      const sessionData = BulkSentenceTypeController.getSessionData(req)
       const { nomisId } = res.locals
       const { courtCaseId } = req.params
       const recallId = res.locals.recallId || null
@@ -76,7 +76,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       }
 
       // Get common applicable sentence types
-      const sentenceTypes = await BulkSentenceTypeControllerV2.getCommonApplicableSentenceTypes(
+      const sentenceTypes = await BulkSentenceTypeController.getCommonApplicableSentenceTypes(
         req,
         res,
         sentencesInCase,
@@ -97,7 +97,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
       // Store return URL for cancel flow
-      await BulkSentenceTypeControllerV2.updateSessionData(req, {
+      await BulkSentenceTypeController.updateSessionData(req, {
         returnTo: req.originalUrl,
       })
 
@@ -130,7 +130,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
         pageHeading: 'Record a recall',
       })
     } catch (error) {
-      logger.error('Error in BulkSentenceTypeControllerV2.get', { error: error.message })
+      logger.error('Error in BulkSentenceTypeController.get', { error: error.message })
       const { nomisId } = res.locals
       return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
@@ -138,7 +138,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
 
   static async post(req: Request, res: Response): Promise<void> {
     try {
-      const sessionData = BulkSentenceTypeControllerV2.getSessionData(req)
+      const sessionData = BulkSentenceTypeController.getSessionData(req)
       const { nomisId } = res.locals
       const { courtCaseId } = req.params
       const { sentenceType } = req.body
@@ -166,7 +166,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       }
 
       // Get the sentence types again to find the description
-      const sentenceTypes = await BulkSentenceTypeControllerV2.getCommonApplicableSentenceTypes(
+      const sentenceTypes = await BulkSentenceTypeController.getCommonApplicableSentenceTypes(
         req,
         res,
         sentencesInCase,
@@ -190,7 +190,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       })
 
       // Batch update session with all sentence type mappings and clear temporary keys
-      await BulkSentenceTypeControllerV2.batchUpdateSessionData(
+      await BulkSentenceTypeController.batchUpdateSessionData(
         req,
         {
           updatedSentenceTypes: updatedSentences,
@@ -212,7 +212,7 @@ export default class BulkSentenceTypeControllerV2 extends BaseController {
       clearValidation(req)
       return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     } catch (error) {
-      logger.error('Error in BulkSentenceTypeControllerV2.post', { error: error.message })
+      logger.error('Error in BulkSentenceTypeController.post', { error: error.message })
       const { nomisId } = res.locals
       clearValidation(req)
       return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
