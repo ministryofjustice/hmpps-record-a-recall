@@ -5,6 +5,7 @@ import flash from 'connect-flash'
 import config from '../config'
 import auth from '../authentication/auth'
 import { HmppsUser } from '../interfaces/hmppsUser'
+import { invalidateCacheOnLogout } from './cacheInvalidation'
 
 const router = express.Router()
 
@@ -32,7 +33,7 @@ export default function setUpAuth(): Router {
   const authUrl = config.apis.hmppsAuth.externalUrl
   const authParameters = `client_id=${config.apis.hmppsAuth.authClientId}&redirect_uri=${config.domain}`
 
-  router.use('/sign-out', (req, res, next) => {
+  router.use('/sign-out', invalidateCacheOnLogout(), (req, res, next) => {
     const authSignOutUrl = `${authUrl}/sign-out?${authParameters}`
     if (req.user) {
       req.logout(err => {

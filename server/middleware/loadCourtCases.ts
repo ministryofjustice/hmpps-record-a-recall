@@ -5,6 +5,7 @@ import ManageOffencesService from '../services/manageOffencesService'
 import CourtService from '../services/CourtService'
 import CalculationService from '../services/calculationService'
 import NomisToDpsMappingService from '../services/NomisToDpsMappingService'
+import { SessionManager } from '../services/sessionManager'
 import { NomisSentenceId } from '../@types/nomisMappingApi/nomisMappingApiTypes'
 import {
   RecallableCourtCase,
@@ -51,17 +52,32 @@ export default function loadCourtCases(
       return next()
     }
 
+    // Check for cached court cases data
+    const cachedCourtCasesData =
+      SessionManager.getSessionValue<Record<string, unknown>>(req, SessionManager.SESSION_KEYS.CACHED_COURT_CASES) || {}
+
+    // Check if we have cached data for this prisoner
+    const cacheKey = `${SessionManager.SESSION_KEYS.CACHED_COURT_CASES}_${nomisId}`
+    const cachedCourtCases = SessionManager.getCachedData<EnhancedRecallableCourtCase[]>(req, cacheKey, 'COURT_CASES')
+
+    if (cachedCourtCases) {
+      logger.info(`Using cached court cases for ${nomisId}`)
+      res.locals.recallableCourtCases = cachedCourtCases
+      return next()
+    }
+
     try {
+      logger.info(`Fetching court cases from API for ${nomisId} (cache miss)`)
       const response = await courtCaseService.getAllRecallableCourtCases(nomisId, user.username)
       const recallableCourtCases: RecallableCourtCase[] = response.cases || []
 
       // Enhance court cases with offence descriptions, court names, and release dates
       if (recallableCourtCases && Array.isArray(recallableCourtCases) && recallableCourtCases.length > 0) {
         const [offenceEnhancedCases, courtNamesMap, releaseDates] = await Promise.all([
-          enhanceCourtCasesWithOffenceDescriptions(recallableCourtCases, manageOffencesService, user.token),
-          getCourtNamesMap(recallableCourtCases, courtService, user.username),
+          enhanceCourtCasesWithOffenceDescriptions(recallableCourtCases, manageOffencesService, user.token, req),
+          getCourtNamesMap(recallableCourtCases, courtService, user.username, req),
           calculationService && nomisMappingService
-            ? getReleaseDates(nomisId, user.username, calculationService, nomisMappingService)
+            ? getReleaseDates(nomisId, user.username, calculationService, nomisMappingService, req)
             : null,
         ])
 
@@ -74,6 +90,11 @@ export default function loadCourtCases(
         }
 
         res.locals.recallableCourtCases = enhancedCases
+
+        // Cache the enhanced court cases
+        SessionManager.setCachedData(req, cacheKey, enhancedCases)
+        cachedCourtCasesData[nomisId] = true
+        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CACHED_COURT_CASES, cachedCourtCasesData)
       } else {
         res.locals.recallableCourtCases = recallableCourtCases
       }
@@ -98,6 +119,7 @@ async function enhanceCourtCasesWithOffenceDescriptions(
   cases: RecallableCourtCase[],
   manageOffencesService: ManageOffencesService,
   userToken: string,
+  req: Request,
 ): Promise<EnhancedRecallableCourtCase[]> {
   try {
     // Collect unique offence codes
@@ -121,14 +143,40 @@ async function enhanceCourtCasesWithOffenceDescriptions(
       return cases
     }
 
-    // Fetch offence descriptions
-    let offenceMap: Record<string, string> = {}
-    try {
-      offenceMap = await manageOffencesService.getOffenceMap(uniqueOffenceCodes, userToken)
-      logger.debug(`Fetched descriptions for ${Object.keys(offenceMap).length} offence codes`)
-    } catch (error) {
-      logger.error('Error fetching offence descriptions from ManageOffencesService:', error)
-      // Continue with empty offence map
+    // Check cached offences first
+    const cachedOffences =
+      SessionManager.getCachedData<Record<string, string>>(
+        req,
+        SessionManager.SESSION_KEYS.CACHED_OFFENCES,
+        'OFFENCES',
+      ) || {}
+
+    // Determine which offence codes we need to fetch
+    const missingOffenceCodes = uniqueOffenceCodes.filter(code => !cachedOffences[code])
+
+    let offenceMap: Record<string, string> = { ...cachedOffences }
+
+    if (missingOffenceCodes.length > 0) {
+      // Fetch offence descriptions for missing codes only
+      try {
+        logger.info(
+          `Fetching ${missingOffenceCodes.length} offence descriptions from API (${uniqueOffenceCodes.length - missingOffenceCodes.length} cached)`,
+        )
+        const newOffences = await manageOffencesService.getOffenceMap(missingOffenceCodes, userToken)
+
+        // Merge new offences with existing cache
+        offenceMap = { ...offenceMap, ...newOffences }
+
+        // Update cache with all offences
+        SessionManager.setCachedData(req, SessionManager.SESSION_KEYS.CACHED_OFFENCES, offenceMap)
+
+        logger.debug(`Fetched and cached descriptions for ${Object.keys(newOffences).length} offence codes`)
+      } catch (error) {
+        logger.error('Error fetching offence descriptions from ManageOffencesService:', error)
+        // Continue with cached offences only
+      }
+    } else {
+      logger.info(`Using cached offence descriptions for all ${uniqueOffenceCodes.length} codes`)
     }
 
     // Enhance with offence descriptions
@@ -160,6 +208,7 @@ async function getCourtNamesMap(
   cases: RecallableCourtCase[],
   courtService: CourtService,
   username: string,
+  req: Request,
 ): Promise<Map<string, string>> {
   try {
     // Collect unique court codes
@@ -179,15 +228,45 @@ async function getCourtNamesMap(
       return new Map()
     }
 
-    // Fetch court names
-    try {
-      const courtNamesMap = await courtService.getCourtNames(uniqueCourtCodes, username)
-      logger.debug(`Fetched names for ${courtNamesMap.size} court codes`)
-      return courtNamesMap
-    } catch (error) {
-      logger.error('Error fetching court names from CourtService:', error)
-      return new Map()
+    // Check cached court names first
+    const cachedCourtNames =
+      SessionManager.getCachedData<Record<string, string>>(
+        req,
+        SessionManager.SESSION_KEYS.CACHED_COURT_NAMES,
+        'COURT_NAMES',
+      ) || {}
+
+    // Determine which court codes we need to fetch
+    const missingCourtCodes = uniqueCourtCodes.filter(code => !cachedCourtNames[code])
+
+    const courtNamesMap = new Map<string, string>(Object.entries(cachedCourtNames))
+
+    if (missingCourtCodes.length > 0) {
+      // Fetch court names for missing codes only
+      try {
+        logger.info(
+          `Fetching ${missingCourtCodes.length} court names from API (${uniqueCourtCodes.length - missingCourtCodes.length} cached)`,
+        )
+        const newCourtNames = await courtService.getCourtNames(missingCourtCodes, username)
+
+        // Merge new court names with existing cache
+        newCourtNames.forEach((value, key) => {
+          courtNamesMap.set(key, value)
+          cachedCourtNames[key] = value
+        })
+
+        // Update cache with all court names
+        SessionManager.setCachedData(req, SessionManager.SESSION_KEYS.CACHED_COURT_NAMES, cachedCourtNames)
+
+        logger.debug(`Fetched and cached names for ${newCourtNames.size} court codes`)
+      } catch (error) {
+        logger.error('Error fetching court names from CourtService:', error)
+      }
+    } else {
+      logger.info(`Using cached court names for all ${uniqueCourtCodes.length} codes`)
     }
+
+    return courtNamesMap
   } catch (error) {
     logger.error('Error getting court names map:', error)
     return new Map()
@@ -223,6 +302,7 @@ async function getReleaseDates(
   username: string,
   calculationService: CalculationService,
   nomisMappingService: NomisToDpsMappingService,
+  req: Request,
 ): Promise<{
   sled?: string
   crd?: string
@@ -230,7 +310,22 @@ async function getReleaseDates(
   sentenceReleaseDates?: Map<string, { sled?: string; crd?: string }>
 } | null> {
   try {
-    const latestCalculation = await calculationService.getLatestCalculation(nomisId, username)
+    // Check if this calculation has previously failed
+    if (SessionManager.isCalculationFailed(req, nomisId)) {
+      logger.info(`Skipping calculation for ${nomisId} - previously failed and cached`)
+      return { source: 'UNAVAILABLE' }
+    }
+    let latestCalculation
+    try {
+      latestCalculation = await calculationService.getLatestCalculation(nomisId, username)
+    } catch (error) {
+      // Record the failed calculation to prevent retries
+      if (error.status === 422) {
+        SessionManager.recordFailedCalculation(req, nomisId, 'Stale calculation (422 error)')
+        logger.warn(`Recorded failed calculation for ${nomisId}: Stale calculation`)
+      }
+      throw error
+    }
 
     if (!latestCalculation) {
       logger.debug(`No calculation available for ${nomisId}`)
@@ -331,6 +426,12 @@ async function getReleaseDates(
     }
   } catch (error) {
     logger.error('Error fetching release dates from CRD API:', error)
+
+    // Record specific error types for negative caching
+    if (error.status === 422) {
+      SessionManager.recordFailedCalculation(req, nomisId, 'CRD API error 422')
+    }
+
     return { source: 'UNAVAILABLE' }
   }
 }

@@ -6,6 +6,7 @@ import { createAnswerSummaryList, calculateUal } from '../../../../utils/utils'
 import { getRecallType, RecallType } from '../../../../@types/recallTypes'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../../middleware/loadCourtCases'
 import { CreateRecall } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { SessionManager } from '../../../../services/sessionManager'
 
 // Local type for journey data
 type V2EditJourneyData = {
@@ -231,6 +232,10 @@ export default class EditSummaryControllerV2 extends BaseController {
 
       // Set success flash message
       req.flash('action', 'updated')
+
+      // Clear prisoner-related caches since data has been updated
+      SessionManager.clearPrisonerRelatedCache(req, nomisId)
+      logger.info(`Cache invalidated after recall update for prisoner ${nomisId}`)
 
       // Clear edit session data
       await EditSummaryControllerV2.updateSessionData(req, {

@@ -16,6 +16,7 @@ import bulkTestRouter from './bulkTestRouter'
 import populateRecallId from '../middleware/populateRecallId'
 import loadCourtCases from '../middleware/loadCourtCases'
 import loadRecalls from '../middleware/loadRecalls'
+import { invalidateWorkflowCache } from '../middleware/cacheInvalidation'
 
 export default function routes(services: Services): Router {
   const router = Router()
@@ -38,6 +39,7 @@ export default function routes(services: Services): Router {
   router.use(
     '/person/:nomisId/record-recall',
     populateNomisId(),
+    invalidateWorkflowCache(),
     loadCourtCases(
       services.courtCaseService,
       services.manageOffencesService,
@@ -59,6 +61,7 @@ export default function routes(services: Services): Router {
     '/person/:nomisId/edit-recall/:recallId',
     populateNomisId(),
     populateRecallId(),
+    invalidateWorkflowCache(),
     loadCourtCases(
       services.courtCaseService,
       services.manageOffencesService,

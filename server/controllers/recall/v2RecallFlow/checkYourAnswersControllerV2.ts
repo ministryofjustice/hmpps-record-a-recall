@@ -6,6 +6,7 @@ import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSe
 import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
 import { getRecallType, RecallType } from '../../../@types/recallTypes'
+import { SessionManager } from '../../../services/sessionManager'
 
 // Local type for journey data to avoid FormWizard dependency
 type V2JourneyData = {
@@ -208,6 +209,10 @@ export default class CheckYourAnswersControllerV2 extends BaseController {
         journeyComplete: true,
         recallId: createResponse.recallUuid,
       })
+
+      // Clear prisoner-related caches since data has been updated
+      SessionManager.clearPrisonerRelatedCache(req, nomisId)
+      logger.info(`Cache invalidated after recall creation for prisoner ${nomisId}`)
 
       // Clear validation and redirect to success
       clearValidation(req)
