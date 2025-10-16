@@ -1,4 +1,3 @@
-// TODO FIX
 // import PersonHomePage from '../pages/personHome'
 // import RevocationDatePage from '../pages/Journey/revocationDatePage'
 // import WasInPrisonQuestionPage from '../pages/Journey/wasInPrisonQuestionPage'

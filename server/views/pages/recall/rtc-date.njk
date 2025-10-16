@@ -1,4 +1,4 @@
-{% extends "./prisonerBannerBackLayout.njk" %}
+{% extends "prisonerBannerBackLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
@@ -9,14 +9,14 @@
 {% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
 
 {% block pageContent %}
-    
+
     <form method="post" action="">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
         {% set inPrisonError = validationErrors | findError('inPrisonAtRecall') %}
         {% set rtcDateError = validationErrors | findError('returnToCustodyDate') %}
         {% set inPrisonValue = formResponses.inPrisonAtRecall %}
-        
+
         {# Extract date parts from formResponses #}
         {% set rtcDateDay = formResponses['returnToCustodyDate-day'] if formResponses else "" %}
         {% set rtcDateMonth = formResponses['returnToCustodyDate-month'] if formResponses else "" %}

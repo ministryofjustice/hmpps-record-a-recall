@@ -1,4 +1,4 @@
-{% extends "./prisonerBannerBackLayout.njk" %}
+{% extends "prisonerBannerBackLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
@@ -33,7 +33,7 @@
             {{ govukButton({
                 text: "Continue",
                 preventDoubleClick: true,
-                attributes: { 
+                attributes: {
                     id: "submit",
                     "data-qa": "continue-btn"
                 }

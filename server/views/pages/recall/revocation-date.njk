@@ -1,4 +1,4 @@
-{% extends "./prisonerBannerBackLayout.njk" %}
+{% extends "prisonerBannerBackLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
@@ -14,7 +14,7 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
         {% set revocationDateError = validationErrors | findError('revocationDate') %}
-        
+
         {# Extract date parts from formResponses #}
         {% set revocationDateDay = formResponses['revocationDate-day'] if formResponses else "" %}
         {% set revocationDateMonth = formResponses['revocationDate-month'] if formResponses else "" %}
