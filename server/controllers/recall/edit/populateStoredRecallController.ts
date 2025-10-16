@@ -1,128 +1,75 @@
-import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
-
+import { Request, Response } from 'express'
 import { format } from 'date-fns'
-// eslint-disable-next-line import/no-unresolved
-import { CourtCase } from 'models'
-import RecallBaseController from '../recallBaseController'
-import { AdjustmentDto } from '../../../@types/adjustmentsApi/adjustmentsApiTypes'
-import { SessionManager } from '../../../services/sessionManager'
-
+import BaseController from '../../base/BaseController'
 import logger from '../../../../logger'
 import { calculateUal } from '../../../utils/utils'
-import {
-  getCourtCaseOptions,
-  getEligibleSentenceCount,
-  isManualCaseSelection,
-  sessionModelFields,
-} from '../../../helpers/formWizardHelper'
-import revocationDateCrdsDataComparison from '../../../utils/revocationDateCrdsDataComparison'
-import { summariseRasCases } from '../../../utils/CaseSentenceSummariser'
-import getCourtCaseOptionsFromRas from '../../../utils/rasCourtCasesUtils'
 
-export default class PopulateStoredRecallController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-    this.use(this.setCourtCaseItems)
-  }
+export default class PopulateStoredRecallController extends BaseController {
+  static async get(req: Request, res: Response): Promise<void> {
+    const { nomisId, recallId } = res.locals
+    const { username } = res.locals.user
 
-  async setCourtCaseItems(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const courtCaseOptions = await getCourtCaseOptionsFromRas(req, res)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.COURT_CASE_OPTIONS, courtCaseOptions)
-    return next()
-  }
+    // Check if we already have session data from previous edits
+    const sessionData = PopulateStoredRecallController.getSessionData(req)
+    if (sessionData?.isEdit && sessionData?.storedRecall && sessionData?.recallId === recallId) {
+      // Already loaded and possibly edited - skip reloading
+      logger.info(`Recall ${recallId} already in session, skipping reload`)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/edit-summary`)
+    }
 
-  async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    const { username, recallId, nomisId } = res.locals
     try {
-      // Load the stored recall
-      await req.services.recallService
-        .getRecall(recallId, username)
-        .then(async storedRecall => {
-          res.locals.storedRecall = storedRecall
-        })
-        .catch(error => {
-          logger.error(error.userMessage)
-        })
+      // Load the stored recall from API
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { services } = req as any
+      const storedRecall = await services.recallService.getRecall(recallId, username)
 
-      // Load existing UAL adjustments for the person and specific recall for editing
-      res.locals.existingAdjustments = await req.services.adjustmentsService
+      // Load existing UAL adjustments for this recall
+      const existingAdjustments = await services.adjustmentsService
         .searchUal(nomisId, username, recallId)
-        .catch((e: Error): AdjustmentDto[] => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .catch((e: Error): any[] => {
           logger.error('Error loading existing adjustments for edit:', e.message)
           return []
         })
+
+      // Format dates for session storage
+      const revocationDate = format(new Date(storedRecall.revocationDate), 'yyyy-MM-dd')
+      const returnToCustodyDate = storedRecall.returnToCustodyDate
+        ? format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
+        : null
+
+      // Calculate UAL for the stored recall
+      storedRecall.ual = calculateUal(revocationDate, returnToCustodyDate)
+
+      // Populate session with stored recall data using BaseController's updateSessionData
+      await PopulateStoredRecallController.updateSessionData(req, {
+        storedRecall,
+        recallId,
+        isEdit: true,
+        revocationDate,
+        returnToCustodyDate,
+        recallType: storedRecall.recallType.code,
+        courtCases: storedRecall.courtCaseIds,
+        sentenceIds: storedRecall.sentenceIds,
+        existingAdjustments,
+        entrypoint: res.locals.entrypoint || 'edit',
+        inPrisonAtRecall: !storedRecall.returnToCustodyDate,
+        prisoner: res.locals.prisoner,
+        // Set journeyComplete to true since we're editing an existing recall
+        // The user can immediately save without visiting all steps
+        journeyComplete: true,
+      })
+
+      logger.info(`Loaded recall ${recallId} for editing`)
+
+      // Redirect to edit-summary
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/edit-summary`)
     } catch (error) {
-      logger.error(error)
-    }
-    return super.configure(req, res, next)
-  }
-
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.ENTRYPOINT, res.locals.entrypoint)
-    const { storedRecall, recallId } = res.locals
-    const { recallType } = storedRecall
-    const revocationDate = format(new Date(storedRecall.revocationDate), 'yyyy-MM-dd')
-    const returnToCustodyDate = storedRecall.returnToCustodyDate
-      ? format(new Date(storedRecall.returnToCustodyDate), 'yyyy-MM-dd')
-      : null
-    storedRecall.ual = calculateUal(revocationDate, returnToCustodyDate)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.STORED_RECALL, storedRecall)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RECALL_ID, recallId)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.IS_EDIT, true)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.REVOCATION_DATE, revocationDate)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RECALL_TYPE, recallType.code)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RTC_DATE, returnToCustodyDate)
-    req.sessionModel.set(
-      sessionModelFields.IN_PRISON_AT_RECALL,
-      this.getBooleanAsFormValue(!storedRecall.returnToCustodyDate),
-    )
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.COURT_CASES, storedRecall.courtCaseIds)
-
-    // Store existing adjustments in session for the edit flow
-    SessionManager.setSessionValue(
-      req,
-      SessionManager.SESSION_KEYS.EXISTING_ADJUSTMENTS,
-      res.locals.existingAdjustments,
-    )
-
-    // We do a crds comparison here to figure out if it was a manual recall
-    // If it was, we replace the sentence info with RaS data
-
-    revocationDateCrdsDataComparison(req, res)
-
-    const manualSelection = isManualCaseSelection(req)
-    const eligibleCount = getEligibleSentenceCount(req)
-
-    if (manualSelection || eligibleCount === 0) {
-      SessionManager.setSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.ELIGIBLE_SENTENCE_COUNT,
-        storedRecall.sentenceIds.length,
-      )
-      const allCourtCaseOptions = getCourtCaseOptions(req)
-
-      const caseDetails = allCourtCaseOptions.filter((detail: CourtCase) =>
-        storedRecall.courtCaseIds.includes(detail.caseId),
-      )
-
-      const summarisedSentencesGroups = summariseRasCases(caseDetails)
-      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SUMMARISED_SENTENCES, summarisedSentencesGroups)
-    }
-
-    return {
-      ...super.locals(req, res),
-      isEdit: true,
+      logger.error('Error loading recall for edit:', error)
+      // Redirect to person page on error
+      return res.redirect(`/person/${nomisId}`)
     }
   }
 
-  getBooleanAsFormValue(storedValue: boolean): string {
-    if (storedValue === true) {
-      return 'true'
-    }
-    if (storedValue === false) {
-      return 'false'
-    }
-    return null
-  }
+  // No POST handler needed - this is a data loading step only
 }

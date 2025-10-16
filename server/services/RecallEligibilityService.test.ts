@@ -6,7 +6,7 @@ import { RecallEligibilityService } from './RecallEligibilityService'
 
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { ValidationMessage, CalculationBreakdown } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from './sessionTypes'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 jest.mock('../../logger')

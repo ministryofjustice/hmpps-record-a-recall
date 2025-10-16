@@ -39,7 +39,7 @@
         classes: "govuk-button--secondary",
         text: "Record a recall",
         preventDoubleClick: true,
-        href: '/person/' + nomisId + '/record-recall-v2',
+        href: '/person/' + nomisId + '/record-recall',
         attributes: { 'data-qa': 'create-new-recall-btn' }
       }) }}
     {% else %}
@@ -79,7 +79,7 @@
         {% if recall.recallId == latestRecallId %}
         <li class="govuk-summary-card__action">
           {% if useV2RecallFlow %}
-            <a class="govuk-link" href="/person/{{ nomisId }}/edit-recall-v2/{{ recall.recallId }}?entrypoint=recalls">Edit<span class="govuk-visually-hidden"> recall recorded on {{ recall.revocationDate | date }}</span></a>
+            <a class="govuk-link" href="/person/{{ nomisId }}/edit-recall/{{ recall.recallId }}?entrypoint=recalls">Edit<span class="govuk-visually-hidden"> recall recorded on {{ recall.revocationDate | date }}</span></a>
           {% else %}
             <a class="govuk-link" href="/person/{{ nomisId }}/edit-recall/{{ recall.recallId }}?entrypoint=recalls">Edit<span class="govuk-visually-hidden"> recall recorded on {{ recall.revocationDate | date }}</span></a>
           {% endif %}

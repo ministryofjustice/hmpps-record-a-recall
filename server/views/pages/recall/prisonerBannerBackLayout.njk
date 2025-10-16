@@ -1,0 +1,79 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block beforeContent %}
+    {{ super() }}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row govuk-!-margin-bottom-0">
+            <div class="govuk-grid-column-two-thirds">
+                {% if backLink %}
+                    <nav>
+                        {{ govukBackLink({
+                            text: backLinkText | default("Back"),
+                            href: backLink
+                        }) }}
+                    </nav>
+                {% endif %}
+
+                {# Smart error handling - supports multiple patterns #}
+                {% if validationErrors %}
+                    {% if validationErrors | length %}
+                        {# If validationErrors is an array (for direct error messages) #}
+                        {% if validationErrors[0] and validationErrors[0].text %}
+                            {{ govukErrorSummary({
+                                titleText: errorSummaryTitle | default("There is a problem"),
+                                errorList: validationErrors,
+                                classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0",
+                                attributes: {
+                                    'data-module': 'govuk-error-summary'
+                                }
+                            }) }}
+                        {# If validationErrors is a field errors object #}
+                        {% elif validationErrors | buildErrorSummaryList | length %}
+                            {{ govukErrorSummary({
+                                titleText: errorSummaryTitle | default("There is a problem"),
+                                errorList: validationErrors | buildErrorSummaryList,
+                                classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0",
+                                attributes: {
+                                    'data-module': 'govuk-error-summary',
+                                    'role': 'alert',
+                                    'aria-labelledby': 'error-summary-title',
+                                    'tabindex': '-1'
+                                }
+                            }) }}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-{{ contentColumnWidth | default('two-thirds') }}">
+                {# Allow pre-content hooks for things like captions #}
+                {% block beforePageContent %}
+                    {% if pageCaption %}
+                        <span class="govuk-caption-{{ captionSize | default('l') }}">{{ pageCaption }}</span>
+                    {% endif %}
+                {% endblock %}
+
+                {# Main page content #}
+                {% block pageContent %}{% endblock %}
+            </div>
+
+            {# Optional sidebar for additional content #}
+            {% if sidebarContent %}
+                <div class="govuk-grid-column-one-third">
+                    {% block sidebar %}
+                        {{ sidebarContent | safe }}
+                    {% endblock %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

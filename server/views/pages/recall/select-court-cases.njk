@@ -1,0 +1,159 @@
+{% extends "prisonerBannerBackLayout.njk" %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+
+{% set title = "Select all cases that had an active sentence" %}
+{% set pageTitle = applicationName + " - " + title %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">
+    <span class="govuk-caption-l">{{ pageCaption }}</span>
+    {{ title }}
+  </h1>
+
+  <p class="govuk-body">The sentence must have been active when the person's licence was revoked. Any missing sentence types can be added later.</p>
+  <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ currentCaseIndex + 1 }} of {{ totalCases }}</p>
+
+  {# Recallable Offences Section #}
+  {% if currentCase.recallableSentences and currentCase.recallableSentences.length > 0 %}
+    <h2 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+      {% if currentCase.caseReferences and currentCase.caseReferences != 'N/A' %}{{ currentCase.caseReferences }} at {% endif %}
+      {{ currentCase.courtName | default("N/A") }} on {{ currentCase.formattedOverallConvictionDate | default("N/A") }}
+    </h2>
+
+    {% for sentence in currentCase.recallableSentences %}
+      {% if sentence.sentenceTypeDescription == 'Required' %}
+        {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
+      {% else %}
+        {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+      {% endif %}
+      {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+      {# Determine numeric values for count and line number #}
+      {% if sentence.countNumber and sentence.countNumber != '-1' %}
+        {% set countNumberWithText = sentence.countNumber %}
+        {% set lineNumberWithText = null %}
+      {% elseif not sentence.countNumber %}
+        {% set countNumberWithText = null %}
+        {% set lineNumberWithText = sentence.lineNumber %}
+      {% else %}
+        {# countNumber is '-1' → show neither #}
+        {% set countNumberWithText = null %}
+        {% set lineNumberWithText = null %}
+      {% endif %}
+
+      {{ offenceCard({
+        offenceCode: sentence.offenceCode | default("N/A"),
+        offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+        offenceStartDate: sentence.offenceStartDate | default('N/A'),
+        offenceEndDate: sentence.offenceEndDate | default(null),
+        countNumber: countNumberWithText,
+        lineNumber: lineNumberWithText,
+        terrorRelated: sentence.terrorRelated | default(false),
+        isSentenced: true,
+        periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
+        sentenceServeType: sentence.sentenceServeType | default(null),
+        consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+        sentenceType: sentenceTypeDisplay | safe,
+        sentenceDate: sentenceDate,
+        fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+        detailsClasses: 'govuk-!-padding-4',
+        actions: null,
+        listItems: null
+      }) }}
+    {% endfor %}
+  {% endif %}
+
+  {# Non-Recallable Sentences Dropdown #}
+  {% if currentCase.hasNonRecallableSentences %}
+    <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">
+          View offences which are not eligible for recall ({{ currentCase.nonRecallableSentences.length }})
+        </span>
+      </summary>
+      <div class="govuk-details__text">
+        {% for sentence in currentCase.nonRecallableSentences %}
+          {# Determine numeric values for count and line number #}
+          {% if sentence.countNumber and sentence.countNumber != '-1' %}
+            {% set countNumberWithText = sentence.countNumber %}
+            {% set lineNumberWithText = null %}
+          {% elseif not sentence.countNumber %}
+            {% set countNumberWithText = null %}
+            {% set lineNumberWithText = sentence.lineNumber %}
+          {% else %}
+            {# countNumber is '-1' → show neither #}
+            {% set countNumberWithText = null %}
+            {% set lineNumberWithText = null %}
+          {% endif %}
+          {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+          {{ offenceCard({
+            offenceCode: sentence.offenceCode | default("N/A"),
+            offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+            offenceStartDate: sentence.offenceStartDate | default('N/A'),
+            offenceEndDate: sentence.offenceEndDate | default(null),
+            countNumber: countNumberWithText,
+            lineNumber: lineNumberWithText,
+            terrorRelated: sentence.terrorRelated | default(false),
+            isSentenced: true,
+            periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
+            sentenceServeType: sentence.sentenceServeType | default(null),
+            consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+            sentenceType: (sentence.sentenceTypeDescription | default("N/A")),
+            sentenceDate: sentenceDate,
+            fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+            detailsClasses: 'govuk-!-padding-4',
+            actions: null,
+            listItems: null
+          }) }}
+        {% endfor %}
+      </div>
+    </details>
+  {% endif %}
+
+  <form method="post" action="" class="govuk-!-margin-top-6">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+    {% set fieldError = validationErrors | findError('activeSentenceChoice') %}
+
+    {{ govukRadios({
+      name: "activeSentenceChoice",
+      fieldset: {
+        legend: {
+          text: "Did this case have an active sentence?",
+          isPageHeading: false,
+          classes: "govuk-fieldset__legend--m"
+        }
+      },
+      items: [
+        {
+          value: "YES",
+          text: "Yes",
+          checked: formResponses.activeSentenceChoice == "YES"
+        },
+        {
+          value: "NO",
+          text: "No",
+          checked: formResponses.activeSentenceChoice == "NO"
+        }
+      ],
+      errorMessage: fieldError
+    }) }}
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        preventDoubleClick: true,
+        attributes: {
+          id: "submit",
+          "data-qa": "continue-btn"
+        }
+      }) }}
+      {{ govukButton({
+        text: "Cancel",
+        classes: "govuk-button--secondary",
+        href: cancelUrl
+      }) }}
+    </div>
+  </form>
+{% endblock %}

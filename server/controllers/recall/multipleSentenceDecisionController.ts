@@ -1,29 +1,35 @@
-import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
-
+import { Request, Response } from 'express'
 import type { CourtCase } from 'models'
-import RecallBaseController from './recallBaseController'
-import { getCourtCaseOptions } from '../../helpers/formWizardHelper'
-import { SessionManager } from '../../services/sessionManager'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
 import logger from '../../../logger'
 import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
 import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { SessionManager } from '../../services/sessionManager'
 
-export default class MultipleSentenceDecisionController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-    this.use(this.setSentencesInCase)
-  }
+export default class MultipleSentenceDecisionController extends BaseController {
+  static async get(req: Request, res: Response): Promise<void> {
+    const sessionData = MultipleSentenceDecisionController.getSessionData(req)
+    const { nomisId } = res.locals
+    const { courtCaseId } = req.params
+    const recallId = res.locals.recallId || null
 
-  async setSentencesInCase(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { courtCaseId } = req.params
-      const courtCases = getCourtCaseOptions(req) as CourtCase[]
+      // Get prisoner data
+      const prisoner = res.locals.prisoner || sessionData?.prisoner
+
+      // Determine if edit recall
+      const isEditRecall = !!recallId
+
+      // Get court cases from session (look for selectedCases first, then fall back to courtCaseOptions)
+      const courtCases = (sessionData?.selectedCases || sessionData?.courtCaseOptions || []) as CourtCase[]
+
+      // Find the target court case
       const targetCase = courtCases.find(c => c.caseId === courtCaseId)
 
       if (!targetCase) {
         logger.error(`Court case not found: ${courtCaseId}`)
-        return next(new Error(`Court case not found: ${courtCaseId}`))
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Filter for sentences with unknown pre-recall sentence type
@@ -37,94 +43,96 @@ export default class MultipleSentenceDecisionController extends RecallBaseContro
 
       if (unknownSentences.length === 0) {
         logger.warn('No unknown sentences found for court case', { courtCaseId })
-        return res.redirect(`/person/${res.locals.nomisId}/record-recall/update-sentence-types-summary`)
+        return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
       }
 
       // Store sentences in session for later use
-      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE, unknownSentences)
-      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SELECTED_COURT_CASE_UUID, courtCaseId)
+      await MultipleSentenceDecisionController.updateSessionData(req, {
+        [SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE]: unknownSentences,
+        [SessionManager.SESSION_KEYS.SELECTED_COURT_CASE_UUID]: courtCaseId,
+      })
 
-      // Set court case details for the template
-      res.locals.sentenceCount = unknownSentences.length
-      res.locals.courtCase = targetCase
-      res.locals.courtCaseId = courtCaseId
+      // Set navigation
+      const backLink = `/person/${nomisId}/record-recall/update-sentence-types-summary`
+      const cancelUrl = `/person/${nomisId}/record-recall/confirm-cancel`
 
-      return next()
+      // Store return URL for cancel flow
+      await MultipleSentenceDecisionController.updateSessionData(req, {
+        returnTo: req.originalUrl,
+      })
+
+      // Load form data from session if not from validation
+      if (!res.locals.formResponses) {
+        res.locals.formResponses = {
+          sameSentenceType: sessionData?.sameSentenceType,
+        }
+      }
+
+      return res.render('pages/recall/v2/multiple-sentence-decision', {
+        prisoner,
+        nomisId,
+        isEditRecall,
+        backLink,
+        cancelUrl,
+        courtCase: targetCase,
+        courtCaseId,
+        sentenceCount: unknownSentences.length,
+        validationErrors: res.locals.validationErrors,
+        formResponses: res.locals.formResponses,
+        pageHeading: 'Record a recall',
+      })
     } catch (error) {
-      logger.error('Error in setSentencesInCase middleware', { error: error.message })
-      return next(error)
+      logger.error('Error in MultipleSentenceDecisionController.get', { error: error.message })
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 
-  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { courtCaseId } = req.params
-      res.locals.courtCaseId = courtCaseId
+  static async post(req: Request, res: Response): Promise<void> {
+    const sessionData = MultipleSentenceDecisionController.getSessionData(req)
+    const { nomisId } = res.locals
+    const { courtCaseId } = req.params
+    const { sameSentenceType } = req.body
 
-      // Get the sentences from session that were set in middleware
-      const sentencesInCase = SessionManager.getSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
-      ) as Array<{
+    try {
+      // Store decision in session
+      const isSameType = sameSentenceType === 'yes'
+
+      await MultipleSentenceDecisionController.updateSessionData(req, {
+        sameSentenceType,
+        [SessionManager.SESSION_KEYS.BULK_UPDATE_MODE]: isSameType,
+      })
+
+      // Clear validation
+      clearValidation(req)
+
+      if (isSameType) {
+        // For bulk flow, navigate to bulk sentence type page
+        return res.redirect(`/person/${nomisId}/record-recall/bulk-sentence-type/${courtCaseId}`)
+      }
+
+      // For individual flow, initialize the sentence index
+      await MultipleSentenceDecisionController.updateSessionData(req, {
+        [SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX]: 0,
+      })
+
+      // Get the first sentence to determine next URL
+      const sentencesInCase = sessionData?.[SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE] as Array<{
         sentenceUuid: string
         isUnknownSentenceType: boolean
       }>
 
-      if (!sentencesInCase || sentencesInCase.length === 0) {
-        logger.error('No sentences in current case found in session')
-        return res.redirect(`/person/${res.locals.nomisId}/record-recall/update-sentence-types-summary`)
+      if (sentencesInCase && sentencesInCase.length > 0) {
+        // Navigate to the first sentence
+        return res.redirect(`/person/${nomisId}/record-recall/select-sentence-type/${sentencesInCase[0].sentenceUuid}`)
       }
 
-      return super.get(req, res, next)
-    } catch (error) {
-      logger.error('Error in MultipleSentenceDecisionController.get', { error: error.message })
-      return next(error)
-    }
-  }
-
-  async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const sameSentenceType = req.body.sameSentenceType === 'yes'
-
-      // Set bulk update mode flag
-      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BULK_UPDATE_MODE, sameSentenceType)
-
-      if (sameSentenceType) {
-        // For bulk flow, navigate to bulk sentence type page
-        const { courtCaseId } = req.params
-        req.form.options.next = `/person/${res.locals.nomisId}/record-recall/bulk-sentence-type/${courtCaseId}`
-      } else {
-        // For individual flow, initialize the sentence index
-        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_SENTENCE_INDEX, 0)
-
-        // Get the first sentence to determine next URL
-        const sentencesInCase = SessionManager.getSessionValue(
-          req,
-          SessionManager.SESSION_KEYS.SENTENCES_IN_CURRENT_CASE,
-        ) as Array<{
-          sentenceUuid: string
-          isUnknownSentenceType: boolean
-        }>
-
-        if (sentencesInCase && sentencesInCase.length > 0) {
-          // Set the next step dynamically
-          req.form.options.next = `/person/${res.locals.nomisId}/record-recall/select-sentence-type/${sentencesInCase[0].sentenceUuid}`
-        }
-      }
-
-      super.post(req, res, next)
+      // Fallback if no sentences found
+      logger.error('No sentences in current case found in session during POST')
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     } catch (error) {
       logger.error('Error in MultipleSentenceDecisionController.post', { error: error.message })
-      next(error)
-    }
-  }
-
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const locals = super.locals(req, res)
-
-    return {
-      ...locals,
-      pageTitle: 'Is the sentence type the same for all sentences in this court case?',
+      clearValidation(req)
+      return res.redirect(`/person/${nomisId}/record-recall/update-sentence-types-summary`)
     }
   }
 }

@@ -1,17 +1,10 @@
-import FormWizard from 'hmpo-form-wizard'
-import { Response } from 'express'
-
+import { Request, Response } from 'express'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
 import logger from '../../../logger'
-import RecallBaseController from './recallBaseController'
 import { CalculatedReleaseDates } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import {
-  getEligibleSentenceCount,
-  getTemporaryCalc,
-  isManualCaseSelection,
-  getRevocationDate,
-} from '../../helpers/formWizardHelper'
-import ManageOffencesService from '../../services/manageOffencesService'
 import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../middleware/loadCourtCases'
+import ManageOffencesService from '../../services/manageOffencesService'
 
 export type EnhancedSentenceWithEligibility = EnhancedRecallableSentence & {
   ineligibilityReason?: string
@@ -28,145 +21,196 @@ export type FilteredCourtCase = {
   hasIneligibleSentences: boolean
 }
 
-export default class CheckSentencesController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-    this.use(this.filterSentencesByEligibility)
-    this.use(this.loadOffenceNames)
-  }
+export default class CheckSentencesController extends BaseController {
+  static async get(req: Request, res: Response): Promise<void> {
+    const sessionData = CheckSentencesController.getSessionData(req)
+    const { nomisId, recallId } = res.locals
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const eligibleSentenceCount = getEligibleSentenceCount(req)
-    const manualJourney = isManualCaseSelection || eligibleSentenceCount === 0
+    const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-    const calculation: CalculatedReleaseDates = getTemporaryCalc(req)
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
-    const filteredCourtCases = res.locals.filteredCourtCases || []
+    const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
-    res.locals.latestSled = calculation?.dates?.SLED || null
-    res.locals.manualJourney = manualJourney
-    res.locals.summarisedSentencesGroups = filteredCourtCases
-    res.locals.casesWithEligibleSentences = eligibleSentenceCount
-    res.locals.revocationDate = getRevocationDate(req)
+    const revocationDate = sessionData?.revocationDate ? new Date(sessionData.revocationDate) : null
 
-    const locals = super.locals(req, res)
-    const { prisoner } = res.locals
+    // Filter sentences by eligibility
+    const filteredCourtCases = CheckSentencesController.filterSentencesByEligibility(
+      recallableCourtCases,
+      revocationDate,
+    )
 
-    let backLink = `/person/${prisoner.prisonerNumber}/record-recall/rtc-date`
-    if (req.journeyModel.attributes.lastVisited?.includes('update-sentence-types-summary')) {
-      backLink = `/person/${prisoner.prisonerNumber}/record-recall/update-sentence-types-summary`
-    } else if (locals.isEditRecall) {
-      backLink = `/person/${prisoner.prisonerNumber}/recall/${locals.recallId}/edit/edit-summary`
+    const offenceNameMap = await CheckSentencesController.loadOffenceNames(req, filteredCourtCases)
+
+    const temporaryCalculation = sessionData?.temporaryCalculation as CalculatedReleaseDates
+    const latestSled = temporaryCalculation?.dates?.SLED || null
+
+    const casesWithEligibleSentences = filteredCourtCases.reduce((sum, cc) => sum + cc.eligibleSentences.length, 0)
+
+    const manualJourney = sessionData?.manualCaseSelection || casesWithEligibleSentences === 0
+
+    let backLink: string
+    if (isEditMode) {
+      backLink = `/person/${nomisId}/edit-recall/${recallId}/edit-summary`
+    } else if (isEditFromCheckYourAnswers) {
+      backLink = `/person/${nomisId}/record-recall/check-your-answers`
+    } else {
+      backLink = `/person/${nomisId}/record-recall/rtc-date`
     }
 
-    return { ...locals, backLink }
-  }
-
-  async getOffenceNameTitle(req: FormWizard.Request, offenceCodes: string[]) {
-    return new ManageOffencesService().getOffenceMap(offenceCodes, req.user.token)
-  }
-
-  async filterSentencesByEligibility(req: FormWizard.Request, res: Response, next: () => void): Promise<void> {
-    try {
-      const revocationDate = getRevocationDate(req)
-      const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
-
-      if (!revocationDate || !recallableCourtCases) {
-        logger.warn('No revocation date or court cases available for filtering')
-        res.locals.filteredCourtCases = []
-        return next()
+    // Handle special case for non-edit mode
+    if (!isEditMode && !isEditFromCheckYourAnswers) {
+      const lastVisited = sessionData?.lastVisited
+      if (lastVisited?.includes('update-sentence-types-summary')) {
+        backLink = `/person/${nomisId}/record-recall/update-sentence-types-summary`
       }
+    }
 
-      logger.info(`Filtering sentences based on revocation date: ${revocationDate.toISOString().split('T')[0]}`)
+    const cancelUrl = isEditMode
+      ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall/confirm-cancel`
 
-      const filteredCourtCases: FilteredCourtCase[] = recallableCourtCases.map(courtCase => {
-        const eligibleSentences: EnhancedSentenceWithEligibility[] = []
-        const ineligibleSentences: EnhancedSentenceWithEligibility[] = []
+    // Store the current page for confirm-cancel return
+    await CheckSentencesController.updateSessionData(req, { returnTo: req.originalUrl })
 
-        courtCase.sentences?.forEach((sentence: EnhancedRecallableSentence) => {
-          const sentenceWithEligibility = { ...sentence } as EnhancedSentenceWithEligibility
+    // If not coming from a validation redirect, clear form responses
+    if (!res.locals.formResponses) {
+      res.locals.formResponses = {}
+    }
 
-          // Check if we have the necessary dates for eligibility check
-          if (!sentence.adjustedCRD || !sentence.adjustedSLED) {
-            sentenceWithEligibility.ineligibilityReason = 'Missing release dates'
-            sentenceWithEligibility.isEligible = false
-            ineligibleSentences.push(sentenceWithEligibility)
-            logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Missing dates`)
-            return
-          }
+    res.render('pages/recall/v2/check-sentences', {
+      prisoner,
+      nomisId,
+      isEditRecall: isEditMode,
+      backLink,
+      cancelUrl,
+      latestSled,
+      manualJourney,
+      summarisedSentencesGroups: filteredCourtCases,
+      casesWithEligibleSentences,
+      revocationDate,
+      offenceNameMap,
+      validationErrors: res.locals.validationErrors,
+      formResponses: res.locals.formResponses,
+    })
+  }
 
-          const crd = new Date(sentence.adjustedCRD)
-          const sled = new Date(sentence.adjustedSLED)
+  static async post(req: Request, res: Response): Promise<void> {
+    const { nomisId, recallId } = res.locals
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
+    const isEditFromCheckYourAnswers = req.originalUrl.endsWith('/edit')
 
-          // Check eligibility based on CRD <= revocationDate <= SLED
-          if (revocationDate > sled) {
-            sentenceWithEligibility.ineligibilityReason = 'Sentence expired before revocation date'
-            sentenceWithEligibility.isEligible = false
-            ineligibleSentences.push(sentenceWithEligibility)
-            logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Expired (SLED: ${sentence.adjustedSLED})`)
-          } else if (revocationDate < crd) {
-            sentenceWithEligibility.ineligibilityReason = 'Not yet on licence at revocation date'
-            sentenceWithEligibility.isEligible = false
-            ineligibleSentences.push(sentenceWithEligibility)
-            logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Not on licence (CRD: ${sentence.adjustedCRD})`)
-          } else {
-            sentenceWithEligibility.isEligible = true
-            eligibleSentences.push(sentenceWithEligibility)
-            logger.info(
-              `Sentence ${sentence.sentenceUuid}: ELIGIBLE (CRD: ${sentence.adjustedCRD}, SLED: ${sentence.adjustedSLED})`,
-            )
-          }
-        })
+    // This page doesn't have any form fields to process,
+    // it's just a confirmation page that continues to the next step
 
-        const caseReference = courtCase.reference?.trim() || 'held'
-        const caseRefAndCourt =
-          !courtCase.courtName || courtCase.courtName === 'Court name not available'
-            ? 'Court name not available'
-            : `Case ${caseReference} at ${courtCase.courtName}`
+    // Clear validation and redirect
+    clearValidation(req)
 
-        return {
-          caseRefAndCourt,
-          courtCode: courtCase.courtCode,
-          courtName: courtCase.courtName,
-          eligibleSentences,
-          ineligibleSentences,
-          hasEligibleSentences: eligibleSentences.length > 0,
-          hasIneligibleSentences: ineligibleSentences.length > 0,
+    if (isEditMode) {
+      // Mark that this step was reviewed
+      await CheckSentencesController.updateSessionData(req, {
+        lastEditedStep: 'check-sentences',
+      })
+      // Continue to next step in edit flow
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/recall-type`)
+    }
+
+    if (isEditFromCheckYourAnswers) {
+      // Return to check-your-answers
+      return res.redirect(`/person/${nomisId}/record-recall/check-your-answers`)
+    }
+
+    // Normal flow - continue to recall-type
+    return res.redirect(`/person/${nomisId}/record-recall/recall-type`)
+  }
+
+  private static filterSentencesByEligibility(
+    recallableCourtCases: EnhancedRecallableCourtCase[],
+    revocationDate: Date | null,
+  ): FilteredCourtCase[] {
+    if (!revocationDate || !recallableCourtCases) {
+      logger.warn('No revocation date or court cases available for filtering')
+      return []
+    }
+
+    logger.info(`Filtering sentences based on revocation date: ${revocationDate.toISOString().split('T')[0]}`)
+
+    return recallableCourtCases.map(courtCase => {
+      const eligibleSentences: EnhancedSentenceWithEligibility[] = []
+      const ineligibleSentences: EnhancedSentenceWithEligibility[] = []
+
+      courtCase.sentences?.forEach((sentence: EnhancedRecallableSentence) => {
+        const sentenceWithEligibility = { ...sentence } as EnhancedSentenceWithEligibility
+
+        // Check if we have the necessary dates for eligibility check
+        if (!sentence.adjustedCRD || !sentence.adjustedSLED) {
+          sentenceWithEligibility.ineligibilityReason = 'Missing release dates'
+          sentenceWithEligibility.isEligible = false
+          ineligibleSentences.push(sentenceWithEligibility)
+          logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Missing dates`)
+          return
+        }
+
+        const crd = new Date(sentence.adjustedCRD)
+        const sled = new Date(sentence.adjustedSLED)
+
+        // Check eligibility based on CRD <= revocationDate <= SLED
+        if (revocationDate > sled) {
+          sentenceWithEligibility.ineligibilityReason = 'Sentence expired before revocation date'
+          sentenceWithEligibility.isEligible = false
+          ineligibleSentences.push(sentenceWithEligibility)
+          logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Expired (SLED: ${sentence.adjustedSLED})`)
+        } else if (revocationDate < crd) {
+          sentenceWithEligibility.ineligibilityReason = 'Not yet on licence at revocation date'
+          sentenceWithEligibility.isEligible = false
+          ineligibleSentences.push(sentenceWithEligibility)
+          logger.info(`Sentence ${sentence.sentenceUuid}: Ineligible - Not on licence (CRD: ${sentence.adjustedCRD})`)
+        } else {
+          sentenceWithEligibility.isEligible = true
+          eligibleSentences.push(sentenceWithEligibility)
+          logger.info(
+            `Sentence ${sentence.sentenceUuid}: ELIGIBLE (CRD: ${sentence.adjustedCRD}, SLED: ${sentence.adjustedSLED})`,
+          )
         }
       })
 
-      const totalEligible = filteredCourtCases.reduce((sum, cc) => sum + cc.eligibleSentences.length, 0)
-      const totalIneligible = filteredCourtCases.reduce((sum, cc) => sum + cc.ineligibleSentences.length, 0)
-      logger.info(`Filtering complete: ${totalEligible} eligible, ${totalIneligible} ineligible sentences`)
+      const caseReference = courtCase.reference?.trim() || 'held'
+      const caseRefAndCourt =
+        !courtCase.courtName || courtCase.courtName === 'Court name not available'
+          ? 'Court name not available'
+          : `Case ${caseReference} at ${courtCase.courtName}`
 
-      res.locals.filteredCourtCases = filteredCourtCases
-      return next()
-    } catch (error) {
-      logger.error('Error filtering sentences by eligibility:', error)
-      res.locals.filteredCourtCases = []
-      return next()
-    }
+      return {
+        caseRefAndCourt,
+        courtCode: courtCase.courtCode,
+        courtName: courtCase.courtName,
+        eligibleSentences,
+        ineligibleSentences,
+        hasEligibleSentences: eligibleSentences.length > 0,
+        hasIneligibleSentences: ineligibleSentences.length > 0,
+      }
+    })
   }
 
-  async loadOffenceNames(req: FormWizard.Request, res: Response, next: () => void) {
+  private static async loadOffenceNames(
+    req: Request,
+    filteredCourtCases: FilteredCourtCase[],
+  ): Promise<Record<string, string>> {
     try {
-      const filteredCourtCases = res.locals.filteredCourtCases as FilteredCourtCase[]
       const offenceCodes = filteredCourtCases
         .flatMap(courtCase => [...courtCase.eligibleSentences, ...courtCase.ineligibleSentences])
         .map(sentence => sentence.offenceCode)
         .filter(code => code)
 
       if (offenceCodes.length > 0) {
-        const offenceNameMap = await this.getOffenceNameTitle(req, offenceCodes)
-        res.locals.offenceNameMap = offenceNameMap
-      } else {
-        res.locals.offenceNameMap = {}
+        const manageOffencesService = new ManageOffencesService()
+        return manageOffencesService.getOffenceMap(offenceCodes, req.user.token)
       }
-      next()
+      return {}
     } catch (error) {
       logger.error('Error loading offence names:', error)
-      res.locals.offenceNameMap = {}
-      next()
+      return {}
     }
   }
 }

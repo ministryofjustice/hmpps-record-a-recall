@@ -5,21 +5,18 @@ import logPageView from '../middleware/logPageView'
 import addBreadcrumb from '../middleware/addBreadcrumb'
 import ApiRoutes from './apiRoutes'
 import searchRouter from './search'
-import newRecallRouter from './recall'
-import v2RecallFlowRouter from '../controllers/recall/v2RecallFlow'
-import v2EditRecallRouter from '../controllers/recall/v2RecallFlow/edit'
+import v2RecallFlowRouter from '../controllers/recall'
+import v2EditRecallRouter from '../controllers/recall/edit'
 import addServicesToRequest from '../middleware/addServicesToRequest'
 import { Services } from '../services'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import viewPersonRouter from './viewPersonRouter'
 import populateNomisId from '../middleware/populateNomisId'
 import bulkTestRouter from './bulkTestRouter'
-import populateEntrypoint from '../middleware/populateEntrypoint'
-import editRecallRouter from './recall/edit'
 import populateRecallId from '../middleware/populateRecallId'
-import deleteRecallRouter from './recall/deleteRecall'
 import loadCourtCases from '../middleware/loadCourtCases'
 import loadRecalls from '../middleware/loadRecalls'
+import { invalidateWorkflowCache } from '../middleware/cacheInvalidation'
 
 export default function routes(services: Services): Router {
   const router = Router()
@@ -38,32 +35,11 @@ export default function routes(services: Services): Router {
   router.use(addServicesToRequest(services))
   router.use('/search', searchRouter)
   router.use('/person/:nomisId', populateNomisId(), viewPersonRouter(services))
-  // HMPO Forms defined route
+  // Main recall flow route (V2)
   router.use(
-    '/person/:nomisId/edit-recall/:recallId',
-    populateEntrypoint(),
+    '/person/:nomisId/record-recall',
     populateNomisId(),
-    populateRecallId(),
-    loadCourtCases(
-      services.courtCaseService,
-      services.manageOffencesService,
-      services.courtService,
-      services.calculationService,
-      services.nomisMappingService,
-    ),
-    loadRecalls(
-      services.recallService,
-      services.prisonService,
-      services.manageOffencesService,
-      services.courtCaseService,
-      services.courtService,
-    ),
-    editRecallRouter,
-  )
-  // V2 recall flow route (when feature flag is enabled)
-  router.use(
-    '/person/:nomisId/record-recall-v2',
-    populateNomisId(),
+    invalidateWorkflowCache(),
     loadCourtCases(
       services.courtCaseService,
       services.manageOffencesService,
@@ -80,11 +56,12 @@ export default function routes(services: Services): Router {
     ),
     v2RecallFlowRouter(),
   )
-  // V2 edit recall flow route
+  // Edit recall flow route (V2)
   router.use(
-    '/person/:nomisId/edit-recall-v2/:recallId',
+    '/person/:nomisId/edit-recall/:recallId',
     populateNomisId(),
     populateRecallId(),
+    invalidateWorkflowCache(),
     loadCourtCases(
       services.courtCaseService,
       services.manageOffencesService,
@@ -101,28 +78,7 @@ export default function routes(services: Services): Router {
     ),
     v2EditRecallRouter(),
   )
-  router.use(
-    '/person/:nomisId/record-recall',
-    populateEntrypoint(),
-    populateNomisId(),
-    loadCourtCases(
-      services.courtCaseService,
-      services.manageOffencesService,
-      services.courtService,
-      services.calculationService,
-      services.nomisMappingService,
-    ),
-    loadRecalls(
-      services.recallService,
-      services.prisonService,
-      services.manageOffencesService,
-      services.courtCaseService,
-      services.courtService,
-    ),
-    newRecallRouter,
-  )
   router.use('/bulk', bulkTestRouter(services))
-  router.use('/person/:nomisId/recall/:recallId/delete', deleteRecallRouter)
 
   return router
 }

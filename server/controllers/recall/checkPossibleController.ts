@@ -1,33 +1,36 @@
-import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { Recall } from 'models'
-
 import {
   RecordARecallCalculationResult,
   ValidationMessage,
 } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import logger from '../../../logger'
-import RecallBaseController from './recallBaseController'
-import { getRecallRoute } from '../../helpers/formWizardHelper'
+import BaseController from '../base/BaseController'
 import { SessionManager } from '../../services/sessionManager'
 import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import { NomisDpsSentenceMapping, NomisSentenceId } from '../../@types/nomisMappingApi/nomisMappingApiTypes'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
 import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
 import { COURT_MESSAGES } from '../../utils/courtConstants'
+import { RecallEligibility } from '../../@types/recallEligibility'
 
-export default class CheckPossibleController extends RecallBaseController {
-  private recallRoutingService: RecallRoutingService
+export default class CheckPossibleController extends BaseController {
+  private static recallRoutingService = new RecallRoutingService()
 
-  constructor(options: FormWizard.Controller.Options) {
-    super(options)
-    this.recallRoutingService = new RecallRoutingService()
-  }
-
-  async configure(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  // TODO: This violates RESTful principles by performing state mutations in a GET handler.
+  // The original FormWizard implementation has the same issue (configure method runs on GET).
+  // Future improvement: Add a loading/processing page/button that shows progress while data is being
+  // fetched, then POST to process the data. This would make the flow properly RESTful and
+  // provide better UX for slow API calls. For now, we're maintaining parity with the original
+  // behavior to ensure the migration works correctly.
+  static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { nomisId, username } = res.locals
     try {
+      // Load prisoner details first
+      const prisoner = await req.services.prisonerService.getPrisonerDetails(nomisId, username)
+      res.locals.prisoner = prisoner
+
       let calculationResult: RecordARecallCalculationResult = null
       let breakdown = null
       let errors: ValidationMessage[] = []
@@ -123,7 +126,7 @@ export default class CheckPossibleController extends RecallBaseController {
       }
 
       // Use routing service for smart filtering and routing decisions
-      const routingResponse = await this.recallRoutingService.routeRecallWithSmartFiltering(
+      const routingResponse = await CheckPossibleController.recallRoutingService.routeRecallWithSmartFiltering(
         nomisId,
         enhancedCases,
         existingAdjustments,
@@ -155,7 +158,7 @@ export default class CheckPossibleController extends RecallBaseController {
 
         const sentencesFromRasCases = routingResponse.casesToUse.flatMap(caseItem => caseItem.sentences || [])
 
-        const sentences = await this.getCrdsSentences(req, res)
+        const sentences = await CheckPossibleController.getCrdsSentences(req, res)
 
         const nomisSentenceInformation = sentences.map(sentence => {
           return {
@@ -164,7 +167,7 @@ export default class CheckPossibleController extends RecallBaseController {
           }
         })
 
-        const dpsSentenceSequenceIds = await this.getNomisToDpsMapping(req, nomisSentenceInformation)
+        const dpsSentenceSequenceIds = await CheckPossibleController.getNomisToDpsMapping(req, nomisSentenceInformation)
 
         res.locals.dpsSentenceIds = dpsSentenceSequenceIds.map(mapping => mapping.dpsSentenceId)
 
@@ -198,62 +201,73 @@ export default class CheckPossibleController extends RecallBaseController {
 
       res.locals.existingAdjustments = existingAdjustments
 
-      return super.configure(req, res, next)
+      // Store data in session
+      await CheckPossibleController.storeSessionData(req, res)
+
+      // Determine redirect path
+      const nextPath = CheckPossibleController.determineNextPath(res)
+      return res.redirect(nextPath)
     } catch (error) {
       logger.error(error)
       return next(error)
     }
   }
 
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const locals = super.locals(req, res)
+  private static async storeSessionData(req: Request, res: Response): Promise<void> {
+    // Collect all session updates for batching
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sessionUpdates: Array<Record<string, any>> = []
 
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.ENTRYPOINT, res.locals.entrypoint)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RECALL_ELIGIBILITY, res.locals.recallEligibility)
+    // Add base data
+    sessionUpdates.push({
+      entrypoint: res.locals.entrypoint,
+      recallEligibility: res.locals.recallEligibility,
+      prisoner: res.locals.prisoner,
+    })
 
-    // Set manual route if STANDARD_RECALL_255 error occurred
+    // Add manual route if needed
     if (res.locals.forceManualRoute) {
-      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.MANUAL_CASE_SELECTION, true)
+      sessionUpdates.push({ manualCaseSelection: true })
     }
 
+    // Handle routing response updates
     const { routingResponse } = res.locals
     if (routingResponse) {
+      // Convert routing response updates to session field names
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const routingUpdates: Record<string, any> = {}
       Object.entries(routingResponse.sessionUpdates).forEach(([key, value]) => {
-        const sessionField = this.mapToSessionField(key)
+        const sessionField = CheckPossibleController.mapToSessionField(key)
         if (sessionField) {
-          req.sessionModel.set(sessionField, value)
+          // Store using the original key for now, will be handled by updateRecallData
+          routingUpdates[key] = value
         }
       })
 
-      Object.entries(routingResponse.localUpdates).forEach(([key, value]) => {
-        res.locals[key] = value
-      })
+      if (Object.keys(routingUpdates).length > 0) {
+        sessionUpdates.push(routingUpdates)
+      }
     }
 
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.COURT_CASE_OPTIONS, res.locals.courtCases)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.SENTENCES, res.locals.crdsSentences)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RAS_SENTENCES, res.locals.rasSentences)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.TEMP_CALC, res.locals.temporaryCalculation)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.BREAKDOWN, res.locals.breakdown)
-    SessionManager.setSessionValue(
-      req,
-      SessionManager.SESSION_KEYS.EXISTING_ADJUSTMENTS,
-      res.locals.existingAdjustments,
-    )
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.DPS_SENTENCE_IDS, res.locals.dpsSentenceIds)
-    SessionManager.setSessionValue(
-      req,
-      SessionManager.SESSION_KEYS.SUMMARISED_SENTENCES,
-      res.locals.summarisedSentenceGroups,
-    )
+    // Add remaining session data
+    sessionUpdates.push({
+      courtCaseOptions: res.locals.courtCases,
+      crdsSentences: res.locals.crdsSentences,
+      rasSentences: res.locals.rasSentences,
+      temporaryCalculation: res.locals.temporaryCalculation,
+      breakdown: res.locals.breakdown,
+      existingAdjustments: res.locals.existingAdjustments,
+      dpsSentenceIds: res.locals.dpsSentenceIds,
+      summarisedSentenceGroups: res.locals.summarisedSentenceGroups,
+    })
 
-    return { ...locals }
+    await CheckPossibleController.batchUpdateSessionData(req, ...sessionUpdates)
   }
 
   /**
    * Map service field names to session model field names
    */
-  private mapToSessionField(serviceFieldName: string): string | null {
+  private static mapToSessionField(serviceFieldName: string): string | null {
     const fieldMap: Record<string, string> = {
       recallEligibility: SessionManager.SESSION_KEYS.RECALL_ELIGIBILITY,
       crdsErrors: SessionManager.SESSION_KEYS.CRDS_ERRORS,
@@ -262,22 +276,38 @@ export default class CheckPossibleController extends RecallBaseController {
     return fieldMap[serviceFieldName] || null
   }
 
-  recallPossible(req: FormWizard.Request, res: Response) {
+  private static determineNextPath(res: Response): string {
+    const basePath = `/person/${res.locals.nomisId}/record-recall`
+
+    // Check if recall is possible
+    const recallPossible = CheckPossibleController.isRecallPossible(res)
+
+    if (!recallPossible) {
+      return `${basePath}/not-possible`
+    }
+
+    // If recall is possible, go to revocation date (now using V2 route)
+    return `${basePath}/revocation-date`
+  }
+
+  private static isRecallPossible(res: Response): boolean {
     // Check if we should go to manual route due to STANDARD_RECALL_255
     if (res.locals.forceManualRoute) {
       // We still return true to allow the recall, but the manual flag will route it correctly later
       return true
     }
-    return getRecallRoute(req) && getRecallRoute(req) !== 'NOT_POSSIBLE'
+
+    const recallEligibility = res.locals.recallEligibility as RecallEligibility
+    return recallEligibility?.recallRoute && recallEligibility.recallRoute !== 'NOT_POSSIBLE'
   }
 
-  getCrdsSentences(req: FormWizard.Request, res: Response) {
+  private static async getCrdsSentences(req: Request, res: Response) {
     const { calcReqId, username } = res.locals
     return req.services.calculationService.getSentencesAndReleaseDates(calcReqId, username)
   }
 
-  async getNomisToDpsMapping(
-    req: FormWizard.Request,
+  private static async getNomisToDpsMapping(
+    req: Request,
     nomisSentenceInformation: NomisSentenceId[],
   ): Promise<NomisDpsSentenceMapping[]> {
     return req.services.nomisMappingService.getNomisToDpsMappingLookup(nomisSentenceInformation, req.user.username)

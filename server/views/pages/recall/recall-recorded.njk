@@ -1,39 +1,37 @@
-{% extends "../../partials/prisonerBannerLayout.njk" %}
+{% extends "prisonerBannerBackLayout.njk" %}
 
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 
+{% set title = "Recall recorded" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set mainClasses = "app-container govuk-body" %}
+{% set showBackLink = false %}
 
-{% block content %}
-    <div class='govuk-grid-row'>
-        <div class='govuk-grid-column-two-thirds'>
-          {% if action == "updated" %}
-              {% set panelText = "Changes to recall saved" %}
-          {% elif action == "recorded" %}
-              {% set panelText = "Recall recorded" %}
-          {% else %}
-              {% set panelText = "Recall saved" %}  {# fallback #}
-          {% endif %}
-          {{ govukPanel({
-            titleText: panelText,
-             attributes: {
-                "data-qa": "success-message"
-            }
-         
-          }) }}
+{% block pageContent %}
+  {% if action == "updated" %}
+    {% set panelText = "Changes to recall saved" %}
+  {% elif action == "recorded" %}
+    {% set panelText = "Recall recorded" %}
+  {% else %}
+    {% set panelText = "Recall saved" %}
+  {% endif %}
 
-          <div class="govuk-!-margin-top-6">
-            <h2 class="govuk-heading-l">What you can do next</h2>
+  {{ govukPanel({
+    titleText: panelText,
+    attributes: {
+      "data-qa": "success-message"
+    }
+  }) }}
 
-            <p><a href="{{ urls.adjustments }}">Check the adjustments information</a></p>
+  <div class="govuk-!-margin-top-6">
+    <h2 class="govuk-heading-l">What you can do next</h2>
 
-            <h2 class="govuk-heading-m">Other things you can do</h2>
-            <ul class="govuk-list govuk-list--spaced govuk-!-margin-top-2">
-              <li><a href="{{ urls.crds }}">Calculate release dates</a></li>
-              <li>Go back to the <a href="{{ urls.profile }}">prisoner profile</a></li>
-            </ul>
-          </div>
-        </div>
-    </div>
+    <p><a href="{{ urls.adjustments }}">Check the adjustments information</a></p>
 
+    <h2 class="govuk-heading-m">Other things you can do</h2>
+    <ul class="govuk-list govuk-list--spaced govuk-!-margin-top-2">
+      <li><a href="{{ urls.crds }}">Calculate release dates</a></li>
+      <li>Go back to the <a href="{{ urls.profile }}">prisoner profile</a></li>
+    </ul>
+  </div>
 {% endblock %}

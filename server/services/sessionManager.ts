@@ -1,22 +1,9 @@
+import { Request } from 'express'
 import { RecallSessionData, RecallJourneyData } from './sessionTypes'
 import { getRecallType } from '../@types/recallTypes'
 import { SummarisedSentenceGroup } from '../utils/sentenceUtils'
 import logger from '../../logger'
 
-// Type definition for FormWizard Request
-interface FormWizardRequest {
-  sessionModel?: {
-    get: <T>(key: string) => T | undefined
-    set: (key: string, value: unknown, options?: { silent?: boolean }) => void
-    unset: (key: string | string[]) => void
-    toJSON?: () => Record<string, unknown>
-    save: (callback?: (err?: Error) => void) => void
-    reset?: () => unknown
-    updateSessionData?: (changes: object) => unknown
-  }
-}
-
-// TODO can we remove this after form wizard is removed?
 class SessionManager {
   static readonly SESSION_KEYS = {
     ENTRYPOINT: 'entrypoint',
@@ -67,9 +54,29 @@ class SessionManager {
     CURRENT_SENTENCE_INDEX: 'currentSentenceIndex',
     ACTIVE_SENTENCE_CHOICE: 'activeSentenceChoice',
     SENTENCE_GROUPS: 'sentenceGroups',
+    // Cache-related keys
+    CACHED_CASELOADS: 'cachedCaseloads',
+    CACHED_COMPONENTS: 'cachedComponents',
+    CACHED_PRISONER_DATA: 'cachedPrisonerData',
+    CACHED_COURT_CASES: 'cachedCourtCases',
+    CACHED_OFFENCES: 'cachedOffences',
+    CACHED_COURT_NAMES: 'cachedCourtNames',
+    FAILED_CALCULATIONS: 'failedCalculations',
+    CACHE_TIMESTAMPS: 'cacheTimestamps',
   }
 
-  static getRecallData(req: FormWizardRequest): RecallJourneyData {
+  // Cache TTL configurations (in milliseconds)
+  static readonly CACHE_TTL = {
+    USER_DATA: 30 * 60 * 1000, // 30 minutes for user/session data
+    COMPONENTS: 60 * 60 * 1000, // 1 hour for UI components
+    PRISONER_DATA: 15 * 60 * 1000, // 15 minutes for prisoner data
+    COURT_CASES: 15 * 60 * 1000, // 15 minutes for court cases
+    OFFENCES: 60 * 60 * 1000, // 1 hour for offence descriptions
+    COURT_NAMES: 60 * 60 * 1000, // 1 hour for court names
+    FAILED_CALCULATIONS: 5 * 60 * 1000, // 5 minutes for failed calculation states
+  }
+
+  static getRecallData(req: Request): RecallJourneyData {
     try {
       const courtCases = this.getSessionValue<string[]>(req, this.SESSION_KEYS.COURT_CASES)
       const courtCaseCount = courtCases ? courtCases.length : 0
@@ -105,7 +112,7 @@ class SessionManager {
     }
   }
 
-  static updateRecallData(req: FormWizardRequest, data: Partial<RecallSessionData>) {
+  static updateRecallData(req: Request, data: Partial<RecallSessionData>) {
     try {
       logger.info('SessionManager.updateRecallData called with:', data)
       Object.entries(data).forEach(([key, value]) => {
@@ -113,10 +120,12 @@ class SessionManager {
         if (sessionKey) {
           if (value === undefined || value === null) {
             logger.info(`SessionManager: Unsetting ${key} (sessionKey: ${sessionKey})`)
-            req.sessionModel.unset(sessionKey)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (req.session as any)[sessionKey]
           } else {
             logger.info(`SessionManager: Setting ${key} (sessionKey: ${sessionKey}) to:`, value)
-            req.sessionModel.set(sessionKey, value)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(req.session as any)[sessionKey] = value
           }
         } else {
           logger.warn(`SessionManager: No session key found for data key: ${key}`)
@@ -128,10 +137,11 @@ class SessionManager {
     }
   }
 
-  static clearRecallData(req: FormWizardRequest) {
+  static clearRecallData(req: Request) {
     try {
       Object.values(this.SESSION_KEYS).forEach(key => {
-        req.sessionModel.unset(key)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (req.session as any)[key]
       })
     } catch (error) {
       logger.error('Error clearing recall data from session', error)
@@ -139,12 +149,13 @@ class SessionManager {
     }
   }
 
-  static getAllSessionData(req: FormWizardRequest): RecallSessionData {
+  static getAllSessionData(req: Request): RecallSessionData {
     try {
       const data: RecallSessionData = {}
 
       Object.entries(this.SESSION_KEYS).forEach(([_, sessionKey]) => {
-        const value = req.sessionModel.get(sessionKey)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const value = (req.session as any)?.[sessionKey]
         if (value !== undefined) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(data as any)[sessionKey] = value
@@ -167,50 +178,236 @@ class SessionManager {
     return undefined
   }
 
-  static hasSessionModel(req: FormWizardRequest): boolean {
-    return !!req.sessionModel
+  static hasSession(req: Request): boolean {
+    return !!req.session
   }
 
-  static getSessionValue<T>(req: FormWizardRequest, key: string): T | undefined {
+  static getSessionValue<T>(req: Request, key: string): T | undefined {
     try {
-      if (!req.sessionModel) {
+      if (!req.session) {
         return undefined
       }
-      return req.sessionModel.get<T>(key)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (req.session as any)[key] as T
     } catch (error) {
       logger.error(`Error getting session value for key ${key}`, error)
       return undefined
     }
   }
 
-  static setSessionValue(req: FormWizardRequest, key: string, value: unknown) {
+  static setSessionValue(req: Request, key: string, value: unknown) {
     try {
-      if (!req.sessionModel) {
+      if (!req.session) {
         return
       }
-      req.sessionModel.set(key, value)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(req.session as any)[key] = value
     } catch (error) {
       logger.error(`Error setting session value for key ${key}`, error)
       throw error
     }
   }
 
-  static save(req: FormWizardRequest) {
+  static async save(req: Request): Promise<void> {
+    if (!req.session) {
+      logger.warn('SessionManager.save called but no session exists')
+      return Promise.resolve()
+    }
+
+    return new Promise((resolve, reject) => {
+      req.session.save(err => {
+        if (err) {
+          logger.error('Session save error:', err)
+          reject(err)
+        } else {
+          logger.info('SessionManager.save: Session save completed')
+          resolve()
+        }
+      })
+    })
+  }
+
+  // Cache management methods
+  static getCachedData<T>(req: Request, cacheKey: string, ttlKey: keyof typeof SessionManager.CACHE_TTL): T | null {
     try {
-      if (!req.sessionModel) {
-        logger.warn('SessionManager.save called but no sessionModel exists')
-        return
+      const cachedData = this.getSessionValue<T>(req, cacheKey)
+      if (!cachedData) {
+        logger.debug(`Cache miss for ${cacheKey}`)
+        return null
       }
-      if (typeof req.sessionModel.save === 'function') {
-        logger.info('SessionManager.save: Calling sessionModel.save()')
-        req.sessionModel.save()
-        logger.info('SessionManager.save: Session save called')
+
+      // Check if cache is still valid
+      const timestamps = this.getSessionValue<Record<string, number>>(req, this.SESSION_KEYS.CACHE_TIMESTAMPS) || {}
+      const cacheTime = timestamps[cacheKey]
+
+      if (!cacheTime) {
+        logger.debug(`No timestamp found for cached ${cacheKey}`)
+        return null
+      }
+
+      const ttl = this.CACHE_TTL[ttlKey]
+      const now = Date.now()
+      const isExpired = now - cacheTime > ttl
+
+      if (isExpired) {
+        logger.info(`Cache expired for ${cacheKey} (age: ${Math.round((now - cacheTime) / 1000)}s)`)
+        // Clean up expired cache
+        this.invalidateCache(req, cacheKey)
+        return null
+      }
+
+      logger.info(`Cache hit for ${cacheKey} (age: ${Math.round((now - cacheTime) / 1000)}s)`)
+      return cachedData
+    } catch (error) {
+      logger.error(`Error getting cached data for ${cacheKey}`, error)
+      return null
+    }
+  }
+
+  static setCachedData<T>(req: Request, cacheKey: string, data: T): void {
+    try {
+      this.setSessionValue(req, cacheKey, data)
+
+      // Update timestamp
+      const timestamps = this.getSessionValue<Record<string, number>>(req, this.SESSION_KEYS.CACHE_TIMESTAMPS) || {}
+      timestamps[cacheKey] = Date.now()
+      this.setSessionValue(req, this.SESSION_KEYS.CACHE_TIMESTAMPS, timestamps)
+
+      logger.info(`Cached data for ${cacheKey}`)
+    } catch (error) {
+      logger.error(`Error setting cached data for ${cacheKey}`, error)
+    }
+  }
+
+  static invalidateCache(req: Request, cacheKey?: string): void {
+    try {
+      if (cacheKey) {
+        // Invalidate specific cache
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (req.session as any)[cacheKey]
+
+        const timestamps = this.getSessionValue<Record<string, number>>(req, this.SESSION_KEYS.CACHE_TIMESTAMPS) || {}
+        delete timestamps[cacheKey]
+        this.setSessionValue(req, this.SESSION_KEYS.CACHE_TIMESTAMPS, timestamps)
+
+        logger.info(`Invalidated cache for ${cacheKey}`)
       } else {
-        logger.warn('SessionManager.save: sessionModel.save is not a function')
+        // Invalidate all caches
+        const cacheKeys = [
+          this.SESSION_KEYS.CACHED_CASELOADS,
+          this.SESSION_KEYS.CACHED_COMPONENTS,
+          this.SESSION_KEYS.CACHED_PRISONER_DATA,
+          this.SESSION_KEYS.CACHED_COURT_CASES,
+          this.SESSION_KEYS.CACHED_OFFENCES,
+          this.SESSION_KEYS.CACHED_COURT_NAMES,
+          this.SESSION_KEYS.FAILED_CALCULATIONS,
+        ]
+
+        cacheKeys.forEach(key => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          delete (req.session as any)[key]
+        })
+
+        this.setSessionValue(req, this.SESSION_KEYS.CACHE_TIMESTAMPS, {})
+        logger.info('Invalidated all caches')
       }
     } catch (error) {
-      logger.error('Error saving session', error)
-      throw error
+      logger.error('Error invalidating cache', error)
+    }
+  }
+
+  static recordFailedCalculation(req: Request, prisonerId: string, error: string): void {
+    try {
+      const failedCalcs =
+        this.getSessionValue<Record<string, { error: string; timestamp: number }>>(
+          req,
+          this.SESSION_KEYS.FAILED_CALCULATIONS,
+        ) || {}
+
+      failedCalcs[prisonerId] = {
+        error,
+        timestamp: Date.now(),
+      }
+
+      this.setSessionValue(req, this.SESSION_KEYS.FAILED_CALCULATIONS, failedCalcs)
+      logger.info(`Recorded failed calculation for ${prisonerId}: ${error}`)
+    } catch (err) {
+      logger.error(`Error recording failed calculation for ${prisonerId}`, err)
+    }
+  }
+
+  static isCalculationFailed(req: Request, prisonerId: string): boolean {
+    try {
+      const failedCalcs =
+        this.getSessionValue<Record<string, { error: string; timestamp: number }>>(
+          req,
+          this.SESSION_KEYS.FAILED_CALCULATIONS,
+        ) || {}
+
+      const failedCalc = failedCalcs[prisonerId]
+      if (!failedCalc) {
+        return false
+      }
+
+      // Check if the failure is still within the TTL
+      const ttl = this.CACHE_TTL.FAILED_CALCULATIONS
+      const now = Date.now()
+      const isExpired = now - failedCalc.timestamp > ttl
+
+      if (isExpired) {
+        // Clean up expired failure record
+        delete failedCalcs[prisonerId]
+        this.setSessionValue(req, this.SESSION_KEYS.FAILED_CALCULATIONS, failedCalcs)
+        return false
+      }
+
+      logger.info(
+        `Calculation still marked as failed for ${prisonerId} (age: ${Math.round((now - failedCalc.timestamp) / 1000)}s)`,
+      )
+      return true
+    } catch (error) {
+      logger.error(`Error checking failed calculation for ${prisonerId}`, error)
+      return false
+    }
+  }
+
+  static clearPrisonerRelatedCache(req: Request, prisonerId?: string): void {
+    try {
+      // Clear prisoner-specific caches
+      if (prisonerId) {
+        const cachedCourtCases = this.getSessionValue<Record<string, unknown>>(
+          req,
+          this.SESSION_KEYS.CACHED_COURT_CASES,
+        )
+        if (cachedCourtCases && cachedCourtCases[prisonerId]) {
+          delete cachedCourtCases[prisonerId]
+          this.setSessionValue(req, this.SESSION_KEYS.CACHED_COURT_CASES, cachedCourtCases)
+        }
+
+        const cachedPrisonerData = this.getSessionValue<Record<string, unknown>>(
+          req,
+          this.SESSION_KEYS.CACHED_PRISONER_DATA,
+        )
+        if (cachedPrisonerData && cachedPrisonerData[prisonerId]) {
+          delete cachedPrisonerData[prisonerId]
+          this.setSessionValue(req, this.SESSION_KEYS.CACHED_PRISONER_DATA, cachedPrisonerData)
+        }
+
+        const failedCalcs = this.getSessionValue<Record<string, unknown>>(req, this.SESSION_KEYS.FAILED_CALCULATIONS)
+        if (failedCalcs && failedCalcs[prisonerId]) {
+          delete failedCalcs[prisonerId]
+          this.setSessionValue(req, this.SESSION_KEYS.FAILED_CALCULATIONS, failedCalcs)
+        }
+      } else {
+        // Clear all prisoner-related caches
+        this.invalidateCache(req, this.SESSION_KEYS.CACHED_PRISONER_DATA)
+        this.invalidateCache(req, this.SESSION_KEYS.CACHED_COURT_CASES)
+        this.invalidateCache(req, this.SESSION_KEYS.FAILED_CALCULATIONS)
+      }
+
+      logger.info(`Cleared prisoner-related cache ${prisonerId ? `for ${prisonerId}` : 'for all prisoners'}`)
+    } catch (error) {
+      logger.error('Error clearing prisoner-related cache', error)
     }
   }
 }

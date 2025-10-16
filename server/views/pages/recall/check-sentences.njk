@@ -1,35 +1,18 @@
-{% extends "../../partials/prisonerBannerLayout.njk" %}
+{% extends "prisonerBannerBackLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
-{% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
-{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-{% set errors = validationErrors[0].text %}
+{% set title = "Check that the sentences and offences are correct" %}
+{% set pageTitle = applicationName + " - " + title %}
 
 {% block beforeContent %}
     {{ super() }}
     <div class="govuk-width-container">
         <div class="govuk-grid-row govuk-!-margin-bottom-0">
             <div class="govuk-grid-column-two-thirds">
-              <nav>
-              {{ govukBackLink({
-                    text: "Back",
-                    href: backLink
-                }) }}
-              </nav>
-                {% if errorlist.length %}
-                    {{ govukErrorSummary({
-                        titleText: "There is a problem",
-                        errorList: validationErrors,
-                        classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0"
-                    }) }}
-                {% endif %}
+                {# Error summary is handled in prisonerBannerBackLayout #}
             </div>
             <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
                 <a href="/person/{{ nomisId }}/sentences" class="govuk-link">View raw sentence data</a>
@@ -38,114 +21,89 @@
     </div>
 {% endblock %}
 
-{% block content %}
-    {% set formMethod = options.method | default('post') %}
-    {% set formAction = options.action | default('') %}
-    {% set formEnctype = options.enctype | default('') %}
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
+{% block pageContent %}
+    <h1 class="govuk-heading-xl">
+        <span class="govuk-caption-xl">{{ pageCaption }}</span>
+        {{ title }}
+    </h1>
 
-                <form method="{{ formMethod }}" action="{{ formAction }}"
-                        {% if formEnctype %}
-                            enctype="{{ formEnctype }}"
-                        {% endif %}
-                >
+    <p>
+        {% if latestSled %}
+            The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
+        {% else %}
+            The SLED (Sentence and licence expiry date) is not available.
+        {% endif %}
+    </p>
 
-                    {% if formMethod == 'post' %}
-                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                    {% endif %}
+    <h2 class="govuk-heading-l">
+        Court cases with sentences eligible for recall ({{ summarisedSentencesGroups.length }})
+    </h2>
 
-                    {% block sentenceInfo %}
+    {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
 
-                            <h1 class="govuk-heading-xl">
-                                <span class="govuk-caption-xl">{{ pageHeading }}</span>
-                                Check that the sentences and offences are correct
-                            </h1>
-                          <p>
-                              {% if latestSled %}
-                                The latest SLED (Sentence and licence expiry date) is <b>{{ latestSled | sentenceDate }}</b>. This is the SLED on this person's licence.
-                              {% else %}
-                                The SLED (Sentence and licence expiry date) is not available.
-                              {% endif %}
-                          </p>
-                          <h2 class="govuk-heading-l">
-                              Court cases with sentences eligible for recall ({{ summarisedSentencesGroups.length }})
-                          </h2>
-                          {{ sentenceCards(summarisedSentencesGroups, offenceNameMap) }}
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
 
-                    {% endblock %}
+    <p class="govuk-body">If you think some information is wrong, you can manage all court case
+        information <a class="govuk-link" target="external" href="{{ urls.ccards }}">Court cases and
+        release dates (opens in a new tab)</a>.
+    </p>
 
-                  <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
-                  <!-- Call to action -->
-                  <p class="govuk-body">If you think some information is wrong, you can manage all court case
-                    information <a class="govuk-link" target="external" href="{{ urls.ccards }}">Court cases and
-                      release dates (opens in a new tab)</a>.</p>
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Confirm and continue",
+                preventDoubleClick: true,
+                type: "submit",
+                attributes: {
+                    "data-qa": "confirm-and-continue-btn",
+                    id: "submit"
+                }
+            }) }}
 
-                    <div class="govuk-button-group">
-                        {% block formActions %}
-                          {% block submitAction %}
-                              {{ govukButton({
-                                  text: "Confirm and continue",
-                                  classes: options.buttonClasses,
-                                  preventDoubleClick: true,
-                                  type: "submit",
-                                  attributes: {
-                                    "data-qa": "confirm-and-continue-btn"
-                                }
-                              }) }}
-                          {% endblock %}
-
-                          {% block cancel %}
-                            {{ govukButton({
-                                text: "Cancel",
-                                classes: "govuk-button--secondary",
-                                preventDoubleClick: true,
-                                type: "reset",
-                                href: cancelLink
-                              }) }}
-                          {% endblock %}
-                      {% endblock %}
-                    </div>
-                </form>
-            </div>
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                preventDoubleClick: true,
+                href: cancelUrl
+            }) }}
         </div>
-    </div>
+    </form>
 {% endblock %}
 
-{%  macro sentenceCards(groups, offenceNameMap) %}
+{% macro sentenceCards(groups, offenceNameMap) %}
     {% for group in groups %}
-{#      Temporarily disabled in order to help analysis - to be reinstated for business requirement#}
-{#    {%  if group.hasEligibleSentences  %}#}
-        <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }} </h3>
+        <h3 class="govuk-heading-m">{{ group.caseRefAndCourt }}</h3>
 
         {% for sentence in group.eligibleSentences %}
             {{ sentenceCard(sentence, offenceNameMap) }}
         {% endfor %}
-        {% from "govuk/components/details/macro.njk" import govukDetails %}
+
         {% if group.hasIneligibleSentences %}
             {% set ineligibleHtml %}
                 {% for sentence in group.ineligibleSentences %}
                     {{ sentenceCard(sentence, offenceNameMap) }}
                 {% endfor %}
             {% endset %}
+
             {% set summaryHtml %}
                 View sentences that are ineligible for recall ({{ group.ineligibleSentences | length }})
-            {%  endset %}
-        {{ govukDetails({
-            summaryHtml: summaryHtml,
-            html: ineligibleHtml
-        }) }}
+            {% endset %}
+
+            {{ govukDetails({
+                summaryHtml: summaryHtml,
+                html: ineligibleHtml
+            }) }}
         {% endif %}
     {% endfor %}
-
 {% endmacro %}
 
 {% macro sentenceCard(sentence, offenceNameMap) %}
     {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}
     {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}
     {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not available' %}
+
     {# Determine numeric values for count and line number #}
     {% if sentence.countNumber and sentence.countNumber != '-1' %}
         {% set countNumberWithText = sentence.countNumber %}
@@ -162,25 +120,23 @@
     {# Add eligibility information if the sentence is ineligible #}
     {% set cardHtml %}
         {{ offenceCard({
-          countNumber: countNumberWithText,
-          offenceCode: sentence.offenceCode | default('N/A'),
-          offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
-          offenceStartDate: offenceStartDate,
-          offenceEndDate: offenceEndDate,
-          hideOutcome: true,
-          outcome: sentence.outcome | default('N/A'),
-          lineNumber: lineNumberWithText,
-          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
-          sentenceServeType: sentence.sentenceServeType | default(null),
-          sentenceType: sentence.sentenceType | default('N/A'),
-          sentenceDate: sentenceDate,
-          fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-          isSentenced: true,
-          detailsClasses: 'govuk-!-padding-4'
+            countNumber: countNumberWithText,
+            offenceCode: sentence.offenceCode | default('N/A'),
+            offenceName: sentence.offenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
+            offenceStartDate: offenceStartDate,
+            offenceEndDate: offenceEndDate,
+            hideOutcome: true,
+            outcome: sentence.outcome | default('N/A'),
+            lineNumber: lineNumberWithText,
+            periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('N/A'),
+            sentenceServeType: sentence.sentenceServeType | default(null),
+            sentenceType: sentence.sentenceType | default('N/A'),
+            sentenceDate: sentenceDate,
+            fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+            isSentenced: true,
+            detailsClasses: 'govuk-!-padding-4'
         }) }}
     {% endset %}
 
     {{ cardHtml | safe }}
 {% endmacro %}
-
-

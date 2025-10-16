@@ -1,141 +1,62 @@
-{% extends "../../partials/prisonerBannerLayout.njk" %}
+{% extends "prisonerBannerBackLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-{% set pageTitle = "Is the sentence type the same for all sentences in this court case?" %}
+{% set title = "Do all sentences have the same type?" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set pageCaption = "Record a recall" %}
 
-{% block beforeContent %}
-    {{ super() }}
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row govuk-!-margin-bottom-0">
-            <div class="govuk-grid-column-two-thirds">
-                <nav>
-                    {{ govukBackLink({
-                        text: "Back",
-                        href: backLink or '/person/' + nomisId + '/record-recall/update-sentence-types-summary'
-                    }) }}
-                </nav>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+{% block pageContent %}
+    <h1 class="govuk-heading-l">{{ title }}</h1>
 
-{% block content %}
-    <div class="govuk-width-container">
-        {% if errors and errorSummary %}
-            {{ govukErrorSummary({
-                titleText: "There is a problem",
-                errorList: errorSummary
+    <p class="govuk-body">
+        This court case has {{ sentenceCount }} sentences that need their type updating.
+    </p>
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% set fieldError = validationErrors | findError('sameSentenceType') %}
+
+        {{ govukRadios({
+            id: "sameSentenceType",
+            name: "sameSentenceType",
+            fieldset: {
+                legend: {
+                    text: "Do all sentences have the same sentence type?",
+                    classes: "govuk-fieldset__legend--m"
+                }
+            },
+            hint: {
+                text: "Select yes if all sentences should have the same type, or no if you need to select different types for each sentence"
+            },
+            items: [
+                {
+                    value: "yes",
+                    text: "Yes - they all have the same type",
+                    checked: formResponses.sameSentenceType === "yes"
+                },
+                {
+                    value: "no",
+                    text: "No - they have different types",
+                    checked: formResponses.sameSentenceType === "no"
+                }
+            ],
+            errorMessage: fieldError
+        }) }}
+
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Continue",
+                preventDoubleClick: true,
+                attributes: { id: "submit" }
             }) }}
-        {% endif %}
-
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h1 class="govuk-heading-xl">
-                    <span class="govuk-caption-xl">{{ pageHeading }}</span>
-                    Is the sentence type the same for all sentences in this court case?
-                </h1>
-                
-                <p class="govuk-body">This is the sentence type from the original warrant.</p>
-
-                <form method="post" action="?" autocomplete="off" novalidate>
-                    <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
-
-                    {{ govukRadios({
-                        idPrefix: "sameSentenceType",
-                        name: "sameSentenceType",
-                        fieldset: {
-                            legend: {
-                                text: "Is the sentence type the same for all " + sentenceCount + " sentences?",
-                                isPageHeading: false,
-                                classes: "govuk-visually-hidden"
-                            }
-                        },
-                        items: [
-                            {
-                                value: "yes",
-                                text: "Yes"
-                            },
-                            {
-                                value: "no",
-                                text: "No"
-                            }
-                        ],
-                        errorMessage: errors.sameSentenceType
-                    }) }}
-
-                    <div class="govuk-button-group">
-                        {{ govukButton({
-                            text: "Continue",
-                            type: "submit",
-                            attributes: { "data-qa": "continue-button" }
-                        }) }}
-                        
-                        {{ govukButton({
-                            text: "Cancel",
-                            classes: "govuk-button--secondary",
-                            href: cancelLink,
-                            attributes: { "data-qa": "cancel-link" }
-                        }) }}
-                    </div>
-                </form>
-            </div>
-
-            <div class="govuk-grid-column-one-third">
-                <div class="court-case-details">
-                    <h2 class="govuk-heading-m">Court case details</h2>
-                    
-                    {% if courtCase %}
-                        {% set rows = [] %}
-                        
-                        {% if courtCase.reference %}
-                            {% set rows = (rows.push({
-                                key: {
-                                    text: "Case reference"
-                                },
-                                value: {
-                                    text: courtCase.reference
-                                }
-                            }), rows) %}
-                        {% endif %}
-                        
-                        {% set rows = (rows.push({
-                            key: {
-                                text: "Court name"
-                            },
-                            value: {
-                                html: courtCase.locationName or "Court name not available"
-                            }
-                        }), rows) %}
-                        
-                        {% set rows = (rows.push({
-                            key: {
-                                text: "Warrant date"
-                            },
-                            value: {
-                                text: courtCase.date | formatDate
-                            }
-                        }), rows) %}
-                        
-                        {% set rows = (rows.push({
-                            key: {
-                                text: "Overall case outcome"
-                            },
-                            value: {
-                                text: "Imprisonment"
-                            }
-                        }), rows) %}
-                        
-                        {{ govukSummaryList({
-                            rows: rows
-                        }) }}
-                    {% endif %}
-                </div>
-            </div>
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl
+            }) }}
         </div>
-    </div>
+    </form>
 {% endblock %}

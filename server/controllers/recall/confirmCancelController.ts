@@ -1,40 +1,96 @@
-import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
-
-import RecallBaseController from './recallBaseController'
-import { SessionManager } from '../../services/sessionManager'
-import { getEntrypoint } from '../../helpers/formWizardHelper'
+import { Request, Response } from 'express'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
 import { entrypointUrl } from '../../utils/utils'
 
-export default class ConfirmCancelController extends RecallBaseController {
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const locals = super.locals(req, res)
-    if (!req.journeyModel.attributes.lastVisited.includes('confirm-cancel')) {
-      SessionManager.setSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.RETURN_TO,
-        req.journeyModel.attributes.lastVisited,
-      )
-    }
-    const backLink =
-      SessionManager.getSessionValue<string>(req, SessionManager.SESSION_KEYS.RETURN_TO) ||
-      req.journeyModel.attributes.lastVisited
+export default class ConfirmCancelController extends BaseController {
+  static async get(req: Request, res: Response): Promise<void> {
+    const sessionData = ConfirmCancelController.getSessionData(req)
+    const { nomisId, recallId } = res.locals
 
-    return { ...locals, hideCancel: true, backLink }
+    const prisoner = res.locals.prisoner || sessionData?.prisoner
+
+    const isEditRecall = !!recallId
+
+    // Get the referring page from the request header
+    const referrer = req.get('Referrer') || ''
+
+    let referrerPath = ''
+    if (referrer) {
+      try {
+        const url = new URL(referrer)
+        referrerPath = url.pathname + url.search
+      } catch {
+        referrerPath = referrer
+      }
+    }
+
+    // Store the return URL if this is the first visit to confirm-cancel
+    const currentReturnTo = sessionData?.returnTo
+    if (!currentReturnTo && referrerPath && !referrerPath.includes('confirm-cancel')) {
+      await ConfirmCancelController.updateSessionData(req, { returnTo: referrerPath })
+    }
+
+    // Get the return URL for the back link
+    const returnTo = sessionData?.returnTo || referrerPath || `/person/${nomisId}`
+    const backLink = returnTo
+
+    // If not coming from a validation redirect, clear form responses
+    if (!res.locals.formResponses) {
+      res.locals.formResponses = {}
+    }
+
+    res.render('pages/recall/v2/confirm-cancel', {
+      prisoner,
+      nomisId,
+      isEditRecall,
+      backLink,
+      hideCancel: true, // Hide cancel button on the cancel confirmation page
+      validationErrors: res.locals.validationErrors,
+      formResponses: res.locals.formResponses,
+    })
   }
 
-  saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
-    const { confirmCancel } = req.form.values
-    const returnTo = SessionManager.getSessionValue<string>(req, SessionManager.SESSION_KEYS.RETURN_TO)
+  static async post(req: Request, res: Response): Promise<void> {
+    const { confirmCancel } = req.body
+    const { nomisId } = res.locals
+    const sessionData = ConfirmCancelController.getSessionData(req)
+
+    // Get prisoner data from session
+    const prisoner = res.locals.prisoner || sessionData?.prisoner
+
+    // Check if user confirmed cancellation
     if (confirmCancel === 'true') {
-      const cancelRedirectUrl = this.confirmCancelRedirect(getEntrypoint(req), res.locals.nomisId)
+      // Clear the return URL
+      await ConfirmCancelController.updateSessionData(req, { returnTo: null })
+
+      // Determine where to redirect based on entry point
+      const entrypoint = sessionData?.entrypoint || 'search'
+      const cancelRedirectUrl = ConfirmCancelController.getCancelRedirectUrl(entrypoint, nomisId, prisoner)
+
+      logger.info(`User confirmed cancellation, redirecting to ${cancelRedirectUrl}`)
+
+      // Clear validation and redirect
+      clearValidation(req)
       return res.redirect(cancelRedirectUrl)
     }
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.RETURN_TO, null)
+
+    // User selected 'No' - return to previous page
+    const returnTo = sessionData?.returnTo || `/person/${nomisId}/record-recall/revocation-date`
+
+    // Clear the stored return URL
+    await ConfirmCancelController.updateSessionData(req, { returnTo: null })
+
+    logger.info(`User declined cancellation, returning to ${returnTo}`)
+
+    // Clear validation and redirect back
+    clearValidation(req)
     return res.redirect(returnTo)
   }
 
-  confirmCancelRedirect(entrypoint: string, nomisId: string) {
-    return entrypointUrl(entrypoint, nomisId)
+  private static getCancelRedirectUrl(entrypoint: string, nomisId: string, _prisoner?: unknown): string {
+    // Use the entrypointUrl utility to get the correct redirect URL
+    return entrypointUrl(entrypoint as string, nomisId)
   }
 }

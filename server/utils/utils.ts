@@ -2,12 +2,12 @@ import { addDays, differenceInCalendarDays, format, isEqual, subDays, parseISO }
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { UAL } from 'models'
-import { groupAndSortPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { GroupedPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
+import { sortPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
+import type { SentenceLength as ImportedSentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from '../services/sessionTypes'
 import logger from '../../logger'
 import config from '../config'
 
@@ -109,7 +109,9 @@ export function createAnswerSummaryList(
   ])
 }
 
-export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
+export type GroupedPeriodLengths = ImportedSentenceLength[]
+
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths => {
   if (!periodLengths) return null
   const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
   const ordered = mapped.sort((a, b) => {
@@ -125,7 +127,7 @@ export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): G
     return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
   })
 
-  return groupAndSortPeriodLengths(ordered)
+  return sortPeriodLengths(ordered as ImportedSentenceLength[])
 }
 
 export const lowercaseFirstLetter = (s: string): string => {

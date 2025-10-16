@@ -1,100 +1,190 @@
-import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
+import { Request, Response } from 'express'
+import BaseController from '../../base/BaseController'
+import { clearValidation } from '../../../middleware/validationMiddleware'
 import logger from '../../../../logger'
-
-import RecallBaseController from '../recallBaseController'
 import { createAnswerSummaryList, calculateUal } from '../../../utils/utils'
-import getJourneyDataFromRequest, { RecallJourneyData, getPrisoner } from '../../../helpers/formWizardHelper'
+import { getRecallType, RecallType } from '../../../@types/recallTypes'
+import { EnhancedRecallableCourtCase, EnhancedRecallableSentence } from '../../../middleware/loadCourtCases'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { SessionManager } from '../../../services/sessionManager'
 
-export default class EditSummaryController extends RecallBaseController {
-  locals(req: FormWizard.Request, res: Response): Record<string, unknown> {
-    const { recallId, nomisId } = res.locals
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.IS_EDIT, true)
-    const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
-    const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}/edit`
-    const answerSummaryList = createAnswerSummaryList(journeyData, editLink)
+// Local type for journey data
+type V2EditJourneyData = {
+  revocationDate?: Date
+  revDateString?: string
+  inPrisonAtRecall: boolean
+  returnToCustodyDate?: Date
+  returnToCustodyDateString?: string
+  ual?: number
+  ualText?: string
+  manualCaseSelection: boolean
+  recallType: RecallType
+  courtCaseCount: number
+  eligibleSentenceCount: number
+  sentenceIds?: string[]
+  isEdit: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  storedRecall?: any
+}
 
-    let journeyComplete = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE) === true
-    const lastVisited: string | undefined = (req.journeyModel as unknown as { attributes?: { lastVisited?: string } })
-      ?.attributes?.lastVisited
-    const cameFromFinalEditStep = !!lastVisited && lastVisited.includes('recall-type')
+export default class EditSummaryController extends BaseController {
+  static async get(req: Request, res: Response): Promise<void> {
+    const sessionData = EditSummaryController.getSessionData(req)
+    const { nomisId, recallId } = res.locals
 
-    if (cameFromFinalEditStep) {
-      SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
-      journeyComplete = true
+    // Get stored recall from session
+    const storedRecall = sessionData?.storedRecall
+    if (!storedRecall) {
+      // If no stored recall, redirect to populate
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}`)
     }
 
-    return {
-      ...super.locals(req, res),
+    // Get prisoner data
+    const prisoner = res.locals.prisoner || sessionData?.prisoner
+
+    // Get court cases from middleware
+    const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
+
+    // Build journey data from session
+    const revocationDate = sessionData?.revocationDate ? new Date(sessionData.revocationDate) : null
+    const returnToCustodyDate = sessionData?.returnToCustodyDate ? new Date(sessionData.returnToCustodyDate) : null
+    const inPrisonAtRecall = sessionData?.inPrisonAtRecall || false
+    const recallTypeCode = sessionData?.recallType
+    const recallType = getRecallType(recallTypeCode)
+
+    // Calculate eligible sentences
+    let eligibleSentenceCount = 0
+    const sentenceIds: string[] = []
+
+    if (recallableCourtCases && revocationDate) {
+      recallableCourtCases.forEach(courtCase => {
+        courtCase.sentences?.forEach((sentence: EnhancedRecallableSentence) => {
+          if (sentence.adjustedCRD && sentence.adjustedSLED) {
+            const crd = new Date(sentence.adjustedCRD)
+            const sled = new Date(sentence.adjustedSLED)
+            if (revocationDate >= crd && revocationDate <= sled) {
+              eligibleSentenceCount += 1
+              sentenceIds.push(sentence.sentenceUuid)
+            }
+          }
+        })
+      })
+    }
+
+    // Get court case count
+    const courtCaseCount = sessionData?.manualCaseSelection
+      ? sessionData?.selectedCourtCases?.length || 0
+      : recallableCourtCases?.length || 0
+
+    // Build journey data for summary
+    const journeyData: V2EditJourneyData = {
+      revocationDate,
+      revDateString: sessionData?.revocationDate,
+      inPrisonAtRecall,
+      returnToCustodyDate,
+      returnToCustodyDateString: sessionData?.returnToCustodyDate,
+      ual: sessionData?.UAL,
+      ualText: sessionData?.ualText,
+      manualCaseSelection: sessionData?.manualCaseSelection || false,
+      recallType,
+      courtCaseCount,
+      eligibleSentenceCount,
+      sentenceIds,
+      isEdit: true,
+      storedRecall,
+    }
+
+    // Build edit links - point to individual steps in edit flow
+    const editLink = (step: string) => `/person/${nomisId}/edit-recall/${recallId}/${step}`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const answerSummaryList = createAnswerSummaryList(journeyData as any, editLink)
+
+    // Check if journey is complete (user has visited all necessary steps)
+    const journeyComplete = sessionData?.journeyComplete || false
+
+    // Calculate if UAL has changed
+    const newUal = calculateUal(sessionData?.revocationDate, sessionData?.returnToCustodyDate)
+    const ualDiff = newUal && storedRecall.ual?.days !== newUal.days
+
+    return res.render('pages/recall/v2/edit/edit-summary', {
+      prisoner,
+      nomisId,
+      recallId,
       answerSummaryList,
       ualText: journeyData.ualText,
-      storedRecall: journeyData.storedRecall,
+      ualDiff,
+      storedRecall,
       showCheckAnswers: journeyComplete,
       showRecordedOn: !journeyComplete,
-    }
+      backLink: `/person/${nomisId}`,
+      cancelUrl: `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`,
+      validationErrors: res.locals.validationErrors,
+      formResponses: res.locals.formResponses,
+    })
   }
 
-  async saveValues(req: FormWizard.Request, res: Response, next: NextFunction) {
+  static async post(req: Request, res: Response): Promise<void> {
+    const sessionData = EditSummaryController.getSessionData(req)
+    const { nomisId, recallId } = res.locals
+    const { username, activeCaseload } = res.locals.user
+
     try {
-      const journeyData: RecallJourneyData = getJourneyDataFromRequest(req)
-      const { nomisId, recallId } = res.locals
-      const { username, activeCaseload } = res.locals.user
+      // Get services
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { services } = req as any
 
-      // Calculate the new UAL with current form data first
-      const newUal = calculateUal(journeyData.revDateString, journeyData.returnToCustodyDateString)
+      // Calculate new UAL
+      const newUal = calculateUal(sessionData?.revocationDate, sessionData?.returnToCustodyDate)
 
-      // Handle UAL adjustments before updating the recall to ensure data consistency
+      // Handle UAL adjustments first (complex logic from original)
       if (newUal) {
-        // Find existing UAL adjustments for this recall
-        const existingAdjustments = await req.services.adjustmentsService.searchUal(nomisId, username, recallId)
+        const existingAdjustments = await services.adjustmentsService.searchUal(nomisId, username, recallId)
         const ualAdjustments = existingAdjustments.filter(
-          adj => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (adj: any) => adj.adjustmentType === 'UNLAWFULLY_AT_LARGE' && adj.unlawfullyAtLarge?.type === 'RECALL',
         )
 
-        const prisonerDetails = getPrisoner(req)
+        const prisoner = res.locals.prisoner || sessionData?.prisoner
 
         if (ualAdjustments.length) {
-          // Handle unexpected multiple UAL adjustments, should only be one per recall
+          // Handle unexpected multiple UAL adjustments
           if (ualAdjustments.length > 1) {
             logger.warn(
               `Found ${ualAdjustments.length} UAL adjustments for recall ${recallId}. Expected only one. Cleaning up duplicates.`,
             )
-            // Delete the duplicate UAL adjustments (keep the first one)
+            // Delete duplicate UAL adjustments (keep the first one)
             const duplicateAdjustments = ualAdjustments.slice(1)
             await Promise.all(
-              duplicateAdjustments.map(async duplicateUal => {
-                await req.services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              duplicateAdjustments.map(async (duplicateUal: any) => {
+                await services.adjustmentsService.deleteAdjustment(duplicateUal.id, username)
                 logger.info(`Deleted duplicate UAL adjustment ${duplicateUal.id} for recall ${recallId}`)
               }),
             )
           }
 
-          // Update existing UAL adjustment with fresh dates
+          // Update existing UAL
           const existingUal = ualAdjustments[0]
           const ualToUpdate = {
             ...newUal,
             nomisId,
-            bookingId: prisonerDetails.bookingId,
+            bookingId: prisoner.bookingId,
             recallId,
             adjustmentId: existingUal.id,
           }
-
-          await req.services.adjustmentsService.updateUal(ualToUpdate, username, existingUal.id)
+          await services.adjustmentsService.updateUal(ualToUpdate, username, existingUal.id)
           logger.info(
             `Updated existing UAL adjustment ${existingUal.id} for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
           )
         } else {
-          // No existing UAL found, create a new one
+          // Create new UAL
           const ualToCreate = {
             ...newUal,
             nomisId,
-            bookingId: prisonerDetails.bookingId,
+            bookingId: prisoner.bookingId,
             recallId,
           }
-
-          await req.services.adjustmentsService.postUal(ualToCreate, username)
+          await services.adjustmentsService.postUal(ualToCreate, username)
           logger.info(
             `Created new UAL adjustment for recall ${recallId} with dates: ${newUal.firstDay} to ${newUal.lastDay}`,
           )
@@ -105,28 +195,61 @@ export default class EditSummaryController extends RecallBaseController {
         )
       }
 
-      // Update the recall only after UAL adjustments succeed
-      const recallToSave: CreateRecall = {
+      // Get court cases and calculate sentence IDs
+      const recallableCourtCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
+      const revocationDate = sessionData?.revocationDate ? new Date(sessionData.revocationDate) : null
+      const sentenceIds: string[] = []
+
+      if (recallableCourtCases && revocationDate) {
+        recallableCourtCases.forEach(courtCase => {
+          courtCase.sentences?.forEach((sentence: EnhancedRecallableSentence) => {
+            if (sentence.adjustedCRD && sentence.adjustedSLED) {
+              const crd = new Date(sentence.adjustedCRD)
+              const sled = new Date(sentence.adjustedSLED)
+              if (revocationDate >= crd && revocationDate <= sled) {
+                sentenceIds.push(sentence.sentenceUuid)
+              }
+            }
+          })
+        })
+      }
+
+      // Use stored recall's sentence IDs if not calculated (for manual selection cases)
+      const finalSentenceIds = sentenceIds.length > 0 ? sentenceIds : sessionData?.storedRecall?.sentenceIds
+
+      // Update the recall
+      const recallToUpdate: CreateRecall = {
         prisonerId: nomisId,
-        revocationDate: journeyData.revDateString,
-        returnToCustodyDate: journeyData.returnToCustodyDateString,
-        recallTypeCode: journeyData.recallType.code,
+        revocationDate: sessionData?.revocationDate,
+        returnToCustodyDate: sessionData?.returnToCustodyDate,
+        recallTypeCode: sessionData?.recallType,
         createdByUsername: username,
         createdByPrison: activeCaseload.id,
-        sentenceIds: journeyData.sentenceIds || journeyData.storedRecall.sentenceIds,
+        sentenceIds: finalSentenceIds,
       }
-      await req.services.recallService.updateRecall(recallId, recallToSave, username)
 
-      return next()
+      await services.recallService.updateRecall(recallId, recallToUpdate, username)
+
+      // Set success flash message
+      req.flash('action', 'updated')
+
+      // Clear prisoner-related caches since data has been updated
+      SessionManager.clearPrisonerRelatedCache(req, nomisId)
+      logger.info(`Cache invalidated after recall update for prisoner ${nomisId}`)
+
+      // Clear edit session data
+      await EditSummaryController.updateSessionData(req, {
+        isEdit: false,
+        storedRecall: null,
+        journeyComplete: null,
+      })
+
+      // Clear validation and redirect to success
+      clearValidation(req)
+      return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/recall-updated`)
     } catch (error) {
-      return next(error)
+      logger.error('Error updating recall:', error)
+      throw error
     }
-  }
-
-  successHandler(req: FormWizard.Request, res: Response, next: NextFunction) {
-    req.flash('action', `updated`)
-    SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.JOURNEY_COMPLETE, true)
-
-    return super.successHandler(req, res, next)
   }
 }

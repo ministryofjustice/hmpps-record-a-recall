@@ -8,7 +8,7 @@ import {
 } from './RecallEligibilityService'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { CalculationBreakdown, ValidationMessage } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { RecallJourneyData } from '../helpers/formWizardHelper'
+import { RecallJourneyData } from './sessionTypes'
 import { RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { eligibilityReasons, RecallEligibility } from '../@types/recallEligibility'
 import { RecallType } from '../@types/recallTypes'

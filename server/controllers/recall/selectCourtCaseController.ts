@@ -1,10 +1,14 @@
-import FormWizard from 'hmpo-form-wizard'
-import { NextFunction, Response } from 'express'
-
+import { Request, Response, NextFunction } from 'express'
 // eslint-disable-next-line import/no-unresolved
 import { CourtCase } from 'models'
-import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { SessionManager } from '../../services/sessionManager'
+import BaseController from '../base/BaseController'
+import { clearValidation } from '../../middleware/validationMiddleware'
+import logger from '../../../logger'
+import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
+import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
+import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
+import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
+import { COURT_MESSAGES } from '../../utils/courtConstants'
 import {
   calculateOverallSentenceLength,
   formatSentenceServeType,
@@ -12,13 +16,7 @@ import {
   SummarisedSentenceGroup,
 } from '../../utils/sentenceUtils'
 import { formatDateStringToDDMMYYYY } from '../../utils/utils'
-import RecallBaseController from './recallBaseController'
-import getCourtCaseOptionsFromRas from '../../utils/rasCourtCasesUtils'
-import { summariseRasCases } from '../../utils/CaseSentenceSummariser'
-import { EnhancedRecallableCourtCase } from '../../middleware/loadCourtCases'
-import SENTENCE_TYPE_UUIDS from '../../utils/sentenceTypeConstants'
-import { COURT_MESSAGES } from '../../utils/courtConstants'
-import logger from '../../../logger'
+import { RecallableCourtCaseSentence } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export type EnhancedSentenceForView = RecallableCourtCaseSentence & {
   formattedSentenceLength?: string
@@ -53,16 +51,12 @@ export type EnhancedCourtCaseForView = CourtCase & {
   sentences?: EnhancedSentenceForView[]
 }
 
-export default class SelectCourtCaseController extends RecallBaseController {
-  middlewareSetup() {
-    super.middlewareSetup()
-  }
-
+export default class SelectCourtCaseController extends BaseController {
   /**
    * Filters court cases to exclude those with only non-recallable sentences
    * and determines if cases have mixed sentence types
    */
-  private filterAndClassifyCourtCases(cases: CourtCase[]): CourtCase[] {
+  private static filterAndClassifyCourtCases(cases: CourtCase[]): CourtCase[] {
     return cases.filter(courtCase => {
       if (!courtCase.sentences || courtCase.sentences.length === 0) {
         return false // Exclude cases with no sentences
@@ -76,7 +70,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
   /**
    * Prepares a court case for view by adding formatted properties and enhanced sentence data
    */
-  private prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
+  private static prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
     // Create a mutable copy for the view
     const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
 
@@ -170,7 +164,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
     return currentCase
   }
 
-  private sortCourtCasesByMostRecentConviction(cases: CourtCase[]): CourtCase[] {
+  private static sortCourtCasesByMostRecentConviction(cases: CourtCase[]): CourtCase[] {
     return cases.sort((a, b) => {
       const getMostRecentConvictionDate = (courtCase: CourtCase): Date | null => {
         if (!courtCase.sentences || courtCase.sentences.length === 0) {
@@ -200,21 +194,28 @@ export default class SelectCourtCaseController extends RecallBaseController {
     })
   }
 
-  async get(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
+  static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      let reviewableCases = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES) as
-        | CourtCase[]
-        | undefined
-      let currentCaseIndex = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX) as
-        | number
-        | undefined
-      let manualRecallDecisions = SessionManager.getSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
-      ) as (string | undefined)[] | undefined
+      const sessionData = SelectCourtCaseController.getSessionData(req)
+      const { nomisId, recallId } = res.locals
+
+      // Get prisoner data from session or res.locals
+      const prisoner = res.locals.prisoner || sessionData?.prisoner
+
+      // Detect if this is edit mode from URL path
+      const isEditMode = req.originalUrl.includes('/edit-recall/')
+
+      // Get or initialize reviewable cases
+      let reviewableCases = sessionData?.reviewableCourtCases as CourtCase[] | undefined
+      let currentCaseIndex = sessionData?.currentCaseIndex as number | undefined
+      let manualRecallDecisions = sessionData?.manualRecallDecisions as (string | undefined)[] | undefined
 
       if (!reviewableCases) {
-        if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
+        // First check if we have court cases from the session (stored by checkPossibleControllerV2)
+        const courtCaseOptions = sessionData?.courtCaseOptions as CourtCase[] | undefined
+        if (courtCaseOptions && courtCaseOptions.length > 0) {
+          reviewableCases = courtCaseOptions
+        } else if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
           const enhancedCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
           reviewableCases = enhancedCases
@@ -227,6 +228,7 @@ export default class SelectCourtCaseController extends RecallBaseController {
                 status: recallableCase.status,
                 date: recallableCase.date,
                 location: recallableCase.courtCode,
+                locationName: recallableCase.courtName,
                 courtName: recallableCase.courtName,
                 courtCode: recallableCase.courtCode,
                 reference: caseReference,
@@ -235,246 +237,216 @@ export default class SelectCourtCaseController extends RecallBaseController {
               }
             })
         } else {
-          reviewableCases = await getCourtCaseOptionsFromRas(req, res)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          reviewableCases = await getCourtCaseOptionsFromRas(req as any, res)
         }
 
         // Filter out cases with only non-recallable sentences
-        reviewableCases = this.filterAndClassifyCourtCases(reviewableCases)
+        reviewableCases = SelectCourtCaseController.filterAndClassifyCourtCases(reviewableCases)
 
-        reviewableCases = this.sortCourtCasesByMostRecentConviction(reviewableCases)
+        reviewableCases = SelectCourtCaseController.sortCourtCasesByMostRecentConviction(reviewableCases)
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
 
-        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES, reviewableCases)
-        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX, currentCaseIndex)
-        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS, manualRecallDecisions)
+        // Update session with initial data
+        await SelectCourtCaseController.updateSessionData(req, {
+          reviewableCourtCases: reviewableCases,
+          currentCaseIndex,
+          manualRecallDecisions,
+        })
       }
 
       if (currentCaseIndex === undefined || !reviewableCases || currentCaseIndex >= reviewableCases.length) {
-        res.redirect(`${req.baseUrl}/check-sentences`)
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall/${recallId}/check-sentences`
+          : `/person/${nomisId}/record-recall/check-sentences`
+        res.redirect(redirectUrl)
         return
       }
 
       const originalCase = reviewableCases[currentCaseIndex]
-      const currentCase = this.prepareCourtCaseForView(originalCase)
+      const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase)
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
-      res.locals.currentCase = currentCase
-      res.locals.currentCaseIndex = currentCaseIndex
-      res.locals.totalCases = reviewableCases.length
-      res.locals.previousDecision = previousDecision
-      res.locals.backLinkUrl = `${req.baseUrl}/manual-recall-intercept`
+      // Build navigation URLs based on mode
+      const backLink = isEditMode
+        ? `/person/${nomisId}/edit-recall/${recallId}/edit-summary`
+        : `/person/${nomisId}/record-recall/manual-recall-intercept`
+      const cancelUrl = isEditMode
+        ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
+        : `/person/${nomisId}/record-recall/confirm-cancel`
 
-      super.get(req, res, next)
-      // eslint-disable-next-line no-useless-return
-      return
+      // Store return URL for cancel flow
+      await SelectCourtCaseController.updateSessionData(req, {
+        returnTo: req.originalUrl,
+      })
+
+      // Load form data from session if not from validation
+      if (!res.locals.formResponses) {
+        res.locals.formResponses = previousDecision ? { activeSentenceChoice: previousDecision } : {}
+      }
+
+      res.render('pages/recall/v2/select-court-cases', {
+        prisoner,
+        nomisId,
+        isEditRecall: isEditMode,
+        backLink,
+        cancelUrl,
+        currentCase,
+        currentCaseIndex,
+        totalCases: reviewableCases.length,
+        previousDecision,
+        validationErrors: res.locals.validationErrors,
+        formResponses: res.locals.formResponses,
+        pageHeading: 'Record a recall',
+        forceUnknownSentenceTypes: process.env.FORCE_UNKNOWN_SENTENCE_TYPES === 'true',
+      })
     } catch (err) {
+      logger.error('Error in SelectCourtCaseController.get:', err)
       next(err)
     }
   }
 
-  async post(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    const { activeSentenceChoice } = req.body
-    const { _csrf, ...formResponses } = req.body // Store form responses to repopulate
-
-    let errors
-    if (!activeSentenceChoice) {
-      errors = {
-        list: [
-          {
-            href: '#activeSentenceChoice-YES',
-            text: 'Select whether this case had an active sentence',
-          },
-        ],
-        activeSentenceChoice: {
-          text: 'Select whether this case had an active sentence',
-        },
-      }
-    }
-
-    if (errors) {
-      const { nomsNumber } = req.params
-      const recallId = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.RECALL_ID)
-
-      let reviewableCases = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES) as
-        | CourtCase[]
-        | undefined
-      let currentCaseIndex = SessionManager.getSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX) as
-        | number
-        | undefined
-      const manualRecallDecisions = SessionManager.getSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
-      ) as string[] | undefined
-
-      if (!reviewableCases || currentCaseIndex === undefined) {
-        const allCases = await getCourtCaseOptionsFromRas(req, res)
-        reviewableCases = this.sortCourtCasesByMostRecentConviction(allCases)
-        currentCaseIndex = parseInt(req.params.caseIndex, 10) || 0
-      }
-
-      if (
-        currentCaseIndex === undefined ||
-        !reviewableCases ||
-        reviewableCases.length === 0 ||
-        currentCaseIndex >= reviewableCases.length
-      ) {
-        return res.redirect(`${req.baseUrl}/${nomsNumber}/recall-type?recallId=${recallId}`)
-      }
-      const originalCase = reviewableCases[currentCaseIndex]
-      const currentCase = this.prepareCourtCaseForView(originalCase)
-
-      res.locals.nomsNumber = nomsNumber
-      res.locals.currentCase = currentCase
-      res.locals.currentCaseIndex = currentCaseIndex
-      res.locals.totalCases = reviewableCases.length
-      res.locals.previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
-      res.locals.backLinkUrl = `${req.baseUrl}/manual-recall-intercept`
-
-      SessionManager.setSessionValue(req, 'errors', errors)
-      SessionManager.setSessionValue(req, 'formResponses', formResponses)
-      return this.get(req, res, next)
-    }
-
-    return super.post(req, res, next)
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async saveValues(req: FormWizard.Request, res: Response, callback: (err?: any) => void): Promise<void> {
+  static async post(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      super.saveValues(req, res, (err?: any) => {
-        if (err) {
-          callback(err)
-          return
-        }
+      const sessionData = SelectCourtCaseController.getSessionData(req)
+      const { nomisId, recallId } = res.locals
+      const { activeSentenceChoice } = req.body
+      const isEditMode = req.originalUrl.includes('/edit-recall/')
 
-        const activeSentenceChoice = req.form.values.activeSentenceChoice as string | undefined
-        const reviewableCases = SessionManager.getSessionValue(
-          req,
-          SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES,
-        ) as CourtCase[]
-        const currentCaseIndex = SessionManager.getSessionValue(
-          req,
-          SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX,
-        ) as number
-        const manualRecallDecisions = SessionManager.getSessionValue(
-          req,
-          SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
-        ) as (string | undefined)[]
+      const reviewableCases = sessionData?.reviewableCourtCases as CourtCase[]
+      const currentCaseIndex = sessionData?.currentCaseIndex as number
+      const manualRecallDecisions = sessionData?.manualRecallDecisions as (string | undefined)[]
 
-        if (!reviewableCases || typeof currentCaseIndex !== 'number' || !manualRecallDecisions) {
-          callback(new Error('Session not properly initialized for case review in saveValues.'))
-          return
-        }
+      if (!reviewableCases || typeof currentCaseIndex !== 'number' || !manualRecallDecisions) {
+        logger.error('Session not properly initialized for case review')
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall/${recallId}/check-sentences`
+          : `/person/${nomisId}/record-recall/check-sentences`
+        return res.redirect(redirectUrl)
+      }
 
-        if (activeSentenceChoice) {
-          manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
-          SessionManager.setSessionValue(
-            req,
-            SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
-            manualRecallDecisions,
-          )
-        }
+      // Store the decision for this case
+      if (activeSentenceChoice) {
+        manualRecallDecisions[currentCaseIndex] = activeSentenceChoice
+        await SelectCourtCaseController.updateSessionData(req, {
+          manualRecallDecisions,
+        })
+      }
 
-        const nextCaseIndex = currentCaseIndex + 1
-        SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX, nextCaseIndex)
-
-        callback()
+      // Move to the next case
+      const nextCaseIndex = currentCaseIndex + 1
+      await SelectCourtCaseController.updateSessionData(req, {
+        currentCaseIndex: nextCaseIndex,
       })
-    } catch (ex) {
-      callback(ex)
-    }
-  }
 
-  async successHandler(req: FormWizard.Request, res: Response, next: NextFunction): Promise<void> {
-    const reviewableCases = SessionManager.getSessionValue(
-      req,
-      SessionManager.SESSION_KEYS.REVIEWABLE_COURT_CASES,
-    ) as CourtCase[]
-    const currentCaseIndex = SessionManager.getSessionValue(
-      req,
-      SessionManager.SESSION_KEYS.CURRENT_CASE_INDEX,
-    ) as number
+      // Check if there are more cases to review
+      if (nextCaseIndex < reviewableCases.length) {
+        // Redirect to the same page to review the next case
+        clearValidation(req)
+        return res.redirect(req.originalUrl)
+      }
 
-    if (reviewableCases && typeof currentCaseIndex === 'number' && currentCaseIndex < reviewableCases.length) {
-      req.session.save(err => {
-        if (err) {
-          next(err)
-          return
+      // All cases have been reviewed
+      const selectedCases: CourtCase[] = []
+      reviewableCases.forEach((courtCase, index) => {
+        if (manualRecallDecisions[index] === 'YES') {
+          selectedCases.push(courtCase)
         }
-        res.redirect(req.originalUrl)
       })
-    } else {
-      // All cases have been reviewed, or there were no cases to review.
-      const manualRecallDecisions = SessionManager.getSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.MANUAL_RECALL_DECISIONS,
-      ) as (string | undefined)[]
+
+      // Store both as selectedCases and courtCaseOptions for consistency
+      await SelectCourtCaseController.updateSessionData(req, {
+        selectedCases,
+        courtCaseOptions: selectedCases,
+      })
 
       let summarisedSentenceGroupsArray: SummarisedSentenceGroup[] = []
+      let unknownSentenceIds: string[] = []
 
-      if (reviewableCases && manualRecallDecisions) {
-        const selectedCases: CourtCase[] = []
-        reviewableCases.forEach((courtCase, index) => {
-          if (manualRecallDecisions[index] === 'YES') {
-            selectedCases.push(courtCase)
+      if (selectedCases.length > 0) {
+        // Enhance selected cases with court names
+        let enhancedSelectedCases = selectedCases
+        try {
+          const courtCodes = [...new Set(selectedCases.map(c => c.location).filter(Boolean))]
+          if (courtCodes.length > 0) {
+            const { username } = req.user
+            const courtNamesMap = await req.services.courtService.getCourtNames(courtCodes, username)
+            enhancedSelectedCases = selectedCases.map(courtCase => ({
+              ...courtCase,
+              locationName:
+                courtNamesMap.get(courtCase.location) || courtCase.locationName || COURT_MESSAGES.NAME_NOT_AVAILABLE,
+            }))
+          }
+        } catch (error) {
+          logger.error('Error fetching court names for manual journey:', error)
+          // Continue with original cases if court name fetching fails
+        }
+
+        summarisedSentenceGroupsArray = summariseRasCases(enhancedSelectedCases)
+
+        // Check for unknown sentences in selected cases
+        // Reset and populate unknownSentenceIds
+        unknownSentenceIds = []
+        selectedCases.forEach(courtCase => {
+          if (courtCase.sentences) {
+            courtCase.sentences.forEach(sentence => {
+              if (sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
+                const { sentenceUuid } = sentence
+                if (sentenceUuid) {
+                  unknownSentenceIds.push(sentenceUuid)
+                }
+              }
+            })
           }
         })
-        if (selectedCases.length > 0) {
-          // Enhance selected cases with court names
-          let enhancedSelectedCases = selectedCases
-          try {
-            const courtCodes = [...new Set(selectedCases.map(c => c.location).filter(Boolean))]
-            if (courtCodes.length > 0) {
-              const { username } = req.user
-              const courtNamesMap = await req.services.courtService.getCourtNames(courtCodes, username)
-              enhancedSelectedCases = selectedCases.map(courtCase => ({
-                ...courtCase,
-                locationName:
-                  courtNamesMap.get(courtCase.location) || courtCase.locationName || COURT_MESSAGES.NAME_NOT_AVAILABLE,
-              }))
-            }
-          } catch (error) {
-            logger.error('Error fetching court names for manual journey:', error)
-            // Continue with original cases if court name fetching fails
-          }
 
-          summarisedSentenceGroupsArray = summariseRasCases(enhancedSelectedCases)
-
-          // Check for unknown sentences in selected cases
-          const unknownSentenceIds: string[] = []
-          selectedCases.forEach(courtCase => {
-            if (courtCase.sentences) {
-              courtCase.sentences.forEach(sentence => {
-                if (sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL) {
-                  const { sentenceUuid } = sentence
-                  if (sentenceUuid) {
-                    unknownSentenceIds.push(sentenceUuid)
-                  }
-                }
-              })
-            }
+        // Set session data for unknown sentences
+        if (unknownSentenceIds.length > 0) {
+          await SelectCourtCaseController.updateSessionData(req, {
+            unknownSentencesToUpdate: unknownSentenceIds,
+            updatedSentenceTypes: {},
           })
-
-          // Set session data for unknown sentences
-          if (unknownSentenceIds.length > 0) {
-            SessionManager.setSessionValue(
-              req,
-              SessionManager.SESSION_KEYS.UNKNOWN_SENTENCES_TO_UPDATE,
-              unknownSentenceIds,
-            )
-            SessionManager.setSessionValue(req, SessionManager.SESSION_KEYS.UPDATED_SENTENCE_TYPES, {})
-          }
         }
       }
 
-      SessionManager.setSessionValue(
-        req,
-        SessionManager.SESSION_KEYS.SUMMARISED_SENTENCES,
-        summarisedSentenceGroupsArray,
-      )
-      super.successHandler(req, res, next)
+      // Store the summarized sentences
+      await SelectCourtCaseController.updateSessionData(req, {
+        summarisedSentences: summarisedSentenceGroupsArray,
+      })
+
+      // Clear validation and redirect to the next appropriate step
+      clearValidation(req)
+
+      // Check if no cases were selected
+      if (summarisedSentenceGroupsArray.length === 0) {
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall/${recallId}/no-cases-selected`
+          : `/person/${nomisId}/record-recall/no-cases-selected`
+        return res.redirect(redirectUrl)
+      }
+
+      if (unknownSentenceIds.length > 0) {
+        const redirectUrl = isEditMode
+          ? `/person/${nomisId}/edit-recall/${recallId}/update-sentence-types-summary`
+          : `/person/${nomisId}/record-recall/update-sentence-types-summary`
+        return res.redirect(redirectUrl)
+      }
+
+      // Proceed to next step
+      if (isEditMode) {
+        // Mark that this step was edited
+        await SelectCourtCaseController.updateSessionData(req, {
+          lastEditedStep: 'select-court-cases',
+        })
+        // Continue to next step in edit flow
+        return res.redirect(`/person/${nomisId}/edit-recall/${recallId}/check-sentences`)
+      }
+      // Normal flow - proceed to check sentences
+      return res.redirect(`/person/${nomisId}/record-recall/check-sentences`)
+    } catch (err) {
+      logger.error('Error in SelectCourtCaseController.post:', err)
+      return next(err)
     }
   }
 }
