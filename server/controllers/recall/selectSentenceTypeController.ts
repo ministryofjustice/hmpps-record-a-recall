@@ -100,7 +100,7 @@ export default class SelectSentenceTypeController extends BaseController {
       courtName: targetCourtCase.locationName || 'Court name not available',
     }
 
-    return res.render('pages/recall/v2/select-sentence-type', {
+    return res.render('pages/recall/select-sentence-type', {
       prisoner,
       nomisId,
       isEditRecall,

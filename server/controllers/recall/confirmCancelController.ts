@@ -41,7 +41,7 @@ export default class ConfirmCancelController extends BaseController {
       res.locals.formResponses = {}
     }
 
-    res.render('pages/recall/v2/confirm-cancel', {
+    res.render('pages/recall/confirm-cancel', {
       prisoner,
       nomisId,
       isEditRecall,

@@ -43,7 +43,7 @@ export default class RecallRecordedController extends BaseController {
 
     logger.info(`Recall recorded successfully for prisoner ${nomisId}, action: ${action}`)
 
-    res.render('pages/recall/v2/recall-recorded', {
+    res.render('pages/recall/recall-recorded', {
       prisoner,
       nomisId,
       action,

@@ -32,7 +32,7 @@ export default class NotPossibleController extends BaseController {
       reloadLink = `/person/${nomisId}/record-recall${entrypoint ? `?entrypoint=${entrypoint}` : ''}`
     }
 
-    res.render('pages/recall/v2/not-possible', {
+    res.render('pages/recall/not-possible', {
       prisoner,
       nomisId,
       backLink,

@@ -51,7 +51,7 @@ export default class RecallTypeController extends BaseController {
       checked: res.locals.formResponses?.recallType === code,
     }))
 
-    res.render('pages/recall/v2/recall-type', {
+    res.render('pages/recall/recall-type', {
       prisoner,
       nomisId,
       isEditRecall: isEditMode,

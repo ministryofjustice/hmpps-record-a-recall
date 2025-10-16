@@ -79,7 +79,7 @@ export default class CheckSentencesController extends BaseController {
       res.locals.formResponses = {}
     }
 
-    res.render('pages/recall/v2/check-sentences', {
+    res.render('pages/recall/check-sentences', {
       prisoner,
       nomisId,
       isEditRecall: isEditMode,

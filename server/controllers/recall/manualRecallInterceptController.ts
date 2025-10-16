@@ -25,7 +25,7 @@ export default class ManualRecallInterceptController extends BaseController {
       res.locals.formResponses = {}
     }
 
-    res.render('pages/recall/v2/manual-recall-intercept', {
+    res.render('pages/recall/manual-recall-intercept', {
       prisoner,
       nomisId,
       isEditRecall,
