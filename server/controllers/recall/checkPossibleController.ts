@@ -146,6 +146,7 @@ export default class CheckPossibleController extends BaseController {
       res.locals.smartOverrideApplied = routingResponse.smartOverrideApplied
       res.locals.wereCasesFilteredOut = routingResponse.wereCasesFilteredOut
       res.locals.routingResponse = routingResponse
+      res.locals.eligibleSentenceCount = routingResponse.fullAssessment?.eligibilityDetails?.eligibleSentenceCount || 0
 
       // Generate summarized sentence groups from the court cases
       const summarisedSentenceGroups = summariseRasCases(routingResponse.casesToUse)
@@ -223,6 +224,7 @@ export default class CheckPossibleController extends BaseController {
       entrypoint: res.locals.entrypoint,
       recallEligibility: res.locals.recallEligibility,
       prisoner: res.locals.prisoner,
+      eligibleSentenceCount: res.locals.eligibleSentenceCount || 0,
     })
 
     // Add manual route if needed

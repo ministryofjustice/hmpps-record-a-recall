@@ -3,6 +3,7 @@ import { min } from 'date-fns'
 import BaseController from '../base/BaseController'
 import { clearValidation } from '../../middleware/validationMiddleware'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import logger from '../../../logger'
 
 export default class RevocationDateController extends BaseController {
@@ -195,7 +196,64 @@ export default class RevocationDateController extends BaseController {
         journeyData,
       })
 
-      // Check for validation messages from routing service
+      // Check routing decision for interrupt pages
+      if (routingResponse.routing === 'CONFLICTING_ADJUSTMENTS') {
+        logger.info(`CONFLICTING_ADJUSTMENTS detected for ${nomisId}, preparing redirect to interrupt page`)
+
+        // Identify which adjustments conflict
+        const conflictingAdjustments = adjustments.filter((adjustment: AdjustmentDto) => {
+          if (!adjustment.fromDate || !adjustment.toDate) return false
+          const fromDate = new Date(adjustment.fromDate)
+          const toDate = new Date(adjustment.toDate)
+
+          return (
+            (revocationDateObj.getTime() >= fromDate.getTime() || revocationDateObj.getTime() === fromDate.getTime()) &&
+            revocationDateObj < toDate
+          )
+        })
+
+        // Store data in session for the interrupt page
+        await RevocationDateController.updateSessionData(req, {
+          revocationDate: revocationDateString,
+          invalidRecallTypes: routingResponse.eligibilityDetails.invalidRecallTypes,
+          eligibleSentenceCount: routingResponse.eligibilityDetails.eligibleSentenceCount,
+          manualCaseSelection: routingResponse.eligibilityDetails.hasNonSdsSentences,
+          routingResponse,
+          relevantAdjustment: conflictingAdjustments,
+          hasMultipleOverlappingUalTypeRecall: false,
+        })
+
+        // Clear validation and redirect to interrupt page
+        clearValidation(req)
+        logger.info(`Redirecting to conflicting adjustments interrupt page for ${nomisId}`)
+        res.redirect(`/person/${nomisId}/record-recall/conflicting-adjustments-interrupt`)
+        return
+      }
+
+      if (routingResponse.routing === 'NO_SENTENCES_FOR_RECALL') {
+        await RevocationDateController.updateSessionData(req, {
+          revocationDate: revocationDateString,
+          routingResponse,
+        })
+        clearValidation(req)
+        logger.info(`Redirecting to no sentences interrupt page for ${nomisId}`)
+        res.redirect(`/person/${nomisId}/record-recall/no-sentences-interrupt`)
+        return
+      }
+
+      if (routingResponse.routing === 'MANUAL_REVIEW_REQUIRED') {
+        await RevocationDateController.updateSessionData(req, {
+          revocationDate: revocationDateString,
+          manualCaseSelection: true,
+          routingResponse,
+        })
+        clearValidation(req)
+        logger.info(`Redirecting to manual recall intercept page for ${nomisId}`)
+        res.redirect(`/person/${nomisId}/record-recall/manual-recall-intercept`)
+        return
+      }
+
+      // Check for other validation messages (only for non-interrupt routes)
       if (routingResponse.validationMessages && routingResponse.validationMessages.length > 0) {
         const errorMessage = RevocationDateController.mapRoutingValidationError(
           routingResponse.validationMessages[0].code,
@@ -205,11 +263,11 @@ export default class RevocationDateController extends BaseController {
         return
       }
 
-      // Store routing response data in session
       logger.info(`Storing revocation date in session for ${nomisId}:`, {
         originalDate: revocationDateObj,
         formattedDate: revocationDateString,
         isEditMode: false,
+        routing: routingResponse.routing,
       })
 
       await RevocationDateController.updateSessionData(req, {
