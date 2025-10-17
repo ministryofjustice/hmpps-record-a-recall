@@ -263,7 +263,6 @@ export default class RevocationDateController extends BaseController {
         return
       }
 
-      // Store routing response data in session for normal flow
       logger.info(`Storing revocation date in session for ${nomisId}:`, {
         originalDate: revocationDateObj,
         formattedDate: revocationDateString,

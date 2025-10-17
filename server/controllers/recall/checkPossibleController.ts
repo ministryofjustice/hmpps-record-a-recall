@@ -224,7 +224,6 @@ export default class CheckPossibleController extends BaseController {
       entrypoint: res.locals.entrypoint,
       recallEligibility: res.locals.recallEligibility,
       prisoner: res.locals.prisoner,
-      // Add eligibleSentenceCount from res.locals
       eligibleSentenceCount: res.locals.eligibleSentenceCount || 0,
     })
 
