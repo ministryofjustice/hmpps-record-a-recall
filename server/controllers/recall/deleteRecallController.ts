@@ -37,13 +37,11 @@ export default class DeleteRecallController {
   async get(req: Request, res: Response): Promise<void> {
     const { nomisId, recallId } = req.params
     const { from } = req.query
-    const { user } = res.locals
+    const { user, prisoner } = res.locals
     const username = user?.username
 
     const recall = await this.services.recallService.getRecall(recallId, username)
     const enrichedRecall = await addLocationNameToRecall(recall, this.services.prisonService, username)
-
-    const prisoner = await this.services.prisonerService.getPrisonerDetails(nomisId, username)
 
     // Determine the back link dynamically based on the 'from' query
     let backLink = `/person/${nomisId}#recalls`
@@ -55,7 +53,6 @@ export default class DeleteRecallController {
       nomisId,
       recall: enrichedRecall,
       prisoner,
-      prisonerDetails: prisoner,
       fromPage: from,
       backLink,
     })
@@ -78,9 +75,9 @@ export default class DeleteRecallController {
 
     // Validation: ensure a selection was made
     if (!confirmDelete) {
+      const { prisoner } = res.locals
       const recall = await this.services.recallService.getRecall(recallId, username)
       const enrichedRecall = await addLocationNameToRecall(recall, this.services.prisonService, username)
-      const prisoner = await this.services.prisonerService.getPrisonerDetails(nomisId, username)
 
       let backLink = `/person/${nomisId}#recalls`
       if (fromPage === 'overview') {
@@ -91,7 +88,6 @@ export default class DeleteRecallController {
         nomisId,
         recall: enrichedRecall,
         prisoner,
-        prisonerDetails: prisoner,
         errors: [
           { text: 'Select if you are sure you want to delete the recall', href: '#delete-yes', name: 'confirmDelete' },
         ],

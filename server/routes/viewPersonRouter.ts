@@ -69,6 +69,7 @@ export default function personRouter(services: Services): Router {
   router.get(
     '/recall/:recallId/delete',
     setupCommonData(),
+    loadPrisoner(services.prisonerService),
     populateRecallId(),
     asyncMiddleware(deleteRecallController.get.bind(deleteRecallController)),
   )
@@ -76,6 +77,7 @@ export default function personRouter(services: Services): Router {
   router.post(
     '/recall/:recallId/delete',
     setupCommonData(),
+    loadPrisoner(services.prisonerService),
     populateRecallId(),
     asyncMiddleware(deleteRecallController.post.bind(deleteRecallController)),
   )
