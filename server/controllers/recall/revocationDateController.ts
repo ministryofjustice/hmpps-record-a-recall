@@ -3,6 +3,7 @@ import { min } from 'date-fns'
 import BaseController from '../base/BaseController'
 import { clearValidation } from '../../middleware/validationMiddleware'
 import { RecallRoutingService } from '../../services/RecallRoutingService'
+import { AdjustmentDto } from '../../@types/adjustmentsApi/adjustmentsApiTypes'
 import logger from '../../../logger'
 
 export default class RevocationDateController extends BaseController {
@@ -200,8 +201,7 @@ export default class RevocationDateController extends BaseController {
         logger.info(`CONFLICTING_ADJUSTMENTS detected for ${nomisId}, preparing redirect to interrupt page`)
 
         // Identify which adjustments conflict
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const conflictingAdjustments = adjustments.filter((adjustment: any) => {
+        const conflictingAdjustments = adjustments.filter((adjustment: AdjustmentDto) => {
           if (!adjustment.fromDate || !adjustment.toDate) return false
           const fromDate = new Date(adjustment.fromDate)
           const toDate = new Date(adjustment.toDate)
