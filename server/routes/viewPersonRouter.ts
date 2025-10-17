@@ -9,9 +9,13 @@ import loadRecalls from '../middleware/loadRecalls'
 import loadServiceDefinitions from '../middleware/loadServiceDefinitions'
 import viewPersonHome from '../controllers/person/viewPersonHomeController'
 import viewSentenceBreakdown from '../controllers/person/viewSentenceBreakdownController'
+import DeleteRecallController from '../controllers/recall/deleteRecallController'
+import asyncMiddleware from '../middleware/asyncMiddleware'
+import populateRecallId from '../middleware/populateRecallId'
 
 export default function personRouter(services: Services): Router {
   const router = express.Router({ mergeParams: true })
+  const deleteRecallController = new DeleteRecallController(services)
 
   // Home page gets full data: prisoner + recalls + service definitions
   router.get(
@@ -59,6 +63,21 @@ export default function personRouter(services: Services): Router {
     ),
     logPageView(services.auditService, Page.VIEW_ALL_SENTENCES),
     viewSentenceBreakdown,
+  )
+
+  // Delete recall routes
+  router.get(
+    '/recall/:recallId/delete',
+    setupCommonData(),
+    populateRecallId(),
+    asyncMiddleware(deleteRecallController.get.bind(deleteRecallController)),
+  )
+
+  router.post(
+    '/recall/:recallId/delete',
+    setupCommonData(),
+    populateRecallId(),
+    asyncMiddleware(deleteRecallController.post.bind(deleteRecallController)),
   )
 
   return router
