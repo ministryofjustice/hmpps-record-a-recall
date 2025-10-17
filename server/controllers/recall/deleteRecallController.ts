@@ -111,11 +111,9 @@ export default class DeleteRecallController {
         SessionManager.invalidateCache(req, `cachedPrisonerData_${nomisId}`)
         SessionManager.invalidateCache(req, `cachedCourtCases_${nomisId}`)
         logger.info(`Cache invalidated after recall deletion for prisoner ${nomisId}`)
-
-        // Note: No flash message here, just redirect
       } catch (error) {
         logger.error(`Error deleting recall ${recallId} for person ${nomisId}:`, error)
-        throw error // Let error handler deal with it
+        throw error
       }
     }
 
