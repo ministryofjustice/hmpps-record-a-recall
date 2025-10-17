@@ -18,7 +18,7 @@ export default class ConflictingAdjustmentsInterruptController extends BaseContr
     const journeyBaseLink = isEditMode
       ? `/person/${nomisId}/edit-recall/${recallId}`
       : `/person/${nomisId}/record-recall`
-    const backLink = `${journeyBaseLink}/rtc-date`
+    const backLink = `${journeyBaseLink}/revocation-date`
     const cancelLink = `${journeyBaseLink}/confirm-cancel`
 
     // Render the existing template with V2 navigation
