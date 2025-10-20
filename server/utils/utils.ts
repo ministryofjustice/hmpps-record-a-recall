@@ -110,13 +110,44 @@ export function createAnswerSummaryList(
 
 export type GroupedPeriodLengths = ImportedSentenceLength[]
 
-export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): any => {
-  if (!periodLengths) return []
+// export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): any => {
+//   if (!periodLengths) return []
 
-  const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+//   const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+
+//   const ordered = mapped.sort((a, b) => {
+//     const order = {
+//       SENTENCE_LENGTH: 1,
+//       LICENCE_PERIOD: 2,
+//       CUSTODIAL_TERM: 3,
+//       TARIFF_LENGTH: 4,
+//       TERM_LENGTH: 5,
+//       OVERALL_SENTENCE_LENGTH: 6,
+//       UNSUPPORTED: 99,
+//     }
+//     return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
+//   })
+
+//   // Return array directly
+//   return ordered.map(p => ({
+//     type: p.periodLengthType,
+//     description:
+//       p.periodLengthType === 'SENTENCE_LENGTH'
+//         ? 'Sentence length'
+//         : p.periodLengthType === 'LICENCE_PERIOD'
+//           ? 'Licence period'
+//           : p.periodLengthType,
+//     lengths: [p],
+//   }))
+// }
+
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
+  if (!periodLengths || periodLengths.length === 0) return []
+
+  const mapped: SentenceLength[] = periodLengths.map(periodLengthToSentenceLength)
 
   const ordered = mapped.sort((a, b) => {
-    const order = {
+    const order: Record<string, number> = {
       SENTENCE_LENGTH: 1,
       LICENCE_PERIOD: 2,
       CUSTODIAL_TERM: 3,
@@ -128,17 +159,15 @@ export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): a
     return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
   })
 
-  // Return array directly
-  return ordered.map(p => ({
-    type: p.periodLengthType,
-    description:
-      p.periodLengthType === 'SENTENCE_LENGTH'
-        ? 'Sentence length'
-        : p.periodLengthType === 'LICENCE_PERIOD'
-          ? 'Licence period'
-          : p.periodLengthType,
-    lengths: [p],
-  }))
+  // Group by periodLengthType
+  const groups: Record<string, SentenceLength[]> = {}
+  ordered.forEach(p => {
+    const key = p.periodLengthType
+    if (!groups[key]) groups[key] = []
+    groups[key].push(p)
+  })
+
+  return Object.values(groups) as GroupedPeriodLengths[]
 }
 
 export const lowercaseFirstLetter = (s: string): string => {
