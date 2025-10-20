@@ -110,37 +110,6 @@ export function createAnswerSummaryList(
 
 export type GroupedPeriodLengths = ImportedSentenceLength[]
 
-// export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): any => {
-//   if (!periodLengths) return []
-
-//   const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
-
-//   const ordered = mapped.sort((a, b) => {
-//     const order = {
-//       SENTENCE_LENGTH: 1,
-//       LICENCE_PERIOD: 2,
-//       CUSTODIAL_TERM: 3,
-//       TARIFF_LENGTH: 4,
-//       TERM_LENGTH: 5,
-//       OVERALL_SENTENCE_LENGTH: 6,
-//       UNSUPPORTED: 99,
-//     }
-//     return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
-//   })
-
-//   // Return array directly
-//   return ordered.map(p => ({
-//     type: p.periodLengthType,
-//     description:
-//       p.periodLengthType === 'SENTENCE_LENGTH'
-//         ? 'Sentence length'
-//         : p.periodLengthType === 'LICENCE_PERIOD'
-//           ? 'Licence period'
-//           : p.periodLengthType,
-//     lengths: [p],
-//   }))
-// }
-
 export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
   if (!periodLengths || periodLengths.length === 0) return []
 
