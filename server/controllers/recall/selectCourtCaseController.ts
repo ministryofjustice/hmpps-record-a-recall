@@ -67,102 +67,111 @@ export default class SelectCourtCaseController extends BaseController {
     })
   }
 
-  /**
-   * Prepares a court case for view by adding formatted properties and enhanced sentence data
-   */
-  private static prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
-    // Create a mutable copy for the view
-    const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
+/**
+ * Prepares a court case for view by adding formatted properties and enhanced sentence data
+ */
+private static prepareCourtCaseForView(
+  originalCase: CourtCase,
+  offenceNameMap: Record<string, string> = {},
+): EnhancedCourtCaseForView {
+  // Create a mutable copy for the view
+  const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
 
-    currentCase.caseNumber = originalCase.reference?.trim() || ''
-    currentCase.caseReferences = originalCase.reference?.trim() || ''
-    currentCase.courtName =
-      (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
-      originalCase.locationName ||
-      'Court name not available'
+  currentCase.caseNumber = originalCase.reference?.trim() || ''
+  currentCase.caseReferences = originalCase.reference?.trim() || ''
+  currentCase.courtName =
+    (originalCase as CourtCase & { courtName?: string; courtCode?: string }).courtName ||
+    originalCase.locationName ||
+    'Court name not available'
 
-    const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
-    currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
-    currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
+  const overallLicenceTerm = calculateOverallSentenceLength(originalCase.sentences)
+  currentCase.formattedOverallSentenceLength = formatTerm(overallLicenceTerm)
+  currentCase.formattedOverallConvictionDate = formatDateStringToDDMMYYYY(originalCase.date)
 
-    if (currentCase.sentences) {
-      const enhancedSentences = currentCase.sentences.map(sentence => {
-        const sentencePeriodLengths = sentence.periodLengths || []
-        const custodialPeriod = sentencePeriodLengths.find(
-          (p: unknown) =>
-            p &&
-            typeof p === 'object' &&
-            'periodLengthType' in p &&
-            (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
-        )
-
-        const custodialTerm = custodialPeriod
-          ? {
-              years: custodialPeriod.years || 0,
-              months: custodialPeriod.months || 0,
-              weeks: custodialPeriod.weeks || 0,
-              days: custodialPeriod.days || 0,
-            }
-          : undefined
-
-        // Keep the raw periodLengths from the API so the filter can transform them later
-        const periodLengths = sentence.periodLengths || []
-
-        const isUnknownSentenceType =
-          sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
-
-        const sentenceTypeDescription = isUnknownSentenceType
-          ? 'Required'
-          : sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'Not available'
-
-        return {
-          ...sentence,
-          custodialTerm,
-          periodLengths,
-          formattedSentenceLength: formatTerm(custodialTerm),
-          formattedConsecutiveOrConcurrent: formatSentenceServeType(
-            sentence.sentenceServeType,
-            sentence.consecutiveToChargeNumber,
-          ),
-          formattedOffenceDate: sentence.convictionDate || 'Not available',
-          formattedConvictionDate: sentence.convictionDate
-            ? formatDateStringToDDMMYYYY(sentence.convictionDate)
-            : 'Not available',
-          offenceStartDate: sentence.offenceStartDate ? formatDateStringToDDMMYYYY(sentence.offenceStartDate) : null,
-          offenceEndDate: sentence.offenceEndDate ? formatDateStringToDDMMYYYY(sentence.offenceEndDate) : null,
-          sentenceDate: sentence.sentenceDate ? formatDateStringToDDMMYYYY(sentence.sentenceDate) : null,
-          apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
-          sentenceTypeDescription,
-          isUnknownSentenceType,
-        }
-      })
-
-      // Separate recallable and non-recallable sentences in a single pass
-      const { recallableSentences, nonRecallableSentences } = enhancedSentences.reduce(
-        (
-          acc: { recallableSentences: typeof enhancedSentences; nonRecallableSentences: typeof enhancedSentences },
-          sentence,
-        ) => {
-          if (sentence.isRecallable === true) {
-            acc.recallableSentences.push(sentence)
-          } else {
-            acc.nonRecallableSentences.push(sentence)
-          }
-          return acc
-        },
-        { recallableSentences: [], nonRecallableSentences: [] },
+  if (currentCase.sentences) {
+    const enhancedSentences = currentCase.sentences.map(sentence => {
+      const sentencePeriodLengths = sentence.periodLengths || []
+      const custodialPeriod = sentencePeriodLengths.find(
+        (p: unknown) =>
+          p &&
+          typeof p === 'object' &&
+          'periodLengthType' in p &&
+          (p as { periodLengthType: string }).periodLengthType === 'CUSTODIAL_TERM',
       )
 
-      // Set properties for template rendering
-      currentCase.sentences = enhancedSentences
-      currentCase.recallableSentences = recallableSentences
-      currentCase.nonRecallableSentences = nonRecallableSentences
-      currentCase.hasNonRecallableSentences = nonRecallableSentences.length > 0
-      currentCase.hasMixedSentenceTypes = recallableSentences.length > 0 && nonRecallableSentences.length > 0
-    }
+      const custodialTerm = custodialPeriod
+        ? {
+            years: custodialPeriod.years || 0,
+            months: custodialPeriod.months || 0,
+            weeks: custodialPeriod.weeks || 0,
+            days: custodialPeriod.days || 0,
+          }
+        : undefined
+          // Keep the raw periodLengths from the API so the filter can transform them later
+      const periodLengths = sentence.periodLengths || []
 
-    return currentCase
+      const isUnknownSentenceType =
+        sentence.sentenceTypeUuid && sentence.sentenceTypeUuid === SENTENCE_TYPE_UUIDS.UNKNOWN_PRE_RECALL
+
+      const sentenceTypeDescription = isUnknownSentenceType
+        ? 'Required'
+        : sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'Not available'
+
+      // Determine the offence description using offenceNameMap if API does not provide one
+      const apiOffenceDescription =
+        sentence.offenceDescription ||
+        (sentence.offenceCode ? offenceNameMap[sentence.offenceCode] : undefined) ||
+        'Not available'
+
+      return {
+        ...sentence,
+        custodialTerm,
+        periodLengths,
+        formattedSentenceLength: formatTerm(custodialTerm),
+        formattedConsecutiveOrConcurrent: formatSentenceServeType(
+          sentence.sentenceServeType,
+          sentence.consecutiveToChargeNumber,
+        ),
+        formattedOffenceDate: sentence.convictionDate || 'Not available',
+        formattedConvictionDate: sentence.convictionDate
+          ? formatDateStringToDDMMYYYY(sentence.convictionDate)
+          : 'Not available',
+        offenceStartDate: sentence.offenceStartDate ? formatDateStringToDDMMYYYY(sentence.offenceStartDate) : null,
+        offenceEndDate: sentence.offenceEndDate ? formatDateStringToDDMMYYYY(sentence.offenceEndDate) : null,
+        sentenceDate: sentence.sentenceDate ? formatDateStringToDDMMYYYY(sentence.sentenceDate) : null,
+        apiOffenceDescription,
+        sentenceTypeDescription,
+        isUnknownSentenceType,
+      }
+    })
+
+    // Separate recallable and non-recallable sentences in a single pass
+    const { recallableSentences, nonRecallableSentences } = enhancedSentences.reduce(
+      (
+        acc: { recallableSentences: typeof enhancedSentences; nonRecallableSentences: typeof enhancedSentences },
+        sentence,
+      ) => {
+        if (sentence.isRecallable === true) {
+          acc.recallableSentences.push(sentence)
+        } else {
+          acc.nonRecallableSentences.push(sentence)
+        }
+        return acc
+      },
+      { recallableSentences: [], nonRecallableSentences: [] },
+    )
+
+    // Set properties for template rendering
+    currentCase.sentences = enhancedSentences
+    currentCase.recallableSentences = recallableSentences
+    currentCase.nonRecallableSentences = nonRecallableSentences
+    currentCase.hasNonRecallableSentences = nonRecallableSentences.length > 0
+    currentCase.hasMixedSentenceTypes = recallableSentences.length > 0 && nonRecallableSentences.length > 0
   }
+
+  return currentCase
+}
+
 
   private static sortCourtCasesByMostRecentConviction(cases: CourtCase[]): CourtCase[] {
     return cases.sort((a, b) => {
@@ -195,117 +204,140 @@ export default class SelectCourtCaseController extends BaseController {
   }
 
   static async get(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const sessionData = SelectCourtCaseController.getSessionData(req)
-      const { nomisId, recallId } = res.locals
+  try {
+    const sessionData = SelectCourtCaseController.getSessionData(req)
+    const { nomisId, recallId } = res.locals
 
-      // Get prisoner data from session or res.locals
-      const prisoner = res.locals.prisoner || sessionData?.prisoner
+    // Get prisoner data from session or res.locals
+    const prisoner = res.locals.prisoner || sessionData?.prisoner
 
-      // Detect if this is edit mode from URL path
-      const isEditMode = req.originalUrl.includes('/edit-recall/')
+    // Detect if this is edit mode from URL path
+    const isEditMode = req.originalUrl.includes('/edit-recall/')
 
-      // Get or initialize reviewable cases
-      let reviewableCases = sessionData?.reviewableCourtCases as CourtCase[] | undefined
-      let currentCaseIndex = sessionData?.currentCaseIndex as number | undefined
-      let manualRecallDecisions = sessionData?.manualRecallDecisions as (string | undefined)[] | undefined
+    // Get or initialize reviewable cases
+    let reviewableCases = sessionData?.reviewableCourtCases as CourtCase[] | undefined
+    let currentCaseIndex = sessionData?.currentCaseIndex as number | undefined
+    let manualRecallDecisions = sessionData?.manualRecallDecisions as (string | undefined)[] | undefined
 
-      if (!reviewableCases) {
-        // First check if we have court cases from the session (stored by checkPossibleControllerV2)
-        const courtCaseOptions = sessionData?.courtCaseOptions as CourtCase[] | undefined
-        if (courtCaseOptions && courtCaseOptions.length > 0) {
-          reviewableCases = courtCaseOptions
-        } else if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
-          const enhancedCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
+    if (!reviewableCases) {
+      // First check if we have court cases from the session (stored by previous steps)
+      const courtCaseOptions = sessionData?.courtCaseOptions as CourtCase[] | undefined
+      if (courtCaseOptions && courtCaseOptions.length > 0) {
+        reviewableCases = courtCaseOptions
+      } else if (res.locals.recallableCourtCases && Array.isArray(res.locals.recallableCourtCases)) {
+        const enhancedCases = res.locals.recallableCourtCases as EnhancedRecallableCourtCase[]
 
-          reviewableCases = enhancedCases
-            .filter(c => c.isSentenced)
-            .map(recallableCase => {
-              const caseReference = recallableCase.reference?.trim() || ''
+        reviewableCases = enhancedCases
+          .filter(c => c.isSentenced)
+          .map(recallableCase => {
+            const caseReference = recallableCase.reference?.trim() || ''
 
-              return {
-                caseId: recallableCase.courtCaseUuid,
-                status: recallableCase.status,
-                date: recallableCase.date,
-                location: recallableCase.courtCode,
-                locationName: recallableCase.courtName,
-                courtName: recallableCase.courtName,
-                courtCode: recallableCase.courtCode,
-                reference: caseReference,
-                sentenced: recallableCase.isSentenced,
-                sentences: recallableCase.sentences || [],
-              }
-            })
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          reviewableCases = await getCourtCaseOptionsFromRas(req as any, res)
-        }
-
-        // Filter out cases with only non-recallable sentences
-        reviewableCases = SelectCourtCaseController.filterAndClassifyCourtCases(reviewableCases)
-
-        reviewableCases = SelectCourtCaseController.sortCourtCasesByMostRecentConviction(reviewableCases)
-        currentCaseIndex = 0
-        manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
-
-        // Update session with initial data
-        await SelectCourtCaseController.updateSessionData(req, {
-          reviewableCourtCases: reviewableCases,
-          currentCaseIndex,
-          manualRecallDecisions,
-        })
+            return {
+              caseId: recallableCase.courtCaseUuid,
+              status: recallableCase.status,
+              date: recallableCase.date,
+              location: recallableCase.courtCode,
+              locationName: recallableCase.courtName,
+              courtName: recallableCase.courtName,
+              courtCode: recallableCase.courtCode,
+              reference: caseReference,
+              sentenced: recallableCase.isSentenced,
+              sentences: recallableCase.sentences || [],
+            }
+          })
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        reviewableCases = await getCourtCaseOptionsFromRas(req as any, res)
       }
 
-      if (currentCaseIndex === undefined || !reviewableCases || currentCaseIndex >= reviewableCases.length) {
-        const redirectUrl = isEditMode
-          ? `/person/${nomisId}/edit-recall/${recallId}/check-sentences`
-          : `/person/${nomisId}/record-recall/check-sentences`
-        res.redirect(redirectUrl)
-        return
-      }
+      // Filter out cases with only non-recallable sentences
+      reviewableCases = SelectCourtCaseController.filterAndClassifyCourtCases(reviewableCases)
 
-      const originalCase = reviewableCases[currentCaseIndex]
-      const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase)
-      const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
+      // Sort by most recent conviction
+      reviewableCases = SelectCourtCaseController.sortCourtCasesByMostRecentConviction(reviewableCases)
 
-      // Build navigation URLs based on mode
-      const backLink = isEditMode
-        ? `/person/${nomisId}/edit-recall/${recallId}/edit-summary`
-        : `/person/${nomisId}/record-recall/manual-recall-intercept`
-      const cancelUrl = isEditMode
-        ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
-        : `/person/${nomisId}/record-recall/confirm-cancel`
+      currentCaseIndex = 0
+      manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
 
-      // Store return URL for cancel flow
+      // Update session with initial data
       await SelectCourtCaseController.updateSessionData(req, {
-        returnTo: req.originalUrl,
-      })
-
-      // Load form data from session if not from validation
-      if (!res.locals.formResponses) {
-        res.locals.formResponses = previousDecision ? { activeSentenceChoice: previousDecision } : {}
-      }
-
-      res.render('pages/recall/select-court-cases', {
-        prisoner,
-        nomisId,
-        isEditRecall: isEditMode,
-        backLink,
-        cancelUrl,
-        currentCase,
+        reviewableCourtCases: reviewableCases,
         currentCaseIndex,
-        totalCases: reviewableCases.length,
-        previousDecision,
-        validationErrors: res.locals.validationErrors,
-        formResponses: res.locals.formResponses,
-        pageHeading: 'Record a recall',
-        forceUnknownSentenceTypes: process.env.FORCE_UNKNOWN_SENTENCE_TYPES === 'true',
+        manualRecallDecisions,
       })
-    } catch (err) {
-      logger.error('Error in SelectCourtCaseController.get:', err)
-      next(err)
     }
+
+    if (currentCaseIndex === undefined || !reviewableCases || currentCaseIndex >= reviewableCases.length) {
+      const redirectUrl = isEditMode
+        ? `/person/${nomisId}/edit-recall/${recallId}/check-sentences`
+        : `/person/${nomisId}/record-recall/check-sentences`
+      res.redirect(redirectUrl)
+      return
+    }
+
+    const originalCase = reviewableCases[currentCaseIndex]
+
+    // ------------------------------
+    // Load offenceNameMap for this case
+    // ------------------------------
+    let offenceNameMap: Record<string, string> = {}
+    try {
+      const offenceCodes = (originalCase.sentences || [])
+        .map(s => s.offenceCode)
+        .filter(Boolean)
+
+      if (offenceCodes.length > 0) {
+        const ManageOffencesService = (await import('../../services/manageOffencesService')).default
+        const manageOffencesService = new ManageOffencesService()
+        offenceNameMap = await manageOffencesService.getOffenceMap(offenceCodes, req.user.token)
+      }
+    } catch (err) {
+      logger.error('Error loading offence names for SelectCourtCaseController:', err)
+    }
+
+    // Prepare the case for view with offenceNameMap
+    const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase, offenceNameMap)
+    const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
+
+    // Build navigation URLs based on mode
+    const backLink = isEditMode
+      ? `/person/${nomisId}/edit-recall/${recallId}/edit-summary`
+      : `/person/${nomisId}/record-recall/manual-recall-intercept`
+    const cancelUrl = isEditMode
+      ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
+      : `/person/${nomisId}/record-recall/confirm-cancel`
+
+    // Store return URL for cancel flow
+    await SelectCourtCaseController.updateSessionData(req, {
+      returnTo: req.originalUrl,
+    })
+
+    // Load form data from session if not from validation
+    if (!res.locals.formResponses) {
+      res.locals.formResponses = previousDecision ? { activeSentenceChoice: previousDecision } : {}
+    }
+
+    // Render template
+    res.render('pages/recall/select-court-cases', {
+      prisoner,
+      nomisId,
+      isEditRecall: isEditMode,
+      backLink,
+      cancelUrl,
+      currentCase,
+      currentCaseIndex,
+      totalCases: reviewableCases.length,
+      previousDecision,
+      validationErrors: res.locals.validationErrors,
+      formResponses: res.locals.formResponses,
+      pageHeading: 'Record a recall',
+      forceUnknownSentenceTypes: process.env.FORCE_UNKNOWN_SENTENCE_TYPES === 'true',
+    })
+  } catch (err) {
+    logger.error('Error in SelectCourtCaseController.get:', err)
+    next(err)
   }
+}
 
   static async post(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
