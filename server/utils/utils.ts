@@ -2,7 +2,6 @@ import { addDays, differenceInCalendarDays, format, isEqual, subDays, parseISO }
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { UAL } from 'models'
-import { sortPeriodLengths } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import type { SentenceLength as ImportedSentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
@@ -111,11 +110,13 @@ export function createAnswerSummaryList(
 
 export type GroupedPeriodLengths = ImportedSentenceLength[]
 
-export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths => {
-  if (!periodLengths) return null
-  const mapped = periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
+  if (!periodLengths || periodLengths.length === 0) return []
+
+  const mapped: SentenceLength[] = periodLengths.map(periodLengthToSentenceLength)
+
   const ordered = mapped.sort((a, b) => {
-    const order = {
+    const order: Record<string, number> = {
       SENTENCE_LENGTH: 1,
       LICENCE_PERIOD: 2,
       CUSTODIAL_TERM: 3,
@@ -127,7 +128,15 @@ export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): G
     return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
   })
 
-  return sortPeriodLengths(ordered as ImportedSentenceLength[])
+  // Group by periodLengthType
+  const groups: Record<string, SentenceLength[]> = {}
+  ordered.forEach(p => {
+    const key = p.periodLengthType
+    if (!groups[key]) groups[key] = []
+    groups[key].push(p)
+  })
+
+  return Object.values(groups) as GroupedPeriodLengths[]
 }
 
 export const lowercaseFirstLetter = (s: string): string => {
