@@ -179,7 +179,7 @@
                   hideOutcome: true,
                   outcome: sentence.outcome | default('Not entered'),
                   lineNumber: lineNumberWithText,
-                  periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default('Not entered'),
+                  periodLengths: (sentence.periodLengths | default([])) | periodLengthsToSentenceLengths,
                   sentenceServeType: sentence.sentenceServeType | default(null),
                   sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),
                   sentenceDate: sentenceDate,
