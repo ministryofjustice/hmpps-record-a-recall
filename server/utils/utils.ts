@@ -3,7 +3,11 @@ import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { UAL } from 'models'
 
-import type { SentenceLength, GroupedPeriodLengths, PeriodLengthType } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
+import type {
+  SentenceLength,
+  GroupedPeriodLengths,
+  PeriodLengthType,
+} from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
@@ -110,7 +114,6 @@ export function createAnswerSummaryList(
 }
 
 export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
-  console.log('periodLengths', periodLengths)
   if (!periodLengths || periodLengths.length === 0) return []
 
   const mapped: SentenceLength[] = periodLengths.map(periodLengthToSentenceLength)
@@ -146,9 +149,7 @@ export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): G
     UNSUPPORTED: 99,
   }
 
-  return Object.values(groups).sort(
-    (a, b) => (typePriority[a.type] ?? 50) - (typePriority[b.type] ?? 50)
-  )
+  return Object.values(groups).sort((a, b) => (typePriority[a.type] ?? 50) - (typePriority[b.type] ?? 50))
 }
 
 export const lowercaseFirstLetter = (s: string): string => {
