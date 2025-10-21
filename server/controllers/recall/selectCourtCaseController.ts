@@ -276,9 +276,6 @@ export default class SelectCourtCaseController extends BaseController {
 
       const originalCase = reviewableCases[currentCaseIndex]
 
-      // ------------------------------
-      // Load offenceNameMap for this case
-      // ------------------------------
       let offenceNameMap: Record<string, string> = {}
       try {
         const offenceCodes = (originalCase.sentences || []).map(s => s.offenceCode).filter(Boolean)
@@ -292,7 +289,6 @@ export default class SelectCourtCaseController extends BaseController {
         logger.error('Error loading offence names for SelectCourtCaseController:', err)
       }
 
-      // Prepare the case for view with offenceNameMap
       const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase, offenceNameMap)
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
@@ -314,7 +310,6 @@ export default class SelectCourtCaseController extends BaseController {
         res.locals.formResponses = previousDecision ? { activeSentenceChoice: previousDecision } : {}
       }
 
-      // Render template
       res.render('pages/recall/select-court-cases', {
         prisoner,
         nomisId,
