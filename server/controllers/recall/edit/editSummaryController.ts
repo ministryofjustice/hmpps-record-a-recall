@@ -106,7 +106,7 @@ export default class EditSummaryController extends BaseController {
     const newUal = calculateUal(sessionData?.revocationDate, sessionData?.returnToCustodyDate)
     const ualDiff = newUal && storedRecall.ual?.days !== newUal.days
 
-    return res.render('pages/recall/edit/edit-summary', {
+    return res.render('pages/recall/edit-summary', {
       prisoner,
       nomisId,
       recallId,
