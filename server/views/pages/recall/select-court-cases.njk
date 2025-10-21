@@ -44,7 +44,7 @@
 
       {{ offenceCard({
         offenceCode: sentence.offenceCode | default("N/A"),
-        offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+        offenceName: sentence.apiOffenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
         offenceStartDate: sentence.offenceStartDate | default('N/A'),
         offenceEndDate: sentence.offenceEndDate | default(null),
         countNumber: countNumberWithText,
@@ -89,7 +89,7 @@
           {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
           {{ offenceCard({
             offenceCode: sentence.offenceCode | default("N/A"),
-            offenceName: sentence.apiOffenceDescription | default(sentence.offenceDescription) | default("N/A"),
+            offenceName: sentence.apiOffenceDescription or offenceNameMap[sentence.offenceCode] or 'Offence description not available',
             offenceStartDate: sentence.offenceStartDate | default('N/A'),
             offenceEndDate: sentence.offenceEndDate | default(null),
             countNumber: countNumberWithText,

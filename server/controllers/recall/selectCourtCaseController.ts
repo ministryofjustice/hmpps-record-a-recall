@@ -70,7 +70,10 @@ export default class SelectCourtCaseController extends BaseController {
   /**
    * Prepares a court case for view by adding formatted properties and enhanced sentence data
    */
-  private static prepareCourtCaseForView(originalCase: CourtCase): EnhancedCourtCaseForView {
+  private static prepareCourtCaseForView(
+    originalCase: CourtCase,
+    offenceNameMap: Record<string, string> = {},
+  ): EnhancedCourtCaseForView {
     // Create a mutable copy for the view
     const currentCase: EnhancedCourtCaseForView = JSON.parse(JSON.stringify(originalCase))
 
@@ -104,7 +107,6 @@ export default class SelectCourtCaseController extends BaseController {
               days: custodialPeriod.days || 0,
             }
           : undefined
-
         // Keep the raw periodLengths from the API so the filter can transform them later
         const periodLengths = sentence.periodLengths || []
 
@@ -114,6 +116,12 @@ export default class SelectCourtCaseController extends BaseController {
         const sentenceTypeDescription = isUnknownSentenceType
           ? 'Required'
           : sentence.sentenceType || sentence.sentenceLegacyData?.sentenceTypeDesc || 'Not available'
+
+        // Determine the offence description using offenceNameMap if API does not provide one
+        const apiOffenceDescription =
+          sentence.offenceDescription ||
+          (sentence.offenceCode ? offenceNameMap[sentence.offenceCode] : undefined) ||
+          'Not available'
 
         return {
           ...sentence,
@@ -131,7 +139,7 @@ export default class SelectCourtCaseController extends BaseController {
           offenceStartDate: sentence.offenceStartDate ? formatDateStringToDDMMYYYY(sentence.offenceStartDate) : null,
           offenceEndDate: sentence.offenceEndDate ? formatDateStringToDDMMYYYY(sentence.offenceEndDate) : null,
           sentenceDate: sentence.sentenceDate ? formatDateStringToDDMMYYYY(sentence.sentenceDate) : null,
-          apiOffenceDescription: sentence.offenceDescription || sentence.offenceCode || 'Not available',
+          apiOffenceDescription,
           sentenceTypeDescription,
           isUnknownSentenceType,
         }
@@ -211,7 +219,7 @@ export default class SelectCourtCaseController extends BaseController {
       let manualRecallDecisions = sessionData?.manualRecallDecisions as (string | undefined)[] | undefined
 
       if (!reviewableCases) {
-        // First check if we have court cases from the session (stored by checkPossibleControllerV2)
+        // First check if we have court cases from the session (stored by previous steps)
         const courtCaseOptions = sessionData?.courtCaseOptions as CourtCase[] | undefined
         if (courtCaseOptions && courtCaseOptions.length > 0) {
           reviewableCases = courtCaseOptions
@@ -244,7 +252,9 @@ export default class SelectCourtCaseController extends BaseController {
         // Filter out cases with only non-recallable sentences
         reviewableCases = SelectCourtCaseController.filterAndClassifyCourtCases(reviewableCases)
 
+        // Sort by most recent conviction
         reviewableCases = SelectCourtCaseController.sortCourtCasesByMostRecentConviction(reviewableCases)
+
         currentCaseIndex = 0
         manualRecallDecisions = new Array(reviewableCases.length).fill(undefined) as (string | undefined)[]
 
@@ -265,7 +275,21 @@ export default class SelectCourtCaseController extends BaseController {
       }
 
       const originalCase = reviewableCases[currentCaseIndex]
-      const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase)
+
+      let offenceNameMap: Record<string, string> = {}
+      try {
+        const offenceCodes = (originalCase.sentences || []).map(s => s.offenceCode).filter(Boolean)
+
+        if (offenceCodes.length > 0) {
+          const ManageOffencesService = (await import('../../services/manageOffencesService')).default
+          const manageOffencesService = new ManageOffencesService()
+          offenceNameMap = await manageOffencesService.getOffenceMap(offenceCodes, req.user.token)
+        }
+      } catch (err) {
+        logger.error('Error loading offence names for SelectCourtCaseController:', err)
+      }
+
+      const currentCase = SelectCourtCaseController.prepareCourtCaseForView(originalCase, offenceNameMap)
       const previousDecision = manualRecallDecisions ? manualRecallDecisions[currentCaseIndex] : undefined
 
       // Build navigation URLs based on mode
