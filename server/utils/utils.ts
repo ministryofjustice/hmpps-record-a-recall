@@ -2,7 +2,12 @@ import { addDays, differenceInCalendarDays, format, isEqual, subDays, parseISO }
 import { compact } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { UAL } from 'models'
-import type { SentenceLength as ImportedSentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
+
+import type {
+  SentenceLength,
+  GroupedPeriodLengths,
+  PeriodLengthType,
+} from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { SummaryListRow } from '../@types/govuk'
 import toSummaryListRow from '../helpers/componentHelper'
 import { formatLongDate } from '../formatters/formatDate'
@@ -108,35 +113,43 @@ export function createAnswerSummaryList(
   ])
 }
 
-export type GroupedPeriodLengths = ImportedSentenceLength[]
-
 export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): GroupedPeriodLengths[] => {
   if (!periodLengths || periodLengths.length === 0) return []
 
   const mapped: SentenceLength[] = periodLengths.map(periodLengthToSentenceLength)
 
-  const ordered = mapped.sort((a, b) => {
-    const order: Record<string, number> = {
-      SENTENCE_LENGTH: 1,
-      LICENCE_PERIOD: 2,
-      CUSTODIAL_TERM: 3,
-      TARIFF_LENGTH: 4,
-      TERM_LENGTH: 5,
-      OVERALL_SENTENCE_LENGTH: 6,
-      UNSUPPORTED: 99,
+  const groups: Record<string, GroupedPeriodLengths> = {}
+
+  mapped.forEach(pl => {
+    let key: string = pl.periodLengthType
+    if (pl.periodLengthType === 'UNSUPPORTED' && pl.legacyData?.sentenceTermCode) {
+      key = `${key}-${pl.legacyData.sentenceTermCode}`
     }
-    return (order[a.periodLengthType] || 50) - (order[b.periodLengthType] || 50)
+
+    if (!groups[key]) {
+      groups[key] = {
+        key,
+        type: pl.periodLengthType,
+        description: pl.description,
+        legacyCode: pl.legacyData?.sentenceTermCode,
+        lengths: [],
+      } as GroupedPeriodLengths
+    }
+
+    groups[key].lengths.push(pl)
   })
 
-  // Group by periodLengthType
-  const groups: Record<string, SentenceLength[]> = {}
-  ordered.forEach(p => {
-    const key = p.periodLengthType
-    if (!groups[key]) groups[key] = []
-    groups[key].push(p)
-  })
+  const typePriority: Record<PeriodLengthType, number> = {
+    SENTENCE_LENGTH: 1,
+    LICENCE_PERIOD: 2,
+    CUSTODIAL_TERM: 3,
+    TARIFF_LENGTH: 4,
+    TERM_LENGTH: 5,
+    OVERALL_SENTENCE_LENGTH: 6,
+    UNSUPPORTED: 99,
+  }
 
-  return Object.values(groups) as GroupedPeriodLengths[]
+  return Object.values(groups).sort((a, b) => (typePriority[a.type] ?? 50) - (typePriority[b.type] ?? 50))
 }
 
 export const lowercaseFirstLetter = (s: string): string => {
@@ -154,7 +167,7 @@ export const entrypointUrl = (entrypoint: string, nomisId: string): string => {
   return `/person/${nomisId}`
 }
 
-export interface SentenceLength {
+export interface SentenceLengthDisplay {
   years?: string
   months?: string
   weeks?: string
@@ -198,7 +211,7 @@ const getDisplayDescription = (type: PeriodLength['periodLengthType']): string =
   }
 }
 
-export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLength => {
+export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLengthDisplay => {
   if (periodLength) {
     return {
       description: getDisplayDescription(periodLength.periodLengthType),
@@ -209,7 +222,7 @@ export const periodLengthToSentenceLength = (periodLength: PeriodLength): Senten
       periodOrder: periodLength.periodOrder.split(','),
       periodLengthType: periodLength.periodLengthType,
       uuid: periodLength.periodLengthUuid,
-    } as SentenceLength
+    } as SentenceLengthDisplay
   }
   return null
 }
