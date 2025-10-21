@@ -118,7 +118,7 @@
     "csv-stringify": "^6.6.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.18",
-    "express": "^4.21.2",
+    "express": "^5.1.0",
     "express-session": "^1.18.2",
     "govuk-frontend": "^5.11.2",
     "helmet": "^8.1.0",
