@@ -35,25 +35,9 @@ export default class RevocationDateController extends BaseController {
       ? `/person/${nomisId}/edit-recall/${recallId}/confirm-cancel`
       : `/person/${prisoner?.prisonerNumber || nomisId}/record-recall/confirm-cancel`
 
-    // If not coming from a validation redirect, load from session
+    // We intentionally leave res.locals.formResponses empty
     if (!res.locals.formResponses) {
-      // Parse the date string from session to populate the form fields
-      let dateParts = {}
-      if (sessionData?.revocationDate) {
-        // Date is stored as 'yyyy-MM-dd' string in session
-        const dateStr = sessionData.revocationDate
-        const date = new Date(dateStr)
-        if (!Number.isNaN(date.getTime())) {
-          // Need to account for timezone - use UTC to avoid date shifts
-          const utcDate = new Date(`${dateStr}T00:00:00Z`)
-          dateParts = {
-            'revocationDate-day': utcDate.getUTCDate().toString(),
-            'revocationDate-month': (utcDate.getUTCMonth() + 1).toString(), // Month is 0-indexed
-            'revocationDate-year': utcDate.getUTCFullYear().toString(),
-          }
-        }
-      }
-      res.locals.formResponses = dateParts
+      res.locals.formResponses = {}
     }
 
     // Get earliest sentence date for validation display (if needed)
