@@ -1,6 +1,8 @@
 import { Recall } from '../models'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import { Services } from '../../services'
+import { RecallSessionData } from '../../services/sessionTypes'
+import { PrisonerSearchApiPrisoner } from '../prisonerSearchApi/prisonerSearchTypes'
 
 export declare module 'express-session' {
   // Declare that the session will potentially contain these additional fields
@@ -8,6 +10,7 @@ export declare module 'express-session' {
     returnTo: string
     nowInMinutes: number
     recalls: Map<string, Recall>
+    recallsSessionData: Record<string, RecordARecallSessionData>
   }
 }
 
@@ -31,6 +34,7 @@ export declare global {
 
     interface Locals {
       user: HmppsUser
+      prisoner: PrisonerSearchApiPrisoner
     }
   }
 }
