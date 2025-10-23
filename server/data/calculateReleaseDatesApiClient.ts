@@ -1,13 +1,13 @@
-import config from '../config'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
+import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import config from '../config'
+import logger from '../../logger'
 import {
   CalculationBreakdown,
   LatestCalculation,
   RecordARecallCalculationResult,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import logger from '../../logger'
-import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
 
 export default class CalculateReleaseDatesApiClient extends RestClient {
   constructor(authenticationClient: AuthenticationClient) {

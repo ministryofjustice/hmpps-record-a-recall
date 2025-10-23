@@ -1,6 +1,6 @@
 import { RestClient, asSystem } from '@ministryofjustice/hmpps-rest-client'
-import { AdjustmentDto, CreateResponse } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
+import { AdjustmentDto, CreateResponse } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import config from '../config'
 import logger from '../../logger'
 

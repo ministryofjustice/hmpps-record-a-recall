@@ -1,6 +1,6 @@
+import nock from 'nock'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import AdjustmentsApiClient from './adjustmentsApiClient'
-import nock from 'nock'
 import config from '../config'
 
 describe('AdjustmentsApiClient', () => {
@@ -28,7 +28,7 @@ describe('AdjustmentsApiClient', () => {
         .matchHeader('authorization', 'Bearer test-system-token')
         .reply(200, {})
 
-      const response = await adjustmentsApiClient.deleteAdjustment(adjustmentId)
+      await adjustmentsApiClient.deleteAdjustment(adjustmentId)
 
       expect(mockAuthenticationClient.getToken).toHaveBeenCalledTimes(1)
     })

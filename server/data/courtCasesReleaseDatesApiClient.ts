@@ -1,8 +1,8 @@
-import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
-import logger from '../../logger'
 import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
-import config from '../config'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
+import logger from '../../logger'
+import config from '../config'
+import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
 
 export default class CourtCasesReleaseDatesApiClient extends RestClient {
   constructor(authenticationClient: AuthenticationClient) {
