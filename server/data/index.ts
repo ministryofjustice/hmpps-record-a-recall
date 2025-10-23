@@ -22,6 +22,7 @@ import ManageOffencesApiClient from './manageOffencesApiClient'
 import PrisonApiClient from './prisonApiClient'
 import PrisonerSearchApiClient from './prisonerSearchApiClient'
 import RemandAndSentencingApiClient from './remandAndSentencingApiClient'
+import FeComponentsClient from './feComponentsClient'
 
 export const dataAccess = () => {
   const hmppsAuthClient = new AuthenticationClient(
@@ -41,6 +42,7 @@ export const dataAccess = () => {
     prisonApiClient: new PrisonApiClient(hmppsAuthClient),
     prisonerSearchApiClient: new PrisonerSearchApiClient(hmppsAuthClient),
     remandAndSentencingApiClient: new RemandAndSentencingApiClient(hmppsAuthClient),
+    feComponentsClient: new FeComponentsClient(hmppsAuthClient),
   }
 }
 

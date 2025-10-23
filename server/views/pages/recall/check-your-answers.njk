@@ -1,0 +1,47 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+
+{% set title = "Check your answers" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set pageCaption = "Record a recall" %}
+
+{% block pageContent %}
+    <h1 class="govuk-heading-l" id="check-answers-heading">{{ title }}</h1>
+
+    {{ govukSummaryList({
+        rows: answerSummaryList
+    }) }}
+
+    {% if ualText %}
+        {% set ualHtml %}
+            These recall dates will create <b>{{ ualText }}</b> of UAL.
+            Once you have confirmed and saved this recall, you can review all UAL dates in the adjustments service.
+        {% endset %}
+        {{ govukInsetText({
+            html: ualHtml
+        }) }}
+    {% endif %}
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Confirm and save",
+                preventDoubleClick: true,
+                attributes: {
+                    id: "submit",
+                    "data-qa": "confirm-recall-btn"
+                }
+            }) }}
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl
+            }) }}
+        </div>
+    </form>
+{% endblock %}

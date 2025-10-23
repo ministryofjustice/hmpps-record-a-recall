@@ -1,0 +1,56 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% set title = "Select sentence type for all sentences" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set pageCaption = "Record a recall" %}
+
+{% block pageContent %}
+    <h1 class="govuk-heading-l">{{ title }}</h1>
+
+    <p class="govuk-body">Select the sentence type from the original warrant.</p>
+    <p class="govuk-body">This type will be applied to all {{ sentenceCount }} sentences in this court case.</p>
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% set fieldError = validationErrors | findError('sentenceType') %}
+
+        {% set radioItems = [] %}
+        {% for type in sentenceTypes %}
+            {% set radioItems = (radioItems.push({
+                value: type.sentenceTypeUuid,
+                text: type.description,
+                checked: formResponses.sentenceType === type.sentenceTypeUuid
+            }), radioItems) %}
+        {% endfor %}
+
+        {{ govukRadios({
+            id: "sentenceType",
+            name: "sentenceType",
+            fieldset: {
+                legend: {
+                    text: "Select sentence type",
+                    classes: "govuk-fieldset__legend--m"
+                }
+            },
+            items: radioItems,
+            errorMessage: fieldError
+        }) }}
+
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Continue",
+                preventDoubleClick: true,
+                attributes: { id: "submit" }
+            }) }}
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl
+            }) }}
+        </div>
+    </form>
+{% endblock %}

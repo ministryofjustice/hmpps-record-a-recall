@@ -9,8 +9,8 @@ export default class PrisonerSearchApiClient extends RestClient {
     super('Prisoner Search API', config.apis.prisonerSearchApi, logger, authenticationClient)
   }
 
-  async getPrisonerDetails(nomsId: string): Promise<PrisonerSearchApiPrisoner> {
-    return this.get({ path: `/prisoner/${nomsId}` }, asSystem()) as Promise<PrisonerSearchApiPrisoner>
+  async getPrisonerDetails(nomsId: string, username: string): Promise<PrisonerSearchApiPrisoner> {
+    return this.get({ path: `/prisoner/${nomsId}` }, asSystem(username)) as Promise<PrisonerSearchApiPrisoner>
   }
 
   async getPrisonInmates(prisonId: string): Promise<PagedCollectionOfPrisoners> {

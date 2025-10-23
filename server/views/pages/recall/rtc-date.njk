@@ -1,0 +1,109 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% set title = "Was this person in prison when the recall was made?" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
+
+{% block pageContent %}
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% set inPrisonError = validationErrors | findError('inPrisonAtRecall') %}
+        {% set rtcDateError = validationErrors | findError('returnToCustodyDate') %}
+        {% set inPrisonValue = formResponses.inPrisonAtRecall %}
+
+        {# Extract date parts from formResponses #}
+        {% set rtcDateDay = formResponses['returnToCustodyDate-day'] if formResponses else "" %}
+        {% set rtcDateMonth = formResponses['returnToCustodyDate-month'] if formResponses else "" %}
+        {% set rtcDateYear = formResponses['returnToCustodyDate-year'] if formResponses else "" %}
+
+        {% set rtcDateHtml %}
+            {{ govukDateInput({
+                id: "returnToCustodyDate",
+                namePrefix: "returnToCustodyDate",
+                fieldset: {
+                    legend: {
+                        text: "Date they were arrested",
+                        classes: "govuk-fieldset__legend--m"
+                    }
+                },
+                hint: {
+                    text: "For example, 18 10 2007"
+                },
+                errorMessage: rtcDateError,
+                items: [
+                    {
+                        name: "day",
+                        classes: "govuk-input--width-2",
+                        value: rtcDateDay,
+                        attributes: {
+                            inputmode: "numeric"
+                        }
+                    },
+                    {
+                        name: "month",
+                        classes: "govuk-input--width-2",
+                        value: rtcDateMonth,
+                        attributes: {
+                            inputmode: "numeric"
+                        }
+                    },
+                    {
+                        name: "year",
+                        classes: "govuk-input--width-4",
+                        value: rtcDateYear,
+                        attributes: {
+                            inputmode: "numeric"
+                        }
+                    }
+                ]
+            }) }}
+        {% endset %}
+
+        {{ govukRadios({
+            idPrefix: "inPrisonAtRecall",
+            name: "inPrisonAtRecall",
+            fieldset: {
+                legend: {
+                    text: title,
+                    isPageHeading: true,
+                    classes: "govuk-fieldset__legend--l"
+                }
+            },
+            errorMessage: inPrisonError,
+            items: [
+                {
+                    value: "true",
+                    text: "Yes",
+                    checked: inPrisonValue === true or inPrisonValue === "true"
+                },
+                {
+                    value: "false",
+                    text: "No",
+                    checked: inPrisonValue === false or inPrisonValue === "false",
+                    conditional: {
+                        html: rtcDateHtml
+                    }
+                }
+            ]
+        }) }}
+
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Continue",
+                preventDoubleClick: true,
+                attributes: { id: "submit" }
+            }) }}
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl
+            }) }}
+        </div>
+    </form>
+{% endblock %}
