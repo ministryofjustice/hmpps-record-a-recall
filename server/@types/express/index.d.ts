@@ -1,9 +1,11 @@
 import { HmppsUser } from '../../interfaces/hmppsUser'
+import { CreateRecallJourney } from '../journeys'
 
 export declare module 'express-session' {
   // Declare that the session will potentially contain these additional fields
   interface SessionData {
     returnTo: string
+    createRecallJourneys: Record<string, CreateRecallJourney>
   }
 }
 

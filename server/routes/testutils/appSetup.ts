@@ -9,6 +9,8 @@ import type { Services } from '../../services'
 import AuditService from '../../services/auditService'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import setUpWebSession from '../../middleware/setUpWebSession'
+import { SessionData } from 'express-session'
+import populateValidationErrors from '../../middleware/populateValidationErrors'
 
 jest.mock('../../services/auditService')
 
@@ -35,11 +37,12 @@ export const user: HmppsUser = {
 
 export const flashProvider = jest.fn()
 
-function appSetup(services: Services, production: boolean, userSupplier: () => HmppsUser): Express {
+function appSetup(services: Services, production: boolean, userSupplier: () => HmppsUser,
+                  sessionReceiver?: (session: Partial<SessionData>) => void): Express {
   const app = express()
 
   app.set('view engine', 'njk')
-
+  flashProvider.mockImplementation(_ => [])
   nunjucksSetup(app)
   app.use(setUpWebSession())
   app.use((req, res, next) => {
@@ -54,8 +57,13 @@ function appSetup(services: Services, production: boolean, userSupplier: () => H
     req.id = randomUUID()
     next()
   })
+  app.use((req, res, next) => {
+    if (sessionReceiver) sessionReceiver(req.session)
+    next()
+  })
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
+  app.use(populateValidationErrors())
   app.use(routes(services))
   app.use((req, res, next) => next(new NotFound()))
   app.use(errorHandler(production))
@@ -64,15 +72,17 @@ function appSetup(services: Services, production: boolean, userSupplier: () => H
 }
 
 export function appWithAllRoutes({
-  production = false,
-  services = {
-    auditService: new AuditService(null) as jest.Mocked<AuditService>,
-  },
-  userSupplier = () => user,
-}: {
+                                   production = false,
+                                   services = {
+                                     auditService: new AuditService(null) as jest.Mocked<AuditService>,
+                                   },
+                                   userSupplier = () => user,
+                                   sessionReceiver = undefined,
+                                 }: {
   production?: boolean
   services?: Partial<Services>
   userSupplier?: () => HmppsUser
+  sessionReceiver?: (session: Partial<SessionData>) => void
 }): Express {
-  return appSetup(services as Services, production, userSupplier)
+  return appSetup(services as Services, production, userSupplier, sessionReceiver)
 }

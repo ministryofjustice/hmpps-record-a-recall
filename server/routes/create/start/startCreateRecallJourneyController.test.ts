@@ -1,0 +1,127 @@
+import type { Express } from 'express'
+import request from 'supertest'
+import { SessionData } from 'express-session'
+import { v4 as uuidv4 } from 'uuid'
+import { CreateRecallJourney } from '../../../@types/journeys'
+import { appWithAllRoutes, user } from '../../testutils/appSetup'
+
+let app: Express
+let session: Partial<SessionData>
+let preExistingJourneysToAddToSession: Array<CreateRecallJourney>
+const nomsId = 'A1234BC'
+
+beforeEach(() => {
+  app = appWithAllRoutes({
+    services: {
+    },
+    userSupplier: () => user,
+    sessionReceiver: (receivedSession: Partial<SessionData>) => {
+      session = receivedSession
+      if (preExistingJourneysToAddToSession) {
+        session.createRecallJourneys = {}
+        preExistingJourneysToAddToSession.forEach((journey: CreateRecallJourney) => {
+          session.createRecallJourneys![journey.id] = journey
+        })
+      }
+    },
+  })
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
+})
+
+describe('GET /person/:nomsId/recall/create/start', () => {
+  it('should create the journey and redirect to revocation date page', async () => {
+    // Given
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    const journeys = Object.values(session.createRecallJourneys!)
+    expect(journeys).toHaveLength(1)
+    expect(response.headers['location']).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
+  })
+
+  it('should not remove any existing add journeys in the session', async () => {
+    // Given
+    const existingUuid = uuidv4()
+    preExistingJourneysToAddToSession = [
+      {
+        id: existingUuid,
+        lastTouched: new Date().toISOString(),
+        isCheckingAnswers: false,
+        nomsId,
+        revocationDate: {
+          day: 1,
+          month: 2,
+          year: 2000
+        },
+      },
+    ]
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+    const { location } = response.headers
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(location).toContain('/revocation-date')
+    const journeys = Object.values(session.createRecallJourneys!)
+    expect(journeys).toHaveLength(2)
+    const newId = journeys.find(it => it.id != existingUuid).id
+    expect(session.createRecallJourneys![newId]!.id).toEqual(newId)
+    expect(session.createRecallJourneys![newId]!.lastTouched).toBeTruthy()
+  })
+
+  it('should remove the oldest if there will be more than 5 journeys', async () => {
+    // Given
+    preExistingJourneysToAddToSession = [
+      {
+        id: 'old',
+        lastTouched: new Date(2024, 1, 1, 11, 30).toISOString(),
+        nomsId,
+        isCheckingAnswers: false,
+      },
+      {
+        id: 'middle-aged',
+        lastTouched: new Date(2024, 1, 1, 12, 30).toISOString(),
+        nomsId,
+        isCheckingAnswers: false,
+      },
+      {
+        id: 'youngest',
+        lastTouched: new Date(2024, 1, 1, 14, 30).toISOString(),
+        nomsId,
+        isCheckingAnswers: false,
+      },
+      {
+        id: 'oldest',
+        lastTouched: new Date(2024, 1, 1, 10, 30).toISOString(),
+        nomsId,
+        isCheckingAnswers: false,
+      },
+      {
+        id: 'young',
+        lastTouched: new Date(2024, 1, 1, 13, 30).toISOString(),
+        nomsId,
+        isCheckingAnswers: false,
+      },
+    ]
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+    const { location } = response.headers
+
+    // Then
+    expect(location).toContain('/revocation-date')
+    const journeys = Object.values(session.createRecallJourneys!)
+    const newId = journeys.find(it => it.id.length > 20).id
+    expect(Object.keys(session.createRecallJourneys!).sort()).toStrictEqual(
+      [newId, 'old', 'middle-aged', 'young', 'youngest'].sort(),
+    )
+  })
+
+})
