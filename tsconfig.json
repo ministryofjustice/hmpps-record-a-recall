@@ -21,8 +21,7 @@
     "dist",
     "cypress.config.ts",
     "esbuild",
-    "eslint.config.mjs",
-    "server-archive/**/*.ts"
+    "eslint.config.mjs"
   ],
   "include": ["**/*.js", "**/*.ts"]
 }

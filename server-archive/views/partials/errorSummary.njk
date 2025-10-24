@@ -1,9 +1,0 @@
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-
-{% if validationErrors and (validationErrors | length) %}
-  {{ govukErrorSummary({
-    titleText: "There is a problem",
-    errorList: validationErrors | buildErrorSummaryList,
-    classes: "govuk-!-margin-top-7 govuk-!-margin-bottom-0"
-  }) }}
-{% endif %}

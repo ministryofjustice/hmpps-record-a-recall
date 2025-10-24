@@ -1,3 +1,3 @@
 import hmppsConfig from '@ministryofjustice/eslint-config-hmpps'
 
-export default hmppsConfig({ extraIgnorePaths: ['assets/js/*.js', 'server-archive/**/*.ts'] })
+export default hmppsConfig({ extraIgnorePaths: ['assets/js/*.js'] })
