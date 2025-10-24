@@ -30,6 +30,11 @@ describe('journeyMiddleware', () => {
         lastTouched: lastTouchedBeforeCall.toISOString(),
         nomsId,
         isCheckingAnswers: false,
+        crdsValidationResult: {
+          criticalValidationMessages: [],
+          otherValidationMessages: [],
+          earliestSentenceDate: '2019-01-01',
+        },
       }
       ensureInCreateRecallJourney(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)

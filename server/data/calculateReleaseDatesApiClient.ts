@@ -5,13 +5,22 @@ import logger from '../../logger'
 import {
   CalculationBreakdown,
   LatestCalculation,
-  RecordARecallCalculationResult,
+  RecordARecallValidationResult,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CalculateReleaseDatesApiClient extends RestClient {
   constructor(authenticationClient: AuthenticationClient) {
     super('Calculate Release Dates API', config.apis.calculateReleaseDatesApi, logger, authenticationClient)
+  }
+
+  async validateForRecordARecall(prisonerNumber: string, username: string): Promise<RecordARecallValidationResult> {
+    return this.post(
+      {
+        path: `/record-a-recall/${prisonerNumber}/validate`,
+      },
+      asSystem(username),
+    ) as Promise<RecordARecallValidationResult>
   }
 
   async getLatestCalculation(nomsId: string): Promise<LatestCalculation> {
@@ -36,9 +45,5 @@ export default class CalculateReleaseDatesApiClient extends RestClient {
       },
       asSystem(),
     ) as Promise<SentenceAndOffenceWithReleaseArrangements[]>
-  }
-
-  async calculateReleaseDates(nomsId: string): Promise<RecordARecallCalculationResult> {
-    return this.post({ path: `/record-a-recall/${nomsId}` }, asSystem()) as Promise<RecordARecallCalculationResult>
   }
 }

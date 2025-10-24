@@ -4,15 +4,27 @@ import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
+import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
+import { RecordARecallValidationResult } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 let app: Express
 let session: Partial<SessionData>
 let preExistingJourneysToAddToSession: Array<CreateRecallJourney>
 const nomsId = 'A1234BC'
+const successfulCrdsValidationResult = {
+  criticalValidationMessages: [],
+  otherValidationMessages: [],
+  earliestSentenceDate: '2025-01-01',
+} as RecordARecallValidationResult
+jest.mock('../../../services/calculateReleaseDatesService')
+
+const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 
 beforeEach(() => {
   app = appWithAllRoutes({
-    services: {},
+    services: {
+      calculateReleaseDatesService,
+    },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       session = receivedSession
@@ -33,6 +45,7 @@ afterEach(() => {
 describe('GET /person/:nomsId/recall/create/start', () => {
   it('should create the journey and redirect to revocation date page', async () => {
     // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -43,9 +56,31 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(journeys).toHaveLength(1)
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
   })
+  it('should create the journey and redirect to validation intercept if critical errors exist', async () => {
+    // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
+      criticalValidationMessages: [
+        {
+          code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
+        },
+      ],
+    } as RecordARecallValidationResult)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    const journeys = Object.values(session.createRecallJourneys!)
+    expect(journeys).toHaveLength(1)
+    expect(response.headers.location).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeys[0].id}/validation-intercept`,
+    )
+  })
 
   it('should not remove any existing add journeys in the session', async () => {
     // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
     const existingUuid = uuidv4()
     preExistingJourneysToAddToSession = [
       {
@@ -56,8 +91,9 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         revocationDate: {
           day: 1,
           month: 2,
-          year: 2000,
+          year: 2025,
         },
+        crdsValidationResult: successfulCrdsValidationResult,
       },
     ]
 
@@ -77,36 +113,42 @@ describe('GET /person/:nomsId/recall/create/start', () => {
 
   it('should remove the oldest if there will be more than 5 journeys', async () => {
     // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
     preExistingJourneysToAddToSession = [
       {
         id: 'old',
         lastTouched: new Date(2024, 1, 1, 11, 30).toISOString(),
         nomsId,
         isCheckingAnswers: false,
+        crdsValidationResult: successfulCrdsValidationResult,
       },
       {
         id: 'middle-aged',
         lastTouched: new Date(2024, 1, 1, 12, 30).toISOString(),
         nomsId,
         isCheckingAnswers: false,
+        crdsValidationResult: successfulCrdsValidationResult,
       },
       {
         id: 'youngest',
         lastTouched: new Date(2024, 1, 1, 14, 30).toISOString(),
         nomsId,
         isCheckingAnswers: false,
+        crdsValidationResult: successfulCrdsValidationResult,
       },
       {
         id: 'oldest',
         lastTouched: new Date(2024, 1, 1, 10, 30).toISOString(),
         nomsId,
         isCheckingAnswers: false,
+        crdsValidationResult: successfulCrdsValidationResult,
       },
       {
         id: 'young',
         lastTouched: new Date(2024, 1, 1, 13, 30).toISOString(),
         nomsId,
         isCheckingAnswers: false,
+        crdsValidationResult: successfulCrdsValidationResult,
       },
     ]
 

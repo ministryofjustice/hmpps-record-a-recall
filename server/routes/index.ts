@@ -9,11 +9,11 @@ import { SchemaFactory, validate } from '../middleware/validationMiddleware'
 import CreateRecallRevocationDateController from './create/revocation-date/createRecallRevocationDateController'
 import ApiRoutes from './prisonerImageRoute'
 import StartCreateRecallJourneyController from './create/start/startCreateRecallJourneyController'
-import { revocationDateSchema } from './common/revocation-date/revocationDateSchemas'
+import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 
-export default function routes({ auditService, prisonerService }: Services): Router {
+export default function routes({ auditService, prisonerService, calculateReleaseDatesService }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
   const router = Router()
@@ -47,13 +47,13 @@ export default function routes({ auditService, prisonerService }: Services): Rou
 
   route({
     path: '/person/:nomsId/recall/create/start',
-    controller: new StartCreateRecallJourneyController(),
+    controller: new StartCreateRecallJourneyController(calculateReleaseDatesService),
   })
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
-    validateToSchema: revocationDateSchema,
+    validateToSchema: revocationDateSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
