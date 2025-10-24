@@ -22,4 +22,8 @@ export default class CreateRecallUrls {
   static criticalValidationIntercept = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`
   }
+
+  static manualSelectCases = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`
+  }
 }

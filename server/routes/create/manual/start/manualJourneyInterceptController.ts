@@ -20,7 +20,7 @@ export default class ManualJourneyInterceptController implements Controller {
         ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
         : GlobalRecallUrls.home(nomsId),
       cancelUrl,
-      continueUrl: `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`,
+      continueUrl: CreateRecallUrls.manualSelectCases(nomsId, journeyId),
     })
   }
 }
