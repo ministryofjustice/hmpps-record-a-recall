@@ -18,6 +18,11 @@ beforeEach(() => {
     lastTouched: new Date().toISOString(),
     nomsId,
     isCheckingAnswers: false,
+    crdsValidationResult: {
+      criticalValidationMessages: [],
+      otherValidationMessages: [],
+      earliestSentenceDate: '2025-01-01',
+    },
   }
   app = appWithAllRoutes({
     services: {},
@@ -110,7 +115,7 @@ describe('POST', () => {
       await request(app)
         .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
         .type('form')
-        .send({ day: '1', month: '2', year: '2000' })
+        .send({ day: '1', month: '2', year: '2025' })
         .expect(302)
         .expect('Location', expectedNextUrl)
 
@@ -118,7 +123,7 @@ describe('POST', () => {
       expect(existingJourney.revocationDate).toStrictEqual({
         day: 1,
         month: 2,
-        year: 2000,
+        year: 2025,
       })
     },
   )

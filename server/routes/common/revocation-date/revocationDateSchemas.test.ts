@@ -1,6 +1,6 @@
+import { Request } from 'express'
 import { deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
 import { revocationDateSchemaFactory } from './revocationDateSchemas'
-import { Request } from 'express'
 
 describe('revocationDateSchema', () => {
   type Form = {
@@ -199,4 +199,22 @@ describe('revocationDateSchema', () => {
     const schema = await revocationDateSchemaFactory()(request)
     return schema.safeParse(form)
   }
+
+  it('Should return a combined error if revocation date is before earliest sentence date', async () => {
+    // Given
+    const form = { day: '1', month: '1', year: '1949' }
+
+    // When
+    const result = await doValidate(form)
+
+    // Then
+
+    expect(result.success).toStrictEqual(false)
+    const deduplicatedFieldErrors = deduplicateFieldErrors(result.error!)
+    expect(deduplicatedFieldErrors).toStrictEqual({
+      day: ['Revocation date must be after the earliest sentence date'],
+      month: [''],
+      year: [''],
+    })
+  })
 })
