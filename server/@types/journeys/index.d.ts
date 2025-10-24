@@ -12,5 +12,4 @@ export interface DateParts {
   year: number
 }
 
-
 type PersonJourneyParams = { nomsId: string; journeyId: string }

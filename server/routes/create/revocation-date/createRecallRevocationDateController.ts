@@ -41,5 +41,4 @@ export default class CreateRecallRevocationDateController implements Controller 
     }
     return res.redirect(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
   }
-
 }

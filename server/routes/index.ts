@@ -25,11 +25,11 @@ export default function routes({ auditService, prisonerService }: Services): Rou
   router.get('/api/person/:nomsId/image', apiRoutes.personImage)
 
   const route = <P extends { [key: string]: string }>({
-                                                        path,
-                                                        controller,
-                                                        validateToSchema,
-                                                        additionalMiddleware = [],
-                                                      }: {
+    path,
+    controller,
+    validateToSchema,
+    additionalMiddleware = [],
+  }: {
     path: string
     controller: Controller
     validateToSchema?: z.ZodTypeAny | SchemaFactory<P>
@@ -54,7 +54,7 @@ export default function routes({ auditService, prisonerService }: Services): Rou
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
     validateToSchema: revocationDateSchema,
-    additionalMiddleware: [ensureInCreateRecallJourney]
+    additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   return router

@@ -1,10 +1,11 @@
+/* eslint-disable no-param-reassign */
 import type { Express } from 'express'
 import request from 'supertest'
+import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
-import * as cheerio from 'cheerio'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -19,8 +20,7 @@ beforeEach(() => {
     isCheckingAnswers: false,
   }
   app = appWithAllRoutes({
-    services: {
-    },
+    services: {},
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}
@@ -45,7 +45,9 @@ describe('GET', () => {
     const $ = cheerio.load(response.text)
 
     expect($('[data-qa=back-link]').attr('href')).toStrictEqual(`/person/${nomsId}`)
-    expect($('#cancel-button').attr('href')).toStrictEqual(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
+    expect($('#cancel-button').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`,
+    )
 
     expect($('#day').val()).toBeUndefined()
     expect($('#month').val()).toBeUndefined()
@@ -92,32 +94,34 @@ describe('GET', () => {
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
-
 })
 
 describe('POST', () => {
   it.each([
     [false, `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`],
     [true, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
-  ])('should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s)', async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
-    // Given
-    existingJourney.isCheckingAnswers = isCheckingAnswers
+  ])(
+    'should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
+    async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+      // Given
+      existingJourney.isCheckingAnswers = isCheckingAnswers
 
-    // When
-    await request(app)
-      .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
-      .type('form')
-      .send({ day: '1', month: '2', year: '2000' })
-      .expect(302)
-      .expect('Location', expectedNextUrl)
+      // When
+      await request(app)
+        .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
+        .type('form')
+        .send({ day: '1', month: '2', year: '2000' })
+        .expect(302)
+        .expect('Location', expectedNextUrl)
 
-    // Then
-    expect(existingJourney.revocationDate).toStrictEqual({
-      day: 1,
-      month: 2,
-      year: 2000
-    })
-  })
+      // Then
+      expect(existingJourney.revocationDate).toStrictEqual({
+        day: 1,
+        month: 2,
+        year: 2000,
+      })
+    },
+  )
 
   it('should return to the input page if there are validation errors', async () => {
     // Given
@@ -127,7 +131,7 @@ describe('POST', () => {
     await request(app)
       .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
       .type('form')
-      .send({ day: '1', month: '2'})
+      .send({ day: '1', month: '2' })
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/revocation-date#`)
 
@@ -139,7 +143,7 @@ describe('POST', () => {
     await request(app)
       .post(`/person/${nomsId}/recall/create/${uuidv4()}/revocation-date`)
       .type('form')
-      .send({ day: '1', month: '2'})
+      .send({ day: '1', month: '2' })
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })

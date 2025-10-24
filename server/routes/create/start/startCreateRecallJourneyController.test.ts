@@ -12,8 +12,7 @@ const nomsId = 'A1234BC'
 
 beforeEach(() => {
   app = appWithAllRoutes({
-    services: {
-    },
+    services: {},
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       session = receivedSession
@@ -42,7 +41,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(response.status).toEqual(302)
     const journeys = Object.values(session.createRecallJourneys!)
     expect(journeys).toHaveLength(1)
-    expect(response.headers['location']).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
+    expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
   })
 
   it('should not remove any existing add journeys in the session', async () => {
@@ -57,7 +56,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         revocationDate: {
           day: 1,
           month: 2,
-          year: 2000
+          year: 2000,
         },
       },
     ]
@@ -71,7 +70,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(location).toContain('/revocation-date')
     const journeys = Object.values(session.createRecallJourneys!)
     expect(journeys).toHaveLength(2)
-    const newId = journeys.find(it => it.id != existingUuid).id
+    const newId = journeys.find(it => it.id !== existingUuid).id
     expect(session.createRecallJourneys![newId]!.id).toEqual(newId)
     expect(session.createRecallJourneys![newId]!.lastTouched).toBeTruthy()
   })
@@ -123,5 +122,4 @@ describe('GET /person/:nomsId/recall/create/start', () => {
       [newId, 'old', 'middle-aged', 'young', 'youngest'].sort(),
     )
   })
-
 })

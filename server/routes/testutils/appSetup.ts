@@ -1,6 +1,6 @@
 import express, { Express } from 'express'
 import { NotFound } from 'http-errors'
-
+import { SessionData } from 'express-session'
 import { randomUUID } from 'crypto'
 import routes from '../index'
 import nunjucksSetup from '../../utils/nunjucksSetup'
@@ -9,7 +9,6 @@ import type { Services } from '../../services'
 import AuditService from '../../services/auditService'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import setUpWebSession from '../../middleware/setUpWebSession'
-import { SessionData } from 'express-session'
 import populateValidationErrors from '../../middleware/populateValidationErrors'
 
 jest.mock('../../services/auditService')
@@ -37,8 +36,12 @@ export const user: HmppsUser = {
 
 export const flashProvider = jest.fn()
 
-function appSetup(services: Services, production: boolean, userSupplier: () => HmppsUser,
-                  sessionReceiver?: (session: Partial<SessionData>) => void): Express {
+function appSetup(
+  services: Services,
+  production: boolean,
+  userSupplier: () => HmppsUser,
+  sessionReceiver?: (session: Partial<SessionData>) => void,
+): Express {
   const app = express()
 
   app.set('view engine', 'njk')
@@ -72,13 +75,13 @@ function appSetup(services: Services, production: boolean, userSupplier: () => H
 }
 
 export function appWithAllRoutes({
-                                   production = false,
-                                   services = {
-                                     auditService: new AuditService(null) as jest.Mocked<AuditService>,
-                                   },
-                                   userSupplier = () => user,
-                                   sessionReceiver = undefined,
-                                 }: {
+  production = false,
+  services = {
+    auditService: new AuditService(null) as jest.Mocked<AuditService>,
+  },
+  userSupplier = () => user,
+  sessionReceiver = undefined,
+}: {
   production?: boolean
   services?: Partial<Services>
   userSupplier?: () => HmppsUser

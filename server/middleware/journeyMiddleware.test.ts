@@ -18,7 +18,7 @@ describe('journeyMiddleware', () => {
         params: { journeyId, nomsId },
         session: {} as Partial<SessionData>,
       } as unknown as Request
-      res = { redirect: jest.fn(), locals: { user: user } } as unknown as Response
+      res = { redirect: jest.fn(), locals: { user } } as unknown as Response
     })
 
     it('should proceed if the journey is in the session and update the last touched date', () => {
