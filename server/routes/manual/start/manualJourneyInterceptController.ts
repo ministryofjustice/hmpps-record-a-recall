@@ -3,8 +3,11 @@ import { Controller } from '../../controller'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import GlobalRecallUrls from '../../globalRecallUrls'
 import CreateRecallUrls from '../../create/createRecallUrls'
+import { Page } from '../../../services/auditService'
 
 export default class ManualJourneyInterceptController implements Controller {
+  public PAGE_NAME = Page.CREATE_RECALL_MANUAL_INTERCEPT
+
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
     const { nomsId, journeyId } = req.params

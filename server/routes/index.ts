@@ -3,7 +3,6 @@ import { Router } from 'express'
 import { z } from 'zod'
 
 import type { Services } from '../services'
-import { Page } from '../services/auditService'
 import { Controller } from './controller'
 import { SchemaFactory, validate } from '../middleware/validationMiddleware'
 import CreateRecallRevocationDateController from './create/revocation-date/createRecallRevocationDateController'
@@ -12,15 +11,19 @@ import StartCreateRecallJourneyController from './create/start/startCreateRecall
 import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
+import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './manual/start/manualJourneyInterceptController'
 
-export default function routes({ auditService, prisonerService, calculateReleaseDatesService }: Services): Router {
+export default function routes({
+  prisonerService,
+  calculateReleaseDatesService,
+  courtCasesReleaseDatesService,
+}: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
   const router = Router()
 
   router.get('/', async (req, res) => {
-    await auditService.logPageView(Page.EXAMPLE_PAGE, { who: res.locals.user.username, correlationId: req.id })
     return res.render('pages/index')
   })
   router.get('/api/person/:nomsId/image', apiRoutes.personImage)
@@ -46,6 +49,13 @@ export default function routes({ auditService, prisonerService, calculateRelease
     }
   }
 
+  // dashboard
+  route({
+    path: '/person/:nomsId',
+    controller: new HomeController(courtCasesReleaseDatesService),
+  })
+
+  // create recall
   route({
     path: '/person/:nomsId/recall/create/start',
     controller: new StartCreateRecallJourneyController(calculateReleaseDatesService),
@@ -58,6 +68,7 @@ export default function routes({ auditService, prisonerService, calculateRelease
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
+  // create - manual journey
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
     controller: new ManualJourneyInterceptController(),

@@ -42,7 +42,10 @@ describe('GET', () => {
   const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
 
   it('renders the manual intercept screen with a 200', async () => {
+    // When
     const res = await request(app).get(url).expect(200)
+
+    // Then
     const $ = cheerio.load(res.text)
     const heading = $('h1, .govuk-heading-l').first().text().trim()
 

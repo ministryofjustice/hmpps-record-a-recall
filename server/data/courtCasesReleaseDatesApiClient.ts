@@ -1,4 +1,4 @@
-import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import { asUser, RestClient } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import logger from '../../logger'
 import config from '../config'
@@ -9,12 +9,10 @@ export default class CourtCasesReleaseDatesApiClient extends RestClient {
     super('Court Cases Release Dates API', config.apis.courtCasesReleaseDatesApi, logger, authenticationClient)
   }
 
-  getServiceDefinitions(prisonerId: string): Promise<CcrdServiceDefinitions> {
+  getServiceDefinitions(prisonerId: string, token: string): Promise<CcrdServiceDefinitions> {
     return this.get(
-      {
-        path: `/service-definitions/prisoner/${prisonerId}`,
-      },
-      asSystem(),
+      { path: `/service-definitions/prisoner/${prisonerId}` },
+      asUser(token),
     ) as Promise<CcrdServiceDefinitions>
   }
 }
