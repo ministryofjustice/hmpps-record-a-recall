@@ -4,8 +4,8 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
-import { appWithAllRoutes, user } from '../../testutils/appSetup'
+import { CreateRecallJourney } from '../../../../@types/journeys'
+import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 
 let app: Express
 let existingJourney: CreateRecallJourney

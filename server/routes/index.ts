@@ -12,7 +12,7 @@ import { revocationDateSchemaFactory } from './common/revocation-date/revocation
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import HomeController from './home/homeController'
-import ManualJourneyInterceptController from './manual/start/manualJourneyInterceptController'
+import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 
 export default function routes({
   prisonerService,
