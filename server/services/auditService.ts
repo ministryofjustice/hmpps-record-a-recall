@@ -1,7 +1,9 @@
 import HmppsAuditClient, { AuditEvent } from '../data/hmppsAuditClient'
 
 export enum Page {
-  EXAMPLE_PAGE = 'EXAMPLE_PAGE',
+  HOME = 'HOME',
+  START_CREATE_RECALL = 'START_CREATE_RECALL',
+  CREATE_RECALL_ENTER_REVOCATION_DATE = 'CREATE_RECALL_ENTER_REVOCATION_DATE',
 }
 
 export interface PageViewEventDetails {

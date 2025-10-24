@@ -4,8 +4,11 @@ import { Controller } from '../../controller'
 import CreateRecallUrls from '../createRecallUrls'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
+import { Page } from '../../../services/auditService'
 
 export default class StartCreateRecallJourneyController implements Controller {
+  public PAGE_NAME = Page.START_CREATE_RECALL
+
   constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
 
   private MAX_JOURNEYS = 5

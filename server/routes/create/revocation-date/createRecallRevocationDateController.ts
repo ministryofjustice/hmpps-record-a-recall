@@ -4,8 +4,11 @@ import { PersonJourneyParams } from '../../../@types/journeys'
 import GlobalRecallUrls from '../../globalRecallUrls'
 import CreateRecallUrls from '../createRecallUrls'
 import { RevocationDateForm } from '../../common/revocation-date/revocationDateSchemas'
+import { Page } from '../../../services/auditService'
 
 export default class CreateRecallRevocationDateController implements Controller {
+  public PAGE_NAME = Page.CREATE_RECALL_ENTER_REVOCATION_DATE
+
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals
     const { nomsId, journeyId } = req.params

@@ -1,13 +1,37 @@
 {% extends "govuk/template.njk" %}
+{% from "hmpps/components/court-cases-release-dates/service-header/macro.njk" import serviceHeader %}
 
 {% block head %}
   <link href="{{ '/assets/css/index.css' | assetMap }}" rel="stylesheet"/>
+  {% if feComponents.cssIncludes %}
+    {% for css in feComponents.cssIncludes %}
+      <link href="{{ css }}" nonce="{{ cspNonce }}" rel="stylesheet" />
+    {% endfor %}
+  {% endif %}
 {% endblock %}
 
 {% block pageTitle %}{{pageTitle | default(applicationName)}}{% endblock %}
 
 {% block header %}
-  {% include "./header.njk" %}
+  {% if feComponents.header %}
+    {{ feComponents.header | safe }}
+  {% else %}
+    {% include "./header.njk" %}
+  {% endif %}
+
+  {% if prisoner and prisoner.prisonerNumber %}
+    {% set envMapping = {
+      'DEV': 'dev',
+      'PRE-PRODUCTION': 'pre',
+      'PRODUCTION': 'prod',
+      'LOCAL': 'local'
+    } %}
+    {% set mappedEnv = envMapping[environmentName] | default('dev') %}
+    {{ serviceHeader({
+      environment: mappedEnv,
+      prisonNumber: prisoner.prisonerNumber
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block bodyStart %}
@@ -15,4 +39,9 @@
 
 {% block bodyEnd %}
   <script type="module" src="{{ '/assets/js/index.js' | assetMap }}"></script>
+  {% if feComponents.jsIncludes %}
+    {% for js in feComponents.jsIncludes %}
+      <script src="{{ js }}" nonce="{{ cspNonce }}"></script>
+    {% endfor %}
+  {% endif %}
 {% endblock %}
