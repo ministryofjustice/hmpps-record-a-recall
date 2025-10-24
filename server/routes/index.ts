@@ -61,7 +61,6 @@ export default function routes({ auditService, prisonerService, calculateRelease
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
     controller: new ManualJourneyInterceptController(),
-    validateToSchema: revocationDateSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
