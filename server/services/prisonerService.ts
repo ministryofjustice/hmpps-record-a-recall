@@ -1,29 +1,15 @@
 import { Readable } from 'stream'
-import PrisonerSearchApiClient from '../api/prisonerSearchApiClient'
-import { HmppsAuthClient } from '../data'
-import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
-import PrisonApiClient from '../api/prisonApiClient'
+import PrisonApiClient from '../data/prisonApiClient'
+import { CaseLoad } from '../@types/prisonApi/types'
 
 export default class PrisonerService {
-  constructor(private readonly hmppsAuthClient: HmppsAuthClient) {}
+  constructor(private readonly prisonApiClient: PrisonApiClient) {}
 
-  async getPrisonerDetails(nomsId: string, username: string): Promise<PrisonerSearchApiPrisoner> {
-    return new PrisonerSearchApiClient(await this.getSystemClientToken(username)).getPrisonerDetails(nomsId)
+  getPrisonerImage(nomsId: string, token: string): Promise<Readable> {
+    return this.prisonApiClient.getPrisonerImage(nomsId, token)
   }
 
-  async getPrisonersInEstablishment(prisonId: string, username: string): Promise<PrisonerSearchApiPrisoner[]> {
-    return new PrisonerSearchApiClient(await this.getSystemClientToken(username))
-      .getPrisonInmates(prisonId)
-      .then(inmates => {
-        return inmates.content.filter(inmate => inmate.legalStatus === 'SENTENCED')
-      })
-  }
-
-  async getPrisonerImage(nomsId: string, username: string): Promise<Readable> {
-    return new PrisonApiClient(await this.getSystemClientToken(username)).getPrisonerImage(nomsId)
-  }
-
-  private async getSystemClientToken(username: string): Promise<string> {
-    return this.hmppsAuthClient.getSystemClientToken(username)
+  async getUsersCaseloads(token: string): Promise<CaseLoad[]> {
+    return this.prisonApiClient.getUsersCaseloads(token)
   }
 }

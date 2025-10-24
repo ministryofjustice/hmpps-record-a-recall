@@ -1,7 +1,6 @@
 import express from 'express'
 
 import createError from 'http-errors'
-import cookieParser from 'cookie-parser'
 
 import nunjucksSetup from './utils/nunjucksSetup'
 import errorHandler from './errorHandler'
@@ -16,18 +15,14 @@ import setUpStaticResources from './middleware/setUpStaticResources'
 import setUpWebRequestParsing from './middleware/setupRequestParsing'
 import setUpWebSecurity from './middleware/setUpWebSecurity'
 import setUpWebSession from './middleware/setUpWebSession'
-import getFrontendComponents from './middleware/getFrontendComponents'
-import setUpEnvironmentName from './middleware/setUpEnvironmentName'
 
 import routes from './routes'
 import type { Services } from './services'
-import { registerAllSchemas } from './validation/schemas'
+import populateValidationErrors from './middleware/populateValidationErrors'
+import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
-
-  // Register all validation schemas for the Zod validation system
-  registerAllSchemas()
 
   app.set('json spaces', 2)
   app.set('trust proxy', true)
@@ -36,18 +31,16 @@ export default function createApp(services: Services): express.Application {
   app.use(appInsightsMiddleware())
   app.use(setUpHealthChecks(services.applicationInfo))
   app.use(setUpWebSecurity())
-  app.use(cookieParser())
   app.use(setUpWebSession())
   app.use(setUpWebRequestParsing())
   app.use(setUpStaticResources())
-  setUpEnvironmentName(app)
-  nunjucksSetup(app, services.applicationInfo)
+  nunjucksSetup(app)
   app.use(setUpAuthentication())
-  app.use(authorisationMiddleware(['RECALL_MAINTAINER']))
+  app.use(authorisationMiddleware(['RECALL_MAINTAINER', 'ROLE_RELEASE_DATES_CALCULATOR']))
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services))
-
-  app.get('*', getFrontendComponents(services))
+  app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
+  app.use(populateValidationErrors())
   app.use(routes(services))
 
   app.use((req, res, next) => next(createError(404, 'Not found')))

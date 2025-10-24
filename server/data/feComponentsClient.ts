@@ -1,5 +1,7 @@
+import { asUser, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
+import logger from '../../logger'
 import config from '../config'
-import RestClient from './restClient'
 
 export interface Component {
   html: string
@@ -9,43 +11,22 @@ export interface Component {
 
 export type AvailableComponent = 'header' | 'footer'
 
-type CaseLoad = {
-  caseLoadId: string
-  description: string
-  type: string
-  caseloadFunction: string
-  currentlyActive: boolean
-}
-
-type Service = {
-  description: string
-  heading: string
-  href: string
-  id: string
-}
-
-export interface FeComponentsMeta {
-  activeCaseLoad: CaseLoad
-  caseLoads: CaseLoad[]
-  services: Service[]
-}
-
-export interface FeComponentsResponse {
-  header?: Component
-  footer?: Component
-  meta: FeComponentsMeta
-}
-
-export default class FeComponentsClient {
-  private static restClient(token: string): RestClient {
-    return new RestClient('HMPPS Components Client', config.apis.frontendComponents, token)
+export default class FeComponentsClient extends RestClient {
+  constructor(authenticationClient: AuthenticationClient) {
+    super('HMPPS Components Client', config.apis.frontendComponents, logger, authenticationClient)
   }
 
-  getComponents<T extends AvailableComponent[]>(components: T, userToken: string): Promise<FeComponentsResponse> {
-    return FeComponentsClient.restClient(userToken).get<FeComponentsResponse>({
-      path: `/components`,
-      query: `component=${components.join('&component=')}`,
-      headers: { 'x-user-token': userToken },
-    })
+  getComponents<T extends AvailableComponent[]>(
+    components: T,
+    userToken: string,
+  ): Promise<Record<T[number], Component>> {
+    return this.get(
+      {
+        path: `/components`,
+        query: `component=${components.join('&component=')}`,
+        headers: { 'x-user-token': userToken },
+      },
+      asUser(userToken),
+    ) as Promise<Record<T[number], Component>>
   }
 }

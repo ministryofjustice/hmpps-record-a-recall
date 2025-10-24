@@ -1,84 +1,61 @@
-import { RequestHandler, Router } from 'express'
+import type { RequestHandler } from 'express'
+import { Router } from 'express'
+import { z } from 'zod'
 
+import type { Services } from '../services'
 import { Page } from '../services/auditService'
-import logPageView from '../middleware/logPageView'
-import addBreadcrumb from '../middleware/addBreadcrumb'
-import ApiRoutes from './apiRoutes'
-import searchRouter from './search'
-import v2RecallFlowRouter from '../controllers/recall'
-import v2EditRecallRouter from '../controllers/recall/edit'
-import addServicesToRequest from '../middleware/addServicesToRequest'
-import { Services } from '../services'
+import { Controller } from './controller'
+import { SchemaFactory, validate } from '../middleware/validationMiddleware'
+import CreateRecallRevocationDateController from './create/revocation-date/createRecallRevocationDateController'
+import ApiRoutes from './prisonerImageRoute'
+import StartCreateRecallJourneyController from './create/start/startCreateRecallJourneyController'
+import { revocationDateSchema } from './common/revocation-date/revocationDateSchemas'
+import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
-import viewPersonRouter from './viewPersonRouter'
-import populateNomisId from '../middleware/populateNomisId'
-import bulkTestRouter from './bulkTestRouter'
-import populateRecallId from '../middleware/populateRecallId'
-import loadCourtCases from '../middleware/loadCourtCases'
-import loadRecalls from '../middleware/loadRecalls'
-import { invalidateWorkflowCache } from '../middleware/cacheInvalidation'
 
-export default function routes(services: Services): Router {
+export default function routes({ auditService, prisonerService }: Services): Router {
+  const apiRoutes = new ApiRoutes(prisonerService)
+
   const router = Router()
-  const get = (path: string | string[], ...handlers: RequestHandler[]) =>
-    router.get(path, ...handlers.map(handler => asyncMiddleware(handler)))
-  const apiRoutes = new ApiRoutes(services.prisonerService)
-  get('/api/person/:nomsId/image', apiRoutes.personImage)
 
-  router.use(addBreadcrumb({ title: 'Record a Recall', href: '/' }))
+  router.get('/', async (req, res) => {
+    await auditService.logPageView(Page.EXAMPLE_PAGE, { who: res.locals.user.username, correlationId: req.id })
+    return res.render('pages/index')
+  })
+  router.get('/api/person/:nomsId/image', apiRoutes.personImage)
 
-  // Apply middleware to log page views before handling the route
-  router.get('/', logPageView(services.auditService, Page.INDEX), async (req, res, next) => {
-    res.redirect('search')
+  const route = <P extends { [key: string]: string }>({
+    path,
+    controller,
+    validateToSchema,
+    additionalMiddleware = [],
+  }: {
+    path: string
+    controller: Controller
+    validateToSchema?: z.ZodTypeAny | SchemaFactory<P>
+    additionalMiddleware?: (RequestHandler<P> | RequestHandler)[]
+  }) => {
+    router.get(path, ...additionalMiddleware, asyncMiddleware(controller.GET))
+    if (controller.POST) {
+      if (validateToSchema) {
+        router.post(path, ...additionalMiddleware, validate(validateToSchema), asyncMiddleware(controller.POST))
+      } else {
+        router.post(path, ...additionalMiddleware, asyncMiddleware(controller.POST))
+      }
+    }
+  }
+
+  route({
+    path: '/person/:nomsId/recall/create/start',
+    controller: new StartCreateRecallJourneyController(),
   })
 
-  router.use(addServicesToRequest(services))
-  router.use('/search', searchRouter)
-  router.use('/person/:nomisId', populateNomisId(), viewPersonRouter(services))
-  // Main recall flow route (V2)
-  router.use(
-    '/person/:nomisId/record-recall',
-    populateNomisId(),
-    invalidateWorkflowCache(),
-    loadCourtCases(
-      services.courtCaseService,
-      services.manageOffencesService,
-      services.courtService,
-      services.calculationService,
-      services.nomisMappingService,
-    ),
-    loadRecalls(
-      services.recallService,
-      services.prisonService,
-      services.manageOffencesService,
-      services.courtCaseService,
-      services.courtService,
-    ),
-    v2RecallFlowRouter(),
-  )
-  // Edit recall flow route (V2)
-  router.use(
-    '/person/:nomisId/edit-recall/:recallId',
-    populateNomisId(),
-    populateRecallId(),
-    invalidateWorkflowCache(),
-    loadCourtCases(
-      services.courtCaseService,
-      services.manageOffencesService,
-      services.courtService,
-      services.calculationService,
-      services.nomisMappingService,
-    ),
-    loadRecalls(
-      services.recallService,
-      services.prisonService,
-      services.manageOffencesService,
-      services.courtCaseService,
-      services.courtService,
-    ),
-    v2EditRecallRouter(),
-  )
-  router.use('/bulk', bulkTestRouter(services))
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
+    controller: new CreateRecallRevocationDateController(),
+    validateToSchema: revocationDateSchema,
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
 
   return router
 }

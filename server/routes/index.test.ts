@@ -28,10 +28,11 @@ describe('GET /', () => {
 
     return request(app)
       .get('/')
-      .expect('Content-Type', /text\/plain/)
+      .expect('Content-Type', /html/)
+      .expect(200)
       .expect(res => {
-        expect(res.text).toContain('Found. Redirecting to search')
-        expect(auditService.logPageView).toHaveBeenCalledWith(Page.INDEX, {
+        expect(res.text).toContain('This site is under construction...')
+        expect(auditService.logPageView).toHaveBeenCalledWith(Page.EXAMPLE_PAGE, {
           who: user.username,
           correlationId: expect.any(String),
         })

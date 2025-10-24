@@ -1,13 +1,11 @@
-import { Recall } from '../models'
 import { HmppsUser } from '../../interfaces/hmppsUser'
-import { Services } from '../../services'
+import { CreateRecallJourney } from '../journeys'
 
 export declare module 'express-session' {
   // Declare that the session will potentially contain these additional fields
   interface SessionData {
     returnTo: string
-    nowInMinutes: number
-    recalls: Map<string, Recall>
+    createRecallJourneys: Record<string, CreateRecallJourney>
   }
 }
 
@@ -22,11 +20,7 @@ export declare global {
     interface Request {
       verified?: boolean
       id: string
-      services?: Services
       logout(done: (err: unknown) => void): void
-      flash(type: string, message: Array<Record<string, string>>): number
-      flash(message: 'errors'): Array<Record<string, string>>
-      flash(type: string, message: Record<string, unknown>): number
     }
 
     interface Locals {

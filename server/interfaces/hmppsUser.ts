@@ -1,4 +1,4 @@
-import { Caseload } from '../data/manageUsersApiClient'
+import { CaseLoad } from '../@types/prisonApi/types'
 
 export type AuthSource = 'nomis' | 'delius' | 'external' | 'azuread'
 
@@ -6,9 +6,7 @@ export type AuthSource = 'nomis' | 'delius' | 'external' | 'azuread'
  * These are the details that all user types share.
  */
 export interface BaseUser {
-  activeCaseload: Caseload
   authSource: AuthSource
-  caseloads: Caseload[]
   username: string
   userId: string
   name: string
@@ -28,6 +26,9 @@ export interface BaseUser {
 export interface PrisonUser extends BaseUser {
   authSource: 'nomis'
   staffId: number
+  activeCaseLoadId: string
+  caseLoads: CaseLoad[]
+  hasAdjustmentsAccess: boolean
 }
 
 /**
