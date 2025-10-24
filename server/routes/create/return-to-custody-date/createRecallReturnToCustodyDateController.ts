@@ -3,8 +3,11 @@ import { Controller } from '../../controller'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import CreateRecallUrls from '../createRecallUrls'
 import { ReturnToCustodyDateForm } from '../../common/return-to-custody-date/returnToCustodyDateSchemas'
+import { Page } from '../../../services/auditService'
 
 export default class CreateRecallReturnToCustodyDateController implements Controller {
+  PAGE_NAME: Page = Page.CREATE_RECALL_ENTER_RETURN_TO_CUSTODY_DATE
+
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals
     const { nomsId, journeyId } = req.params

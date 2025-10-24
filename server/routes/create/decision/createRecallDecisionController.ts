@@ -4,8 +4,11 @@ import CreateRecallUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
+import { Page } from '../../../services/auditService'
 
 export default class CreateRecallDecisionController implements Controller {
+  PAGE_NAME: Page = Page.CREATE_RECALL_DECISION
+
   constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {

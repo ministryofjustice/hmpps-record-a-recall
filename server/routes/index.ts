@@ -80,9 +80,8 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/recall-decision',
     controller: new CreateRecallDecisionController(calculateReleaseDatesService),
-    additionalMiddleware: [ensureInCreateRecallJourney]
+    additionalMiddleware: [ensureInCreateRecallJourney],
   })
-
 
   // create - manual journey
   route({
