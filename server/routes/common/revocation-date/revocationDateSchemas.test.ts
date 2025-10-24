@@ -1,5 +1,6 @@
 import { deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
-import { revocationDateSchema } from './revocationDateSchemas'
+import { revocationDateSchemaFactory } from './revocationDateSchemas'
+import { Request } from 'express'
 
 describe('revocationDateSchema', () => {
   type Form = {
@@ -7,6 +8,11 @@ describe('revocationDateSchema', () => {
     month?: string
     year?: string
   }
+
+  const request = {
+    params: { journeyId: 'abc' },
+    session: { createRecallJourneys: { abc: { crdsValidationResult: { earliestSentenceDate: '1950-01-01' } } } },
+  } as unknown as Request
 
   it('Should return a top level error if no fields are provided', async () => {
     // Given
@@ -190,6 +196,7 @@ describe('revocationDateSchema', () => {
   })
 
   const doValidate = async (form: Form) => {
-    return revocationDateSchema.safeParse(form)
+    const schema = await revocationDateSchemaFactory()(request)
+    return schema.safeParse(form)
   }
 })

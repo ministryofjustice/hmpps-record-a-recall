@@ -12,7 +12,7 @@ const BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED = ''
 const REAL_DATE_ERROR = `The date must be a real date`
 const AFTER_SENTENCE_DATE_ERROR = 'Revocation date must be after the earliest sentence date'
 
-export const revocationDateSchema = (req: Request) => {
+export const revocationDateSchemaFactory = () => async (req: Request) => {
   const { journeyId } = req.params
   const journey = req.session.createRecallJourneys[journeyId]
   return createSchema({
@@ -80,4 +80,4 @@ export const revocationDateSchema = (req: Request) => {
     })
 }
 
-export type RevocationDateForm = z.infer<ReturnType<typeof revocationDateSchema>>
+export type RevocationDateForm = z.infer<Awaited<ReturnType<ReturnType<typeof revocationDateSchemaFactory>>>>
