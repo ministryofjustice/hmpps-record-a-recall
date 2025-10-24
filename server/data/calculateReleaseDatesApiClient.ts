@@ -5,6 +5,8 @@ import logger from '../../logger'
 import {
   CalculationBreakdown,
   LatestCalculation,
+  RecordARecallDecisionResult,
+  RecordARecallRequest,
   RecordARecallValidationResult,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -15,12 +17,26 @@ export default class CalculateReleaseDatesApiClient extends RestClient {
   }
 
   async validateForRecordARecall(prisonerNumber: string, username: string): Promise<RecordARecallValidationResult> {
-    return this.post(
+    return this.get(
       {
         path: `/record-a-recall/${prisonerNumber}/validate`,
       },
       asSystem(username),
     ) as Promise<RecordARecallValidationResult>
+  }
+
+  async makeDecisionForRecordARecall(
+    prisonerNumber: string,
+    recordARecallRequest: RecordARecallRequest,
+    username: string,
+  ): Promise<RecordARecallDecisionResult> {
+    return this.post(
+      {
+        path: `/record-a-recall/${prisonerNumber}/decision`,
+        data: recordARecallRequest,
+      },
+      asSystem(username),
+    ) as Promise<RecordARecallDecisionResult>
   }
 
   async getLatestCalculation(nomsId: string): Promise<LatestCalculation> {
