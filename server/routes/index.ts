@@ -12,6 +12,7 @@ import { revocationDateSchemaFactory } from './common/revocation-date/revocation
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import HomeController from './home/homeController'
+import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 
 export default function routes({
   prisonerService,
@@ -64,6 +65,13 @@ export default function routes({
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
     validateToSchema: revocationDateSchemaFactory(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  // create - manual journey
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/start',
+    controller: new ManualJourneyInterceptController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
