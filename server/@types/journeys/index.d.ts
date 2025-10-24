@@ -1,9 +1,12 @@
+import { RecordARecallValidationResult } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+
 export interface CreateRecallJourney {
   id: string
   lastTouched: string
   nomsId: string
   isCheckingAnswers: boolean
   revocationDate?: DateParts
+  crdsValidationResult: RecordARecallValidationResult
 }
 
 export interface DateParts {

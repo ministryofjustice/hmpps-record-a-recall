@@ -1,13 +1,20 @@
 import { dataAccess } from '../data'
 import AuditService from './auditService'
+import CalculateReleaseDatesService from './calculateReleaseDatesService'
 import FeComponentsService from './feComponentsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import UserService from './userService'
 
 export const services = () => {
-  const { applicationInfo, hmppsAuditClient, prisonerSearchApiClient, prisonApiClient, feComponentsClient } =
-    dataAccess()
+  const {
+    applicationInfo,
+    hmppsAuditClient,
+    prisonerSearchApiClient,
+    prisonApiClient,
+    feComponentsClient,
+    calculateReleaseDatesApiClient,
+  } = dataAccess()
 
   const prisonerService = new PrisonerService(prisonApiClient)
   return {
@@ -17,6 +24,7 @@ export const services = () => {
     prisonerService,
     userService: new UserService(prisonerService),
     feComponentsService: new FeComponentsService(feComponentsClient),
+    calculateReleaseDatesService: new CalculateReleaseDatesService(calculateReleaseDatesApiClient),
   }
 }
 

@@ -18,4 +18,8 @@ export default class CreateRecallUrls {
   static confirmCancel = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`
   }
+
+  static criticalValidationIntercept = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`
+  }
 }

@@ -13,7 +13,7 @@ import { revocationDateSchema } from './common/revocation-date/revocationDateSch
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 
-export default function routes({ auditService, prisonerService }: Services): Router {
+export default function routes({ auditService, prisonerService, calculateReleaseDatesService }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
   const router = Router()
@@ -47,7 +47,7 @@ export default function routes({ auditService, prisonerService }: Services): Rou
 
   route({
     path: '/person/:nomsId/recall/create/start',
-    controller: new StartCreateRecallJourneyController(),
+    controller: new StartCreateRecallJourneyController(calculateReleaseDatesService),
   })
 
   route({
