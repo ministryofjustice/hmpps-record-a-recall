@@ -12,6 +12,7 @@ import StartCreateRecallJourneyController from './create/start/startCreateRecall
 import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
+import ManualJourneyInterceptController from './manual/start/manualJourneyInterceptController'
 
 export default function routes({ auditService, prisonerService, calculateReleaseDatesService }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
@@ -53,6 +54,13 @@ export default function routes({ auditService, prisonerService, calculateRelease
   route({
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
+    validateToSchema: revocationDateSchemaFactory(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/start',
+    controller: new ManualJourneyInterceptController(),
     validateToSchema: revocationDateSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
