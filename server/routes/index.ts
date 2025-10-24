@@ -1,7 +1,6 @@
 import type { RequestHandler } from 'express'
 import { Router } from 'express'
 import { z } from 'zod'
-
 import type { Services } from '../services'
 import { Page } from '../services/auditService'
 import { Controller } from './controller'
@@ -12,6 +11,9 @@ import StartCreateRecallJourneyController from './create/start/startCreateRecall
 import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
+import CreateRecallReturnToCustodyDateController from './create/return-to-custody-date/createRecallReturnToCustodyDateController'
+import CreateRecallDecisionController from './create/decision/createRecallDecisionController'
+import { returnToCustodyDateSchema } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 
 export default function routes({ auditService, prisonerService, calculateReleaseDatesService }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
@@ -54,6 +56,19 @@ export default function routes({ auditService, prisonerService, calculateRelease
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
     validateToSchema: revocationDateSchemaFactory(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/return-to-custody-date',
+    controller: new CreateRecallReturnToCustodyDateController(),
+    validateToSchema: returnToCustodyDateSchema,
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/recall-decision',
+    controller: new CreateRecallDecisionController(calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

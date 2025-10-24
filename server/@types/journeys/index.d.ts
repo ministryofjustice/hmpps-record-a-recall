@@ -5,8 +5,10 @@ export interface CreateRecallJourney {
   lastTouched: string
   nomsId: string
   isCheckingAnswers: boolean
-  revocationDate?: DateParts
   crdsValidationResult: RecordARecallValidationResult
+  revocationDate?: DateParts
+  inCustodyAtRecall?: boolean
+  returnToCustodyDate?: DateParts
 }
 
 export interface DateParts {

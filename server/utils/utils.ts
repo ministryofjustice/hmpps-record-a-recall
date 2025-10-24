@@ -1,3 +1,6 @@
+import { parse } from 'date-fns'
+import { DateParts } from '../@types/journeys'
+
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
 
@@ -20,4 +23,12 @@ export const initialiseName = (fullName?: string): string | null => {
 
   const array = fullName.split(' ')
   return `${array[0][0]}. ${array.reverse()[0]}`
+}
+
+export const datePartsToDate = (dateParts: DateParts): Date => {
+  return parse(`${dateParts.year}-${dateParts.month}-${dateParts.day}`, 'yyyy-MM-dd', new Date())
+}
+
+export const dateToIsoString = (dateParts: Date): string => {
+  return dateParts.toISOString().split('T')[0]
 }
