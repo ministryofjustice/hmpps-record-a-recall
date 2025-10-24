@@ -5,6 +5,7 @@ import FeComponentsService from './feComponentsService'
 import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import UserService from './userService'
+import CourtCasesReleaseDatesService from './courtCasesReleaseDatesService'
 
 export const services = () => {
   const {
@@ -14,6 +15,7 @@ export const services = () => {
     prisonApiClient,
     feComponentsClient,
     calculateReleaseDatesApiClient,
+    courtCasesReleaseDatesApiClient,
   } = dataAccess()
 
   const prisonerService = new PrisonerService(prisonApiClient)
@@ -25,6 +27,7 @@ export const services = () => {
     userService: new UserService(prisonerService),
     feComponentsService: new FeComponentsService(feComponentsClient),
     calculateReleaseDatesService: new CalculateReleaseDatesService(calculateReleaseDatesApiClient),
+    courtCasesReleaseDatesService: new CourtCasesReleaseDatesService(courtCasesReleaseDatesApiClient),
   }
 }
 

@@ -2,7 +2,6 @@ import type { RequestHandler } from 'express'
 import { Router } from 'express'
 import { z } from 'zod'
 import type { Services } from '../services'
-import { Page } from '../services/auditService'
 import { Controller } from './controller'
 import { SchemaFactory, validate } from '../middleware/validationMiddleware'
 import CreateRecallRevocationDateController from './create/revocation-date/createRecallRevocationDateController'
@@ -14,14 +13,19 @@ import asyncMiddleware from '../middleware/asyncMiddleware'
 import CreateRecallReturnToCustodyDateController from './create/return-to-custody-date/createRecallReturnToCustodyDateController'
 import CreateRecallDecisionController from './create/decision/createRecallDecisionController'
 import { returnToCustodyDateSchema } from './common/return-to-custody-date/returnToCustodyDateSchemas'
+import HomeController from './home/homeController'
+import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 
-export default function routes({ auditService, prisonerService, calculateReleaseDatesService }: Services): Router {
+export default function routes({
+  prisonerService,
+  calculateReleaseDatesService,
+  courtCasesReleaseDatesService,
+}: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
   const router = Router()
 
   router.get('/', async (req, res) => {
-    await auditService.logPageView(Page.EXAMPLE_PAGE, { who: res.locals.user.username, correlationId: req.id })
     return res.render('pages/index')
   })
   router.get('/api/person/:nomsId/image', apiRoutes.personImage)
@@ -47,6 +51,13 @@ export default function routes({ auditService, prisonerService, calculateRelease
     }
   }
 
+  // dashboard
+  route({
+    path: '/person/:nomsId',
+    controller: new HomeController(courtCasesReleaseDatesService),
+  })
+
+  // create recall
   route({
     path: '/person/:nomsId/recall/create/start',
     controller: new StartCreateRecallJourneyController(calculateReleaseDatesService),
@@ -69,6 +80,14 @@ export default function routes({ auditService, prisonerService, calculateRelease
   route({
     path: '/person/:nomsId/recall/create/:journeyId/recall-decision',
     controller: new CreateRecallDecisionController(calculateReleaseDatesService),
+    additionalMiddleware: [ensureInCreateRecallJourney]
+  })
+
+
+  // create - manual journey
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/start',
+    controller: new ManualJourneyInterceptController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

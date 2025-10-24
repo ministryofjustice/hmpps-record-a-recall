@@ -8,23 +8,17 @@
 {% set contentColumnWidth = "full" %}  
 
 {% block pageContent %}
-  <form method="post" action="">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-
     {%- call interruptionCard({
       heading: title,
       primaryAction: {
         text: "Continue",
-        element: 'button',
-        attributes: { type: "submit", "data-prevent-double-click": true, id: "submit" },
-        classes: "govuk-button--inverse"
+        attributes: { id: "continue-manual", "data-qa": "continue-manual-action" },
+        href: continueUrl
       },
       secondaryAction: {
         text: "Cancel recall",
-        element: 'a',
-        href: cancelUrl,
-        attributes: { "data-prevent-double-click": true, role: "button" },
-        classes: "govuk-button--secondary govuk-button--inverse govuk-!-margin-left-1"
+        attributes: { id: "cancel-manual", "data-qa": "cancel-manual-action" },
+        href: cancelUrl
       }
     }) -%}
       <p class="govuk-body">This service cannot determine which sentences are eligible for recall.</p>
@@ -34,5 +28,4 @@
         To do this, you must select all cases that include sentences that were active when the person's licence was revoked.
       </p>
     {%- endcall %}
-  </form>
 {% endblock %}
