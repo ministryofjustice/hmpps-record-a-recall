@@ -35,7 +35,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
       {% for card in recallCards %}
-        {{ recallCard(card) }}
+        {{ recallCard(card, serviceDefinitions) }}
       {% endfor %}
     </div>
   </div>

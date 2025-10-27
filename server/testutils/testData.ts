@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import { ApiRecall } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
 
 export default class TestData {
   static prisoner = ({
@@ -52,4 +53,40 @@ export default class TestData {
       sentences,
       courtCaseIds,
     }) as ApiRecall
+
+  static serviceDefinitions = ({
+    services = {
+      overview: {
+        href: 'https://cccard/prisoner/A1234BC/overview',
+        text: 'Overview',
+        thingsToDo: {
+          count: 0,
+        },
+      },
+      recalls: {
+        href: 'https://recalls/person/A1234BC',
+        text: 'Recalls',
+        thingsToDo: {
+          count: 0,
+        },
+      },
+      releaseDates: {
+        href: 'https://crds?prisonId=A1234BC',
+        text: 'Release dates and calculations',
+        thingsToDo: {
+          count: 0,
+        },
+      },
+      adjustments: {
+        href: 'https://adjustments?prisonId=A1234BC',
+        text: 'Adjustments',
+        thingsToDo: {
+          count: 0,
+        },
+      },
+    },
+  }: Partial<CcrdServiceDefinitions> = {}): CcrdServiceDefinitions =>
+    ({
+      services,
+    }) as CcrdServiceDefinitions
 }

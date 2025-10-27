@@ -7,6 +7,7 @@ import PrisonRegisterService from '../../services/prisonRegisterService'
 import { ApiRecall } from '../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import RecallCardModel from '../../views/partials/components/recall-card/RecallCardModel'
 import { Prison } from '../../@types/prisonRegisterApi/prisonRegisterTypes'
+import { getRecallType } from '../../@types/recallTypes'
 
 export default class HomeController implements Controller {
   constructor(
@@ -44,6 +45,9 @@ export default class HomeController implements Controller {
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: recall.source === 'DPS' && recall.recallUuid === latestRecallUuid,
       canDelete: recall.source === 'DPS',
+      recallTypeDescription: getRecallType(recall.recallType).description,
+      revocationDate: recall.revocationDate,
+      returnToCustodyDate: recall.returnToCustodyDate,
     }
   }
 }

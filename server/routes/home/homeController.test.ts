@@ -35,31 +35,7 @@ beforeEach(() => {
     userSupplier: () => user,
   })
   prisonerSearchService.getPrisonerDetails.mockResolvedValue(TestData.prisoner({ prisonerNumber: nomsId }))
-  courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue({
-    services: {
-      overview: {
-        href: 'https://cccard/prisoner/G2038UU/overview',
-        text: 'Overview',
-        thingsToDo: {
-          count: 0,
-        },
-      },
-      recalls: {
-        href: 'https://recalls/person/G2038UU',
-        text: 'Recalls',
-        thingsToDo: {
-          count: 0,
-        },
-      },
-      releaseDates: {
-        href: 'https://crds?prisonId=G2038UU',
-        text: 'Release dates and calculations',
-        thingsToDo: {
-          count: 0,
-        },
-      },
-    },
-  })
+  courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
   prisonRegisterService.getPrisonNames.mockResolvedValue([
     { prisonId: 'BXI', prisonName: 'Brixton (HMP)' } as unknown as Prison,
     { prisonId: 'KMI', prisonName: 'Kirkham (HMP)' } as unknown as Prison,

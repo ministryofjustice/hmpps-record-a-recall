@@ -5,4 +5,7 @@ export default interface RecallCardModel {
   createdAtLocationName?: string
   canEdit: boolean
   canDelete: boolean
+  recallTypeDescription: string
+  revocationDate?: string
+  returnToCustodyDate?: string
 }
