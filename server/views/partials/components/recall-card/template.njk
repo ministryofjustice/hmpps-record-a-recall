@@ -1,0 +1,132 @@
+
+{% set isNomisRecall = model.source === 'NOMIS' %}
+<div class="govuk-summary-card govuk-!-margin-bottom-6">
+  <div class="govuk-summary-card__title-wrapper recall-card">
+    <h2 class="govuk-summary-card__title" data-qa="recall-{{ model.recallUuid }}-card-title">
+      Recorded on {{ model.createdAtTimestamp | formatDate }}{% if model.createdAtLocationName %} at {{ model.createdAtLocationName }}{% endif %}
+    </h2>
+
+    <ul class="govuk-summary-card__actions">
+      {% if isNomisRecall %}
+        <li class="govuk-summary-card__action">
+          <span class="moj-badge moj-badge--grey govuk-!-margin-bottom-1 govuk-!-margin-left-1" data-qa="recall-{{ model.recallUuid }}-nomis-badge">NOMIS</span>
+        </li>
+      {% else %}
+        {% if model.canEdit %}
+          <li class="govuk-summary-card__action">
+              <a class="govuk-link" data-qa="recall-{{ model.recallUuid }}-edit-link" href="#edit">Edit<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
+          </li>
+        {% endif %}
+        {% if model.canDelete %}
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link govuk-link--destructive" data-qa="recall-{{ model.recallUuid }}-delete-link"  href="#delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
+          </li>
+        {% endif %}
+      {% endif %}
+    </ul>
+  </div>
+
+{#  <div class="govuk-summary-card__content govuk-!-margin-bottom-0" id="recall-summary">#}
+{#    <div class="govuk-grid-row govuk-!-margin-bottom-2">#}
+{#      <div class="govuk-grid-column-one-half">#}
+{#        {{ cardInfo('Recall type', recall.recallType.description) }}#}
+{#        {% if recall.source === 'NOMIS' %}#}
+{#          {{ cardInfo('Revocation date', 'Not entered') }}#}
+{#        {% else %}#}
+{#          {{ cardInfo('Revocation date', recall.revocationDate | date) }}#}
+{#        {% endif %}#}
+{#      </div>#}
+
+{#      <div class="govuk-grid-column-one-half">#}
+{#        {{ cardInfo('Arrest date', recall.returnToCustodyDate | date if recall.returnToCustodyDate else 'In prison at recall') }}#}
+
+
+{#        {% if recall.source !== 'NOMIS' %}#}
+{#          {{ cardInfo('UAL (unlawfully at large)', recall.ualString if recall.ualString else 'None recorded') }}#}
+{#        {% elseif recall.source === 'NOMIS' %}#}
+{#          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>#}
+{#          <p class="govuk-body govuk-!-margin-bottom-2">#}
+{#            <a class="govuk-link" href="{{ urls.adjustments }}" target="_blank" rel="noopener noreferrer">#}
+{#              View UAL details#}
+{#            </a>#}
+{#          </p>#}
+{#        {% endif %}#}
+{#      </div>#}
+{#    </div>#}
+
+{#    {% if recall.sentences and recall.sentences.length %}#}
+{#      <div class="govuk-grid-row govuk-!-margin-top-4">#}
+{#        <div class="govuk-grid-column-full">#}
+{#          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Court cases</h3>#}
+{#          <details class="govuk-details" data-module="govuk-details">#}
+{#            <summary class="govuk-details__summary">#}
+{#            <span class="govuk-details__summary-text">#}
+{#              Court cases ({{ recall.sentences.length }})#}
+{#            </span>#}
+{#            </summary>#}
+{#            <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">#}
+{#              {% set previousCourtCase = null %}#}
+{#              {% for sentence in recall.sentences %}#}
+{#                {% set currentCourtCase = (sentence.courtCaseReference or '') + '|' + (sentence.courtName or '') + '|' + (sentence.courtCaseDate or '') %}#}
+
+{#                #}{# Display court case header if it's different from the previous one #}
+{#                {% if currentCourtCase != previousCourtCase %}#}
+{#                  {% if sentence.courtCaseReference or sentence.courtName or sentence.courtCaseDate %}#}
+{#                    <h3 class="govuk-heading-m govuk-!-margin-top-6 govuk-!-margin-bottom-3">#}
+{#                      {% if sentence.courtCaseReference %}#}
+{#                        {{ sentence.courtCaseReference }}{% if sentence.courtName %} at {{ sentence.courtName }}{% endif %}{% if sentence.courtCaseDate %} on {{ sentence.courtCaseDate | formatDate }}{% endif %}#}
+{#                        {% elif sentence.courtName %}#}
+{#                        Case held at {{ sentence.courtName }}{% if sentence.courtCaseDate %} on {{ sentence.courtCaseDate | formatDate }}{% endif %}#}
+{#                        {% elif sentence.courtCaseDate %}#}
+{#                        Case on {{ sentence.courtCaseDate | formatDate }}#}
+{#                      {% endif %}#}
+{#                    </h3>#}
+{#                  {% endif %}#}
+{#                  {% set previousCourtCase = currentCourtCase %}#}
+{#                {% endif %}#}
+
+{#                <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4">#}
+
+{#                  {% set offenceStartDate = sentence.offenceStartDate | formatDate if sentence.offenceStartDate else 'Not entered' %}#}
+{#                  {% set offenceEndDate = sentence.offenceEndDate | formatDate if sentence.offenceEndDate else null %}#}
+{#                  {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'Not entered' %}#}
+{#                  #}{# Determine numeric values for count and line number #}
+{#                  {% if sentence.countNumber and sentence.countNumber != '-1' %}#}
+{#                    {% set countNumberWithText = sentence.countNumber %}#}
+{#                    {% set lineNumberWithText = null %}#}
+{#                  {% elseif not sentence.countNumber %}#}
+{#                    {% set countNumberWithText = null %}#}
+{#                    {% set lineNumberWithText = sentence.lineNumber %}#}
+{#                  {% else %}#}
+{#                    #}{# countNumber is '-1' → show neither #}
+{#                    {% set countNumberWithText = null %}#}
+{#                    {% set lineNumberWithText = null %}#}
+{#                  {% endif %}#}
+
+
+{#                  {{ offenceCard({#}
+{#                    countNumber: countNumberWithText,#}
+{#                    offenceCode: sentence.offenceCode | default('Not entered'),#}
+{#                    offenceName: sentence.offenceDescription or 'Offence description not available',#}
+{#                    offenceStartDate: offenceStartDate,#}
+{#                    offenceEndDate: offenceEndDate,#}
+{#                    hideOutcome: true,#}
+{#                    outcome: sentence.outcome | default('Not entered'),#}
+{#                    lineNumber: lineNumberWithText,#}
+{#                    periodLengths: (sentence.periodLengths | default([])) | periodLengthsToSentenceLengths,#}
+{#                    sentenceServeType: sentence.sentenceServeType | default(null),#}
+{#                    sentenceType: sentence.sentenceType.description | default(sentence.sentenceType) | default('Not entered'),#}
+{#                    sentenceDate: sentenceDate,#}
+{#                    isSentenced: true,#}
+{#                    detailsClasses: 'govuk-!-padding-4'#}
+{#                  }) }}#}
+
+{#                </div>#}
+{#              {% endfor %}#}
+{#            </div>#}
+{#          </details>#}
+{#        </div>#}
+{#      </div>#}
+{#    {% endif %}#}
+{#  </div>#}
+</div>

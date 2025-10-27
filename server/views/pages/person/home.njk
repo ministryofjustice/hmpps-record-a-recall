@@ -1,12 +1,9 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
-{% from "govuk/components/details/macro.njk" import govukDetails %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "govuk/components/panel/macro.njk" import govukPanel %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
-{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "partials/components/recall-card/macro.njk" import recallCard %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
@@ -17,12 +14,14 @@
 {% endblock %}
 
 {% block content %}
+{% set hasRecalls = recallCards and recallCards.length %}
 <div class="govuk-grid-row govuk-!-margin-top-6">
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">Recalls</h1>
     {{ thingsToDo(serviceDefinitions, 'recalls') }}
-
-      <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
+      {% if not hasRecalls %}
+        <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
+      {% endif %}
 
       {{ govukButton({
         classes: "govuk-button--secondary",
@@ -33,4 +32,11 @@
       }) }}
   </div>
 </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
+      {% for card in recallCards %}
+        {{ recallCard(card) }}
+      {% endfor %}
+    </div>
+  </div>
 {% endblock %}
