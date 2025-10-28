@@ -22,7 +22,6 @@ export default class SelectCasesController implements Controller {
     const cases = journey.recallableCourtCases
     const currentCaseIndex = Number(caseIndex) || 0
 
-    // pick the current case to display
     const currentCase = cases[currentCaseIndex]
 
     return res.render('pages/recall/select-court-cases', {
@@ -34,5 +33,5 @@ export default class SelectCasesController implements Controller {
     })
   }
 
-  // TODO POST
+  // TODO POST method to be implemented
 }
