@@ -1,5 +1,5 @@
 import { RecordARecallValidationResult } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import {RecallableCourtCase, RecallableCourtCasesResponse} from "../remandAndSentencingApi/remandAndSentencingTypes";
+import { RecallableCourtCase } from '../remandAndSentencingApi/remandAndSentencingTypes'
 
 export interface CreateRecallJourney {
   id: string

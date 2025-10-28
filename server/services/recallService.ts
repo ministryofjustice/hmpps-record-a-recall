@@ -4,6 +4,7 @@ import {
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
+import { SentenceAndOffence } from '../@types/recallTypes'
 
 export default class RecallService {
   constructor(
@@ -14,38 +15,36 @@ export default class RecallService {
   public async getRecallableCourtCases(prisonerId: string): Promise<
     Array<
       RecallableCourtCase & {
-        recallableSentences: RecallableCourtCaseSentence[]
-        nonRecallableSentences: RecallableCourtCaseSentence[]
+        recallableSentences: SentenceAndOffence[]
+        nonRecallableSentences: SentenceAndOffence[]
       }
     >
   > {
-    // offenceMap = await manageOffencesService.getOffenceMap(uniqueOffenceCodes, userToken)
     const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
 
-    const offenceCodes = response.cases
-      .flatMap(c => (c.sentences ?? []).map(s => s.offenceCode))
-      .filter(code => code && code !== '')
+    const offenceCodes = [
+      ...new Set(
+        response.cases
+          .flatMap(c => (c.sentences ?? []).map(s => s.offenceCode))
+          .filter((code): code is string => !!code && code !== ''),
+      ),
+    ]
 
     const offences = await this.manageOffencesApiClient.getOffencesByCodes(offenceCodes)
+    const offenceMap = new Map(offences.map(o => [o.code, o.description]))
 
-    offences.forEach(offence => offence.description)
+    const withDescription = (s: RecallableCourtCaseSentence): SentenceAndOffence => ({
+      ...s,
+      offenceDescription: s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null,
+    })
 
-    const cases = response.cases.map(c => ({
-      ...c,
-      recallableSentences: (c.sentences ?? [])
-        .filter(s => s.isRecallable)
-        .map(s => ({
-          ...s,
-          offenceDescription: offences.find(o => o.code === s.offenceCode)?.description || null,
-        })),
-      nonRecallableSentences: (c.sentences ?? [])
-        .filter(s => !s.isRecallable)
-        .map(s => ({
-          ...s,
-          offenceDescription: offences.find(o => o.code === s.offenceCode)?.description || null,
-        })),
-    }))
-
-    return cases
+    return response.cases.map(courtCase => {
+      const sentences = courtCase.sentences ?? []
+      return {
+        ...courtCase,
+        recallableSentences: sentences.filter(s => s.isRecallable).map(withDescription),
+        nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescription),
+      }
+    })
   }
 }

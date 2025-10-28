@@ -1,11 +1,8 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
 import { PersonJourneyParams } from '../../../../@types/journeys'
-import GlobalRecallUrls from '../../../globalRecallUrls'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
-import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
-import RemandAndSentencingApiClient from '../../../../data/remandAndSentencingApiClient'
 import RecallService from '../../../../services/recallService'
 
 export default class SelectCasesController implements Controller {

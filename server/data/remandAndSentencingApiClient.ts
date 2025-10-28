@@ -8,7 +8,6 @@ import {
   UpdateSentenceTypesResponse,
   SentenceType,
   RecallableCourtCasesResponseAugmented,
-  RecallableCourtCasesResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
@@ -65,13 +64,13 @@ export default class RemandAndSentencingApiClient extends RestClient {
     )
   }
 
-  getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCasesResponse> {
+  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCasesResponseAugmented> {
     return this.get(
       {
         path: `/court-case/${prisonerId}/recallable-court-cases`,
       },
       asSystem(),
-    ) as Promise<RecallableCourtCasesResponse>
+    ) as Promise<RecallableCourtCasesResponseAugmented>
   }
 
   async updateSentenceTypes(
