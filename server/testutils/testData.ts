@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
 import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
-import { ApiRecall } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  ApiRecall,
+  RecallableCourtCase,
+  RecallableCourtCaseSentence,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
 
 export default class TestData {
@@ -89,4 +93,47 @@ export default class TestData {
     ({
       services,
     }) as CcrdServiceDefinitions
+
+  static recallableSentence(overrides: Partial<RecallableCourtCaseSentence & { offenceDescription?: string }> = {}) {
+    return {
+      isRecallable: true,
+      sentenceTypeDescription: 'Standard Determinate',
+      offenceCode: 'OFF1',
+      offenceDescription: 'Offence 1',
+      ...overrides,
+    } as RecallableCourtCaseSentence
+  }
+
+  static nonRecallableSentence(overrides: Partial<RecallableCourtCaseSentence & { offenceDescription?: string }> = {}) {
+    return {
+      isRecallable: false,
+      sentenceTypeDescription: 'Community Order',
+      offenceCode: 'OFF2',
+      offenceDescription: 'Offence 2',
+      ...overrides,
+    } as RecallableCourtCaseSentence
+  }
+
+  static recallableCourtCase(
+    recallableSentences: RecallableCourtCaseSentence[],
+    nonRecallableSentences: RecallableCourtCaseSentence[],
+    overrides: Partial<RecallableCourtCase> = {},
+  ): RecallableCourtCase & {
+    recallableSentences: RecallableCourtCaseSentence[]
+    nonRecallableSentences: RecallableCourtCaseSentence[]
+  } {
+    return {
+      courtCaseUuid: 'uuid-1',
+      reference: 'REF-1',
+      courtCode: 'ABC',
+      status: 'ACTIVE',
+      isSentenced: true,
+      date: '2025-01-01',
+      firstDayInCustody: '2024-12-15',
+      sentences: [...recallableSentences, ...nonRecallableSentences],
+      recallableSentences,
+      nonRecallableSentences,
+      ...overrides,
+    }
+  }
 }

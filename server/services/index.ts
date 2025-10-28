@@ -8,6 +8,7 @@ import UserService from './userService'
 import CourtCasesReleaseDatesService from './courtCasesReleaseDatesService'
 import RemandAndSentencingService from './remandAndSentencingService'
 import PrisonRegisterService from './prisonRegisterService'
+import RecallService from './recallService'
 
 export const services = () => {
   const {
@@ -20,6 +21,7 @@ export const services = () => {
     courtCasesReleaseDatesApiClient,
     remandAndSentencingApiClient,
     prisonRegisterApiClient,
+    manageOffencesApiClient,
   } = dataAccess()
 
   const prisonerService = new PrisonerService(prisonApiClient)
@@ -34,6 +36,7 @@ export const services = () => {
     courtCasesReleaseDatesService: new CourtCasesReleaseDatesService(courtCasesReleaseDatesApiClient),
     remandAndSentencingService: new RemandAndSentencingService(remandAndSentencingApiClient),
     prisonRegisterService: new PrisonRegisterService(prisonRegisterApiClient),
+    recallService: new RecallService(remandAndSentencingApiClient, manageOffencesApiClient),
   }
 }
 
