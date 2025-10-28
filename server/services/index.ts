@@ -6,6 +6,8 @@ import PrisonerSearchService from './prisonerSearchService'
 import PrisonerService from './prisonerService'
 import UserService from './userService'
 import CourtCasesReleaseDatesService from './courtCasesReleaseDatesService'
+import RemandAndSentencingService from './remandAndSentencingService'
+import PrisonRegisterService from './prisonRegisterService'
 import RecallService from './recallService'
 
 export const services = () => {
@@ -18,6 +20,7 @@ export const services = () => {
     calculateReleaseDatesApiClient,
     courtCasesReleaseDatesApiClient,
     remandAndSentencingApiClient,
+    prisonRegisterApiClient,
     manageOffencesApiClient,
   } = dataAccess()
 
@@ -31,7 +34,9 @@ export const services = () => {
     feComponentsService: new FeComponentsService(feComponentsClient),
     calculateReleaseDatesService: new CalculateReleaseDatesService(calculateReleaseDatesApiClient),
     courtCasesReleaseDatesService: new CourtCasesReleaseDatesService(courtCasesReleaseDatesApiClient),
-    recallService: new RecallService(remandAndSentencingApiClient),
+    remandAndSentencingService: new RemandAndSentencingService(remandAndSentencingApiClient),
+    prisonRegisterService: new PrisonRegisterService(prisonRegisterApiClient),
+    recallService: new RecallService(remandAndSentencingApiClient, manageOffencesApiClient),
   }
 }
 

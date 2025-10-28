@@ -19,6 +19,8 @@ export default function routes({
   prisonerService,
   calculateReleaseDatesService,
   courtCasesReleaseDatesService,
+  remandAndSentencingService,
+  prisonRegisterService,
   recallService,
 }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
@@ -54,7 +56,7 @@ export default function routes({
   // dashboard
   route({
     path: '/person/:nomsId',
-    controller: new HomeController(courtCasesReleaseDatesService),
+    controller: new HomeController(courtCasesReleaseDatesService, remandAndSentencingService, prisonRegisterService),
   })
 
   // create recall

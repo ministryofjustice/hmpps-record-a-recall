@@ -7,7 +7,11 @@ import * as cheerio from 'cheerio'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import RecallService from '../../../../services/recallService'
-import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  RecallableCourtCase,
+  RecallableCourtCaseSentence,
+} from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import TestData from '../../../../testutils/testData'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -15,7 +19,7 @@ const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
 jest.mock('../../../../services/recallService')
-const recallService = new RecallService(null) as jest.Mocked<RecallService>
+const recallService = new RecallService(null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
   existingJourney = {
@@ -47,57 +51,44 @@ describe('GET', () => {
   const url = `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`
 
   it('renders the first recallable court case (index defaults to 0) and shows recallable/non-recallable sections', async () => {
-    // Arrange: set service return to include split sentences
-    const s1 = { isRecallable: true, sentenceTypeDescription: 'Standard Determinate' } as any
-    const s2 = { isRecallable: false, sentenceTypeDescription: 'Community Order' } as any
-    const s3 = { isRecallable: true, sentenceTypeDescription: 'Standard Determinate' } as any
+    // Given
+    const s1 = TestData.recallableSentence({ offenceCode: 'OFF1', offenceDescription: 'Offence 1' })
+    const s2 = TestData.nonRecallableSentence({ offenceCode: 'OFF2', offenceDescription: 'Offence 2' })
+    const s3 = TestData.recallableSentence({ offenceCode: 'OFF3', offenceDescription: 'Offence 3' })
 
     recallService.getRecallableCourtCases.mockResolvedValue([
-      {
+      TestData.recallableCourtCase([s1], [s2], {
         courtCaseUuid: 'uuid-1',
         reference: 'REF-1',
-        courtCode: 'ABC',
-        status: 'ACTIVE',
-        isSentenced: true,
-        date: '2025-01-01',
-        firstDayInCustody: '2024-12-15',
-        sentences: [s1, s2],
-        recallableSentences: [s1],
-        nonRecallableSentences: [s2],
-      },
-      {
+      }),
+      TestData.recallableCourtCase([s3], [], {
         courtCaseUuid: 'uuid-2',
         reference: 'REF-2',
-        courtCode: 'DEF',
-        status: 'ACTIVE',
-        isSentenced: true,
-        date: '2025-02-10',
-        sentences: [s3],
-        recallableSentences: [s3],
-        nonRecallableSentences: [],
-      },
+      }),
     ] as Array<
       RecallableCourtCase & {
-        recallableSentences: any[]
-        nonRecallableSentences: any[]
+        recallableSentences: RecallableCourtCaseSentence[]
+        nonRecallableSentences: RecallableCourtCaseSentence[]
       }
     >)
 
-    // Act
+    // When
     const res = await request(app).get(url).expect(200)
-    console.log(res.text)
+
+    // Then
     const $ = cheerio.load(res.text)
 
-    // Assert: service call
     expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId)
-
-    // Page framing
     expect(res.text).toContain('Select all cases that had an active sentence')
     expect(res.text).toContain('Court case 1 of 2')
-
-    // // Recallable section heading from the NJK
     expect(res.text).toContain('View offences which are not eligible for recall (1)')
 
-    // todo
+    const recallableText = $('[data-qa="recallable-sentences"]').text()
+    expect(recallableText).toContain('OFF1')
+    expect(recallableText).toContain('Offence 1')
+
+    const nonRecallableText = $('[data-qa="non-recallable-sentences"]').text()
+    expect(nonRecallableText).toContain('OFF2')
+    expect(nonRecallableText).toContain('Offence 2')
   })
 })

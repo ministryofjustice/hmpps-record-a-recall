@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
@@ -25,6 +27,8 @@ export const initialiseName = (fullName?: string): string | null => {
   return `${array[0][0]}. ${array.reverse()[0]}`
 }
 
+export const formatDate = (date: string, format = 'DD MMM YYYY') => dayjs(date).format(format)
+
 const periodLengthTypeHeadings = {
   SENTENCE_LENGTH: 'Sentence length',
   CUSTODIAL_TERM: 'Custodial term',
@@ -32,6 +36,7 @@ const periodLengthTypeHeadings = {
   TARIFF_LENGTH: 'Tariff length',
   TERM_LENGTH: 'Term length',
   OVERALL_SENTENCE_LENGTH: 'Overall sentence length',
+  UNSUPPORTED: 'Unknown',
 }
 
 export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): SentenceLength[] => {
