@@ -13,11 +13,13 @@ import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
+import SelectCasesController from './create/manual/select-cases/selectCasesController'
 
 export default function routes({
   prisonerService,
   calculateReleaseDatesService,
   courtCasesReleaseDatesService,
+  recallService,
 }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
@@ -72,6 +74,18 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
     controller: new ManualJourneyInterceptController(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
+    controller: new SelectCasesController(recallService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases/:caseIndex',
+    controller: new SelectCasesController(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

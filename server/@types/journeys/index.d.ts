@@ -1,4 +1,5 @@
 import { RecordARecallValidationResult } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {RecallableCourtCase, RecallableCourtCasesResponse} from "../remandAndSentencingApi/remandAndSentencingTypes";
 
 export interface CreateRecallJourney {
   id: string
@@ -7,6 +8,7 @@ export interface CreateRecallJourney {
   isCheckingAnswers: boolean
   revocationDate?: DateParts
   crdsValidationResult: RecordARecallValidationResult
+  recallableCourtCases?: RecallableCourtCase[]
 }
 
 export interface DateParts {

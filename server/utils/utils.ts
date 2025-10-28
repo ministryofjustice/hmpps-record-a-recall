@@ -1,3 +1,6 @@
+import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
+import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
 
@@ -20,4 +23,38 @@ export const initialiseName = (fullName?: string): string | null => {
 
   const array = fullName.split(' ')
   return `${array[0][0]}. ${array.reverse()[0]}`
+}
+
+const periodLengthTypeHeadings = {
+  SENTENCE_LENGTH: 'Sentence length',
+  CUSTODIAL_TERM: 'Custodial term',
+  LICENCE_PERIOD: 'Licence period',
+  TARIFF_LENGTH: 'Tariff length',
+  TERM_LENGTH: 'Term length',
+  OVERALL_SENTENCE_LENGTH: 'Overall sentence length',
+}
+
+export const periodLengthsToSentenceLengths = (periodLengths: PeriodLength[]): SentenceLength[] => {
+  if (periodLengths) {
+    return periodLengths.map(periodLength => periodLengthToSentenceLength(periodLength))
+  }
+  return null
+}
+
+export const periodLengthToSentenceLength = (periodLength: PeriodLength): SentenceLength => {
+  if (periodLength) {
+    return {
+      ...(typeof periodLength.days === 'number' ? { days: String(periodLength.days) } : {}),
+      ...(typeof periodLength.weeks === 'number' ? { weeks: String(periodLength.weeks) } : {}),
+      ...(typeof periodLength.months === 'number' ? { months: String(periodLength.months) } : {}),
+      ...(typeof periodLength.years === 'number' ? { years: String(periodLength.years) } : {}),
+      periodOrder: periodLength.periodOrder.split(','),
+      periodLengthType: periodLength.periodLengthType,
+      legacyData: periodLength.legacyData,
+      description:
+        periodLengthTypeHeadings[periodLength.periodLengthType] ?? periodLength.legacyData?.sentenceTermDescription,
+      uuid: periodLength.periodLengthUuid,
+    } as SentenceLength
+  }
+  return null
 }
