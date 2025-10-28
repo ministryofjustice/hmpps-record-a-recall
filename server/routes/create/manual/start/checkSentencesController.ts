@@ -5,11 +5,33 @@ import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import logger from '../../../../../logger'
 import ManageOffencesService from '../../../../services/manageOffencesService'
-import {
-  EnhancedRecallableCourtCase,
-  EnhancedRecallableSentence,
-} from '../../../../middleware/loadCourtCases'
 import { CalculatedReleaseDates } from '../../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+
+export type EnhancedRecallableSentence = {
+  sentenceUuid?: string
+  offenceCode?: string
+  offenceDescription?: string
+  adjustedSLED?: string
+  adjustedCRD?: string
+  releaseCalculationSource?: 'NOMIS' | 'CRDS' | 'UNAVAILABLE'
+  sentenceLegacyData?: {
+    sentenceCalcType?: string
+    sentenceCategory?: string
+    sentenceTypeDesc?: string
+    postedDate: string
+    active?: boolean
+    nomisLineReference?: string
+    bookingId?: number
+  }
+}
+
+export type EnhancedRecallableCourtCase = {
+  courtCode: string
+  courtName?: string
+  reference?: string
+  sentences: EnhancedRecallableSentence[]
+}
+
 
 export type EnhancedSentenceWithEligibility = EnhancedRecallableSentence & {
   ineligibilityReason?: string
@@ -54,14 +76,15 @@ export default class CheckSentencesController implements Controller {
     const filteredCourtCases = this.filterSentencesByEligibility(recallableCourtCases, revocationDate)
     const offenceNameMap = await this.loadOffenceNames(req, filteredCourtCases)
 
-    const temporaryCalculation = journey?.temporaryCalculation as CalculatedReleaseDates
-    const latestSled = temporaryCalculation?.dates?.SLED || null
+    // TO DO: with moving logic to BE, do we stil need a temp calc?? before wizard stored this
+    // const temporaryCalculation = journey?.temporaryCalculation as CalculatedReleaseDates
+    // const latestSled = temporaryCalculation?.dates?.SLED || null
 
     const casesWithEligibleSentences = filteredCourtCases.reduce(
       (sum, cc) => sum + cc.eligibleSentences.length,
       0,
     )
-    const manualJourney = journey.manualCaseSelection || casesWithEligibleSentences === 0
+    const manualJourney = journey.isManual || casesWithEligibleSentences === 0
 
     const backLink = journey.isCheckingAnswers
       ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
@@ -73,7 +96,7 @@ export default class CheckSentencesController implements Controller {
       prisoner,
       backLink,
       cancelUrl,
-      latestSled,
+    //   latestSled,
       manualJourney,
       summarisedSentencesGroups: filteredCourtCases,
       casesWithEligibleSentences,
@@ -87,12 +110,11 @@ export default class CheckSentencesController implements Controller {
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]
 
-    // In new pattern, no session mutation needed unless journey step tracking
     logger.info(`User confirmed sentences for NOMS ID: ${nomsId}`)
 
     const nextPath = journey.isCheckingAnswers
       ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
-      : CreateRecallUrls.recallType(nomsId, journeyId)
+      : CreateRecallUrls.manualSelectCases(nomsId, journeyId)
 
     return res.redirect(nextPath)
   }

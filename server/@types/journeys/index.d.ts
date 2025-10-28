@@ -7,6 +7,7 @@ export interface CreateRecallJourney {
   isCheckingAnswers: boolean
   revocationDate?: DateParts
   crdsValidationResult: RecordARecallValidationResult
+  isManual: boolean
 }
 
 export interface DateParts {
