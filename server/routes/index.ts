@@ -13,6 +13,7 @@ import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
+import CheckSentencesController from './create/manual/start/checkSentencesController'
 
 export default function routes({
   prisonerService,
@@ -74,6 +75,12 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
     controller: new ManualJourneyInterceptController(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomisId/recall/create/:journeyId/manual/checkSentences',
+    controller: new CheckSentencesController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
