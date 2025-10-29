@@ -5,7 +5,6 @@ import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import logger from '../../../../../logger'
 import ManageOffencesService from '../../../../services/manageOffencesService'
-import { CalculatedReleaseDates } from '../../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export type EnhancedRecallableSentence = {
   sentenceUuid?: string
@@ -31,7 +30,6 @@ export type EnhancedRecallableCourtCase = {
   reference?: string
   sentences: EnhancedRecallableSentence[]
 }
-
 
 export type EnhancedSentenceWithEligibility = EnhancedRecallableSentence & {
   ineligibilityReason?: string
@@ -70,20 +68,12 @@ export default class CheckSentencesController implements Controller {
     if (!revocationDate || !recallableCourtCases) {
       logger.warn('No revocation date or recallable court cases available')
       return res.redirect(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
-
     }
 
     const filteredCourtCases = this.filterSentencesByEligibility(recallableCourtCases, revocationDate)
     const offenceNameMap = await this.loadOffenceNames(req, filteredCourtCases)
 
-    // TO DO: with moving logic to BE, do we stil need a temp calc?? before wizard stored this
-    // const temporaryCalculation = journey?.temporaryCalculation as CalculatedReleaseDates
-    // const latestSled = temporaryCalculation?.dates?.SLED || null
-
-    const casesWithEligibleSentences = filteredCourtCases.reduce(
-      (sum, cc) => sum + cc.eligibleSentences.length,
-      0,
-    )
+    const casesWithEligibleSentences = filteredCourtCases.reduce((sum, cc) => sum + cc.eligibleSentences.length, 0)
     const manualJourney = journey.isManual || casesWithEligibleSentences === 0
 
     const backLink = journey.isCheckingAnswers
@@ -96,13 +86,12 @@ export default class CheckSentencesController implements Controller {
       prisoner,
       backLink,
       cancelUrl,
-    //   latestSled,
       manualJourney,
       summarisedSentencesGroups: filteredCourtCases,
       casesWithEligibleSentences,
       revocationDate,
       offenceNameMap,
-    //   continueUrl: CreateRecallUrls.recallType(nomsId, journeyId), ---> TO DO: need page after this in CreateRecallUrls
+      //   continueUrl: CreateRecallUrls.recallType(nomsId, journeyId), ---> TO DO: need page after this in CreateRecallUrls
     })
   }
 

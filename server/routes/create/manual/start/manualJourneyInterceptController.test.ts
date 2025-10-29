@@ -18,6 +18,7 @@ beforeEach(() => {
     lastTouched: new Date().toISOString(),
     nomsId,
     isCheckingAnswers: false,
+    isManual: true,
     crdsValidationResult: {
       criticalValidationMessages: [],
       otherValidationMessages: [],

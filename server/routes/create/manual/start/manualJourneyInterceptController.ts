@@ -20,7 +20,12 @@ export default class ManualJourneyInterceptController implements Controller {
         ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
         : GlobalRecallUrls.home(nomsId),
       cancelUrl,
-      continueUrl: CreateRecallUrls.manualSelectCases(nomsId, journeyId),
+      continueUrl: CreateRecallUrls.manualSelectCases(nomsId, journeyId), // journey should be isManual
     })
   }
 }
+
+// only have get
+// template make it a form (it used to be, copy across)
+
+// when they click continue goes into POST to form submission and in post set journey isManual = true
