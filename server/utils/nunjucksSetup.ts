@@ -12,6 +12,7 @@ import {
   consecutiveToDetailsToDescription,
   formatCountNumber,
   sortPeriodLengths,
+  groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { formatDate, initialiseName, periodLengthsToSentenceLengths } from './utils'
 import config from '../config'
@@ -61,7 +62,8 @@ export default function nunjucksSetup(app: express.Express): void {
   njkEnv.addFilter('formatDate', formatDate)
   njkEnv.addFilter('jsonToString', someJson => JSON.stringify(someJson))
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
-
+  njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
+  njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
   // Filter to find error for a specific field from a field errors object

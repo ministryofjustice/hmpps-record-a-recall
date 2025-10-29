@@ -8,17 +8,26 @@
 {% set contentColumnWidth = "full" %}  
 
 {% block pageContent %}
+
     {%- call interruptionCard({
       heading: title,
       primaryAction: {
         text: "Continue",
-        attributes: { id: "continue-manual", "data-qa": "continue-manual-action" },
-        href: continueUrl
+        element: 'button',
+        attributes: { type: "submit", "data-prevent-double-click": true, id: "continue-manual", "data-qa": "continue-manual-action" },
+        classes: "govuk-button--inverse"
       },
       secondaryAction: {
         text: "Cancel recall",
+        href: cancelUrl,
         attributes: { id: "cancel-manual", "data-qa": "cancel-manual-action" },
-        href: cancelUrl
+        classes: "govuk-button--secondary govuk-button--inverse govuk-!-margin-left-1"
+      },
+      form: {
+        method: "post",
+        hiddenFields: {
+          _csrf: csrfToken
+        }
       }
     }) -%}
       <p class="govuk-body">This service cannot determine which sentences are eligible for recall.</p>

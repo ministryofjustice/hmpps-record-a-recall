@@ -9,13 +9,13 @@ export default class CourtRegisterApiClient extends RestClient {
     super('Court Register API', config.apis.courtRegisterApi, logger, authenticationClient)
   }
 
-  async getCourtDetails(courtIds: string): Promise<Court[]> {
+  async getCourtDetails(courtIds: string[], username: string): Promise<Court[]> {
     return this.get(
       {
         path: `/courts/id/multiple`,
-        query: { courtIds },
+        query: { courtIds: courtIds.join(',') },
       },
-      asSystem(),
+      asSystem(username),
     ) as Promise<Court[]>
   }
 }

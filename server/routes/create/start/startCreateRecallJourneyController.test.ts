@@ -86,6 +86,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
       {
         id: existingUuid,
         lastTouched: new Date().toISOString(),
+        isManual: false,
         isCheckingAnswers: false,
         nomsId,
         isManual: false,
@@ -122,6 +123,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         nomsId,
         isManual: false,
         isCheckingAnswers: false,
+        isManual: false,
         crdsValidationResult: successfulCrdsValidationResult,
       },
       {
@@ -130,6 +132,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         nomsId,
         isManual: false,
         isCheckingAnswers: false,
+        isManual: false,
         crdsValidationResult: successfulCrdsValidationResult,
       },
       {
@@ -138,6 +141,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         nomsId,
         isManual: false,
         isCheckingAnswers: false,
+        isManual: false,
         crdsValidationResult: successfulCrdsValidationResult,
       },
       {
@@ -146,6 +150,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         nomsId,
         isManual: false,
         isCheckingAnswers: false,
+        isManual: false,
         crdsValidationResult: successfulCrdsValidationResult,
       },
       {
@@ -154,6 +159,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         nomsId,
         isManual: false,
         isCheckingAnswers: false,
+        isManual: false,
         crdsValidationResult: successfulCrdsValidationResult,
       },
     ]

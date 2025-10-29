@@ -5,10 +5,12 @@ export interface CreateRecallJourney {
   id: string
   lastTouched: string
   nomsId: string
-  isCheckingAnswers: boolean
-  revocationDate?: DateParts
-  crdsValidationResult: RecordARecallValidationResult
   isManual: boolean
+  isCheckingAnswers: boolean
+  crdsValidationResult: RecordARecallValidationResult
+  revocationDate?: DateParts
+  inCustodyAtRecall?: boolean
+  returnToCustodyDate?: DateParts
   recallableCourtCases?: RecallableCourtCase[]
 }
 

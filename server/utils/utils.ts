@@ -1,7 +1,8 @@
+import { formatISO, parse } from 'date-fns'
 import dayjs from 'dayjs'
-
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { DateParts } from '../@types/journeys'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -25,6 +26,14 @@ export const initialiseName = (fullName?: string): string | null => {
 
   const array = fullName.split(' ')
   return `${array[0][0]}. ${array.reverse()[0]}`
+}
+
+export const datePartsToDate = (dateParts: DateParts): Date => {
+  return parse(`${dateParts.year}-${dateParts.month}-${dateParts.day}`, 'yyyy-MM-dd', new Date())
+}
+
+export const dateToIsoString = (date: Date): string => {
+  return formatISO(date).split('T')[0]
 }
 
 export const formatDate = (date: string, format = 'DD MMM YYYY') => dayjs(date).format(format)

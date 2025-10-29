@@ -17,9 +17,13 @@ beforeEach(() => {
     id: journeyId,
     lastTouched: new Date().toISOString(),
     nomsId,
-    isManual: false,
     isCheckingAnswers: false,
     isManual: false,
+    revocationDate: {
+      day: 1,
+      month: 10,
+      year: 2025,
+    },
     crdsValidationResult: {
       criticalValidationMessages: [],
       otherValidationMessages: [],
@@ -41,17 +45,19 @@ afterEach(() => {
 })
 
 describe('GET', () => {
-  it('should render revocation date page with correct navigation', async () => {
+  it('should render return to custody page with correct navigation', async () => {
     // Given
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
 
     // Then
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
 
-    expect($('[data-qa=back-link]').attr('href')).toStrictEqual(`/person/${nomsId}`)
+    expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/revocation-date`,
+    )
     expect($('#cancel-button').attr('href')).toStrictEqual(
       `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`,
     )
@@ -63,10 +69,11 @@ describe('GET', () => {
 
   it('should populate the form with session values if there are no form values', async () => {
     // Given
-    existingJourney.revocationDate = { day: 1, month: 2, year: 2012 }
+    existingJourney.returnToCustodyDate = { day: 1, month: 2, year: 2012 }
+    existingJourney.inCustodyAtRecall = false
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
 
     // Then
     expect(response.status).toEqual(200)
@@ -75,16 +82,19 @@ describe('GET', () => {
     expect($('#day').val()).toStrictEqual('1')
     expect($('#month').val()).toStrictEqual('2')
     expect($('#year').val()).toStrictEqual('2012')
+    expect($('#inCustodyAtRecall-false').attr('checked')).toBeTruthy()
+    expect($('#inCustodyAtRecall-true').attr('checked')).toBeFalsy()
   })
 
   it('should populate the form with previous form values even if there are session values', async () => {
     // Given
-    existingJourney.revocationDate = { day: 1, month: 2, year: 2012 }
-    const form = { day: '15', month: '06', year: '1982' }
+    existingJourney.returnToCustodyDate = { day: 1, month: 2, year: 2012 }
+    existingJourney.inCustodyAtRecall = false
+    const form = { day: '15', month: '06', year: '1982', inCustodyAtRecall: true }
     flashProvider.mockImplementation(key => (key === 'formResponses' ? [JSON.stringify(form)] : []))
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
 
     // Then
     expect(response.status).toEqual(200)
@@ -93,11 +103,13 @@ describe('GET', () => {
     expect($('#day').val()).toStrictEqual('15')
     expect($('#month').val()).toStrictEqual('06')
     expect($('#year').val()).toStrictEqual('1982')
+    expect($('#inCustodyAtRecall-false').attr('checked')).toBeFalsy()
+    expect($('#inCustodyAtRecall-true').attr('checked')).toBeTruthy()
   })
 
   it('should return to start of journey if not found in session', async () => {
     await request(app)
-      .get(`/person/${nomsId}/recall/create/${uuidv4()}/revocation-date`)
+      .get(`/person/${nomsId}/recall/create/${uuidv4()}/return-to-custody-date`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
@@ -105,24 +117,24 @@ describe('GET', () => {
 
 describe('POST', () => {
   it.each([
-    [false, `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`],
-    [true, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
+    [false, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
+    [true, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
   ])(
-    'should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
+    'should set the return to custody date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
     async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
       // Given
       existingJourney.isCheckingAnswers = isCheckingAnswers
 
       // When
       await request(app)
-        .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
+        .post(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
         .type('form')
-        .send({ day: '1', month: '2', year: '2025' })
+        .send({ day: '1', month: '2', year: '2025', inCustodyAtRecall: false })
         .expect(302)
         .expect('Location', expectedNextUrl)
 
       // Then
-      expect(existingJourney.revocationDate).toStrictEqual({
+      expect(existingJourney.returnToCustodyDate).toStrictEqual({
         day: 1,
         month: 2,
         year: 2025,
@@ -132,23 +144,23 @@ describe('POST', () => {
 
   it('should return to the input page if there are validation errors', async () => {
     // Given
-    delete existingJourney.revocationDate
+    delete existingJourney.returnToCustodyDate
 
     // When
     await request(app)
-      .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
       .type('form')
       .send({ day: '1', month: '2' })
       .expect(302)
-      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/revocation-date#`)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date#`)
 
     // Then
-    expect(existingJourney.revocationDate).toBeUndefined()
+    expect(existingJourney.returnToCustodyDate).toBeUndefined()
   })
 
   it('should return to start of journey if not found in session', async () => {
     await request(app)
-      .post(`/person/${nomsId}/recall/create/${uuidv4()}/revocation-date`)
+      .post(`/person/${nomsId}/recall/create/${uuidv4()}/return-to-custody-date`)
       .type('form')
       .send({ day: '1', month: '2' })
       .expect(302)

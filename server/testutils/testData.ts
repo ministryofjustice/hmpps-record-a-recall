@@ -6,6 +6,7 @@ import {
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
+import { ExistingRecall } from '../model/ExistingRecall'
 
 export default class TestData {
   static prisoner = ({
@@ -32,7 +33,7 @@ export default class TestData {
   static apiRecall = ({
     recallUuid = uuidv4(),
     prisonerId = 'A1234BC',
-    revocationDate = '2024-05-23',
+    revocationDate = undefined,
     returnToCustodyDate = undefined,
     inPrisonOnRevocationDate = false,
     recallType = 'FTR_28',
@@ -42,6 +43,7 @@ export default class TestData {
     source = 'DPS',
     sentences = [],
     courtCaseIds = [],
+    courtCases = [],
   }: Partial<ApiRecall> = {}): ApiRecall =>
     ({
       recallUuid,
@@ -56,7 +58,33 @@ export default class TestData {
       source,
       sentences,
       courtCaseIds,
+      courtCases,
     }) as ApiRecall
+
+  static existingRecall = ({
+    recallUuid = uuidv4(),
+    createdAtTimestamp = '2025-06-20',
+    createdAtLocationName = undefined,
+    revocationDate = undefined,
+    returnToCustodyDate = undefined,
+    source = 'DPS',
+    canEdit = false,
+    canDelete = false,
+    recallTypeDescription = '28-day fixed-term',
+    courtCases = [],
+  }: Partial<ExistingRecall> = {}): ExistingRecall =>
+    ({
+      recallUuid,
+      createdAtTimestamp,
+      createdAtLocationName,
+      revocationDate,
+      returnToCustodyDate,
+      source,
+      canEdit,
+      canDelete,
+      recallTypeDescription,
+      courtCases,
+    }) as ExistingRecall
 
   static serviceDefinitions = ({
     services = {

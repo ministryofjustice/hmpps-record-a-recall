@@ -1,7 +1,6 @@
 import type { RequestHandler } from 'express'
 import { Router } from 'express'
 import { z } from 'zod'
-
 import type { Services } from '../services'
 import { Controller } from './controller'
 import { SchemaFactory, validate } from '../middleware/validationMiddleware'
@@ -11,6 +10,9 @@ import StartCreateRecallJourneyController from './create/start/startCreateRecall
 import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
+import CreateRecallReturnToCustodyDateController from './create/return-to-custody-date/createRecallReturnToCustodyDateController'
+import CreateRecallDecisionController from './create/decision/createRecallDecisionController'
+import { returnToCustodyDateSchema } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 import CheckSentencesController from './create/manual/start/checkSentencesController'
@@ -20,8 +22,6 @@ export default function routes({
   prisonerService,
   calculateReleaseDatesService,
   courtCasesReleaseDatesService,
-  remandAndSentencingService,
-  prisonRegisterService,
   recallService,
 }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
@@ -57,7 +57,7 @@ export default function routes({
   // dashboard
   route({
     path: '/person/:nomsId',
-    controller: new HomeController(courtCasesReleaseDatesService, remandAndSentencingService, prisonRegisterService),
+    controller: new HomeController(courtCasesReleaseDatesService, recallService),
   })
 
   // create recall
@@ -70,6 +70,19 @@ export default function routes({
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
     validateToSchema: revocationDateSchemaFactory(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/return-to-custody-date',
+    controller: new CreateRecallReturnToCustodyDateController(),
+    validateToSchema: returnToCustodyDateSchema,
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/recall-decision',
+    controller: new CreateRecallDecisionController(calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
