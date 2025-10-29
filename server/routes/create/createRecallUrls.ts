@@ -35,6 +35,10 @@ export default class CreateRecallUrls {
     return `/person/${nomsId}/recall/create/${journeyId}/review-sentences`
   }
 
+  static noRecallableSentencesFoundIntercept = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`
+  }
+
   static selectCasesManualJourney = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/select-cases`
   }

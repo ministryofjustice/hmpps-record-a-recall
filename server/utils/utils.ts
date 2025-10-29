@@ -1,4 +1,4 @@
-import { parse } from 'date-fns'
+import { formatISO, parse } from 'date-fns'
 import { DateParts } from '../@types/journeys'
 
 const properCase = (word: string): string =>
@@ -29,6 +29,6 @@ export const datePartsToDate = (dateParts: DateParts): Date => {
   return parse(`${dateParts.year}-${dateParts.month}-${dateParts.day}`, 'yyyy-MM-dd', new Date())
 }
 
-export const dateToIsoString = (dateParts: Date): string => {
-  return dateParts.toISOString().split('T')[0]
+export const dateToIsoString = (date: Date): string => {
+  return formatISO(date).split('T')[0]
 }

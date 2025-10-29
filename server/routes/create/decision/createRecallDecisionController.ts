@@ -34,14 +34,14 @@ export default class CreateRecallDecisionController implements Controller {
     if (decision.decision === 'CONFLICTING_ADJUSTMENTS') {
       return res.redirect(CreateRecallUrls.conflictingAdjustmentsIntercept(nomsId, journeyId))
     }
-    if (decision.decision === 'AUTOMATED') {
-      return res.redirect(CreateRecallUrls.reviewSentencesAutomatedJourney(nomsId, journeyId))
-    }
     if (decision.decision === 'NO_RECALLABLE_SENTENCES_FOUND') {
-      return res.redirect(CreateRecallUrls.selectCasesManualJourney(nomsId, journeyId))
+      return res.redirect(CreateRecallUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId))
     }
     if (decision.decision === 'VALIDATION') {
       return res.redirect(CreateRecallUrls.selectCasesManualJourney(nomsId, journeyId))
+    }
+    if (decision.decision === 'AUTOMATED') {
+      return res.redirect(CreateRecallUrls.reviewSentencesAutomatedJourney(nomsId, journeyId))
     }
 
     throw Error(`Uknown decision type: ${decision.decision}`)
