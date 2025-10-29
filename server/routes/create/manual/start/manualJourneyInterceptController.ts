@@ -14,10 +14,6 @@ export default class ManualJourneyInterceptController implements Controller {
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]
 
-    if (!journey) {
-      return res.redirect(CreateRecallUrls.start(nomsId))
-    }
-
     const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
     return res.render('pages/recall/manual-recall-intercept', {
       prisoner,
@@ -32,11 +28,6 @@ export default class ManualJourneyInterceptController implements Controller {
   POST = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]
-
-    if (!journey) {
-      logger.warn(`Manual journey POST called with no session journey for ${journeyId}`)
-      return res.redirect(CreateRecallUrls.start(nomsId))
-    }
 
     journey.isManual = true
     journey.lastTouched = new Date().toISOString()
