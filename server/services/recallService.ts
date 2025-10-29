@@ -12,6 +12,8 @@ import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
+import AdjustmentsApiClient from '../data/adjustmentsApiClient'
+import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class RecallService {
   constructor(
@@ -19,6 +21,7 @@ export default class RecallService {
     private readonly manageOffencesApiClient: ManageOffencesApiClient,
     private readonly prisonRegisterApiClient: PrisonRegisterApiClient,
     private readonly courtRegisterApiClient: CourtRegisterApiClient,
+    private readonly adjustmentsApiClient: AdjustmentsApiClient,
   ) {}
 
   public async getRecallableCourtCases(prisonerId: string): Promise<
@@ -83,8 +86,19 @@ export default class RecallService {
       this.courtRegisterApiClient.getCourtDetails(requiredCourts, username),
       this.manageOffencesApiClient.getOffencesByCodes(requiredOffences),
     ])
+
+    const recallsThatMightHaveAnAdjustment = sortedRecalls
+      .filter(recall => recall.source === 'DPS' && recall.revocationDate && recall.returnToCustodyDate)
+      .map(recall => recall.recallUuid)
+    const adjustments = await Promise.all(
+      recallsThatMightHaveAnAdjustment.map(id =>
+        this.adjustmentsApiClient.getAdjustmentsForRecall(prisonerId, id, username),
+      ),
+    ).then(adjustmentResponses => adjustmentResponses.flatMap(it => it))
     const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
-    return sortedRecalls.map(recall => this.toExistingRecall(recall, prisons, courts, offences, latestRecallUuid))
+    return sortedRecalls.map(recall =>
+      this.toExistingRecall(recall, prisons, courts, offences, adjustments, latestRecallUuid),
+    )
   }
 
   private toExistingRecall(
@@ -92,9 +106,17 @@ export default class RecallService {
     prisons: Prison[],
     courts: Court[],
     offences: Offence[],
+    adjustments: AdjustmentDto[],
     latestRecallUuid: string,
   ): ExistingRecall {
     const isLatestAndDPSRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
+    const adjustmentsForRecall = adjustments.filter(
+      adjustment => adjustment && adjustment.recallId === recall.recallUuid,
+    )
+    let ualAdjustmentTotalDays
+    if (adjustmentsForRecall && adjustmentsForRecall.length) {
+      ualAdjustmentTotalDays = adjustmentsForRecall.reduce((acc, next) => acc + next.days, 0)
+    }
     return {
       recallUuid: recall.recallUuid,
       source: recall.source,
@@ -105,6 +127,7 @@ export default class RecallService {
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,
       returnToCustodyDate: recall.returnToCustodyDate,
+      ualAdjustmentTotalDays,
       courtCases: (recall.courtCases ?? []).map(courtCase => ({
         courtCaseReference: courtCase.courtCaseReference,
         courtName: courtCase.courtCode

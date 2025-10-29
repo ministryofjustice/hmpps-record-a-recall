@@ -19,7 +19,7 @@ const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
 jest.mock('../../../../services/recallService')
-const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
+const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
   existingJourney = {
