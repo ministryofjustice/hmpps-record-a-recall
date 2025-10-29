@@ -5,6 +5,7 @@ export interface CreateRecallJourney {
   id: string
   lastTouched: string
   nomsId: string
+  isManual: boolean
   isCheckingAnswers: boolean
   revocationDate?: DateParts
   crdsValidationResult: RecordARecallValidationResult

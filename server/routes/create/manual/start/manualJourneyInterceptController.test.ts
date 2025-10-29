@@ -17,6 +17,7 @@ beforeEach(() => {
     id: journeyId,
     lastTouched: new Date().toISOString(),
     nomsId,
+    isManual: false,
     isCheckingAnswers: false,
     crdsValidationResult: {
       criticalValidationMessages: [],
@@ -58,3 +59,49 @@ describe('GET', () => {
     expect(cancelHref).toBe(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
   })
 })
+
+describe('POST', () => {
+  const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
+
+  it('sets isManual=true and redirects to manualSelectCases when not checking answers', async () => {
+    existingJourney.isCheckingAnswers = false
+
+    const res = await request(app)
+      .post(url)
+      .type('form')
+      .send({ _csrf: 'token' }) 
+      .expect(302)
+
+    expect(res.headers.location).toBe(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`,
+    )
+    expect(existingJourney.isManual).toBe(true)
+    expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
+  })
+
+  it('sets isManual=true and redirects to checkAnswers when isCheckingAnswers=true', async () => {
+    existingJourney.isCheckingAnswers = true
+
+    const res = await request(app)
+      .post(url)
+      .type('form')
+      .send({ _csrf: 'token' })
+      .expect(302)
+
+    expect(res.headers.location).toBe(
+      `/person/${nomsId}/recall/create/${journeyId}/check-answers`,
+    )
+    expect(existingJourney.isManual).toBe(true)
+  })
+
+  it('redirects to start if journey not found in session', async () => {
+    const res = await request(app)
+      .post(`/person/${nomsId}/recall/create/${uuidv4()}/manual/start`)
+      .type('form')
+      .send({ _csrf: 'token' })
+      .expect(302)
+
+    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/start`)
+  })
+})
+
