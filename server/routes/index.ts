@@ -83,8 +83,6 @@ export default function routes({
   route({
     path: '/person/:nomisId/recall/create/:journeyId/manual/checkSentences',
     controller: new CheckSentencesController(),
-    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
-    controller: new SelectCasesController(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
