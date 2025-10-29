@@ -7,8 +7,10 @@ export interface CreateRecallJourney {
   nomsId: string
   isManual: boolean
   isCheckingAnswers: boolean
-  revocationDate?: DateParts
   crdsValidationResult: RecordARecallValidationResult
+  revocationDate?: DateParts
+  inCustodyAtRecall?: boolean
+  returnToCustodyDate?: DateParts
   recallableCourtCases?: RecallableCourtCase[]
 }
 
