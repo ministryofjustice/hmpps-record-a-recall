@@ -1,3 +1,5 @@
+import { RecallableCourtCaseSentence } from './remandAndSentencingApi/remandAndSentencingTypes'
+
 export type RecallType = {
   code: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
   description: string
@@ -44,4 +46,8 @@ export const RecallTypes = {
 
 export const getRecallType = (code: string): RecallType => {
   return Object.values(RecallTypes).find(it => it.code === code)
+}
+
+export interface SentenceAndOffence extends RecallableCourtCaseSentence {
+  offenceDescription?: string | null
 }
