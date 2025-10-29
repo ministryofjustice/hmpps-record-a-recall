@@ -66,15 +66,9 @@ describe('POST', () => {
   it('sets isManual=true and redirects to manualSelectCases when not checking answers', async () => {
     existingJourney.isCheckingAnswers = false
 
-    const res = await request(app)
-      .post(url)
-      .type('form')
-      .send({ _csrf: 'token' }) 
-      .expect(302)
+    const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
 
-    expect(res.headers.location).toBe(
-      `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`,
-    )
+    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`)
     expect(existingJourney.isManual).toBe(true)
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
@@ -82,15 +76,9 @@ describe('POST', () => {
   it('sets isManual=true and redirects to checkAnswers when isCheckingAnswers=true', async () => {
     existingJourney.isCheckingAnswers = true
 
-    const res = await request(app)
-      .post(url)
-      .type('form')
-      .send({ _csrf: 'token' })
-      .expect(302)
+    const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
 
-    expect(res.headers.location).toBe(
-      `/person/${nomsId}/recall/create/${journeyId}/check-answers`,
-    )
+    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/check-answers`)
     expect(existingJourney.isManual).toBe(true)
   })
 
@@ -104,4 +92,3 @@ describe('POST', () => {
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/start`)
   })
 })
-
