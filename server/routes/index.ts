@@ -15,11 +15,15 @@ import CreateRecallDecisionController from './create/decision/createRecallDecisi
 import { returnToCustodyDateSchema } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
+import SelectCasesController from './create/manual/select-cases/selectCasesController'
 
 export default function routes({
   prisonerService,
   calculateReleaseDatesService,
   courtCasesReleaseDatesService,
+  remandAndSentencingService,
+  prisonRegisterService,
+  recallService,
 }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
@@ -54,7 +58,7 @@ export default function routes({
   // dashboard
   route({
     path: '/person/:nomsId',
-    controller: new HomeController(courtCasesReleaseDatesService),
+    controller: new HomeController(courtCasesReleaseDatesService, remandAndSentencingService, prisonRegisterService),
   })
 
   // create recall
@@ -87,6 +91,18 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
     controller: new ManualJourneyInterceptController(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
+    controller: new SelectCasesController(recallService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases/:caseIndex',
+    controller: new SelectCasesController(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

@@ -13,7 +13,7 @@ import {
   formatCountNumber,
   sortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { initialiseName } from './utils'
+import { formatDate, initialiseName, periodLengthsToSentenceLengths } from './utils'
 import config from '../config'
 import logger from '../../logger'
 
@@ -58,6 +58,9 @@ export default function nunjucksSetup(app: express.Express): void {
   njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
   njkEnv.addFilter('formatCountNumber', formatCountNumber)
   njkEnv.addFilter('sortPeriodLengths', sortPeriodLengths)
+  njkEnv.addFilter('formatDate', formatDate)
+  njkEnv.addFilter('jsonToString', someJson => JSON.stringify(someJson))
+  njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
