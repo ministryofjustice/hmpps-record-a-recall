@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import type { Express } from 'express'
 import request from 'supertest'
 import * as cheerio from 'cheerio'
@@ -25,12 +24,13 @@ beforeEach(() => {
       earliestSentenceDate: '2025-01-01',
     },
   }
+
   app = appWithAllRoutes({
     services: {},
     userSupplier: () => user,
-    sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+    sessionReceiver: (session: Partial<SessionData>) => {
+      // eslint-disable-next-line no-param-reassign
+      session.createRecallJourneys = { [journeyId]: existingJourney }
     },
   })
 })
@@ -39,28 +39,28 @@ afterEach(() => {
   jest.resetAllMocks()
 })
 
-describe('GET', () => {
-  const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
+describe('GET /manual/start', () => {
+  it('renders the manual intercept screen with correct heading and buttons', async () => {
+    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/start`).expect(200)
 
-  it('renders the manual intercept screen with a 200', async () => {
-    // When
-    const res = await request(app).get(url).expect(200)
-
-    // Then
     const $ = cheerio.load(res.text)
-    const heading = $('h1, .govuk-heading-l').first().text().trim()
 
-    expect(heading).toBe('Select all the cases that are relevant to this recall')
-    expect($('[data-qa=continue-manual-action]').attr('href')).toBe(
-      `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`,
-    )
+    // Heading
+    expect($('h1').text().trim()).toBe('Select all the cases that are relevant to this recall')
 
-    const cancelHref = $('.moj-interruption-card__actions .govuk-link--inverse').attr('href')
-    expect(cancelHref).toBe(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
+    // Continue button
+    const continueButton = $('button#submit')
+    expect(continueButton.text().trim()).toBe('Continue')
+    expect(continueButton.attr('type')).toBe('submit')
+
+    // Cancel link
+    const cancelLink = $('.moj-interruption-card__actions a[href]')
+    expect(cancelLink.attr('href')).toBe(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
+    expect(cancelLink.text().trim()).toBe('Cancel recall')
   })
 })
 
-describe('POST', () => {
+describe('POST /manual/start', () => {
   const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
 
   it('sets isManual=true and redirects to manualSelectCases when not checking answers', async () => {
