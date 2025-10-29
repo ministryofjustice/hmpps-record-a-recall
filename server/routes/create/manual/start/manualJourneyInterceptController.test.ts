@@ -12,6 +12,7 @@ const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
 beforeEach(() => {
+  // Given
   existingJourney = {
     id: journeyId,
     lastTouched: new Date().toISOString(),
@@ -41,20 +42,19 @@ afterEach(() => {
 
 describe('GET /manual/start', () => {
   it('renders the manual intercept screen with correct heading and buttons', async () => {
+    // When
     const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/start`).expect(200)
 
     const $ = cheerio.load(res.text)
 
-    // Heading
+    // Then
     expect($('h1').text().trim()).toBe('Select all the cases that are relevant to this recall')
 
-    // Continue button using data-qa
     const continueButton = $('[data-qa=continue-manual-action]')
     expect(continueButton.text().trim()).toBe('Continue')
     expect(continueButton.attr('type')).toBe('submit')
     expect(continueButton.attr('id')).toBe('continue-manual')
 
-    // Cancel link
     const cancelLink = $('.moj-interruption-card__actions a[href]')
     expect(cancelLink.attr('href')).toBe(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
     expect(cancelLink.text().trim()).toBe('Cancel recall')
@@ -65,31 +65,42 @@ describe('POST /manual/start', () => {
   const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
 
   it('sets isManual=true and redirects to manualSelectCases when not checking answers', async () => {
+    // Given
     existingJourney.isCheckingAnswers = false
 
+    // When
     const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
 
+    // Then
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`)
     expect(existingJourney.isManual).toBe(true)
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
 
   it('sets isManual=true and redirects to checkAnswers when isCheckingAnswers=true', async () => {
+    // Given
     existingJourney.isCheckingAnswers = true
 
+    // When
     const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
 
+    // Then
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/check-answers`)
     expect(existingJourney.isManual).toBe(true)
   })
 
   it('redirects to start if journey not found in session', async () => {
+    // Given
+    const missingJourneyId = uuidv4()
+
+    // when
     const res = await request(app)
-      .post(`/person/${nomsId}/recall/create/${uuidv4()}/manual/start`)
+      .post(`/person/${nomsId}/recall/create/${missingJourneyId}/manual/start`)
       .type('form')
       .send({ _csrf: 'token' })
       .expect(302)
 
+    // then
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/start`)
   })
 })
