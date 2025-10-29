@@ -161,16 +161,34 @@ describe('Tests for recall card component', () => {
     expect($('h3:contains("Arrest date")').next().text().trim()).toStrictEqual('In prison at recall')
   })
 
-  it('Should show TBC for adjustments if DPS recall', () => {
+  it.each([
+    [1, '1 day'],
+    [2, '2 days'],
+  ])(
+    'Should show adjustment amount for adjustments if DPS recall',
+    (ualAdjustmentTotalDays: number, expected: string) => {
+      const model: ExistingRecall = {
+        ...aRecall,
+        source: 'DPS',
+        ualAdjustmentTotalDays,
+      }
+      const content = nunjucks.render('test.njk', { model, serviceDefinitions })
+      const $ = cheerio.load(content)
+      const adjustmentsLink = $('h3:contains("UAL (unlawfully at large)")').next()
+      expect(adjustmentsLink.text().trim()).toStrictEqual(expected)
+    },
+  )
+
+  it('Should show none for adjustments if DPS recall but there are no adjustments', () => {
     const model: ExistingRecall = {
       ...aRecall,
       source: 'DPS',
+      ualAdjustmentTotalDays: undefined,
     }
     const content = nunjucks.render('test.njk', { model, serviceDefinitions })
     const $ = cheerio.load(content)
     const adjustmentsLink = $('h3:contains("UAL (unlawfully at large)")').next()
-    // TODO should show UAL from backend instead of TBC
-    expect(adjustmentsLink.text().trim()).toStrictEqual('TBC')
+    expect(adjustmentsLink.text().trim()).toStrictEqual('None')
   })
 
   it('Should show link to adjustments if NOMIS recall', () => {
