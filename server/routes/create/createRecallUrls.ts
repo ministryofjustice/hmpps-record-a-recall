@@ -11,6 +11,10 @@ export default class CreateRecallUrls {
     return `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`
   }
 
+  static decisionEndpoint = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/recall-decision`
+  }
+
   static checkAnswers = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/check-answers`
   }
@@ -21,6 +25,22 @@ export default class CreateRecallUrls {
 
   static criticalValidationIntercept = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`
+  }
+
+  static conflictingAdjustmentsIntercept = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`
+  }
+
+  static reviewSentencesAutomatedJourney = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/review-sentences`
+  }
+
+  static noRecallableSentencesFoundIntercept = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`
+  }
+
+  static selectCasesManualJourney = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/select-cases`
   }
 
   static manualSelectCases = (nomsId: string, journeyId: string) => {
