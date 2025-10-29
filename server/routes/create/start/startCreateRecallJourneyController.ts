@@ -21,6 +21,7 @@ export default class StartCreateRecallJourneyController implements Controller {
       id: uuidv4(),
       lastTouched: new Date().toISOString(),
       isCheckingAnswers: false,
+      isManual: false,
       nomsId,
       crdsValidationResult,
     }

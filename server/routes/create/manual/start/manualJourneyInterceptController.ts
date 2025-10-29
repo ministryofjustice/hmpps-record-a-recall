@@ -4,6 +4,7 @@ import { PersonJourneyParams } from '../../../../@types/journeys'
 import GlobalRecallUrls from '../../../globalRecallUrls'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
+import logger from '../../../../../logger'
 
 export default class ManualJourneyInterceptController implements Controller {
   public PAGE_NAME = Page.CREATE_RECALL_MANUAL_INTERCEPT
@@ -22,5 +23,21 @@ export default class ManualJourneyInterceptController implements Controller {
       cancelUrl,
       continueUrl: CreateRecallUrls.manualSelectCases(nomsId, journeyId),
     })
+  }
+
+  POST = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
+    const { nomsId, journeyId } = req.params
+    const journey = req.session.createRecallJourneys[journeyId]
+
+    journey.isManual = true
+    journey.lastTouched = new Date().toISOString()
+
+    logger.info(`Manual recall flag set for NOMS ID: ${nomsId}, journeyId: ${journeyId}`)
+
+    const nextPath = journey.isCheckingAnswers
+      ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
+      : CreateRecallUrls.manualSelectCases(nomsId, journeyId)
+
+    return res.redirect(nextPath)
   }
 }
