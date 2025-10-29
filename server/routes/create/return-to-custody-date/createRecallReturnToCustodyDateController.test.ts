@@ -18,6 +18,7 @@ beforeEach(() => {
     lastTouched: new Date().toISOString(),
     nomsId,
     isCheckingAnswers: false,
+    isManual: false,
     revocationDate: {
       day: 1,
       month: 10,
