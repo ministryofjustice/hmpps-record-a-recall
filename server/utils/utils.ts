@@ -1,8 +1,8 @@
 import { formatISO, parse } from 'date-fns'
-import { DateParts } from '../@types/journeys'
 import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { DateParts } from '../@types/journeys'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
