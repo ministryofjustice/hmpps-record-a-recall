@@ -1620,6 +1620,7 @@ export interface components {
       prisonerId: string
       active: boolean
       legacyData: components['schemas']['CourtCaseLegacyData']
+      performedByUser: string
     }
     CourtAppearanceLegacyData: {
       postedDate?: string
@@ -1627,7 +1628,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1724,7 +1725,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -2381,6 +2382,30 @@ export interface components {
       source: 'NOMIS' | 'DPS'
       sentences?: components['schemas']['Sentence'][]
       courtCaseIds?: string[]
+      courtCases: components['schemas']['RecallCourtCaseDetails'][]
+    }
+    RecallCourtCaseDetails: {
+      courtCaseReference?: string
+      courtCode?: string
+      /** Format: date */
+      sentencingAppearanceDate?: string
+      sentences: components['schemas']['RecalledSentence'][]
+    }
+    RecalledSentence: {
+      /** Format: uuid */
+      sentenceUuid: string
+      offenceCode: string
+      /** Format: date */
+      offenceStartDate?: string
+      /** Format: date */
+      offenceEndDate?: string
+      /** Format: date */
+      sentenceDate?: string
+      lineNumber?: string
+      countNumber?: string
+      periodLengths: components['schemas']['PeriodLength'][]
+      sentenceServeType: string
+      sentenceTypeDescription?: string
     }
     DlqMessage: {
       body: {
@@ -2503,7 +2528,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2781,7 +2806,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -2801,7 +2826,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime?: string
       courtId: string
     }
@@ -2856,7 +2881,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -2866,7 +2891,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime?: string
       courtId: string
     }
@@ -2975,10 +3000,10 @@ export interface components {
       sort?: components['schemas']['SortObject']
       /** Format: int32 */
       pageSize?: number
+      unpaged?: boolean
       paged?: boolean
       /** Format: int32 */
       pageNumber?: number
-      unpaged?: boolean
     }
     SortObject: {
       empty?: boolean
@@ -3090,7 +3115,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:22.151447637 */
+      /** @example 09:06:37.109725024 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string

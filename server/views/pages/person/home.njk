@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-{% set hasRecalls = recallCards and recallCards.length %}
+{% set hasRecalls = recalls and recalls.length %}
 <div class="govuk-grid-row govuk-!-margin-top-6">
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">Recalls</h1>
@@ -34,8 +34,8 @@
 </div>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
-      {% for card in recallCards %}
-        {{ recallCard(card, serviceDefinitions) }}
+      {% for recall in recalls %}
+        {{ recallCard(recall, serviceDefinitions) }}
       {% endfor %}
     </div>
   </div>
