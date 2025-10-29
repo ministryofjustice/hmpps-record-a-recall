@@ -48,10 +48,11 @@ describe('GET /manual/start', () => {
     // Heading
     expect($('h1').text().trim()).toBe('Select all the cases that are relevant to this recall')
 
-    // Continue button
-    const continueButton = $('button#submit')
+    // Continue button using data-qa
+    const continueButton = $('[data-qa=continue-manual-action]')
     expect(continueButton.text().trim()).toBe('Continue')
     expect(continueButton.attr('type')).toBe('submit')
+    expect(continueButton.attr('id')).toBe('continue-manual')
 
     // Cancel link
     const cancelLink = $('.moj-interruption-card__actions a[href]')
