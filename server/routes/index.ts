@@ -16,6 +16,7 @@ import { returnToCustodyDateSchema } from './common/return-to-custody-date/retur
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
+import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtCasesSchema'
 
 export default function routes({
   prisonerService,
@@ -95,12 +96,14 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
     controller: new SelectCasesController(recallService),
+    validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases/:caseIndex',
     controller: new SelectCasesController(recallService),
+    validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
