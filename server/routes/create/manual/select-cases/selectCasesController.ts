@@ -4,7 +4,7 @@ import { PersonJourneyParams } from '../../../../@types/journeys'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
-import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchemas'
+import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchema'
 
 export default class SelectCasesController implements Controller {
   public PAGE_NAME = Page.CREATE_RECALL_MANUAL_SELECT_CASES

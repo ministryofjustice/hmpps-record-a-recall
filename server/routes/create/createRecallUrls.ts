@@ -39,14 +39,15 @@ export default class CreateRecallUrls {
     return `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`
   }
 
-  static selectCasesManualJourney = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/select-cases`
+  // Manual routes
+  static manualJourneyStart = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/manual/start`
   }
 
   static manualSelectCases = (nomsId: string, journeyId: string, caseIndex?: number) => {
     return caseIndex !== undefined
-      ? `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases/${caseIndex}`
-      : `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`
+      ? `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/${caseIndex}`
+      : `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`
   }
 
   static manualCheckSentences = (nomsId: string, journeyId: string) => {

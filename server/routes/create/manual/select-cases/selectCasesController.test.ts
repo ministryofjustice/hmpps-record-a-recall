@@ -12,6 +12,7 @@ import {
   RecallableCourtCaseSentence,
 } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import TestData from '../../../../testutils/testData'
+import CreateRecallUrls from '../../createRecallUrls'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -96,28 +97,55 @@ describe('selectCasesController Tests', () => {
   })
 
   describe('POST', () => {
-    it('records YES selection and redirects to next case', async () => {
-      // Arrange
-      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }, { courtCaseUuid: 'uuid-2' }] as any[]
+    const selectCasesUrl = (caseIndex?: number) => CreateRecallUrls.manualSelectCases(nomsId, journeyId, caseIndex)
 
-      app = appWithAllRoutes({
-        services: { recallService },
-        userSupplier: () => user,
-        sessionReceiver: (receivedSession: Partial<SessionData>) => {
-          receivedSession.createRecallJourneys = {}
-          receivedSession.createRecallJourneys[journeyId] = existingJourney
-        },
-      })
+    beforeEach(() => {
+      existingJourney.courtCaseIdsWithActiveSentences = []
+      existingJourney.recallableCourtCases = undefined as RecallableCourtCase[]
+    })
 
-      // Act
-      const res = await request(app).post(`${baseUrl}/0`).send({ activeSentenceChoice: 'YES' }).expect(302)
+    it('YES on a middle case: stores UUID and redirects to next case', async () => {
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+        { courtCaseUuid: 'uuid-3' },
+      ] as RecallableCourtCase[]
 
-      // Assert redirect to next case (index 1)
-      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/1`)
+      const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
-      // And check that the UUID was stored in session
-      const updatedJourney = existingJourney
-      expect(updatedJourney.courtCaseIdsWithActiveSentences).toContain('uuid-1')
+      expect(res.header.location).toBe(selectCasesUrl(2))
+      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual(['uuid-2'])
+    })
+
+    it('NO on a middle case: skips storing and redirects to next case', async () => {
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+        { courtCaseUuid: 'uuid-3' },
+      ] as RecallableCourtCase[]
+
+      const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
+
+      expect(res.header.location).toBe(selectCasesUrl(2))
+      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual([])
+    })
+
+    it('YES on last case: stores UUID and goes to next step', async () => {
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as RecallableCourtCase[]
+
+      const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
+      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual(['uuid-1'])
+    })
+
+    it('NO on last case: does not store and goes to next step', async () => {
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as RecallableCourtCase[]
+
+      const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'NO' }).expect(302)
+
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
+      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual([])
     })
   })
 })
