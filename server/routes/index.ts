@@ -95,12 +95,14 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
     controller: new SelectCasesController(recallService),
+    validateToSchema: selectCourtCasesSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases/:caseIndex',
     controller: new SelectCasesController(recallService),
+    validateToSchema: selectCourtCasesSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
