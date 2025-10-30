@@ -8,6 +8,7 @@ import CreateRecallRevocationDateController from './create/revocation-date/creat
 import ApiRoutes from './prisonerImageRoute'
 import StartCreateRecallJourneyController from './create/start/startCreateRecallJourneyController'
 import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
+import { selectCourtCasesSchemaFactory } from './common/select-court-cases/selectCourtCasesSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import CreateRecallReturnToCustodyDateController from './create/return-to-custody-date/createRecallReturnToCustodyDateController'

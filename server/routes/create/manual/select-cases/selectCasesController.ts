@@ -44,12 +44,9 @@ export default class SelectCasesController implements Controller {
     const journey = req.session.createRecallJourneys[journeyId]!
     const cases = journey.recallableCourtCases ?? []
 
-    // safer default to 0 if missing/invalid
-    const currentCaseIndex = Number.isFinite(Number(caseIndex)) ? Number(caseIndex) : 0
-
+    const currentCaseIndex = Number(caseIndex) || 0
     const hasNextCase = currentCaseIndex + 1 < cases.length
     const nextCaseIndex = currentCaseIndex + 1
-
     const currentCaseUuid = cases[currentCaseIndex].courtCaseUuid
 
     if (activeSentenceChoice === 'YES') {
@@ -62,6 +59,6 @@ export default class SelectCasesController implements Controller {
     }
 
     // last case — decide final route
-    return res.redirect(`/person/${nomsId}/recall/create/${journeyId}/manual/TODO-next-step`)
+    return res.redirect(CreateRecallUrls.manualCheckSentences(nomsId, journeyId))
   }
 }

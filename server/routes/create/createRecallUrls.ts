@@ -43,7 +43,13 @@ export default class CreateRecallUrls {
     return `/person/${nomsId}/recall/create/${journeyId}/select-cases`
   }
 
-  static manualSelectCases = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`
+  static manualSelectCases = (nomsId: string, journeyId: string, caseIndex?: number) => {
+    return caseIndex !== undefined
+      ? `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases/${caseIndex}`
+      : `/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`
+  }
+
+  static manualCheckSentences = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`
   }
 }

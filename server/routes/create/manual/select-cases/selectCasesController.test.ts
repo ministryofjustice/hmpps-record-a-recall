@@ -48,48 +48,76 @@ afterEach(() => {
   jest.resetAllMocks()
 })
 
-describe('GET', () => {
-  const url = `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`
+describe('selectCasesController Tests', () => {
+  const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`
 
-  it('renders the first recallable court case (index defaults to 0) and shows recallable/non-recallable sections', async () => {
-    // Given
-    const s1 = TestData.recallableSentence({ offenceCode: 'OFF1', offenceDescription: 'Offence 1' })
-    const s2 = TestData.nonRecallableSentence({ offenceCode: 'OFF2', offenceDescription: 'Offence 2' })
-    const s3 = TestData.recallableSentence({ offenceCode: 'OFF3', offenceDescription: 'Offence 3' })
+  describe('GET', () => {
+    it('renders the first recallable court case (index defaults to 0) and shows recallable/non-recallable sections', async () => {
+      // Given
+      const s1 = TestData.recallableSentence({ offenceCode: 'OFF1', offenceDescription: 'Offence 1' })
+      const s2 = TestData.nonRecallableSentence({ offenceCode: 'OFF2', offenceDescription: 'Offence 2' })
+      const s3 = TestData.recallableSentence({ offenceCode: 'OFF3', offenceDescription: 'Offence 3' })
 
-    recallService.getRecallableCourtCases.mockResolvedValue([
-      TestData.recallableCourtCase([s1], [s2], {
-        courtCaseUuid: 'uuid-1',
-        reference: 'REF-1',
-      }),
-      TestData.recallableCourtCase([s3], [], {
-        courtCaseUuid: 'uuid-2',
-        reference: 'REF-2',
-      }),
-    ] as Array<
-      RecallableCourtCase & {
-        recallableSentences: RecallableCourtCaseSentence[]
-        nonRecallableSentences: RecallableCourtCaseSentence[]
-      }
-    >)
+      recallService.getRecallableCourtCases.mockResolvedValue([
+        TestData.recallableCourtCase([s1], [s2], {
+          courtCaseUuid: 'uuid-1',
+          reference: 'REF-1',
+        }),
+        TestData.recallableCourtCase([s3], [], {
+          courtCaseUuid: 'uuid-2',
+          reference: 'REF-2',
+        }),
+      ] as Array<
+        RecallableCourtCase & {
+          recallableSentences: RecallableCourtCaseSentence[]
+          nonRecallableSentences: RecallableCourtCaseSentence[]
+        }
+      >)
 
-    // When
-    const res = await request(app).get(url).expect(200)
+      // When
+      const res = await request(app).get(baseUrl).expect(200)
 
-    // Then
-    const $ = cheerio.load(res.text)
+      // Then
+      const $ = cheerio.load(res.text)
 
-    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId)
-    expect(res.text).toContain('Select all cases that had an active sentence')
-    expect(res.text).toContain('Court case 1 of 2')
-    expect(res.text).toContain('View offences which are not eligible for recall (1)')
+      expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId)
+      expect(res.text).toContain('Select all cases that had an active sentence')
+      expect(res.text).toContain('Court case 1 of 2')
+      expect(res.text).toContain('View offences which are not eligible for recall (1)')
 
-    const recallableText = $('[data-qa="recallable-sentences"]').text()
-    expect(recallableText).toContain('OFF1')
-    expect(recallableText).toContain('Offence 1')
+      const recallableText = $('[data-qa="recallable-sentences"]').text()
+      expect(recallableText).toContain('OFF1')
+      expect(recallableText).toContain('Offence 1')
 
-    const nonRecallableText = $('[data-qa="non-recallable-sentences"]').text()
-    expect(nonRecallableText).toContain('OFF2')
-    expect(nonRecallableText).toContain('Offence 2')
+      const nonRecallableText = $('[data-qa="non-recallable-sentences"]').text()
+      expect(nonRecallableText).toContain('OFF2')
+      expect(nonRecallableText).toContain('Offence 2')
+    })
+  })
+
+  describe('POST', () => {
+    it('records YES selection and redirects to next case', async () => {
+      // Arrange
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }, { courtCaseUuid: 'uuid-2' }] as any[]
+
+      app = appWithAllRoutes({
+        services: { recallService },
+        userSupplier: () => user,
+        sessionReceiver: (receivedSession: Partial<SessionData>) => {
+          receivedSession.createRecallJourneys = {}
+          receivedSession.createRecallJourneys[journeyId] = existingJourney
+        },
+      })
+
+      // Act
+      const res = await request(app).post(`${baseUrl}/0`).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      // Assert redirect to next case (index 1)
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/1`)
+
+      // And check that the UUID was stored in session
+      const updatedJourney = existingJourney
+      expect(updatedJourney.courtCaseIdsWithActiveSentences).toContain('uuid-1')
+    })
   })
 })
