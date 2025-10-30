@@ -15,6 +15,7 @@ import CreateRecallDecisionController from './create/decision/createRecallDecisi
 import { returnToCustodyDateSchema } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
+import CheckSentencesController from './create/manual/start/checkSentencesController'
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
 
 export default function routes({
@@ -93,8 +94,8 @@ export default function routes({
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
-    controller: new SelectCasesController(recallService),
+    path: '/person/:nomisId/recall/create/:journeyId/manual/checkSentences',
+    controller: new CheckSentencesController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
