@@ -1,7 +1,7 @@
-import { RecallableCourtCaseSentence } from './remandAndSentencingApi/remandAndSentencingTypes'
+import { ApiRecallType, RecallableCourtCaseSentence } from './remandAndSentencingApi/remandAndSentencingTypes'
 
 export type RecallType = {
-  code: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
+  code: ApiRecallType
   description: string
   fixedTerm: boolean
 }

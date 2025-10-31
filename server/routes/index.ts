@@ -18,6 +18,8 @@ import ManualJourneyInterceptController from './create/manual/start/manualJourne
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
 import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtCasesSchema'
 import CreateRecallReviewSentencesController from './create/review-sentences/createRecallReviewSentencesController'
+import CreateRecallTypeController from './create/recall-type/createRecallTypeController'
+import { recallTypeSchema } from './common/recall-type/recallTypeSchema'
 
 export default function routes({
   prisonerService,
@@ -92,6 +94,14 @@ export default function routes({
     controller: new CreateRecallReviewSentencesController(recallService, calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/recall-type',
+    controller: new CreateRecallTypeController(calculateReleaseDatesService),
+    validateToSchema: recallTypeSchema,
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
   // create - manual journey
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',

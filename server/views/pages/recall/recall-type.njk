@@ -21,7 +21,7 @@
             fieldset: {
                 legend: {
                     text: "Select the type of recall",
-                    isPageHeading: false,
+                    isPageHeading: true,
                     classes: "govuk-visually-hidden"
                 }
             },
@@ -33,18 +33,13 @@
             {{ govukButton({
                 text: "Continue",
                 preventDoubleClick: true,
-                attributes: {
-                    id: "submit",
-                    "data-qa": "continue-btn"
-                }
+                attributes: { id: "submit" }
             }) }}
             {{ govukButton({
                 text: "Cancel",
                 classes: "govuk-button--secondary",
                 href: cancelUrl,
-                attributes: {
-                    "data-qa": "cancel-btn"
-                }
+                attributes: { id: "cancel-button" }
             }) }}
         </div>
     </form>

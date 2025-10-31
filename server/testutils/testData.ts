@@ -9,6 +9,7 @@ import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/type
 import { ExistingRecall } from '../model/ExistingRecall'
 import { RecordARecallDecisionResult } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { DecoratedCourtCase } from '../services/recallService'
+import { RecallTypes } from '../@types/recallTypes'
 
 export default class TestData {
   static prisoner = ({
@@ -172,7 +173,7 @@ export default class TestData {
     return {
       decision: 'AUTOMATED',
       calculationRequestId: 1,
-      eligibleRecallTypes: ['LR', 'FTR_14', 'FTR_28', 'FTR_HDC_14', 'FTR_HDC_28', 'IN_HDC', 'CUR_HDC'],
+      eligibleRecallTypes: Object.values(RecallTypes).map(it => it.code),
       recallableSentences: [
         {
           bookingId: 1,

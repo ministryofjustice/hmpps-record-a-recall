@@ -99,7 +99,7 @@ describe('POST', () => {
     await request(app)
       .post(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
       .expect(302)
-      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/check-answers`)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/recall-type`)
 
     // Then
     expect(existingJourney.returnToCustodyDate).toBeUndefined()
