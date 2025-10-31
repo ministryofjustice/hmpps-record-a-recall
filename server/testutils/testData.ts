@@ -7,6 +7,8 @@ import {
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
 import { ExistingRecall } from '../model/ExistingRecall'
+import { RecordARecallDecisionResult } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { DecoratedCourtCase } from '../services/recallService'
 
 export default class TestData {
   static prisoner = ({
@@ -126,6 +128,7 @@ export default class TestData {
 
   static recallableSentence(overrides: Partial<RecallableCourtCaseSentence & { offenceDescription?: string }> = {}) {
     return {
+      sentenceUuid: '72f79e94-b932-4e0f-9c93-3964047c76f0',
       isRecallable: true,
       sentenceTypeDescription: 'Standard Determinate',
       offenceCode: 'OFF1',
@@ -136,6 +139,7 @@ export default class TestData {
 
   static nonRecallableSentence(overrides: Partial<RecallableCourtCaseSentence & { offenceDescription?: string }> = {}) {
     return {
+      sentenceUuid: '0ef67702-99cd-4821-9235-46ce42c9f39e',
       isRecallable: false,
       sentenceTypeDescription: 'Community Order',
       offenceCode: 'OFF2',
@@ -145,13 +149,10 @@ export default class TestData {
   }
 
   static recallableCourtCase(
-    recallableSentences: RecallableCourtCaseSentence[],
-    nonRecallableSentences: RecallableCourtCaseSentence[],
+    recallableSentences: RecallableCourtCaseSentence[] = [TestData.recallableSentence()],
+    nonRecallableSentences: RecallableCourtCaseSentence[] = [TestData.nonRecallableSentence()],
     overrides: Partial<RecallableCourtCase> = {},
-  ): RecallableCourtCase & {
-    recallableSentences: RecallableCourtCaseSentence[]
-    nonRecallableSentences: RecallableCourtCaseSentence[]
-  } {
+  ): DecoratedCourtCase {
     return {
       courtCaseUuid: 'uuid-1',
       reference: 'REF-1',
@@ -163,6 +164,28 @@ export default class TestData {
       sentences: [...recallableSentences, ...nonRecallableSentences],
       recallableSentences,
       nonRecallableSentences,
+      ...overrides,
+    }
+  }
+
+  static automatedRecallDecision(overrides: Partial<RecordARecallDecisionResult> = {}): RecordARecallDecisionResult {
+    return {
+      decision: 'AUTOMATED',
+      calculationRequestId: 1,
+      eligibleRecallTypes: ['LR', 'FTR_14', 'FTR_28', 'FTR_HDC_14', 'FTR_HDC_28', 'IN_HDC', 'CUR_HDC'],
+      recallableSentences: [
+        {
+          bookingId: 1,
+          sentenceSequence: 1,
+          uuid: '72f79e94-b932-4e0f-9c93-3964047c76f0',
+          sentenceCalculation: {
+            actualReleaseDate: '2025-06-01',
+            conditionalReleaseDate: '2025-06-01',
+            licenseExpiry: '2025-12-01',
+          },
+        },
+      ],
+      validationMessages: [],
       ...overrides,
     }
   }

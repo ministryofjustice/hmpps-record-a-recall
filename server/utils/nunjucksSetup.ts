@@ -64,6 +64,7 @@ export default function nunjucksSetup(app: express.Express): void {
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
   njkEnv.addFilter('formatLengths', formatLengths)
+
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
   // Filter to find error for a specific field from a field errors object

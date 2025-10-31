@@ -16,7 +16,7 @@ export default class CreateRecallDecisionController implements Controller {
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]!
 
-    if (journey.revocationDate === undefined || journey.inCustodyAtRecall === undefined) {
+    if (!journey.revocationDate || journey.inCustodyAtRecall === undefined) {
       return res.redirect(CreateRecallUrls.start(nomsId))
     }
 
