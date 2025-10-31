@@ -15,6 +15,14 @@ export default class CreateRecallUrls {
     return `/person/${nomsId}/recall/create/${journeyId}/recall-decision`
   }
 
+  static reviewSentencesAutomatedJourney = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/review-sentences`
+  }
+
+  static recallType = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/recall-type`
+  }
+
   static checkAnswers = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/check-answers`
   }
@@ -29,10 +37,6 @@ export default class CreateRecallUrls {
 
   static conflictingAdjustmentsIntercept = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`
-  }
-
-  static reviewSentencesAutomatedJourney = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/review-sentences`
   }
 
   static noRecallableSentencesFoundIntercept = (nomsId: string, journeyId: string) => {

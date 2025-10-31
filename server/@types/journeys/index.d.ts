@@ -11,6 +11,7 @@ export interface CreateRecallJourney {
   revocationDate?: DateParts
   inCustodyAtRecall?: boolean
   returnToCustodyDate?: DateParts
+  recallType?: string
   recallableCourtCases?: RecallableCourtCase[]
   courtCaseIdsWithActiveSentences?: string[]
 }

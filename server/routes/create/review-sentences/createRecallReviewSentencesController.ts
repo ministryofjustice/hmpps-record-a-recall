@@ -58,7 +58,7 @@ export default class CreateRecallReviewSentencesController implements Controller
 
   POST = async (req: Request<PersonJourneyParams, unknown, unknown>, res: Response): Promise<void> => {
     const { nomsId, journeyId } = req.params
-    return res.redirect(CreateRecallUrls.checkAnswers(nomsId, journeyId))
+    return res.redirect(CreateRecallUrls.recallType(nomsId, journeyId))
   }
 
   private matchRasSentencesAndCrdsSentences(
