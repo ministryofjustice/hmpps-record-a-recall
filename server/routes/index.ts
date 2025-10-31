@@ -17,6 +17,7 @@ import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
 import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtCasesSchema'
+import CreateRecallReviewSentencesController from './create/review-sentences/createRecallReviewSentencesController'
 
 export default function routes({
   prisonerService,
@@ -86,6 +87,11 @@ export default function routes({
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/review-sentences',
+    controller: new CreateRecallReviewSentencesController(recallService, calculateReleaseDatesService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
   // create - manual journey
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',

@@ -15,6 +15,11 @@ import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import AdjustmentsApiClient from '../data/adjustmentsApiClient'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
+export type DecoratedCourtCase = RecallableCourtCase & {
+  recallableSentences: SentenceAndOffence[]
+  nonRecallableSentences: SentenceAndOffence[]
+}
+
 export default class RecallService {
   constructor(
     private readonly remandAndSentencingApiClient: RemandAndSentencingApiClient,
@@ -24,14 +29,7 @@ export default class RecallService {
     private readonly adjustmentsApiClient: AdjustmentsApiClient,
   ) {}
 
-  public async getRecallableCourtCases(prisonerId: string): Promise<
-    Array<
-      RecallableCourtCase & {
-        recallableSentences: SentenceAndOffence[]
-        nonRecallableSentences: SentenceAndOffence[]
-      }
-    >
-  > {
+  public async getRecallableCourtCases(prisonerId: string): Promise<DecoratedCourtCase[]> {
     const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
 
     const offenceCodes = [

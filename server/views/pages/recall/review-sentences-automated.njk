@@ -1,0 +1,101 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+
+{% set title = "Check that the sentences and offences are correct" %}
+{% set pageTitle = applicationName + " - " + title %}
+
+
+
+{% block pageContent %}
+    <h1 class="govuk-heading-l">{{ title }}</h1>
+
+
+    <p data-qa="latest-sled">The latest SLED (Sentence and licence expiry date) is <b>{{ sled | formatDate }}</b>. This is the SLED on this person's licence.</p>
+
+    <h2 class="govuk-heading-l" data-qa="court-case-count">
+        Court cases with sentences eligible for recall ({{ courtCases.length }})
+    </h2>
+  {# Recallable Offences Section #}
+{% for courtCase in courtCases %}
+    <div data-qa="recallable-sentences">
+      <h2 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+        {% if courtCase.caseReferences and courtCase.caseReferences != 'N/A' %}{{ courtCase.caseReferences }} at {% endif %}
+        {{ courtCase.courtName | default("N/A") }} on {{ courtCase.formattedOverallConvictionDate | default("N/A") }}
+      </h2>
+
+
+      {% for sentence in courtCase.recallableSentences %}
+        {# TODO not sure why we're setting sentenceTypeDisplay #}
+        {% if sentence.sentenceTypeDescription == 'Required' %}
+          {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
+        {% else %}
+          {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+        {% endif %}
+        {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+        {# Determine numeric values for count and line number #}
+        {% if sentence.countNumber and sentence.countNumber != '-1' %}
+          {% set countNumberWithText = sentence.countNumber %}
+          {% set lineNumberWithText = null %}
+        {% elseif not sentence.countNumber %}
+          {% set countNumberWithText = null %}
+          {% set lineNumberWithText = sentence.lineNumber %}
+        {% else %}
+          {# countNumber is '-1' → show neither #}
+          {% set countNumberWithText = null %}
+          {% set lineNumberWithText = null %}
+        {% endif %}
+
+        {# TODO sentence.consecutiveToChargeNumber is never set #}
+        {# TODO will prob align this offenceCard with RAS #}
+        {# TODO sentenceDate isnt what I think it should be (from api)  #}
+        {{ offenceCard({
+          offenceCode: sentence.offenceCode | default("N/A"),
+          offenceName: sentence.offenceDescription or 'Offence description not available',
+          offenceStartDate: sentence.offenceStartDate | default('N/A'),
+          offenceEndDate: sentence.offenceEndDate | default(null),
+          countNumber: countNumberWithText,
+          lineNumber: lineNumberWithText,
+          terrorRelated: sentence.terrorRelated | default(false),
+          isSentenced: true,
+          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
+          sentenceServeType: sentence.sentenceServeType | default(null),
+          consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+          sentenceType: sentenceTypeDisplay | safe,
+          sentenceDate: sentenceDate,
+          fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+          detailsClasses: 'govuk-!-padding-4',
+          actions: null,
+          listItems: null
+        }) }}
+      {% endfor %}
+    {% endfor %}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
+
+    <p class="govuk-body">If you think some information is wrong, you can manage all court case
+        information <a class="govuk-link" target="external" href="{{ urls.ccards }}">Court cases and
+        release dates (opens in a new tab)</a>.
+    </p>
+
+    <form method="post" action="">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+     
+        <div class="govuk-button-group">
+            {{ govukButton({
+                text: "Continue",
+                preventDoubleClick: true,
+                attributes: { id: "submit" }
+            }) }}
+            {{ govukButton({
+                text: "Cancel",
+                classes: "govuk-button--secondary",
+                href: cancelUrl,
+                attributes: { id: "cancel-button" }
+            }) }}
+        </div>
+    </form>
+{% endblock %}
+
