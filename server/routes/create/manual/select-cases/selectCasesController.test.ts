@@ -29,6 +29,7 @@ beforeEach(() => {
     nomsId,
     isManual: false,
     isCheckingAnswers: false,
+    isManual: false,
     crdsValidationResult: {
       criticalValidationMessages: [],
       otherValidationMessages: [],
