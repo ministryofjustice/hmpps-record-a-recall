@@ -17,13 +17,13 @@ export default class RemandAndSentencingApiClient extends RestClient {
     super('Remand and sentencing  API', config.apis.remandAndSentencingApi, logger, authenticationClient)
   }
 
-  async postRecall(createRecall: CreateRecall): Promise<CreateRecallResponse> {
+  async createRecall(createRecall: CreateRecall, username: string): Promise<CreateRecallResponse> {
     return this.post(
       {
         data: createRecall,
         path: `/recall`,
       },
-      asSystem(),
+      asSystem(username),
     ) as Promise<CreateRecallResponse>
   }
 

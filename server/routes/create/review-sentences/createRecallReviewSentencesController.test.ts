@@ -94,6 +94,7 @@ describe('GET', () => {
 describe('POST', () => {
   it('should redirect to check your answers', async () => {
     // Given
+    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
 
     // When
     await request(app)
@@ -102,7 +103,7 @@ describe('POST', () => {
       .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/recall-type`)
 
     // Then
-    expect(existingJourney.returnToCustodyDate).toBeUndefined()
+    expect(existingJourney.sentenceIds).toBeTruthy()
   })
 
   it('should return to start of journey if not found in session', async () => {

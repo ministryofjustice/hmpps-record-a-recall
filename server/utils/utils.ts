@@ -1,4 +1,4 @@
-import { formatISO, parse } from 'date-fns'
+import { addDays, differenceInCalendarDays, parse, isEqual, subDays, formatISO } from 'date-fns'
 import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -71,6 +71,15 @@ export const periodLengthToSentenceLength = (periodLength: PeriodLength): Senten
     } as SentenceLength
   }
   return null
+}
+
+export function calculateUal(revDate: string | Date, returnToCustodyDate?: string | Date): number {
+  const ualStart = addDays(revDate, 1)
+  if (!returnToCustodyDate || isEqual(revDate, returnToCustodyDate) || isEqual(ualStart, returnToCustodyDate)) {
+    return null
+  }
+  const ualEnd = subDays(returnToCustodyDate, 1)
+  return differenceInCalendarDays(ualEnd, ualStart) + 1
 }
 
 export const maxOf = <A, B>(all: A[], map: (a: A) => B): B => {

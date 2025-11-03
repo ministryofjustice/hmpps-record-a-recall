@@ -57,7 +57,18 @@ export default class CreateRecallReviewSentencesController implements Controller
   }
 
   POST = async (req: Request<PersonJourneyParams, unknown, unknown>, res: Response): Promise<void> => {
+    const { username } = req.user
     const { nomsId, journeyId } = req.params
+    const journey = req.session.createRecallJourneys[journeyId]!
+    const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
+      nomsId,
+      {
+        revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+      },
+      username,
+    )
+    journey.sentenceIds = decision.recallableSentences.map(it => it.uuid)
+
     return res.redirect(CreateRecallUrls.recallType(nomsId, journeyId))
   }
 
