@@ -27,7 +27,7 @@
         {% endif %}
         {% if model.canDelete %}
           <li class="govuk-summary-card__action">
-            <a class="govuk-link govuk-link--destructive" data-qa="recall-{{ model.recallUuid }}-delete-link"  href="#delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
+            <a class="govuk-link govuk-link--destructive" data-qa="recall-{{ model.recallUuid }}-delete-link"  href="/person/{{ model.prisonerId }}/recall/{{ model.recallUuid }}/delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
           </li>
         {% endif %}
       {% endif %}

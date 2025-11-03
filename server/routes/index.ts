@@ -20,6 +20,9 @@ import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtC
 import CreateRecallReviewSentencesController from './create/review-sentences/createRecallReviewSentencesController'
 import CreateRecallTypeController from './create/recall-type/createRecallTypeController'
 import { recallTypeSchema } from './common/recall-type/recallTypeSchema'
+import ConfirmDeleteRecallController from './delete/confirmDeleteRecallController'
+import { confirmDeleteRecallSchema } from './delete/confirmDeleteRecallSchema'
+import CreateRecallCheckAnswersController from './create/check-answer/createRecallCheckAnswersController'
 import CheckSentencesController from './create/manual/check-sentences/checkSentencesController'
 
 export default function routes({
@@ -103,6 +106,12 @@ export default function routes({
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/check-answers',
+    controller: new CreateRecallCheckAnswersController(recallService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
   // create - manual journey
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
@@ -132,6 +141,13 @@ export default function routes({
       courtCasesReleaseDatesService,
     ),
     additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  // delete recall
+  route({
+    path: '/person/:nomsId/recall/:recallUuid/delete',
+    controller: new ConfirmDeleteRecallController(recallService),
+    validateToSchema: confirmDeleteRecallSchema,
   })
 
   return router

@@ -30,6 +30,7 @@ njkEnv.addFilter('sortPeriodLengths', sortPeriodLengths)
 
 const aRecall: ExistingRecall = {
   recallUuid: 'abc123',
+  prisonerId: 'A1234BC',
   source: 'DPS',
   createdAtTimestamp: '2021-02-03T13:21:00Z',
   createdAtLocationName: 'HMP Brixton',
@@ -67,14 +68,14 @@ describe('Tests for recall card component', () => {
       { ...aRecall, source: 'DPS', canEdit: true, canDelete: true },
       '#edit',
       'Edit recall recorded on 03 Feb 2021',
-      '#delete',
+      '/person/A1234BC/recall/abc123/delete',
       'Delete recall recorded on 03 Feb 2021',
     ],
     [
       { ...aRecall, source: 'DPS', canEdit: false, canDelete: true },
       undefined,
       undefined,
-      '#delete',
+      '/person/A1234BC/recall/abc123/delete',
       'Delete recall recorded on 03 Feb 2021',
     ],
     [

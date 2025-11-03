@@ -1,6 +1,8 @@
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import {
   ApiRecall,
+  CreateRecall,
+  CreateRecallResponse,
   RecallableCourtCase,
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -15,6 +17,7 @@ import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import AdjustmentsApiClient from '../data/adjustmentsApiClient'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { CreateRecallJourney } from '../@types/journeys'
+import { datePartsToDate, dateToIsoString } from '../utils/utils'
 
 export type DecoratedCourtCase = RecallableCourtCase & {
   recallableSentences: SentenceAndOffence[]
@@ -63,30 +66,53 @@ export default class RecallService {
     const sortedRecalls = await this.remandAndSentencingApiClient
       .getAllRecalls(prisonerId, username)
       .then(recalls => recalls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
+    return this.enrichRecalls(
+      sortedRecalls,
+      prisonerId,
+      username,
+      recall => recall.source === 'DPS' && recall.recallUuid === latestRecallUuid,
+    )
+  }
 
-    const requiredPrisons = sortedRecalls.map(recall => recall.createdByPrison)
+  public async getRecall(recallUuid: string, username: string): Promise<ExistingRecall> {
+    const recall = await this.remandAndSentencingApiClient.getRecall(recallUuid, username)
+    return this.enrichRecalls([recall], recall.prisonerId, username).then(enriched => enriched[0])
+  }
+
+  private async enrichRecalls(
+    recalls: ApiRecall[],
+    prisonerId: string,
+    username: string,
+    isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
+  ): Promise<ExistingRecall[]> {
+    const requiredPrisons = recalls.map(recall => recall.createdByPrison).filter(it => it)
     const requiredCourts = [
       ...new Set(
-        sortedRecalls
+        recalls
           .flatMap(recall => (recall.courtCases ?? []).map(courtCase => courtCase.courtCode))
           .filter((code): code is string => !!code && code !== ''),
       ),
     ]
     const requiredOffences = [
       ...new Set(
-        sortedRecalls
+        recalls
           .flatMap(recall => recall.courtCases ?? [])
           .flatMap(courtCase => (courtCase.sentences ?? []).map(s => s.offenceCode))
           .filter((code): code is string => !!code && code !== ''),
       ),
     ]
     const [prisons, courts, offences] = await Promise.all([
-      this.prisonRegisterApiClient.getPrisonNames(requiredPrisons, username),
-      this.courtRegisterApiClient.getCourtDetails(requiredCourts, username),
-      this.manageOffencesApiClient.getOffencesByCodes(requiredOffences),
+      requiredPrisons.length
+        ? this.prisonRegisterApiClient.getPrisonNames(requiredPrisons, username)
+        : Promise.resolve([]),
+      requiredCourts.length
+        ? this.courtRegisterApiClient.getCourtDetails(requiredCourts, username)
+        : Promise.resolve([]),
+      requiredOffences.length ? this.manageOffencesApiClient.getOffencesByCodes(requiredOffences) : Promise.resolve([]),
     ])
 
-    const recallsThatMightHaveAnAdjustment = sortedRecalls
+    const recallsThatMightHaveAnAdjustment = recalls
       .filter(recall => recall.source === 'DPS' && recall.revocationDate && recall.returnToCustodyDate)
       .map(recall => recall.recallUuid)
     const adjustments = await Promise.all(
@@ -94,9 +120,8 @@ export default class RecallService {
         this.adjustmentsApiClient.getAdjustmentsForRecall(prisonerId, id, username),
       ),
     ).then(adjustmentResponses => adjustmentResponses.flatMap(it => it))
-    const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
-    return sortedRecalls.map(recall =>
-      this.toExistingRecall(recall, prisons, courts, offences, adjustments, latestRecallUuid),
+    return recalls.map(recall =>
+      this.toExistingRecall(recall, prisons, courts, offences, adjustments, isEditableAndDeletable),
     )
   }
 
@@ -106,9 +131,9 @@ export default class RecallService {
     courts: Court[],
     offences: Offence[],
     adjustments: AdjustmentDto[],
-    latestRecallUuid: string,
+    isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
   ): ExistingRecall {
-    const isLatestAndDPSRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
+    const isLatestAndDPSRecall = isEditableAndDeletable(recall)
     const adjustmentsForRecall = adjustments.filter(
       adjustment => adjustment && adjustment.recallId === recall.recallUuid,
     )
@@ -118,6 +143,7 @@ export default class RecallService {
     }
     return {
       recallUuid: recall.recallUuid,
+      prisonerId: recall.prisonerId,
       source: recall.source,
       createdAtTimestamp: recall.createdAt,
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
@@ -148,6 +174,29 @@ export default class RecallService {
         })),
       })),
     }
+  }
+
+  public getApiRecallFromJourney(journey: CreateRecallJourney, username: string, prison: string): CreateRecall {
+    return {
+      prisonerId: journey.nomsId,
+      createdByUsername: username,
+      createdByPrison: prison,
+      recallTypeCode: journey.recallType,
+      revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+      inPrisonOnRevocationDate: journey.inCustodyAtRecall,
+      returnToCustodyDate: journey.inCustodyAtRecall
+        ? null
+        : dateToIsoString(datePartsToDate(journey.returnToCustodyDate)),
+      sentenceIds: journey.sentenceIds,
+    }
+  }
+
+  async createRecall(recall: CreateRecall, username: string): Promise<CreateRecallResponse> {
+    return this.remandAndSentencingApiClient.createRecall(recall, username)
+  }
+
+  async deleteRecall(recallUuid: string, username: string) {
+    return this.remandAndSentencingApiClient.deleteRecall(recallUuid, username)
   }
 
   public getCasesSelectedForRecall(journey: CreateRecallJourney) {
