@@ -5,29 +5,33 @@
 
 {% set title = "Select all the cases that are relevant to this recall" %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set contentColumnWidth = "full" %}  
+{% set contentColumnWidth = "full" %}
 
 {% block pageContent %}
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     {%- call interruptionCard({
       heading: title,
       primaryAction: {
         text: "Continue",
-        element: 'button',
-        attributes: { type: "submit", "data-prevent-double-click": true, id: "continue-manual", "data-qa": "continue-manual-action" },
+        element: "button",
+        attributes: {
+          type: "submit",
+          "data-prevent-double-click": true,
+          id: "continue-manual",
+          "data-qa": "continue-manual-action"
+        },
         classes: "govuk-button--inverse"
       },
       secondaryAction: {
         text: "Cancel recall",
         href: cancelUrl,
-        attributes: { id: "cancel-manual", "data-qa": "cancel-manual-action" },
+        attributes: {
+          id: "cancel-manual",
+          "data-qa": "cancel-manual-action"
+        },
         classes: "govuk-button--secondary govuk-button--inverse govuk-!-margin-left-1"
-      },
-      form: {
-        method: "post",
-        hiddenFields: {
-          _csrf: csrfToken
-        }
       }
     }) -%}
       <p class="govuk-body">This service cannot determine which sentences are eligible for recall.</p>
@@ -37,4 +41,5 @@
         To do this, you must select all cases that include sentences that were active when the person's licence was revoked.
       </p>
     {%- endcall %}
+  </form>
 {% endblock %}
