@@ -55,7 +55,7 @@ describe('GET', () => {
     ['CRITICAL_ERRORS', `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`],
     ['AUTOMATED', `/person/${nomsId}/recall/create/${journeyId}/review-sentences`],
     ['NO_RECALLABLE_SENTENCES_FOUND', `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`],
-    ['VALIDATION', `/person/${nomsId}/recall/create/${journeyId}/select-cases`],
+    ['VALIDATION', `/person/${nomsId}/recall/create/${journeyId}/manual/start`],
     ['CONFLICTING_ADJUSTMENTS', `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`],
   ])(
     'Should redirect to the correct page for each decision type',

@@ -43,12 +43,17 @@
 
       <div class="govuk-grid-column-one-half">
         {{ cardInfo('Arrest date', model.returnToCustodyDate | formatDate if model.returnToCustodyDate else 'In prison at recall') }}
-        {% set viewAdjustmentsForNomisRecallLink %}
+        {% set ual = 'None' %}
+        {% if isNomisRecall %}
+          {% set ual %}
             <a class="govuk-link" href="{{ serviceDefinitions.services.adjustments.href }}" target="_blank" rel="noopener noreferrer">
               View UAL details
             </a>
-        {% endset %}
-        {{ cardInfo('UAL (unlawfully at large)', viewAdjustmentsForNomisRecallLink if isNomisRecall else 'TBC') }}
+          {% endset %}
+        {% elseif model.ualAdjustmentTotalDays %}
+          {% set ual = model.ualAdjustmentTotalDays + (' day' if model.ualAdjustmentTotalDays == 1 else ' days')  %}
+        {% endif %}
+        {{ cardInfo('UAL (unlawfully at large)', ual) }}
       </div>
     </div>
 

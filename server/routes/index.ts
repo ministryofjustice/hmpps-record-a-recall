@@ -17,6 +17,10 @@ import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 import CheckSentencesController from './create/manual/start/checkSentencesController'
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
+import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtCasesSchema'
+import CreateRecallReviewSentencesController from './create/review-sentences/createRecallReviewSentencesController'
+import CreateRecallTypeController from './create/recall-type/createRecallTypeController'
+import { recallTypeSchema } from './common/recall-type/recallTypeSchema'
 
 export default function routes({
   prisonerService,
@@ -86,6 +90,19 @@ export default function routes({
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/review-sentences',
+    controller: new CreateRecallReviewSentencesController(recallService, calculateReleaseDatesService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/recall-type',
+    controller: new CreateRecallTypeController(calculateReleaseDatesService),
+    validateToSchema: recallTypeSchema,
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
   // create - manual journey
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/start',
@@ -96,12 +113,16 @@ export default function routes({
   route({
     path: '/person/:nomisId/recall/create/:journeyId/manual/checkSentences',
     controller: new CheckSentencesController(),
+    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
+    controller: new SelectCasesController(recallService),
+    validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases/:caseIndex',
     controller: new SelectCasesController(recallService),
+    validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

@@ -16,7 +16,7 @@ export default class CreateRecallDecisionController implements Controller {
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]!
 
-    if (journey.revocationDate === undefined || journey.inCustodyAtRecall === undefined) {
+    if (!journey.revocationDate || journey.inCustodyAtRecall === undefined) {
       return res.redirect(CreateRecallUrls.start(nomsId))
     }
 
@@ -38,12 +38,12 @@ export default class CreateRecallDecisionController implements Controller {
       return res.redirect(CreateRecallUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId))
     }
     if (decision.decision === 'VALIDATION') {
-      return res.redirect(CreateRecallUrls.selectCasesManualJourney(nomsId, journeyId))
+      return res.redirect(CreateRecallUrls.manualJourneyStart(nomsId, journeyId))
     }
     if (decision.decision === 'AUTOMATED') {
       return res.redirect(CreateRecallUrls.reviewSentencesAutomatedJourney(nomsId, journeyId))
     }
 
-    throw Error(`Uknown decision type: ${decision.decision}`)
+    throw Error(`Unknown decision type: ${decision.decision}`)
   }
 }

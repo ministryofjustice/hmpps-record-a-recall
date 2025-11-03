@@ -65,6 +65,8 @@ describe('GET', () => {
     expect($('#day').val()).toBeUndefined()
     expect($('#month').val()).toBeUndefined()
     expect($('#year').val()).toBeUndefined()
+    expect($('#inCustodyAtRecall-false').attr('checked')).toBeFalsy()
+    expect($('#inCustodyAtRecall-true').attr('checked')).toBeFalsy()
   })
 
   it('should populate the form with session values if there are no form values', async () => {

@@ -4,6 +4,7 @@ import { PersonJourneyParams } from '../../../../@types/journeys'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
+import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchema'
 
 export default class SelectCasesController implements Controller {
   public PAGE_NAME = Page.CREATE_RECALL_MANUAL_SELECT_CASES
@@ -33,5 +34,31 @@ export default class SelectCasesController implements Controller {
     })
   }
 
-  // TODO POST method to be implemented
+  POST = async (
+    req: Request<PersonJourneyParams & { caseIndex?: string }, unknown, SelectCourtCasesForm>,
+    res: Response,
+  ): Promise<void> => {
+    const { nomsId, journeyId, caseIndex } = req.params
+    const { activeSentenceChoice } = req.body
+
+    const journey = req.session.createRecallJourneys[journeyId]!
+    const cases = journey.recallableCourtCases ?? []
+
+    const currentCaseIndex = Number(caseIndex) || 0
+    const hasNextCase = currentCaseIndex + 1 < cases.length
+    const nextCaseIndex = currentCaseIndex + 1
+    const currentCaseUuid = cases[currentCaseIndex].courtCaseUuid
+
+    if (activeSentenceChoice === 'YES') {
+      journey.courtCaseIdsWithActiveSentences = [...(journey.courtCaseIdsWithActiveSentences ?? []), currentCaseUuid]
+    }
+
+    // Move to next case if available
+    if (hasNextCase) {
+      return res.redirect(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/${nextCaseIndex}`)
+    }
+
+    // last case — decide final route
+    return res.redirect(CreateRecallUrls.manualCheckSentences(nomsId, journeyId))
+  }
 }

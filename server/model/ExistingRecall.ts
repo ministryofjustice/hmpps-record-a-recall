@@ -10,6 +10,7 @@ export interface ExistingRecall {
   recallTypeDescription: string
   revocationDate?: string
   returnToCustodyDate?: string
+  ualAdjustmentTotalDays?: number
   courtCases: ExistingRecallCourtCase[]
 }
 

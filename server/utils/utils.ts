@@ -72,3 +72,16 @@ export const periodLengthToSentenceLength = (periodLength: PeriodLength): Senten
   }
   return null
 }
+
+export const maxOf = <A, B>(all: A[], map: (a: A) => B): B => {
+  let max: B = null
+  all.forEach(it => {
+    if (!max) {
+      max = map(it)
+    }
+    if (map(it) > max) {
+      max = map(it)
+    }
+  })
+  return max
+}

@@ -9,3 +9,5 @@ export type RecordARecallValidationResult = components['schemas']['RecordARecall
 export type RecordARecallRequest = components['schemas']['RecordARecallRequest']
 export type RecordARecallDecisionResult = components['schemas']['RecordARecallDecisionResult']
 export type CalculatedReleaseDates = components['schemas']['CalculatedReleaseDates']
+export type RecallableSentence = components['schemas']['RecallableSentence']
+export type RecallSentenceCalculation = components['schemas']['RecallSentenceCalculation']

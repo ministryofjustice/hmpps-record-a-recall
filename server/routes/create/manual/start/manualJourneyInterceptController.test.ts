@@ -73,7 +73,7 @@ describe('POST /manual/start', () => {
     const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
 
     // Then
-    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-cases`)
+    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`)
     expect(existingJourney.isManual).toBe(true)
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
