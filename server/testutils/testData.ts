@@ -66,6 +66,7 @@ export default class TestData {
 
   static existingRecall = ({
     recallUuid = uuidv4(),
+    prisonerId = 'A1234BC',
     createdAtTimestamp = '2025-06-20',
     createdAtLocationName = undefined,
     revocationDate = undefined,
@@ -79,6 +80,7 @@ export default class TestData {
   }: Partial<ExistingRecall> = {}): ExistingRecall =>
     ({
       recallUuid,
+      prisonerId,
       createdAtTimestamp,
       createdAtLocationName,
       revocationDate,

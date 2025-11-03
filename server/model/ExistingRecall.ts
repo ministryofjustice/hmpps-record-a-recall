@@ -2,6 +2,7 @@ import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentenci
 
 export interface ExistingRecall {
   recallUuid: string
+  prisonerId: string
   source: 'NOMIS' | 'DPS'
   createdAtTimestamp: string
   createdAtLocationName?: string
