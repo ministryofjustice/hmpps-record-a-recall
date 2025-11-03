@@ -100,7 +100,7 @@ describe('selectCasesController Tests', () => {
     const selectCasesUrl = (caseIndex?: number) => CreateRecallUrls.manualSelectCases(nomsId, journeyId, caseIndex)
 
     beforeEach(() => {
-      existingJourney.courtCaseIdsWithActiveSentences = []
+      existingJourney.courtCaseIdsSelectedForRecall = []
       existingJourney.recallableCourtCases = undefined as RecallableCourtCase[]
     })
 
@@ -114,7 +114,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
       expect(res.header.location).toBe(selectCasesUrl(2))
-      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual(['uuid-2'])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
     })
 
     it('NO on a middle case: skips storing and redirects to next case', async () => {
@@ -127,7 +127,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(selectCasesUrl(2))
-      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual([])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
     })
 
     it('YES on last case: stores UUID and goes to next step', async () => {
@@ -136,7 +136,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
-      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
     })
 
     it('NO on last case: does not store and goes to next step', async () => {
@@ -145,7 +145,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
-      expect(existingJourney.courtCaseIdsWithActiveSentences).toEqual([])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
     })
   })
 })

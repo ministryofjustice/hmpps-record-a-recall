@@ -1,0 +1,66 @@
+{% extends "../prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "partials/components/case-and-sentences/macro.njk" import caseAndSentences %}
+
+{% set title = "Check that the sentences and offences are correct" %}
+{% set pageTitle = applicationName + " - " + title %}
+
+{% block beforeContent %}
+  {{ super() }}
+{% endblock %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-xl">
+    <span class="govuk-caption-xl">{{ pageCaption }}</span>
+    {{ title }}
+  </h1>
+
+  <p data-qa="led-line">
+{#    TODO this SLED content may need changing (it's in discussion), because it's not necessarily a SLED , it is a LED though if set#}
+    {% if licenceExpiryDate %}
+      The latest SLED (Sentence and licence expiry date) is <b>{{ licenceExpiryDate | formatDate }}</b>. This is the SLED on this person's licence.
+    {% else %}
+      The SLED (Sentence and licence expiry date) is not available.
+    {% endif %}
+  </p>
+
+  <h2 class="govuk-heading-l">
+    Court cases with sentences selected for recall ({{ casesSelectedForRecall.length }})
+  </h2>
+
+  {% for courtCase in casesSelectedForRecall %}
+    {{ caseAndSentences(courtCase, courtCase.recallableSentences) }}
+  {% endfor %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
+
+  <p class="govuk-body">If you think some information is wrong, you can manage all court case
+    information <a class="govuk-link" target="external" href="{{ serviceDefinitions.services.overview.href }}">Court cases and
+      release dates (opens in a new tab)</a>.
+  </p>
+
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Confirm and continue",
+        preventDoubleClick: true,
+        attributes: {
+          "data-qa": "confirm-and-continue-btn",
+          id: "submit"
+        },
+        href: continueUrl
+      }) }}
+
+      {{ govukButton({
+        text: "Cancel",
+        classes: "govuk-button--secondary",
+        preventDoubleClick: true,
+        href: cancelUrl
+      }) }}
+    </div>
+  </form>
+{% endblock %}

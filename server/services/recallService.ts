@@ -14,6 +14,7 @@ import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import AdjustmentsApiClient from '../data/adjustmentsApiClient'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { CreateRecallJourney } from '../@types/journeys'
 
 export type DecoratedCourtCase = RecallableCourtCase & {
   recallableSentences: SentenceAndOffence[]
@@ -147,5 +148,12 @@ export default class RecallService {
         })),
       })),
     }
+  }
+
+  public getCasesSelectedForRecall(journey: CreateRecallJourney) {
+    const { courtCaseIdsSelectedForRecall = [] } = journey
+    const cases = journey.recallableCourtCases ?? []
+
+    return cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid))
   }
 }

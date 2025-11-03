@@ -1,0 +1,87 @@
+{% extends "../prisonerBannerBackLayout.njk" %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "partials/components/case-and-sentences/macro.njk" import caseAndSentences %}
+
+{% set title = "Select all cases that had an active sentence" %}
+{% set pageTitle = applicationName + " - " + title %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">
+    <span class="govuk-caption-l">{{ pageCaption }}</span>
+    {{ title }}
+  </h1>
+
+  <p class="govuk-body">The sentence must have been active when the person's licence was revoked. Any missing sentence types can be added later.</p>
+  <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ courtCaseIndex + 1 }} of {{ totalCases }}</p>
+
+  {# Recallable Offences Section #}
+  {% if courtCase.recallableSentences and courtCase.recallableSentences.length > 0 %}
+    <div data-qa="recallable-sentences">
+      {{ caseAndSentences(courtCase, courtCase.recallableSentences) }}
+    </div>
+  {% endif %}
+
+  {# Non-Recallable Sentences Dropdown #}
+  {% if courtCase.nonRecallableSentences and courtCase.nonRecallableSentences.length > 0 %}
+    <div data-qa="non-recallable-sentences">
+      <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+        <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">
+          View offences which are not eligible for recall ({{ courtCase.nonRecallableSentences.length }})
+        </span>
+        </summary>
+        <div data-qa="non-recallable-sentences">
+          {{ caseAndSentences(courtCase, courtCase.nonRecallableSentences) }}
+        </div>
+      </details>
+    </div>
+  {% endif %}
+
+  <form method="post" action="" class="govuk-!-margin-top-6">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
+
+    {% set fieldError = validationErrors | findError('activeSentenceChoice') %}
+
+    {{ govukRadios({
+      name: "activeSentenceChoice",
+      fieldset: {
+        legend: {
+          text: "Did this case have an active sentence?",
+          isPageHeading: false,
+          classes: "govuk-fieldset__legend--m"
+        }
+      },
+      items: [
+        {
+          value: "YES",
+          text: "Yes",
+          checked: formResponses.activeSentenceChoice == "YES"
+        },
+        {
+          value: "NO",
+          text: "No",
+          checked: formResponses.activeSentenceChoice == "NO"
+        }
+      ],
+      errorMessage: fieldError
+    }) }}
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        preventDoubleClick: true,
+        attributes: {
+          id: "submit",
+          "data-qa": "continue-btn"
+        }
+      }) }}
+      {{ govukButton({
+        text: "Cancel",
+        classes: "govuk-button--secondary",
+        href: cancelUrl
+      }) }}
+    </div>
+  </form>
+{% endblock %}

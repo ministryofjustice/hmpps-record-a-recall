@@ -1,0 +1,56 @@
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+
+{# TODO this code has been lifted from one of the screens in the recall journey, it will eventually evolve into a reusable design component for listing a court case with associated sentences#}
+
+<h2 data-qa="court-case-main-heading" class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+  {% if courtCase.reference %}
+    {{ courtCase.reference }} at
+  {% endif %}
+  {# TODO this shouldnt be the formattedOverallConvictionDate - should use the sentencing appearance date - to fix#}
+  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.formattedOverallConvictionDate | default("N/A") }}
+</h2>
+
+{% for sentence in sentences %}
+  {# TODO not sure why we're setting sentenceTypeDisplay #}
+  {% if sentence.sentenceTypeDescription == 'Required' %}
+    {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
+  {% else %}
+    {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+  {% endif %}
+  {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+  {# Determine numeric values for count and line number #}
+  {% if sentence.countNumber and sentence.countNumber != '-1' %}
+    {% set countNumberWithText = sentence.countNumber %}
+    {% set lineNumberWithText = null %}
+  {% elseif not sentence.countNumber %}
+    {% set countNumberWithText = null %}
+    {% set lineNumberWithText = sentence.lineNumber %}
+  {% else %}
+    {# countNumber is '-1' → show neither #}
+    {% set countNumberWithText = null %}
+    {% set lineNumberWithText = null %}
+  {% endif %}
+
+  {# TODO sentence.consecutiveToChargeNumber is never set #}
+  {# TODO will prob align this offenceCard with RAS #}
+  {# TODO sentenceDate isnt what I think it should be (from api)  #}
+  {{ offenceCard({
+    offenceCode: sentence.offenceCode | default("N/A"),
+    offenceName: sentence.offenceDescription or 'Offence description not available',
+    offenceStartDate: sentence.offenceStartDate | default('N/A'),
+    offenceEndDate: sentence.offenceEndDate | default(null),
+    countNumber: countNumberWithText,
+    lineNumber: lineNumberWithText,
+    terrorRelated: sentence.terrorRelated | default(false),
+    isSentenced: true,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
+    sentenceServeType: sentence.sentenceServeType | default(null),
+    consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
+    sentenceType: sentenceTypeDisplay | safe,
+    sentenceDate: sentenceDate,
+    fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
+    detailsClasses: 'govuk-!-padding-4',
+    actions: null,
+    listItems: null
+  }) }}
+{% endfor %}

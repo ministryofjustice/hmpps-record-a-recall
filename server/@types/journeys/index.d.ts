@@ -13,7 +13,7 @@ export interface CreateRecallJourney {
   returnToCustodyDate?: DateParts
   recallType?: string
   recallableCourtCases?: RecallableCourtCase[]
-  courtCaseIdsWithActiveSentences?: string[]
+  courtCaseIdsSelectedForRecall?: string[]
 }
 
 export interface DateParts {

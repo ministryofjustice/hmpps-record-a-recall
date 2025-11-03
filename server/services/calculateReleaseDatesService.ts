@@ -19,4 +19,20 @@ export default class CalculateReleaseDatesService {
   ): Promise<RecordARecallDecisionResult> {
     return this.calculateReleaseDatesApiClient.makeDecisionForRecordARecall(nomsId, recordARecallRequest, username)
   }
+
+  async getSledFromLatestCalc(nomsId: string): Promise<string | undefined> {
+    const latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
+    if (!latestCalc?.dates) return undefined
+
+    // Prefer SLED if available
+    const sled = latestCalc.dates.find(it => it.type === 'SLED')?.date
+    if (sled) return sled
+
+    // Otherwise fall back to LED
+    const led = latestCalc.dates.find(it => it.type === 'LED')?.date
+    if (led) return led
+
+    // Nothing found
+    return undefined
+  }
 }
