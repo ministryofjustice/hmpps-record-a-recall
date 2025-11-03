@@ -20,6 +20,8 @@ import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtC
 import CreateRecallReviewSentencesController from './create/review-sentences/createRecallReviewSentencesController'
 import CreateRecallTypeController from './create/recall-type/createRecallTypeController'
 import { recallTypeSchema } from './common/recall-type/recallTypeSchema'
+import ConfirmDeleteRecallController from './delete/confirmDeleteRecallController'
+import { confirmDeleteRecallSchema } from './delete/confirmDeleteRecallSchema'
 import CreateRecallCheckAnswersController from './create/check-answer/createRecallCheckAnswersController'
 
 export default function routes({
@@ -128,6 +130,13 @@ export default function routes({
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  // delete recall
+  route({
+    path: '/person/:nomsId/recall/:recallUuid/delete',
+    controller: new ConfirmDeleteRecallController(recallService),
+    validateToSchema: confirmDeleteRecallSchema,
   })
 
   return router
