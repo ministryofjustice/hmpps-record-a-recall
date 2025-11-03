@@ -1,6 +1,8 @@
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import {
   ApiRecall,
+  CreateRecall,
+  CreateRecallResponse,
   RecallableCourtCase,
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -14,6 +16,8 @@ import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import AdjustmentsApiClient from '../data/adjustmentsApiClient'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { CreateRecallJourney } from '../@types/journeys'
+import { datePartsToDate, dateToIsoString } from '../utils/utils'
 
 export type DecoratedCourtCase = RecallableCourtCase & {
   recallableSentences: SentenceAndOffence[]
@@ -147,5 +151,24 @@ export default class RecallService {
         })),
       })),
     }
+  }
+
+  public getApiRecallFromJourney(journey: CreateRecallJourney, username: string, prison: string): CreateRecall {
+    return {
+      prisonerId: journey.nomsId,
+      createdByUsername: username,
+      createdByPrison: prison,
+      recallTypeCode: journey.recallType,
+      revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+      inPrisonOnRevocationDate: journey.inCustodyAtRecall,
+      returnToCustodyDate: journey.inCustodyAtRecall
+        ? null
+        : dateToIsoString(datePartsToDate(journey.returnToCustodyDate)),
+      sentenceIds: journey.sentenceIds,
+    }
+  }
+
+  async createRecall(recall: CreateRecall, username: string): Promise<CreateRecallResponse> {
+    return this.remandAndSentencingApiClient.createRecall(recall, username)
   }
 }

@@ -27,6 +27,10 @@ export default class CreateRecallUrls {
     return `/person/${nomsId}/recall/create/${journeyId}/check-answers`
   }
 
+  static recallCreatedConfirmation = (nomsId: string, recallId: string) => {
+    return `/person/${nomsId}/recall/create/${recallId}/confirmed`
+  }
+
   static confirmCancel = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`
   }

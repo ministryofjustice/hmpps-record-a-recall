@@ -67,6 +67,8 @@ export default function nunjucksSetup(app: express.Express): void {
 
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
+  njkEnv.addFilter('pluralise', (word, number, appender) => (number === 1 ? word : `${word}${appender || 's'}`))
+
   // Filter to find error for a specific field from a field errors object
   function findError(errors: Record<string, string[]> | undefined, fieldName: string): { text: string } | null {
     if (!errors?.[fieldName]) return null
