@@ -179,6 +179,12 @@ export default function routes({
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/check-answers',
+    controller: new CreateRecallCheckAnswersController(recallService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
   // delete recall
   route({
     path: '/person/:nomsId/recall/:recallUuid/delete',
