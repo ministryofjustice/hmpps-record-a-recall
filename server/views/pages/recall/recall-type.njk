@@ -10,7 +10,7 @@
 {% block pageContent %}
     <h1 class="govuk-heading-l">{{ title }}</h1>
 
-    <form method="post" action="">
+    <form method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
         {% set recallTypeError = validationErrors | findError('recallType') %}
