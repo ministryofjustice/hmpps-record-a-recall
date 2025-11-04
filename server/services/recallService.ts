@@ -198,4 +198,11 @@ export default class RecallService {
   async deleteRecall(recallUuid: string, username: string) {
     return this.remandAndSentencingApiClient.deleteRecall(recallUuid, username)
   }
+
+  public getCasesSelectedForRecall(journey: CreateRecallJourney) {
+    const { courtCaseIdsSelectedForRecall = [] } = journey
+    const cases = journey.recallableCourtCases ?? []
+
+    return cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid))
+  }
 }

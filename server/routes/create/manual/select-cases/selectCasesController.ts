@@ -21,14 +21,14 @@ export default class SelectCasesController implements Controller {
     }
 
     const cases = journey.recallableCourtCases
-    const currentCaseIndex = Number(caseIndex) || 0
+    const courtCaseIndex = Number(caseIndex) || 0
 
-    const currentCase = cases[currentCaseIndex]
+    const courtCase = cases[courtCaseIndex]
 
-    return res.render('pages/recall/select-court-cases', {
+    return res.render('pages/recall/manual/select-court-cases', {
       prisoner,
-      currentCase,
-      currentCaseIndex,
+      courtCase,
+      courtCaseIndex,
       totalCases: cases.length,
       cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
     })
@@ -50,7 +50,7 @@ export default class SelectCasesController implements Controller {
     const currentCaseUuid = cases[currentCaseIndex].courtCaseUuid
 
     if (activeSentenceChoice === 'YES') {
-      journey.courtCaseIdsWithActiveSentences = [...(journey.courtCaseIdsWithActiveSentences ?? []), currentCaseUuid]
+      journey.courtCaseIdsSelectedForRecall = [...(journey.courtCaseIdsSelectedForRecall ?? []), currentCaseUuid]
     }
 
     // Move to next case if available

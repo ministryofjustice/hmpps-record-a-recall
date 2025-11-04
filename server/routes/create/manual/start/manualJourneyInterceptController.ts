@@ -15,13 +15,12 @@ export default class ManualJourneyInterceptController implements Controller {
     const journey = req.session.createRecallJourneys[journeyId]
 
     const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
-    return res.render('pages/recall/manual-recall-intercept', {
+    return res.render('pages/recall/manual/manual-recall-intercept', {
       prisoner,
       backLink: journey.isCheckingAnswers
         ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
         : GlobalRecallUrls.home(nomsId),
       cancelUrl,
-      continueUrl: CreateRecallUrls.manualSelectCases(nomsId, journeyId),
     })
   }
 
