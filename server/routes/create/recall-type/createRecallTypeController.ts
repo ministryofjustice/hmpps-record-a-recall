@@ -11,7 +11,7 @@ import { RecallTypeForm } from '../../common/recall-type/recallTypeSchema'
 export default class CreateRecallTypeController implements Controller {
   constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
 
-  PAGE_NAME: Page = Page.CREATE_RECALL_MANAUL_SELECT_TYPE
+  PAGE_NAME: Page = Page.CREATE_RECALL_TYPE_AUTOMATED
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals

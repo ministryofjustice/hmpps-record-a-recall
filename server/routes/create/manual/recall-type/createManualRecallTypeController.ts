@@ -9,7 +9,7 @@ import { RecallTypeForm } from '../../../common/recall-type/recallTypeSchema'
 export default class CreateManualRecallTypeController implements Controller {
   constructor() {}
 
-  PAGE_NAME: Page = Page.CREATE_RECALL_TYPE_AUTOMATED
+  PAGE_NAME: Page = Page.CREATE_RECALL_MANAUL_SELECT_TYPE
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals
