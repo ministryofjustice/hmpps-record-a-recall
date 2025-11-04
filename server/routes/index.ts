@@ -17,13 +17,17 @@ import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
 import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtCasesSchema'
-import CreateRecallReviewSentencesController from './create/review-sentences/createRecallReviewSentencesController'
+import CreateRecallReviewSentencesController from './create/automated/review-sentences/createRecallReviewSentencesController'
 import CreateRecallTypeController from './create/recall-type/createRecallTypeController'
 import { recallTypeSchema } from './common/recall-type/recallTypeSchema'
 import ConfirmDeleteRecallController from './delete/confirmDeleteRecallController'
 import { confirmDeleteRecallSchema } from './delete/confirmDeleteRecallSchema'
 import CreateRecallCheckAnswersController from './create/check-answer/createRecallCheckAnswersController'
 import CheckSentencesController from './create/manual/check-sentences/checkSentencesController'
+import CreateRecallCriticalValidationController from './create/intercept/createRecallCriticalValidationController'
+import CreateRecallConflictingAdjustmentsController from './create/intercept/createRecallConflictingAdjustmentsController'
+import CreateRecallNoRecallableSentencesController from './create/intercept/createRecallNoRecallableSentencesController'
+import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
 import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 
 export default function routes({
@@ -110,6 +114,30 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/check-answers',
     controller: new CreateRecallCheckAnswersController(recallService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:recallId/confirmed',
+    controller: new CreateRecallConfirmationController(),
+  })
+
+  // create - intercepts
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/validation-intercept',
+    controller: new CreateRecallCriticalValidationController(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/conflicting-adjustments',
+    controller: new CreateRecallConflictingAdjustmentsController(),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/no-recallable-sentences-found',
+    controller: new CreateRecallNoRecallableSentencesController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

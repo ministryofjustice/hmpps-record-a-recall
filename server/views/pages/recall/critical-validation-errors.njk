@@ -1,0 +1,23 @@
+{% extends "./prisonerBannerBackLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set title = "You cannot record a recall" %}
+{% set pageTitle = applicationName + " - " + title %}
+{% set showCancelLink = false %}
+
+{% block pageContent %}
+    <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot record a recall</h1>
+     <p class="govuk-body" data-qa="validation-message">
+        {% if messages.length == 1 %}This is because {{ messages | first | lowercaseFirstLetter}}</p>
+        {% else %}This is because:
+        <ul class="govuk-list govuk-list--bullet">
+            {% for message in messages %}
+                <li data-qa="multi-validation-message-{{loop.index}}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </p>
+    <h2 class="govuk-heading-m">What you need to do</h2>
+    <p class="govuk-body">Update <a href="{{rasDashboardUrl}}"">these details in DPS</a> and try again.</p>
+{% endblock %}

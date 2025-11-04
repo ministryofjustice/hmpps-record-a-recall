@@ -2,44 +2,34 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-
-{% block beforeContent %}
-  {{ super() }}
-  {{ govukBackLink({
-    text: "Back",
-    href: backLink
-  }) }}
-{% endblock %}
 
 {% block content %}
-
-
-
     {% call interruptionCard({
-        heading: "The revocation date and arrest date overlap with existing adjustments",
-        primaryAction: {
+      heading: "The revocation date and arrest date overlap with existing adjustments",
+      primaryAction: {
         text: "Update the recall dates",
-        href: journeyBaseLink + "/revocation-date",
+        href: revocationDateLink,
         preventDoubleClick: true,
         type: "submit"
-        },
-        secondaryAction: {
+      },
+      secondaryAction: {
         text: "Cancel recall",
         href: cancelLink,
         preventDoubleClick: true,
         type: "reset",
         style: "button"
-        }
+      }
     }) %}
-        <p>You have entered:</p>
-        <p>A revocation date of <b>{{ revocationDate | fullMonthdate }}</b></p>
-        <p>An arrest date of <b>{{ arrestDate | fullMonthdate }}</b></p>
+    <p>You have entered:</p>
+    <p>A revocation date of <b>{{ revocationDate | formatDate }}</b></p>
+    {% if returnToCustodyDate %}
+      <p>An arrest date of <b>{{ returnToCustodyDate | formatDate }}</b></p>
+    {% endif %}
 
+{# TODO fetch adjustment thats conflicting in CRDS-api
        {% if hasMultipleOverlappingUALTypeRecall %}
           <p>There are multiple overlapping periods of recall UAL already recorded</p>
         {% endif %}
-
         {% if relevantAdjustments.length != 0 %}
           <p>These dates overlap with:</p>
           <ul class="govuk-list govuk-list--bullet">
@@ -57,7 +47,8 @@
               </li>
             {% endfor %}
           </ul>
-        {% endif %}
+        {% endif %} #}
+        
         <h2 class='govuk-heading-m moj-interruption-card__heading'>What you need to do</h2>
         <p>If the revocation date or arrest date are incorrect, go back and update these recall dates.</p>
         <p>If the adjustment dates are incorrect, cancel this recall and update the relevant adjustments.</p>

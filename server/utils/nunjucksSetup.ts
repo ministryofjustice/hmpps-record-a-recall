@@ -14,7 +14,7 @@ import {
   sortPeriodLengths,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, initialiseName, periodLengthsToSentenceLengths } from './utils'
+import { formatDate, initialiseName, lowercaseFirstLetter, periodLengthsToSentenceLengths } from './utils'
 import config from '../config'
 import logger from '../../logger'
 
@@ -59,6 +59,7 @@ export default function nunjucksSetup(app: express.Express): void {
   njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
   njkEnv.addFilter('formatCountNumber', formatCountNumber)
   njkEnv.addFilter('sortPeriodLengths', sortPeriodLengths)
+  njkEnv.addFilter('lowercaseFirstLetter', lowercaseFirstLetter)
   njkEnv.addFilter('formatDate', formatDate)
   njkEnv.addFilter('jsonToString', someJson => JSON.stringify(someJson))
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)

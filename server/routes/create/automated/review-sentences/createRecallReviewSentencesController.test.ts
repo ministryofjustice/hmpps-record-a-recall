@@ -4,19 +4,19 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
-import { appWithAllRoutes, user } from '../../testutils/appSetup'
-import RecallService from '../../../services/recallService'
-import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
-import TestData from '../../../testutils/testData'
+import { CreateRecallJourney } from '../../../../@types/journeys'
+import { appWithAllRoutes, user } from '../../../testutils/appSetup'
+import RecallService from '../../../../services/recallService'
+import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
+import TestData from '../../../../testutils/testData'
 
 let app: Express
 let existingJourney: CreateRecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
-jest.mock('../../../services/recallService')
-jest.mock('../../../services/calculateReleaseDatesService')
+jest.mock('../../../../services/recallService')
+jest.mock('../../../../services/calculateReleaseDatesService')
 
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>

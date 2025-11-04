@@ -169,4 +169,14 @@ export default {
   },
   ingressUrl: get('INGRESS_URL', 'http://localhost:3000', requiredInProduction),
   environmentName: get('ENVIRONMENT_NAME', ''),
+  urls: {
+    remandAndSentencing: get('REMAND_AND_SENTENCING_URL', 'http://localhost:8083', requiredInProduction),
+    crds: get('CRDS_URL', 'https://calculate-release-dates-dev.hmpps.service.justice.gov.uk', requiredInProduction),
+    adjustments: get('ADJUSTMENTS_URL', 'https://adjustments-dev.hmpps.service.justice.gov.uk', requiredInProduction),
+    courtCasesReleaseDates: get(
+      'CCARDS_URL',
+      'https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk',
+      requiredInProduction,
+    ),
+  },
 }
