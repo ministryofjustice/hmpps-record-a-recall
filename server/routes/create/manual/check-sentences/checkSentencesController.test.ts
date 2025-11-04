@@ -90,7 +90,7 @@ describe('checkSentencesController Tests', () => {
       const headings = $('h2[data-qa="court-case-main-heading"]')
       // --- First case ---
       const firstHeadingText = $(headings[0]).text().replace(/\s+/g, ' ').trim()
-      expect(firstHeadingText).toBe('REF-1 at N/A on N/A')
+      expect(firstHeadingText).toBe('REF-1 at Default Court Name on N/A')
 
       const firstCaseSiblings = $(headings[0]).nextUntil('h2[data-qa="court-case-main-heading"]')
 
@@ -107,7 +107,7 @@ describe('checkSentencesController Tests', () => {
 
       // --- Second case ---
       const secondHeadingText = $(headings[1]).text().replace(/\s+/g, ' ').trim()
-      expect(secondHeadingText).toBe('REF-2 at N/A on N/A')
+      expect(secondHeadingText).toBe('REF-2 at Default Court Name on N/A')
 
       const secondCaseSiblings = $(headings[1]).nextUntil('h2[data-qa="court-case-main-heading"]')
 
