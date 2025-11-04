@@ -12,12 +12,12 @@ export default class SelectCasesController implements Controller {
   constructor(private readonly recallService: RecallService) {}
 
   GET = async (req: Request<PersonJourneyParams & { caseIndex?: string }>, res: Response): Promise<void> => {
-    const { prisoner } = res.locals
+    const { prisoner, user } = res.locals
     const { nomsId, journeyId, caseIndex } = req.params
     const journey = req.session.createRecallJourneys[journeyId]
 
     if (!journey.recallableCourtCases) {
-      journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId)
+      journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, user.username)
     }
 
     const cases = journey.recallableCourtCases

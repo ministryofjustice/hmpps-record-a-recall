@@ -67,6 +67,7 @@ describe('Recall service', () => {
         cases: [
           {
             courtCaseUuid: 'cc-1',
+            courtCode: 'INNRCC',
             sentences: [
               { offenceCode: 'A1', isRecallable: true },
               { offenceCode: 'B2', isRecallable: false },
@@ -76,7 +77,7 @@ describe('Recall service', () => {
       })
 
       // When
-      const result = await service.getRecallableCourtCases('A1234BC')
+      const result = await service.getRecallableCourtCases('A1234BC', 'username1')
 
       // Then
       expect(manageOffencesApiClient.getOffencesByCodes).toHaveBeenCalledWith(['A1', 'B2'])

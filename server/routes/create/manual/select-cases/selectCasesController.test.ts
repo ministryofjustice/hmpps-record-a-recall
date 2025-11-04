@@ -7,10 +7,7 @@ import * as cheerio from 'cheerio'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import RecallService from '../../../../services/recallService'
-import {
-  RecallableCourtCase,
-  RecallableCourtCaseSentence,
-} from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import TestData from '../../../../testutils/testData'
 import CreateRecallUrls from '../../createRecallUrls'
 
@@ -35,6 +32,7 @@ beforeEach(() => {
       earliestSentenceDate: '2025-01-01',
     },
   }
+
   app = appWithAllRoutes({
     services: { recallService },
     userSupplier: () => user,
@@ -42,6 +40,18 @@ beforeEach(() => {
       receivedSession.createRecallJourneys = {}
       receivedSession.createRecallJourneys[journeyId] = existingJourney
     },
+  })
+  app.use((req, res, next) => {
+    res.locals.user = {
+      authSource: 'azuread',
+      userId: 'user1-id',
+      username: 'user1',
+      name: 'User One',
+      displayName: 'User One',
+      userRoles: ['RECORDER'],
+      token: 'fake-token',
+    }
+    next()
   })
 })
 
@@ -60,20 +70,9 @@ describe('selectCasesController Tests', () => {
       const s3 = TestData.recallableSentence({ offenceCode: 'OFF3', offenceDescription: 'Offence 3' })
 
       recallService.getRecallableCourtCases.mockResolvedValue([
-        TestData.recallableCourtCase([s1], [s2], {
-          courtCaseUuid: 'uuid-1',
-          reference: 'REF-1',
-        }),
-        TestData.recallableCourtCase([s3], [], {
-          courtCaseUuid: 'uuid-2',
-          reference: 'REF-2',
-        }),
-      ] as Array<
-        RecallableCourtCase & {
-          recallableSentences: RecallableCourtCaseSentence[]
-          nonRecallableSentences: RecallableCourtCaseSentence[]
-        }
-      >)
+        TestData.recallableCourtCase([s1], [s2], { courtCaseUuid: 'uuid-1', reference: 'REF-1' }),
+        TestData.recallableCourtCase([s3], [], { courtCaseUuid: 'uuid-2', reference: 'REF-2' }),
+      ])
 
       // When
       const res = await request(app).get(baseUrl).expect(200)
@@ -81,7 +80,7 @@ describe('selectCasesController Tests', () => {
       // Then
       const $ = cheerio.load(res.text)
 
-      expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId)
+      expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, 'user1')
       expect(res.text).toContain('Select all cases that had an active sentence')
       expect(res.text).toContain('Court case 1 of 2')
       expect(res.text).toContain('View offences which are not eligible for recall (1)')
