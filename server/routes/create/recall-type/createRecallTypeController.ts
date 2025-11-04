@@ -8,7 +8,7 @@ import CalculateReleaseDatesService from '../../../services/calculateReleaseDate
 import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
 import { RecallTypeForm } from '../../common/recall-type/recallTypeSchema'
 
-export default class ManualCreateRecallTypeController implements Controller {
+export default class CreateRecallTypeController implements Controller {
   constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
 
   PAGE_NAME: Page = Page.CREATE_RECALL_MANAUL_SELECT_TYPE
