@@ -2,24 +2,13 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
-
-{% block beforeContent %}
-  {{ super() }}
-  {{ govukBackLink({
-    text: "Back",
-    href: backLink
-  }) }}
-{% endblock %}
 
 {% block content %}
-
-
       {% call interruptionCard({
         heading: "None of the sentences recorded are eligible for recall",
         primaryAction: {
           text: "Check the date of revocation",
-          href: journeyBaseLink + "/revocation-date",
+          href: revocationDateLink,
           preventDoubleClick: true,
           type: "submit"
         },
@@ -31,7 +20,7 @@
           style: "button"
         }
     }) -%}
-        <p>The date of revocation entered is: <b>{{ revocationDate | eightDigitDate }}</b>.</p>
+        <p>The date of revocation entered is: <b>{{ revocationDate | formatDate }}</b>.</p>
         <h2 class="govuk-heading-m moj-interruption-card__heading">What to do next</h2>
         <p>1. Check that the revocation date you’ve entered is correct.</p>
         <p>2. Cancel this recall, then check that the sentence information has been recorded correctly.</p>

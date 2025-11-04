@@ -8,16 +8,9 @@
 {% set showBackLink = false %}
 
 {% block pageContent %}
-  {% if action == "updated" %}
-    {% set panelText = "Changes to recall saved" %}
-  {% elif action == "recorded" %}
-    {% set panelText = "Recall recorded" %}
-  {% else %}
-    {% set panelText = "Recall saved" %}
-  {% endif %}
 
   {{ govukPanel({
-    titleText: panelText,
+    titleText: 'Recall recorded',
     attributes: {
       "data-qa": "success-message"
     }
@@ -31,7 +24,7 @@
     <h2 class="govuk-heading-m">Other things you can do</h2>
     <ul class="govuk-list govuk-list--spaced govuk-!-margin-top-2">
       <li><a href="{{ urls.crds }}">Calculate release dates</a></li>
-      <li>Go back to the <a href="{{ urls.profile }}">prisoner profile</a></li>
+      <li>Go back to the <a href="{{ urls.ccrd }}">prisoner profile</a></li>
     </ul>
   </div>
 {% endblock %}

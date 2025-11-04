@@ -1,0 +1,77 @@
+/* eslint-disable no-param-reassign */
+import type { Express } from 'express'
+import request from 'supertest'
+import * as cheerio from 'cheerio'
+import { SessionData } from 'express-session'
+import { v4 as uuidv4 } from 'uuid'
+import { CreateRecallJourney } from '../../../@types/journeys'
+import { appWithAllRoutes, user } from '../../testutils/appSetup'
+
+let app: Express
+let existingJourney: CreateRecallJourney
+const nomsId = 'A1234BC'
+const journeyId: string = uuidv4()
+
+beforeEach(() => {
+  existingJourney = {
+    id: journeyId,
+    lastTouched: new Date().toISOString(),
+    nomsId,
+    isCheckingAnswers: false,
+    isManual: false,
+    inCustodyAtRecall: false,
+    crdsValidationResult: {
+      criticalValidationMessages: [],
+      otherValidationMessages: [],
+      earliestSentenceDate: '2025-01-01',
+    },
+    revocationDate: {
+      year: 2025,
+      month: 10,
+      day: 1,
+    },
+    returnToCustodyDate: {
+      year: 2025,
+      month: 10,
+      day: 5,
+    },
+  }
+  app = appWithAllRoutes({
+    services: {},
+    userSupplier: () => user,
+    sessionReceiver: (receivedSession: Partial<SessionData>) => {
+      receivedSession.createRecallJourneys = {}
+      receivedSession.createRecallJourneys[journeyId] = existingJourney
+    },
+  })
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
+})
+
+describe('GET', () => {
+  it('should render conflicting adjustment intercept', async () => {
+    // Given
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    const text = $('#main-content').text()
+    expect(text).toContain('The revocation date and arrest date overlap with existing adjustments')
+    expect(text).toContain('A revocation date of 01 Oct 2025')
+    expect(text).toContain('An arrest date of 05 Oct 2025')
+  })
+
+  it('should return to start of journey if not found in session', async () => {
+    await request(app)
+      .get(`/person/${nomsId}/recall/create/${uuidv4()}/conflicting-adjustments`)
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+})

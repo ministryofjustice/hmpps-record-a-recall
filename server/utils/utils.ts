@@ -94,3 +94,7 @@ export const maxOf = <A, B>(all: A[], map: (a: A) => B): B => {
   })
   return max
 }
+
+export const lowercaseFirstLetter = (s: string): string => {
+  return s ? s[0].toLowerCase() + s.slice(1) : ''
+}

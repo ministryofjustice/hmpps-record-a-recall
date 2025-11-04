@@ -1,16 +1,16 @@
 import { Request, Response } from 'express'
-import { Controller } from '../../controller'
-import CreateRecallUrls from '../createRecallUrls'
-import { PersonJourneyParams } from '../../../@types/journeys'
-import { Page } from '../../../services/auditService'
-import RecallService, { DecoratedCourtCase } from '../../../services/recallService'
-import { datePartsToDate, dateToIsoString, maxOf } from '../../../utils/utils'
-import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
-import { SentenceAndOffence } from '../../../@types/recallTypes'
+import { Controller } from '../../../controller'
+import CreateRecallUrls from '../../createRecallUrls'
+import { PersonJourneyParams } from '../../../../@types/journeys'
+import { Page } from '../../../../services/auditService'
+import RecallService, { DecoratedCourtCase } from '../../../../services/recallService'
+import { datePartsToDate, dateToIsoString, maxOf } from '../../../../utils/utils'
+import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
+import { SentenceAndOffence } from '../../../../@types/recallTypes'
 import {
   RecallSentenceCalculation,
   RecordARecallDecisionResult,
-} from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+} from '../../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CreateRecallReviewSentencesController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_REVIEW_SENTENCES_AUTOMATED
