@@ -4,7 +4,6 @@ import { PersonJourneyParams } from '../../../../@types/journeys'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
-import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchema'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import CourtCasesReleaseDatesService from '../../../../services/courtCasesReleaseDatesService'
 
@@ -24,7 +23,7 @@ export default class CheckSentencesController implements Controller {
 
     const journey = req.session.createRecallJourneys[journeyId]
 
-    const licenceExpiryDate = await this.calculateReleaseDatesService.getSledFromLatestCalc(nomsId)
+    const licenceExpiryDate = await this.calculateReleaseDatesService.getLedFromLatestCalc(nomsId)
     const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey)
 
     return res.render('pages/recall/manual/check-sentences', {

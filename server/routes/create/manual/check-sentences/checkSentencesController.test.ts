@@ -6,13 +6,9 @@ import { v4 as uuidv4 } from 'uuid'
 import * as cheerio from 'cheerio'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
-import RecallService, { DecoratedCourtCase } from '../../../../services/recallService'
-import {
-  RecallableCourtCase,
-  RecallableCourtCaseSentence,
-} from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import RecallService from '../../../../services/recallService'
+import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import TestData from '../../../../testutils/testData'
-import CreateRecallUrls from '../../createRecallUrls'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import CourtCasesReleaseDatesService from '../../../../services/courtCasesReleaseDatesService'
 
@@ -76,7 +72,7 @@ describe('checkSentencesController Tests', () => {
         reference: 'REF-2',
       } as RecallableCourtCase)
 
-      calculateReleaseDatesService.getSledFromLatestCalc.mockResolvedValue('2024-02-03')
+      calculateReleaseDatesService.getLedFromLatestCalc.mockResolvedValue('2024-02-03')
       recallService.getCasesSelectedForRecall.mockReturnValue([courtCase1, courtCase2])
       courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
 
