@@ -28,6 +28,7 @@ import CreateRecallCriticalValidationController from './create/intercept/createR
 import CreateRecallConflictingAdjustmentsController from './create/intercept/createRecallConflictingAdjustmentsController'
 import CreateRecallNoRecallableSentencesController from './create/intercept/createRecallNoRecallableSentencesController'
 import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
+import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 
 export default function routes({
   prisonerService,
@@ -168,6 +169,13 @@ export default function routes({
       calculateReleaseDatesService,
       courtCasesReleaseDatesService,
     ),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/recall-type',
+    controller: new CreateManualRecallTypeController(),
+    validateToSchema: recallTypeSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

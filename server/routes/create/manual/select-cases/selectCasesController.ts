@@ -13,11 +13,12 @@ export default class SelectCasesController implements Controller {
 
   GET = async (req: Request<PersonJourneyParams & { caseIndex?: string }>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
+    const { username } = req.user
     const { nomsId, journeyId, caseIndex } = req.params
     const journey = req.session.createRecallJourneys[journeyId]
 
     if (!journey.recallableCourtCases) {
-      journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId)
+      journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
     }
 
     const cases = journey.recallableCourtCases

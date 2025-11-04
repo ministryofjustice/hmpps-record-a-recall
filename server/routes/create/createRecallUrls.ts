@@ -65,4 +65,8 @@ export default class CreateRecallUrls {
   static manualSelectRecallType = (nomsId: string, journeyId: string) => {
     return `/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`
   }
+
+  static manualCheckAnswers = (nomsId: string, journeyId: string) => {
+    return `/person/${nomsId}/recall/create/${journeyId}/manual/check-answers`
+  }
 }

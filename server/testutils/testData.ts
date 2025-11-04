@@ -160,6 +160,7 @@ export default class TestData {
       courtCaseUuid: 'uuid-1',
       reference: 'REF-1',
       courtCode: 'ABC',
+      courtName: 'Default Court Name',
       status: 'ACTIVE',
       isSentenced: true,
       date: '2025-01-01',

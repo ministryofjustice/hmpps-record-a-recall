@@ -22,6 +22,7 @@ import { datePartsToDate, dateToIsoString } from '../utils/utils'
 export type DecoratedCourtCase = RecallableCourtCase & {
   recallableSentences: SentenceAndOffence[]
   nonRecallableSentences: SentenceAndOffence[]
+  courtName: string
 }
 
 export default class RecallService {
@@ -33,8 +34,12 @@ export default class RecallService {
     private readonly adjustmentsApiClient: AdjustmentsApiClient,
   ) {}
 
-  public async getRecallableCourtCases(prisonerId: string): Promise<DecoratedCourtCase[]> {
+  public async getRecallableCourtCases(prisonerId: string, username: string): Promise<DecoratedCourtCase[]> {
     const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
+
+    const courtIds = response.cases.map(c => c.courtCode)
+
+    const courtDetailsList = await this.courtRegisterApiClient.getCourtDetails(courtIds, username)
 
     const offenceCodes = [
       ...new Set(
@@ -58,6 +63,7 @@ export default class RecallService {
         ...courtCase,
         recallableSentences: sentences.filter(s => s.isRecallable).map(withDescription),
         nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescription),
+        courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode).courtName,
       }
     })
   }

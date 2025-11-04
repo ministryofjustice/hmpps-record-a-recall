@@ -38,7 +38,7 @@ export default class CreateRecallReviewSentencesController implements Controller
       return res.redirect(CreateRecallUrls.start(nomsId))
     }
 
-    const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId)
+    const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
     const matchedCourtCases = this.matchRasSentencesAndCrdsSentences(recallableCourtCases, decision)
 
     const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
