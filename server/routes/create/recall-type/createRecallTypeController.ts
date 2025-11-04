@@ -8,10 +8,10 @@ import CalculateReleaseDatesService from '../../../services/calculateReleaseDate
 import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
 import { RecallTypeForm } from '../../common/recall-type/recallTypeSchema'
 
-export default class CreateRecallTypeController implements Controller {
+export default class ManualCreateRecallTypeController implements Controller {
   constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
 
-  PAGE_NAME: Page = Page.CREATE_RECALL_ENTER_RETURN_TO_CUSTODY_DATE
+  PAGE_NAME: Page = Page.CREATE_RECALL_MANAUL_SELECT_TYPE
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals

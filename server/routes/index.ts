@@ -24,6 +24,7 @@ import ConfirmDeleteRecallController from './delete/confirmDeleteRecallControlle
 import { confirmDeleteRecallSchema } from './delete/confirmDeleteRecallSchema'
 import CreateRecallCheckAnswersController from './create/check-answer/createRecallCheckAnswersController'
 import CheckSentencesController from './create/manual/check-sentences/checkSentencesController'
+import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 
 export default function routes({
   prisonerService,
@@ -140,6 +141,13 @@ export default function routes({
       calculateReleaseDatesService,
       courtCasesReleaseDatesService,
     ),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/manual/recall-type',
+    controller: new CreateManualRecallTypeController(),
+    validateToSchema: recallTypeSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
