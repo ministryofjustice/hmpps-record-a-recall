@@ -41,9 +41,9 @@
       release dates (opens in a new tab)</a>.
   </p>
 
-  <div class="govuk-button-group">
-    <form method="post">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-button-group">
       {{ govukButton({
         text: "Confirm and continue",
         preventDoubleClick: true,
@@ -52,14 +52,14 @@
           id: "confirm-and-continue"
         }
       }) }}
-    </form>
 
-    {{ govukButton({
-      text: "Cancel",
-      classes: "govuk-button--secondary",
-      preventDoubleClick: true,
-      href: cancelUrl
-    }) }}
-  </div>
+      {{ govukButton({
+        text: "Cancel",
+        classes: "govuk-button--secondary",
+        preventDoubleClick: true,
+        href: cancelUrl
+      }) }}
+    </div>
+  </form>
 
 {% endblock %}
