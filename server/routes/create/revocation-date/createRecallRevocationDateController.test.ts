@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
+import RecallService from '../../../services/recallService'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -15,6 +16,9 @@ const journeyId: string = uuidv4()
 
 jest.mock('../../../services/auditService')
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
+
+jest.mock('../../../services/recallService')
+const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
   existingJourney = {
@@ -30,7 +34,7 @@ beforeEach(() => {
     },
   }
   app = appWithAllRoutes({
-    services: { auditService },
+    services: { auditService, recallService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}
@@ -114,6 +118,7 @@ describe('POST', () => {
     'should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
     async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
       // Given
+      recallService.getLatestRevocationDate.mockResolvedValue(new Date('2024-01-01'))
       existingJourney.isCheckingAnswers = isCheckingAnswers
 
       // When
@@ -135,6 +140,7 @@ describe('POST', () => {
 
   it('should return to the input page if there are validation errors', async () => {
     // Given
+    recallService.getLatestRevocationDate.mockResolvedValue(new Date('2024-01-01'))
     delete existingJourney.revocationDate
 
     // When

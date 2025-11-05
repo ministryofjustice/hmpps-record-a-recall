@@ -12,7 +12,6 @@ import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import CreateRecallReturnToCustodyDateController from './create/return-to-custody-date/createRecallReturnToCustodyDateController'
 import CreateRecallDecisionController from './create/decision/createRecallDecisionController'
-import { returnToCustodyDateSchema } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 import HomeController from './home/homeController'
 import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
 import SelectCasesController from './create/manual/select-cases/selectCasesController'
@@ -30,6 +29,7 @@ import CreateRecallNoRecallableSentencesController from './create/intercept/crea
 import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
 import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
+import { returnToCustodyDateSchemaFactory } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 
 export default function routes({
   prisonerService,
@@ -84,14 +84,14 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
     controller: new CreateRecallRevocationDateController(),
-    validateToSchema: revocationDateSchemaFactory(),
+    validateToSchema: revocationDateSchemaFactory(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/return-to-custody-date',
     controller: new CreateRecallReturnToCustodyDateController(),
-    validateToSchema: returnToCustodyDateSchema,
+    validateToSchema: returnToCustodyDateSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
