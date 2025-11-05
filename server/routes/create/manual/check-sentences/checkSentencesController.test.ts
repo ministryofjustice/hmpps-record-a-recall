@@ -11,6 +11,7 @@ import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/r
 import TestData from '../../../../testutils/testData'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import CourtCasesReleaseDatesService from '../../../../services/courtCasesReleaseDatesService'
+import AuditService from '../../../../services/auditService'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -20,11 +21,13 @@ const journeyId: string = uuidv4()
 jest.mock('../../../../services/recallService')
 jest.mock('../../../../services/calculateReleaseDatesService')
 jest.mock('../../../../services/courtCasesReleaseDatesService')
+jest.mock('../../../../services/auditService')
 const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 const courtCasesReleaseDatesService = new CourtCasesReleaseDatesService(
   null,
 ) as jest.Mocked<CourtCasesReleaseDatesService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   existingJourney = {
@@ -40,7 +43,7 @@ beforeEach(() => {
     },
   }
   app = appWithAllRoutes({
-    services: { recallService, calculateReleaseDatesService, courtCasesReleaseDatesService },
+    services: { recallService, calculateReleaseDatesService, courtCasesReleaseDatesService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}

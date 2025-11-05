@@ -4,17 +4,20 @@ import * as cheerio from 'cheerio'
 import RecallService from '../../services/recallService'
 import { appWithAllRoutes, user } from '../testutils/appSetup'
 import TestData from '../../testutils/testData'
+import AuditService from '../../services/auditService'
 
 let app: Express
 const nomsId = 'A1234BC'
 
 jest.mock('../../services/recallService')
+jest.mock('../../services/auditService')
 
 const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   app = appWithAllRoutes({
-    services: { recallService },
+    services: { recallService, auditService },
     userSupplier: () => user,
   })
 })

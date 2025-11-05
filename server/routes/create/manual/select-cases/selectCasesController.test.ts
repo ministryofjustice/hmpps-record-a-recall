@@ -10,6 +10,7 @@ import RecallService from '../../../../services/recallService'
 import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import TestData from '../../../../testutils/testData'
 import CreateRecallUrls from '../../createRecallUrls'
+import AuditService from '../../../../services/auditService'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -17,7 +18,9 @@ const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
 jest.mock('../../../../services/recallService')
+jest.mock('../../../../services/auditService')
 const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   existingJourney = {
@@ -34,7 +37,7 @@ beforeEach(() => {
   }
 
   app = appWithAllRoutes({
-    services: { recallService },
+    services: { recallService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}

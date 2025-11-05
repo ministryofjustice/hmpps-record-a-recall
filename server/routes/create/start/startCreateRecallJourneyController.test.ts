@@ -6,6 +6,7 @@ import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { RecordARecallValidationResult } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import AuditService from '../../../services/auditService'
 
 let app: Express
 let session: Partial<SessionData>
@@ -17,13 +18,16 @@ const successfulCrdsValidationResult = {
   earliestSentenceDate: '2025-01-01',
 } as RecordARecallValidationResult
 jest.mock('../../../services/calculateReleaseDatesService')
+jest.mock('../../../services/auditService')
 
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   app = appWithAllRoutes({
     services: {
       calculateReleaseDatesService,
+      auditService,
     },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {

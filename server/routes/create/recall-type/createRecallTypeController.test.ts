@@ -8,6 +8,7 @@ import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import TestData from '../../../testutils/testData'
+import AuditService from '../../../services/auditService'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -15,8 +16,10 @@ const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
 jest.mock('../../../services/calculateReleaseDatesService')
+jest.mock('../../../services/auditService')
 
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   existingJourney = {
@@ -38,7 +41,7 @@ beforeEach(() => {
     },
   }
   app = appWithAllRoutes({
-    services: { calculateReleaseDatesService },
+    services: { calculateReleaseDatesService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}
