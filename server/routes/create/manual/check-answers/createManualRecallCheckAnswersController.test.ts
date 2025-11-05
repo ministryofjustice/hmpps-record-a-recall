@@ -27,7 +27,7 @@ const recallToBeCreated = {
 
 jest.mock('../../../../services/recallService')
 jest.mock('../../../../services/auditService')
-const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
+const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
