@@ -173,7 +173,7 @@ export default function routes({
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/recall-type',
+    path: '/person/:nomsId/recall/create/:journeyId/manual/select-recall-type',
     controller: new CreateManualRecallTypeController(),
     validateToSchema: recallTypeSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
