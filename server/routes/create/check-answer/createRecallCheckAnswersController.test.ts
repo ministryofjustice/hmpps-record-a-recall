@@ -8,6 +8,7 @@ import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import RecallService from '../../../services/recallService'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import AuditService from '../../../services/auditService'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -25,7 +26,9 @@ const recallToBeCreated = {
 } as CreateRecall
 
 jest.mock('../../../services/recallService')
+jest.mock('../../../services/auditService')
 const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   existingJourney = {
@@ -54,7 +57,7 @@ beforeEach(() => {
     sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
   }
   app = appWithAllRoutes({
-    services: { recallService },
+    services: { recallService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}
