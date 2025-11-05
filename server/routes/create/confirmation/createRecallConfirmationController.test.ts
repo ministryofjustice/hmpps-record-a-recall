@@ -3,14 +3,18 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
+import AuditService from '../../../services/auditService'
 
 let app: Express
 const nomsId = 'A1234BC'
 const recallId: string = uuidv4()
 
+jest.mock('../../../services/auditService')
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
+
 beforeEach(() => {
   app = appWithAllRoutes({
-    services: {},
+    services: { auditService },
     userSupplier: () => user,
   })
 })

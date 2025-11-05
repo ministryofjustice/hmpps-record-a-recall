@@ -29,12 +29,14 @@ import CreateRecallConflictingAdjustmentsController from './create/intercept/cre
 import CreateRecallNoRecallableSentencesController from './create/intercept/createRecallNoRecallableSentencesController'
 import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
 import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
+import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
 
 export default function routes({
   prisonerService,
   calculateReleaseDatesService,
   courtCasesReleaseDatesService,
   recallService,
+  auditService,
 }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
@@ -56,7 +58,8 @@ export default function routes({
     validateToSchema?: z.ZodTypeAny | SchemaFactory<P>
     additionalMiddleware?: (RequestHandler<P> | RequestHandler)[]
   }) => {
-    router.get(path, ...additionalMiddleware, asyncMiddleware(controller.GET))
+    const auditPageView = auditPageViewMiddleware(controller.PAGE_NAME, auditService)
+    router.get(path, auditPageView, ...additionalMiddleware, asyncMiddleware(controller.GET))
     if (controller.POST) {
       if (validateToSchema) {
         router.post(path, ...additionalMiddleware, validate(validateToSchema), asyncMiddleware(controller.POST))

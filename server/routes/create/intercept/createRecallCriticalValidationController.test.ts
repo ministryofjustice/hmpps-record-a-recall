@@ -6,11 +6,15 @@ import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
+import AuditService from '../../../services/auditService'
 
 let app: Express
 let existingJourney: CreateRecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
+
+jest.mock('../../../services/auditService')
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
   existingJourney = {
@@ -34,7 +38,7 @@ beforeEach(() => {
     },
   }
   app = appWithAllRoutes({
-    services: {},
+    services: { auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}

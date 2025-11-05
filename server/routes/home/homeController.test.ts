@@ -6,16 +6,19 @@ import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDates
 import PrisonerSearchService from '../../services/prisonerSearchService'
 import TestData from '../../testutils/testData'
 import RecallService from '../../services/recallService'
+import AuditService from '../../services/auditService'
 
 jest.mock('../../services/courtCasesReleaseDatesService')
 jest.mock('../../services/prisonerSearchService')
 jest.mock('../../services/recallService')
+jest.mock('../../services/auditService')
 
 const courtCasesReleaseDatesService = new CourtCasesReleaseDatesService(
   null,
 ) as jest.Mocked<CourtCasesReleaseDatesService>
 const prisonerSearchService = new PrisonerSearchService(null) as jest.Mocked<PrisonerSearchService>
 const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
+const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 let app: Express
 const nomsId = 'A1234BC'
@@ -26,6 +29,7 @@ beforeEach(() => {
       prisonerSearchService,
       courtCasesReleaseDatesService,
       recallService,
+      auditService,
     },
     userSupplier: () => user,
   })
