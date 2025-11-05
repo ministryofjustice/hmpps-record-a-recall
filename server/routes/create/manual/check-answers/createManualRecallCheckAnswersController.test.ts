@@ -83,7 +83,7 @@ describe('GET', () => {
     const $ = cheerio.load(response.text)
 
     expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
-      `/person/${nomsId}/recall/create/${journeyId}/recall-type`,
+      `/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`,
     )
     expect($('#cancel-button').attr('href')).toStrictEqual(
       `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`,
