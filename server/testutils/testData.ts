@@ -8,8 +8,8 @@ import {
 import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
 import { ExistingRecall } from '../model/ExistingRecall'
 import { RecordARecallDecisionResult } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { DecoratedCourtCase } from '../services/recallService'
 import { RecallTypes } from '../@types/recallTypes'
+import {DecoratedCourtCase} from "../@types/journeys";
 
 export default class TestData {
   static prisoner = ({
