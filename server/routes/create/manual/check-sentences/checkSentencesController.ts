@@ -35,4 +35,15 @@ export default class CheckSentencesController implements Controller {
       serviceDefinitions,
     })
   }
+
+  POST = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
+    const { nomsId, journeyId } = req.params
+    const journey = req.session.createRecallJourneys[journeyId]
+    const { courtCaseIdsSelectedForRecall } = journey
+    const casesSelectedForRecall = journey.recallableCourtCases.filter(c =>
+      courtCaseIdsSelectedForRecall.includes(c.courtCaseUuid),
+    )
+    journey.sentenceIds = casesSelectedForRecall.flatMap(c => (c.recallableSentences ?? []).map(s => s.sentenceUuid))
+    return res.redirect(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+  }
 }

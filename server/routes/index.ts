@@ -30,8 +30,7 @@ import CreateRecallNoRecallableSentencesController from './create/intercept/crea
 import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
 import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
-import CreateManualRecallCheckAnswersController
-  from "./create/manual/check-answers/createManualRecallCheckAnswersController";
+import CreateManualRecallCheckAnswersController from './create/manual/check-answers/createManualRecallCheckAnswersController'
 
 export default function routes({
   prisonerService,

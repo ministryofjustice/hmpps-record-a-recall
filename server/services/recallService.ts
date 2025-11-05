@@ -3,7 +3,6 @@ import {
   ApiRecall,
   CreateRecall,
   CreateRecallResponse,
-  RecallableCourtCase,
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
@@ -14,14 +13,8 @@ import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
-import { CreateRecallJourney } from '../@types/journeys'
+import { CreateRecallJourney, DecoratedCourtCase } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString } from '../utils/utils'
-
-export type DecoratedCourtCase = RecallableCourtCase & {
-  recallableSentences: SentenceAndOffence[]
-  nonRecallableSentences: SentenceAndOffence[]
-  courtName: string
-}
 
 export default class RecallService {
   constructor(

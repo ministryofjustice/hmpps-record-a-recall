@@ -6,8 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import * as cheerio from 'cheerio'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
-import RecallService from '../../../../services/recallService'
-import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import RecallService, { DecoratedCourtCase } from '../../../../services/recallService'
 import TestData from '../../../../testutils/testData'
 import CreateRecallUrls from '../../createRecallUrls'
 import AuditService from '../../../../services/auditService'
@@ -103,7 +102,7 @@ describe('selectCasesController Tests', () => {
 
     beforeEach(() => {
       existingJourney.courtCaseIdsSelectedForRecall = []
-      existingJourney.recallableCourtCases = undefined as RecallableCourtCase[]
+      existingJourney.recallableCourtCases = undefined as DecoratedCourtCase[]
     })
 
     it('YES on a middle case: stores UUID and redirects to next case', async () => {
@@ -111,7 +110,7 @@ describe('selectCasesController Tests', () => {
         { courtCaseUuid: 'uuid-1' },
         { courtCaseUuid: 'uuid-2' },
         { courtCaseUuid: 'uuid-3' },
-      ] as RecallableCourtCase[]
+      ] as DecoratedCourtCase[]
 
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
@@ -124,7 +123,7 @@ describe('selectCasesController Tests', () => {
         { courtCaseUuid: 'uuid-1' },
         { courtCaseUuid: 'uuid-2' },
         { courtCaseUuid: 'uuid-3' },
-      ] as RecallableCourtCase[]
+      ] as DecoratedCourtCase[]
 
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
@@ -133,7 +132,7 @@ describe('selectCasesController Tests', () => {
     })
 
     it('YES on last case: stores UUID and goes to next step', async () => {
-      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as RecallableCourtCase[]
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as DecoratedCourtCase[]
 
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
@@ -142,12 +141,24 @@ describe('selectCasesController Tests', () => {
     })
 
     it('NO on last case: does not store and goes to next step', async () => {
-      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as RecallableCourtCase[]
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as DecoratedCourtCase[]
 
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
+    })
+
+    it('NO removes existing case UUID from selected list', async () => {
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+      ] as DecoratedCourtCase[]
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
+
+      await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
+
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
     })
   })
 })

@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import * as cheerio from 'cheerio'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
-import RecallService from '../../../../services/recallService'
+import RecallService, { DecoratedCourtCase } from '../../../../services/recallService'
 import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import TestData from '../../../../testutils/testData'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
@@ -120,6 +120,25 @@ describe('checkSentencesController Tests', () => {
       const onlyCard = secondCaseCards.eq(0)
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('OFF3')
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('Offence 3')
+    })
+  })
+
+  describe('POST', () => {
+    beforeEach(() => {
+      existingJourney.courtCaseIdsSelectedForRecall = []
+      existingJourney.recallableCourtCases = undefined as DecoratedCourtCase[]
+    })
+
+    it('Builds sentenceIds from recallable sentences of selected court cases', async () => {
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1', recallableSentences: [{ sentenceUuid: 'sent-uuid-1' }] },
+        { courtCaseUuid: 'uuid-2', recallableSentences: [] },
+      ] as DecoratedCourtCase[]
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
+
+      await request(app).post(baseUrl).expect(302)
+
+      expect(existingJourney.sentenceIds).toEqual(['sent-uuid-1'])
     })
   })
 })

@@ -1,5 +1,6 @@
 import { RecordARecallValidationResult } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { ApiRecallType, RecallableCourtCase } from '../remandAndSentencingApi/remandAndSentencingTypes'
+import { SentenceAndOffence } from '../recallTypes'
 
 export interface CreateRecallJourney {
   id: string
@@ -13,7 +14,7 @@ export interface CreateRecallJourney {
   returnToCustodyDate?: DateParts
   sentenceIds?: string[]
   recallType?: ApiRecallType
-  recallableCourtCases?: RecallableCourtCase[]
+  recallableCourtCases?: DecoratedCourtCase[]
   courtCaseIdsSelectedForRecall?: string[]
 }
 
@@ -24,3 +25,9 @@ export interface DateParts {
 }
 
 type PersonJourneyParams = { nomsId: string; journeyId: string }
+
+export type DecoratedCourtCase = RecallableCourtCase & {
+  recallableSentences: SentenceAndOffence[]
+  nonRecallableSentences: SentenceAndOffence[]
+  courtName: string
+}
