@@ -8,20 +8,16 @@ import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
 import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import TestData from '../testutils/testData'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
-import AdjustmentsApiClient from '../data/adjustmentsApiClient'
-import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
 jest.mock('../data/remandAndSentencingApiClient')
 jest.mock('../data/manageOffencesApiClient')
 jest.mock('../data/prisonRegisterApiClient')
 jest.mock('../data/courtRegisterApiClient')
-jest.mock('../data/adjustmentsApiClient')
 
 const remandAndSentencingApiClient = new RemandAndSentencingApiClient(null) as jest.Mocked<RemandAndSentencingApiClient>
 const manageOffencesApiClient = new ManageOffencesApiClient(null) as jest.Mocked<ManageOffencesApiClient>
 const prisonRegisterApiClient = new PrisonRegisterApiClient(null) as jest.Mocked<PrisonRegisterApiClient>
 const courtRegisterApiClient = new CourtRegisterApiClient(null) as jest.Mocked<CourtRegisterApiClient>
-const adjustmentApiClient = new AdjustmentsApiClient(null) as jest.Mocked<AdjustmentsApiClient>
 
 let service: RecallService
 
@@ -32,7 +28,6 @@ beforeEach(() => {
     manageOffencesApiClient,
     prisonRegisterApiClient,
     courtRegisterApiClient,
-    adjustmentApiClient,
   )
   manageOffencesApiClient.getOffencesByCodes.mockResolvedValue([
     { code: 'A1', description: 'Assault' } as Offence,
@@ -56,7 +51,6 @@ beforeEach(() => {
       buildings: [],
     },
   ])
-  adjustmentApiClient.getAdjustmentsForRecall.mockResolvedValue([])
 })
 
 describe('Recall service', () => {
@@ -372,88 +366,27 @@ describe('Recall service', () => {
         }),
       ])
     })
-    it('should fetch adjustments for all DPS recalls with a revocation date and return to custody date', async () => {
-      const dpsWithRevAndRtcDate = TestData.apiRecall({
+    it('should map adjustments information if present', async () => {
+      const recallWithUal = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
         revocationDate: '2021-01-19',
         returnToCustodyDate: '2021-01-25',
         source: 'DPS',
+        ual: { id: uuidv4(), days: 20 },
       })
-      const anotherDpsWithRevAndRtcDate = TestData.apiRecall({
+      const recallWithoutUal = TestData.apiRecall({
         createdAt: '2021-03-18T13:40:56Z',
         revocationDate: '2025-04-29',
         returnToCustodyDate: '2025-05-25',
         source: 'DPS',
+        ual: undefined,
       })
-      const dpsWithRevDateOnly = TestData.apiRecall({
-        createdAt: '2021-03-17T13:40:56Z',
-        revocationDate: '2020-02-15',
-        returnToCustodyDate: undefined,
-        source: 'DPS',
-      })
-      const nomisWithNeitherDate = TestData.apiRecall({
-        createdAt: '2021-03-16T13:40:56Z',
-        revocationDate: undefined,
-        returnToCustodyDate: undefined,
-        source: 'NOMIS',
-      })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([
-        dpsWithRevAndRtcDate,
-        anotherDpsWithRevAndRtcDate,
-        dpsWithRevDateOnly,
-        nomisWithNeitherDate,
-      ])
-      adjustmentApiClient.getAdjustmentsForRecall.mockImplementation(
-        (_prisonerId: string, recallId: string, _username: string) => {
-          if (recallId === dpsWithRevAndRtcDate.recallUuid) {
-            return Promise.resolve([
-              {
-                recallId: dpsWithRevAndRtcDate.recallUuid,
-                days: 12,
-              },
-              {
-                recallId: dpsWithRevAndRtcDate.recallUuid,
-                days: 8,
-              },
-            ] as AdjustmentDto[])
-          }
-          if (recallId === anotherDpsWithRevAndRtcDate.recallUuid) {
-            return Promise.resolve([
-              {
-                recallId: anotherDpsWithRevAndRtcDate.recallUuid,
-                days: 5,
-              },
-            ] as AdjustmentDto[])
-          }
-          return Promise.resolve([] as AdjustmentDto[])
-        },
-      )
+
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recallWithUal, recallWithoutUal])
       const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
-      expect(result.find(it => it.recallUuid === dpsWithRevAndRtcDate.recallUuid).ualAdjustmentTotalDays).toStrictEqual(
-        20,
-      )
-      expect(
-        result.find(it => it.recallUuid === anotherDpsWithRevAndRtcDate.recallUuid).ualAdjustmentTotalDays,
-      ).toStrictEqual(5)
-      expect(result.find(it => it.recallUuid === dpsWithRevDateOnly.recallUuid).ualAdjustmentTotalDays).toBeUndefined()
-      expect(
-        result.find(it => it.recallUuid === nomisWithNeitherDate.recallUuid).ualAdjustmentTotalDays,
-      ).toBeUndefined()
-
-      expect(adjustmentApiClient.getAdjustmentsForRecall).toHaveBeenCalledTimes(2)
-      expect(adjustmentApiClient.getAdjustmentsForRecall).toHaveBeenNthCalledWith(
-        1,
-        'A1234BC',
-        dpsWithRevAndRtcDate.recallUuid,
-        'user1',
-      )
-      expect(adjustmentApiClient.getAdjustmentsForRecall).toHaveBeenNthCalledWith(
-        2,
-        'A1234BC',
-        anotherDpsWithRevAndRtcDate.recallUuid,
-        'user1',
-      )
+      expect(result.find(it => it.recallUuid === recallWithUal.recallUuid).ualAdjustmentTotalDays).toStrictEqual(20)
+      expect(result.find(it => it.recallUuid === recallWithoutUal.recallUuid).ualAdjustmentTotalDays).toBeUndefined()
     })
   })
 
@@ -669,28 +602,33 @@ describe('Recall service', () => {
         canEdit: false,
       })
     })
-    it('should fetch adjustments if a DPS recall with revocation date and return to custody date', async () => {
+
+    it('should map UAL if present', async () => {
       const dpsWithRevAndRtcDate = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
         revocationDate: '2021-01-19',
         returnToCustodyDate: '2021-01-25',
         source: 'DPS',
+        ual: { id: uuidv4(), days: 20 },
       })
 
       remandAndSentencingApiClient.getRecall.mockResolvedValue(dpsWithRevAndRtcDate)
-      adjustmentApiClient.getAdjustmentsForRecall.mockResolvedValue([
-        {
-          recallId: dpsWithRevAndRtcDate.recallUuid,
-          days: 12,
-        },
-        {
-          recallId: dpsWithRevAndRtcDate.recallUuid,
-          days: 8,
-        },
-      ] as AdjustmentDto[])
       const result = await service.getRecall(dpsWithRevAndRtcDate.recallUuid, 'user1')
-
       expect(result.ualAdjustmentTotalDays).toStrictEqual(20)
+    })
+
+    it('should handle no UAL', async () => {
+      const dpsWithRevAndRtcDate = TestData.apiRecall({
+        createdAt: '2021-03-19T13:40:56Z',
+        revocationDate: '2021-01-19',
+        returnToCustodyDate: '2021-01-25',
+        source: 'DPS',
+        ual: undefined,
+      })
+
+      remandAndSentencingApiClient.getRecall.mockResolvedValue(dpsWithRevAndRtcDate)
+      const result = await service.getRecall(dpsWithRevAndRtcDate.recallUuid, 'user1')
+      expect(result.ualAdjustmentTotalDays).toBeUndefined()
     })
   })
 })

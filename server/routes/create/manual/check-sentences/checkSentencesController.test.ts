@@ -22,7 +22,7 @@ jest.mock('../../../../services/recallService')
 jest.mock('../../../../services/calculateReleaseDatesService')
 jest.mock('../../../../services/courtCasesReleaseDatesService')
 jest.mock('../../../../services/auditService')
-const recallService = new RecallService(null, null, null, null, null) as jest.Mocked<RecallService>
+const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 const courtCasesReleaseDatesService = new CourtCasesReleaseDatesService(
   null,

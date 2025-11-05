@@ -14,8 +14,6 @@ import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
-import AdjustmentsApiClient from '../data/adjustmentsApiClient'
-import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import { CreateRecallJourney } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString } from '../utils/utils'
 
@@ -31,7 +29,6 @@ export default class RecallService {
     private readonly manageOffencesApiClient: ManageOffencesApiClient,
     private readonly prisonRegisterApiClient: PrisonRegisterApiClient,
     private readonly courtRegisterApiClient: CourtRegisterApiClient,
-    private readonly adjustmentsApiClient: AdjustmentsApiClient,
   ) {}
 
   public async getRecallableCourtCases(prisonerId: string, username: string): Promise<DecoratedCourtCase[]> {
@@ -75,7 +72,6 @@ export default class RecallService {
     const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
     return this.enrichRecalls(
       sortedRecalls,
-      prisonerId,
       username,
       recall => recall.source === 'DPS' && recall.recallUuid === latestRecallUuid,
     )
@@ -83,12 +79,11 @@ export default class RecallService {
 
   public async getRecall(recallUuid: string, username: string): Promise<ExistingRecall> {
     const recall = await this.remandAndSentencingApiClient.getRecall(recallUuid, username)
-    return this.enrichRecalls([recall], recall.prisonerId, username).then(enriched => enriched[0])
+    return this.enrichRecalls([recall], username).then(enriched => enriched[0])
   }
 
   private async enrichRecalls(
     recalls: ApiRecall[],
-    prisonerId: string,
     username: string,
     isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
   ): Promise<ExistingRecall[]> {
@@ -118,17 +113,7 @@ export default class RecallService {
       requiredOffences.length ? this.manageOffencesApiClient.getOffencesByCodes(requiredOffences) : Promise.resolve([]),
     ])
 
-    const recallsThatMightHaveAnAdjustment = recalls
-      .filter(recall => recall.source === 'DPS' && recall.revocationDate && recall.returnToCustodyDate)
-      .map(recall => recall.recallUuid)
-    const adjustments = await Promise.all(
-      recallsThatMightHaveAnAdjustment.map(id =>
-        this.adjustmentsApiClient.getAdjustmentsForRecall(prisonerId, id, username),
-      ),
-    ).then(adjustmentResponses => adjustmentResponses.flatMap(it => it))
-    return recalls.map(recall =>
-      this.toExistingRecall(recall, prisons, courts, offences, adjustments, isEditableAndDeletable),
-    )
+    return recalls.map(recall => this.toExistingRecall(recall, prisons, courts, offences, isEditableAndDeletable))
   }
 
   private toExistingRecall(
@@ -136,17 +121,9 @@ export default class RecallService {
     prisons: Prison[],
     courts: Court[],
     offences: Offence[],
-    adjustments: AdjustmentDto[],
     isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
   ): ExistingRecall {
     const isLatestAndDPSRecall = isEditableAndDeletable(recall)
-    const adjustmentsForRecall = adjustments.filter(
-      adjustment => adjustment && adjustment.recallId === recall.recallUuid,
-    )
-    let ualAdjustmentTotalDays
-    if (adjustmentsForRecall && adjustmentsForRecall.length) {
-      ualAdjustmentTotalDays = adjustmentsForRecall.reduce((acc, next) => acc + next.days, 0)
-    }
     return {
       recallUuid: recall.recallUuid,
       prisonerId: recall.prisonerId,
@@ -158,7 +135,7 @@ export default class RecallService {
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,
       returnToCustodyDate: recall.returnToCustodyDate,
-      ualAdjustmentTotalDays,
+      ualAdjustmentTotalDays: recall.ual?.days,
       courtCases: (recall.courtCases ?? []).map(courtCase => ({
         courtCaseReference: courtCase.courtCaseReference,
         courtName: courtCase.courtCode

@@ -21,7 +21,6 @@ export const services = () => {
     prisonRegisterApiClient,
     manageOffencesApiClient,
     courtRegisterApiClient,
-    adjustmentsApiClient,
   } = dataAccess()
 
   const prisonerService = new PrisonerService(prisonApiClient)
@@ -39,7 +38,6 @@ export const services = () => {
       manageOffencesApiClient,
       prisonRegisterApiClient,
       courtRegisterApiClient,
-      adjustmentsApiClient,
     ),
   }
 }

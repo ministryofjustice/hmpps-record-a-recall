@@ -44,9 +44,8 @@ export default class TestData {
     createdByUsername = 'user1',
     createdByPrison = undefined,
     source = 'DPS',
-    sentences = [],
-    courtCaseIds = [],
     courtCases = [],
+    ual = undefined,
   }: Partial<ApiRecall> = {}): ApiRecall =>
     ({
       recallUuid,
@@ -59,9 +58,8 @@ export default class TestData {
       createdByUsername,
       createdByPrison,
       source,
-      sentences,
-      courtCaseIds,
       courtCases,
+      ual,
     }) as ApiRecall
 
   static existingRecall = ({
