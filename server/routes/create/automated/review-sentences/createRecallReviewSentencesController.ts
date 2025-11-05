@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
 import CreateRecallUrls from '../../createRecallUrls'
-import {DecoratedCourtCase, PersonJourneyParams} from '../../../../@types/journeys'
+import { DecoratedCourtCase, PersonJourneyParams } from '../../../../@types/journeys'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { datePartsToDate, dateToIsoString, maxOf } from '../../../../utils/utils'
