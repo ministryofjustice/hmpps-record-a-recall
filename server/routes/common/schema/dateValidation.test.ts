@@ -1,6 +1,6 @@
 import z from 'zod'
 import { createSchema, deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
-import dateValidation from './dateValidation'
+import { dateValidation } from './dateValidation'
 
 describe('dateValidationTest', () => {
   type Form = {

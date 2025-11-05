@@ -58,6 +58,17 @@ export default class RecallService {
     })
   }
 
+  public async getLatestRevocationDate(prisonerId: string, username: string): Promise<Date> {
+    const sortedRecalls = await this.remandAndSentencingApiClient
+      .getAllRecalls(prisonerId, username)
+      .then(recalls =>
+        recalls
+          .filter(it => it.revocationDate)
+          .sort((a, b) => new Date(b.revocationDate).getTime() - new Date(a.revocationDate).getTime()),
+      )
+    return sortedRecalls.length > 0 ? new Date(sortedRecalls[0].revocationDate) : undefined
+  }
+
   public async getRecallsForPrisoner(prisonerId: string, username: string): Promise<ExistingRecall[]> {
     const sortedRecalls = await this.remandAndSentencingApiClient
       .getAllRecalls(prisonerId, username)
