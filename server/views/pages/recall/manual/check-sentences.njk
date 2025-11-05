@@ -18,7 +18,7 @@
   </h1>
 
   <p data-qa="led-line">
-{#    TODO this SLED content may need changing (it's in discussion), because it's not necessarily a SLED , it is a LED though if set#}
+    {#    TODO this SLED content may need changing (it's in discussion), because it's not necessarily a SLED , it is a LED though if set #}
     {% if licenceExpiryDate %}
       The latest SLED (Sentence and licence expiry date) is <b>{{ licenceExpiryDate | formatDate }}</b>. This is the SLED on this person's licence.
     {% else %}
@@ -41,26 +41,25 @@
       release dates (opens in a new tab)</a>.
   </p>
 
-  <form method="post">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-
-    <div class="govuk-button-group">
+  <div class="govuk-button-group">
+    <form method="post">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       {{ govukButton({
         text: "Confirm and continue",
         preventDoubleClick: true,
         attributes: {
           "data-qa": "confirm-and-continue-btn",
           id: "confirm-and-continue"
-        },
-        href: continueUrl
+        }
       }) }}
+    </form>
 
-      {{ govukButton({
-        text: "Cancel",
-        classes: "govuk-button--secondary",
-        preventDoubleClick: true,
-        href: cancelUrl
-      }) }}
-    </div>
-  </form>
+    {{ govukButton({
+      text: "Cancel",
+      classes: "govuk-button--secondary",
+      preventDoubleClick: true,
+      href: cancelUrl
+    }) }}
+  </div>
+
 {% endblock %}

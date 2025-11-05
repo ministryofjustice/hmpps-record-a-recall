@@ -52,6 +52,10 @@ export default class SelectCasesController implements Controller {
 
     if (activeSentenceChoice === 'YES') {
       journey.courtCaseIdsSelectedForRecall = [...(journey.courtCaseIdsSelectedForRecall ?? []), currentCaseUuid]
+    } else {
+      journey.courtCaseIdsSelectedForRecall = (journey.courtCaseIdsSelectedForRecall ?? []).filter(
+        caseUuid => caseUuid !== currentCaseUuid,
+      )
     }
 
     // Move to next case if available
