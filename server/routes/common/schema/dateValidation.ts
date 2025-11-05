@@ -6,7 +6,7 @@ const SINGLE_FIELD_MISSING_ERROR = (field: string) => `The date must include a $
 const TWO_FIELDS_MISSING_ERROR = (fieldOne: string, fieldTwo: string) =>
   `The date must include a ${fieldOne} and a ${fieldTwo}`
 const YEAR_ERROR = 'Year must include 4 numbers'
-const BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED = ''
+export const BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED = ''
 const REAL_DATE_ERROR = `The date must be a real date`
 type DateForm = {
   day?: string
@@ -14,7 +14,7 @@ type DateForm = {
   year?: string
 }
 
-export default function dateValidation(val: DateForm, ctx: z.RefinementCtx<z.output<DateForm>>): Date {
+export function dateValidation(val: DateForm, ctx: z.RefinementCtx<z.output<DateForm>>): Date {
   if (!val.day && !val.month && !val.year) {
     ctx.addIssue({ code: 'custom', message: DATE_IS_REQUIRED_MESSAGE, path: ['day'] })
     ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['month'] })
@@ -57,4 +57,12 @@ export default function dateValidation(val: DateForm, ctx: z.RefinementCtx<z.out
     }
   }
   return null
+}
+
+export function futureDateValidation(name: string, val: Date, ctx: z.RefinementCtx<z.output<DateForm>>) {
+  if (val > new Date()) {
+    ctx.addIssue({ code: 'custom', message: `${name} must be today or in the past`, path: ['day'] })
+    ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['month'] })
+    ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['year'] })
+  }
 }

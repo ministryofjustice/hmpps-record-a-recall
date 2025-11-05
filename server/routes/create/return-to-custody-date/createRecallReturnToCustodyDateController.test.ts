@@ -135,14 +135,14 @@ describe('POST', () => {
       await request(app)
         .post(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
         .type('form')
-        .send({ day: '1', month: '2', year: '2025', inCustodyAtRecall: false })
+        .send({ day: '10', month: '10', year: '2025', inCustodyAtRecall: false })
         .expect(302)
         .expect('Location', expectedNextUrl)
 
       // Then
       expect(existingJourney.returnToCustodyDate).toStrictEqual({
-        day: 1,
-        month: 2,
+        day: 10,
+        month: 10,
         year: 2025,
       })
     },
