@@ -30,6 +30,8 @@ import CreateRecallNoRecallableSentencesController from './create/intercept/crea
 import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
 import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
+import CreateManualRecallCheckAnswersController
+  from "./create/manual/check-answers/createManualRecallCheckAnswersController";
 
 export default function routes({
   prisonerService,
@@ -184,7 +186,7 @@ export default function routes({
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/check-answers',
-    controller: new CreateRecallCheckAnswersController(recallService),
+    controller: new CreateManualRecallCheckAnswersController(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
