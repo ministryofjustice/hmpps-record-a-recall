@@ -51,7 +51,7 @@ afterEach(() => {
 
 describe('GET', () => {
   it('should render return recall type page with correct navigation', async () => {
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/recall-type`)
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
 
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
@@ -73,7 +73,7 @@ describe('GET', () => {
     existingJourney.recallType = 'LR'
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/recall-type`)
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
 
     // Then
     expect(response.status).toEqual(200)
@@ -91,7 +91,7 @@ describe('GET', () => {
     flashProvider.mockImplementation((key: string) => (key === 'formResponses' ? [JSON.stringify(form)] : []))
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/recall-type`)
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
 
     // Then
     expect(response.status).toEqual(200)
@@ -104,7 +104,7 @@ describe('GET', () => {
 
   it('should return to start of journey if not found in session', async () => {
     await request(app)
-      .get(`/person/${nomsId}/recall/create/${uuidv4()}/manual/recall-type`)
+      .get(`/person/${nomsId}/recall/create/${uuidv4()}/manual/select-recall-type`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
@@ -113,7 +113,7 @@ describe('GET', () => {
 describe('POST', () => {
   it('should redirect to check your answers if passed validation', async () => {
     await request(app)
-      .post(`/person/${nomsId}/recall/create/${journeyId}/manual/recall-type`)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
       .type('form')
       .send({ recallType: 'FTR_14' })
       .expect(302)
@@ -126,11 +126,11 @@ describe('POST', () => {
     existingJourney.recallType = 'LR'
 
     await request(app)
-      .post(`/person/${nomsId}/recall/create/${journeyId}/manual/recall-type`)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
       .type('form')
       .send({})
       .expect(302)
-      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/manual/recall-type#`)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type#`)
 
     // Then
     expect(existingJourney.recallType).toStrictEqual('LR')
@@ -138,7 +138,7 @@ describe('POST', () => {
 
   it('should return to start of journey if not found in session', async () => {
     await request(app)
-      .post(`/person/${nomsId}/recall/create/${uuidv4()}/manual/recall-type`)
+      .post(`/person/${nomsId}/recall/create/${uuidv4()}/manual/select-recall-type`)
       .type('form')
       .send({ day: '1', month: '2' })
       .expect(302)
