@@ -55,7 +55,6 @@ beforeEach(() => {
     },
     recallType: 'LR',
     sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
-    calculationRequestId: 9991,
   }
   app = appWithAllRoutes({
     services: { recallService, auditService },
