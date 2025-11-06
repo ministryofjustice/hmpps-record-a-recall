@@ -33,6 +33,7 @@ export default class CreateRecallReviewSentencesController implements Controller
       },
       username,
     )
+    journey.calculationRequestId = decision.calculationRequestId
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined || decision?.decision !== 'AUTOMATED') {
       return res.redirect(CreateRecallUrls.start(nomsId))
@@ -68,6 +69,7 @@ export default class CreateRecallReviewSentencesController implements Controller
       username,
     )
     journey.sentenceIds = decision.recallableSentences.map(it => it.uuid)
+    journey.calculationRequestId = decision.calculationRequestId
 
     return res.redirect(CreateRecallUrls.recallType(nomsId, journeyId))
   }

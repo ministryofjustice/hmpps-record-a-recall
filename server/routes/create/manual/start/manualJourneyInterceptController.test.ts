@@ -21,7 +21,6 @@ beforeEach(() => {
     id: journeyId,
     lastTouched: new Date().toISOString(),
     nomsId,
-    isManual: false,
     isCheckingAnswers: false,
     crdsValidationResult: {
       criticalValidationMessages: [],
@@ -68,20 +67,21 @@ describe('GET /manual/start', () => {
 describe('POST /manual/start', () => {
   const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
 
-  it('sets isManual=true and redirects to manualSelectCases when not checking answers', async () => {
+  it('sets calculationRewuestId to undefined and redirects to manualSelectCases when not checking answers', async () => {
     // Given
     existingJourney.isCheckingAnswers = false
+    existingJourney.calculationRequestId = 991
 
     // When
     const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
 
     // Then
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`)
-    expect(existingJourney.isManual).toBe(true)
+    expect(existingJourney.calculationRequestId).toBeUndefined()
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
 
-  it('sets isManual=true and redirects to checkAnswers when isCheckingAnswers=true', async () => {
+  it('redirects to checkAnswers when isCheckingAnswers=true', async () => {
     // Given
     existingJourney.isCheckingAnswers = true
 
@@ -90,7 +90,6 @@ describe('POST /manual/start', () => {
 
     // Then
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/check-answers`)
-    expect(existingJourney.isManual).toBe(true)
   })
 
   it('redirects to start if journey not found in session', async () => {

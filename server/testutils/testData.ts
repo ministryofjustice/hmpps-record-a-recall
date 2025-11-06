@@ -161,7 +161,7 @@ export default class TestData {
       courtName: 'Default Court Name',
       status: 'ACTIVE',
       isSentenced: true,
-      date: '2025-01-01',
+      appearanceDate: '2025-01-01',
       firstDayInCustody: '2024-12-15',
       sentences: [...recallableSentences, ...nonRecallableSentences],
       recallableSentences,
@@ -173,7 +173,7 @@ export default class TestData {
   static automatedRecallDecision(overrides: Partial<RecordARecallDecisionResult> = {}): RecordARecallDecisionResult {
     return {
       decision: 'AUTOMATED',
-      calculationRequestId: 1,
+      calculationRequestId: 991,
       eligibleRecallTypes: Object.values(RecallTypes).map(it => it.code),
       recallableSentences: [
         {

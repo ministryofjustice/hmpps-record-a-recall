@@ -1567,6 +1567,8 @@ export interface components {
       createdByUsername: string
       createdByPrison: string
       sentenceIds?: string[]
+      /** Format: int32 */
+      calculationRequestId?: number
     }
     SaveRecallResponse: {
       /** Format: uuid */
@@ -1702,7 +1704,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1820,7 +1822,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -2479,6 +2481,10 @@ export interface components {
       source: 'NOMIS' | 'DPS'
       courtCases: components['schemas']['RecallCourtCaseDetails'][]
       ual?: components['schemas']['RecallUALAdjustment']
+      /** Format: int32 */
+      calculationRequestId?: number
+      /** @description True if the recall was created manually (i.e. calculationRequestId is null) */
+      isManual: boolean
     }
     RecallCourtCaseDetails: {
       courtCaseReference?: string
@@ -2629,7 +2635,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2907,7 +2913,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -2927,7 +2933,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime?: string
       courtId: string
     }
@@ -2982,7 +2988,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -2992,7 +2998,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime?: string
       courtId: string
     }
@@ -3022,7 +3028,7 @@ export interface components {
       isSentenced: boolean
       sentences: components['schemas']['RecallableCourtCaseSentence'][]
       /** Format: date */
-      date: string
+      appearanceDate: string
       /** Format: date */
       firstDayInCustody?: string
     }
@@ -3233,7 +3239,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 10:17:21.389538509 */
+      /** @example 13:09:36.028470103 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
@@ -4494,6 +4500,15 @@ export interface operations {
       }
       /** @description Forbidden, requires an appropriate role */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeleteImmigrationDetentionResponse']
+        }
+      }
+      /** @description Immigration Detention not found */
+      404: {
         headers: {
           [name: string]: unknown
         }

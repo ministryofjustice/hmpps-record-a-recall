@@ -30,7 +30,6 @@ beforeEach(() => {
     lastTouched: new Date().toISOString(),
     nomsId,
     isCheckingAnswers: false,
-    isManual: false,
     revocationDate: {
       day: 1,
       month: 10,
@@ -84,6 +83,7 @@ describe('GET', () => {
     const offenceCardText = $('[data-qa=recallable-sentences]').text()
     expect(offenceCardText).toContain('OFF1 Offence 1')
     expect(offenceCardText).toContain('Standard Determinate')
+    expect(existingJourney.calculationRequestId).toEqual(991)
   })
 
   it('should return to start of journey if not found in session', async () => {
@@ -107,6 +107,7 @@ describe('POST', () => {
 
     // Then
     expect(existingJourney.sentenceIds).toBeTruthy()
+    expect(existingJourney.calculationRequestId).toEqual(991)
   })
 
   it('should return to start of journey if not found in session', async () => {

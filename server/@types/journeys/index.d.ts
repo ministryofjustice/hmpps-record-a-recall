@@ -6,7 +6,6 @@ export interface CreateRecallJourney {
   id: string
   lastTouched: string
   nomsId: string
-  isManual: boolean
   isCheckingAnswers: boolean
   crdsValidationResult: RecordARecallValidationResult
   revocationDate?: DateParts
@@ -16,6 +15,7 @@ export interface CreateRecallJourney {
   recallType?: ApiRecallType
   recallableCourtCases?: DecoratedCourtCase[]
   courtCaseIdsSelectedForRecall?: string[]
+  calculationRequestId?: number
 }
 
 export interface DateParts {

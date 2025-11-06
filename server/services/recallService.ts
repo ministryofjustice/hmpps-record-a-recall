@@ -175,6 +175,7 @@ export default class RecallService {
         ? null
         : dateToIsoString(datePartsToDate(journey.returnToCustodyDate)),
       sentenceIds: journey.sentenceIds,
+      calculationRequestId: journey.calculationRequestId,
     }
   }
 
