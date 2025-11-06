@@ -76,6 +76,7 @@ describe('GET', () => {
     expect($('#recallType-LR').attr('checked')).toBeFalsy()
     expect($('#recallType-FTR_14').attr('checked')).toBeFalsy()
     expect($('#recallType-FTR_28').attr('checked')).toBeFalsy()
+    expect(existingJourney.calculationRequestId).toEqual(991)
   })
 
   it('should populate the form with session values if there are no form values', async () => {

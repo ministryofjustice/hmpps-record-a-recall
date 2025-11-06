@@ -55,20 +55,29 @@ afterEach(() => {
 
 describe('GET', () => {
   it.each([
-    ['CRITICAL_ERRORS', `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`],
-    ['AUTOMATED', `/person/${nomsId}/recall/create/${journeyId}/review-sentences`],
-    ['NO_RECALLABLE_SENTENCES_FOUND', `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`],
-    ['VALIDATION', `/person/${nomsId}/recall/create/${journeyId}/manual/start`],
-    ['CONFLICTING_ADJUSTMENTS', `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`],
+    ['CRITICAL_ERRORS', undefined, `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`],
+    ['AUTOMATED', 991, `/person/${nomsId}/recall/create/${journeyId}/review-sentences`],
+    [
+      'NO_RECALLABLE_SENTENCES_FOUND',
+      undefined,
+      `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`,
+    ],
+    ['VALIDATION', undefined, `/person/${nomsId}/recall/create/${journeyId}/manual/start`],
+    ['CONFLICTING_ADJUSTMENTS', undefined, `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`],
   ])(
-    'Should redirect to the correct page for each decision type',
-    async (decision: RecordARecallDecisionResult['decision'], expectedRedirect: string) => {
+    `Should redirect to the correct page for decision %s`,
+    async (
+      decision: RecordARecallDecisionResult['decision'],
+      calculationRequestId: number,
+      expectedRedirect: string,
+    ) => {
       // Given
       calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue({
         decision,
         eligibleRecallTypes: [],
         recallableSentences: [],
         validationMessages: [],
+        calculationRequestId,
       })
 
       await request(app)
@@ -80,6 +89,7 @@ describe('GET', () => {
       expect(calculateReleaseDatesService.makeDecisionForRecordARecall.mock.calls[0][1]).toEqual({
         revocationDate: '2025-10-01',
       })
+      expect(existingJourney.calculationRequestId).toEqual(calculationRequestId)
     },
   )
 

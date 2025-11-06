@@ -16,6 +16,7 @@ export interface CreateRecallJourney {
   recallType?: ApiRecallType
   recallableCourtCases?: DecoratedCourtCase[]
   courtCaseIdsSelectedForRecall?: string[]
+  calculationRequestId?: number
 }
 
 export interface DateParts {
