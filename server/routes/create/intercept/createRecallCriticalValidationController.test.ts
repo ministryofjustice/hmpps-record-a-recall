@@ -22,7 +22,6 @@ beforeEach(() => {
     lastTouched: new Date().toISOString(),
     nomsId,
     isCheckingAnswers: false,
-    isManual: false,
     inCustodyAtRecall: true,
     crdsValidationResult: {
       criticalValidationMessages: [

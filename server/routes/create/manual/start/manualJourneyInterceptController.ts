@@ -28,7 +28,8 @@ export default class ManualJourneyInterceptController implements Controller {
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]
 
-    journey.isManual = true
+    // The absence of a calculationRequestId implies manual journey
+    journey.calculationRequestId = undefined
     journey.lastTouched = new Date().toISOString()
 
     logger.info(`Manual recall flag set for NOMS ID: ${nomsId}, journeyId: ${journeyId}`)

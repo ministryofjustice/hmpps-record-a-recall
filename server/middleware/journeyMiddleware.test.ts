@@ -29,7 +29,6 @@ describe('journeyMiddleware', () => {
         id: journeyId,
         lastTouched: lastTouchedBeforeCall.toISOString(),
         nomsId,
-        isManual: false,
         isCheckingAnswers: false,
         crdsValidationResult: {
           criticalValidationMessages: [],

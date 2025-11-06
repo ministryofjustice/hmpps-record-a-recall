@@ -26,7 +26,6 @@ beforeEach(() => {
     id: journeyId,
     lastTouched: new Date().toISOString(),
     nomsId,
-    isManual: false,
     isCheckingAnswers: false,
     crdsValidationResult: {
       criticalValidationMessages: [],
