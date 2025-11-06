@@ -136,8 +136,9 @@ describe('checkSentencesController Tests', () => {
       ] as DecoratedCourtCase[]
       existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
 
-      await request(app).post(baseUrl).expect(302)
+      const res = await request(app).post(baseUrl).expect(302)
 
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
       expect(existingJourney.sentenceIds).toEqual(['sent-uuid-1'])
     })
   })

@@ -31,7 +31,6 @@ export default class CheckSentencesController implements Controller {
       casesSelectedForRecall,
       licenceExpiryDate,
       cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
-      continueUrl: CreateRecallUrls.manualSelectRecallType(nomsId, journeyId),
       serviceDefinitions,
     })
   }
@@ -44,6 +43,6 @@ export default class CheckSentencesController implements Controller {
       courtCaseIdsSelectedForRecall.includes(c.courtCaseUuid),
     )
     journey.sentenceIds = casesSelectedForRecall.flatMap(c => (c.recallableSentences ?? []).map(s => s.sentenceUuid))
-    return res.redirect(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+    return res.redirect(CreateRecallUrls.manualSelectRecallType(nomsId, journeyId))
   }
 }
