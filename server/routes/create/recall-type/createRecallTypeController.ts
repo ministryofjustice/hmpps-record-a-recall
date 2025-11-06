@@ -34,8 +34,6 @@ export default class CreateRecallTypeController implements Controller {
       },
       username,
     )
-    journey.calculationRequestId = decision.calculationRequestId
-
     // Build recall type options
     const recallTypeOptions = Object.values(RecallTypes)
       .filter(({ code }) => decision.eligibleRecallTypes.includes(code))

@@ -27,7 +27,6 @@ export default class CreateRecallDecisionController implements Controller {
       },
       username,
     )
-    journey.calculationRequestId = decision.calculationRequestId
 
     if (decision.decision === 'CRITICAL_ERRORS') {
       return res.redirect(CreateRecallUrls.criticalValidationIntercept(nomsId, journeyId))
