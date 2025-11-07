@@ -98,3 +98,6 @@ export const maxOf = <A, B>(all: A[], map: (a: A) => B): B => {
 export const lowercaseFirstLetter = (s: string): string => {
   return s ? s[0].toLowerCase() + s.slice(1) : ''
 }
+
+export const addUnique = (list: string[], addValue: string) => (list.includes(addValue) ? list : [...list, addValue])
+export const removeItem = (list: string[], removeValue: string) => list.filter(it => it !== removeValue)

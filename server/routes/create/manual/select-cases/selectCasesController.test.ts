@@ -137,7 +137,7 @@ describe('selectCasesController Tests', () => {
         const courtCase = TestData.recallableCourtCase()
         recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
         delete existingJourney.courtCaseIdsExcludedFromRecall
-        existingJourney.courtCaseIdsSelectedForRecall = new Set([courtCase.courtCaseUuid])
+        existingJourney.courtCaseIdsSelectedForRecall = [courtCase.courtCaseUuid]
 
         const res = await request(app).get(baseUrl)
         const $ = cheerio.load(res.text)
@@ -149,7 +149,7 @@ describe('selectCasesController Tests', () => {
       it('selects the NO radio when the case is in courtCaseIdsSelectedForRecall', async () => {
         const courtCase = TestData.recallableCourtCase()
         recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
-        existingJourney.courtCaseIdsExcludedFromRecall = new Set([courtCase.courtCaseUuid])
+        existingJourney.courtCaseIdsExcludedFromRecall = [courtCase.courtCaseUuid]
         delete existingJourney.courtCaseIdsSelectedForRecall
 
         const res = await request(app).get(baseUrl)
@@ -178,7 +178,7 @@ describe('selectCasesController Tests', () => {
     const selectCasesUrl = (caseIndex?: number) => CreateRecallUrls.manualSelectCases(nomsId, journeyId, caseIndex)
 
     beforeEach(() => {
-      existingJourney.courtCaseIdsSelectedForRecall = new Set()
+      existingJourney.courtCaseIdsSelectedForRecall = []
       existingJourney.recallableCourtCases = undefined as DecoratedCourtCase[]
     })
 
@@ -192,7 +192,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
       expect(res.header.location).toBe(selectCasesUrl(2))
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set(['uuid-2']))
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
     })
 
     it('NO on a middle case: skips storing and redirects to next case', async () => {
@@ -205,7 +205,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(selectCasesUrl(2))
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set())
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
     })
 
     it('YES on last case: stores UUID and goes to next step', async () => {
@@ -214,8 +214,8 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set(['uuid-1']))
-      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(new Set())
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual([])
     })
 
     it('NO on last case: does not store and goes to next step', async () => {
@@ -224,7 +224,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set())
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
     })
 
     it('NO removes existing case UUID from selected list', async () => {
@@ -232,12 +232,12 @@ describe('selectCasesController Tests', () => {
         { courtCaseUuid: 'uuid-1' },
         { courtCaseUuid: 'uuid-2' },
       ] as DecoratedCourtCase[]
-      existingJourney.courtCaseIdsSelectedForRecall = new Set(['uuid-1', 'uuid-2'])
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
 
       await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set(['uuid-1']))
-      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(new Set(['uuid-2']))
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-2'])
     })
   })
 })

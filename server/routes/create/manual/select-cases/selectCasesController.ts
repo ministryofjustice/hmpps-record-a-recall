@@ -5,6 +5,7 @@ import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchema'
+import { addUnique, removeItem } from '../../../../utils/utils'
 
 export default class SelectCasesController implements Controller {
   public PAGE_NAME = Page.CREATE_RECALL_MANUAL_SELECT_CASES
@@ -27,9 +28,9 @@ export default class SelectCasesController implements Controller {
 
     let selectedRadio: 'YES' | 'NO' | undefined
 
-    if (journey.courtCaseIdsSelectedForRecall?.has(courtCase.courtCaseUuid)) {
+    if (journey.courtCaseIdsSelectedForRecall?.includes(courtCase.courtCaseUuid)) {
       selectedRadio = 'YES'
-    } else if (journey.courtCaseIdsExcludedFromRecall?.has(courtCase.courtCaseUuid)) {
+    } else if (journey.courtCaseIdsExcludedFromRecall?.includes(courtCase.courtCaseUuid)) {
       selectedRadio = 'NO'
     }
 
@@ -59,15 +60,15 @@ export default class SelectCasesController implements Controller {
     const nextCaseIndex = currentCaseIndex + 1
     const currentCaseUuid = cases[currentCaseIndex].courtCaseUuid
 
-    journey.courtCaseIdsSelectedForRecall ??= new Set()
-    journey.courtCaseIdsExcludedFromRecall ??= new Set()
+    journey.courtCaseIdsSelectedForRecall ??= []
+    journey.courtCaseIdsExcludedFromRecall ??= []
 
     if (activeSentenceChoice === 'YES') {
-      journey.courtCaseIdsSelectedForRecall.add(currentCaseUuid)
-      journey.courtCaseIdsExcludedFromRecall.delete(currentCaseUuid)
+      journey.courtCaseIdsSelectedForRecall = addUnique(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
+      journey.courtCaseIdsExcludedFromRecall = removeItem(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     } else {
-      journey.courtCaseIdsSelectedForRecall.delete(currentCaseUuid)
-      journey.courtCaseIdsExcludedFromRecall.add(currentCaseUuid)
+      journey.courtCaseIdsSelectedForRecall = removeItem(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
+      journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     }
 
     // Move to next case if available
