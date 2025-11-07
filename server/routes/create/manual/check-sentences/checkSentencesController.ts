@@ -41,7 +41,7 @@ export default class CheckSentencesController implements Controller {
     const journey = req.session.createRecallJourneys[journeyId]
     const { courtCaseIdsSelectedForRecall } = journey
     const casesSelectedForRecall = journey.recallableCourtCases.filter(c =>
-      courtCaseIdsSelectedForRecall.includes(c.courtCaseUuid),
+      courtCaseIdsSelectedForRecall.has(c.courtCaseUuid),
     )
     journey.sentenceIds = casesSelectedForRecall.flatMap(c => (c.recallableSentences ?? []).map(s => s.sentenceUuid))
     if (journey.isCheckingAnswers) {

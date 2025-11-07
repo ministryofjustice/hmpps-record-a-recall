@@ -14,7 +14,8 @@ export interface CreateRecallJourney {
   sentenceIds?: string[]
   recallType?: ApiRecallType
   recallableCourtCases?: DecoratedCourtCase[]
-  courtCaseIdsSelectedForRecall?: string[]
+  courtCaseIdsSelectedForRecall?: Set<string>
+  courtCaseIdsExcludedFromRecall?: Set<string>
   calculationRequestId?: number // this is only set in the auto journey
 }
 

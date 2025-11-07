@@ -56,12 +56,14 @@
         {
           value: "YES",
           text: "Yes",
-          checked: formResponses.activeSentenceChoice == "YES"
+          checked: selectedRadio == 'YES',
+          attributes: { 'data-qa': 'yes-radio' }
         },
         {
           value: "NO",
           text: "No",
-          checked: formResponses.activeSentenceChoice == "NO"
+          checked: selectedRadio == 'NO',
+          attributes: { 'data-qa': 'no-radio' }
         }
       ],
       errorMessage: fieldError

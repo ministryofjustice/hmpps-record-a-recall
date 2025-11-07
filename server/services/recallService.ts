@@ -188,9 +188,9 @@ export default class RecallService {
   }
 
   public getCasesSelectedForRecall(journey: CreateRecallJourney) {
-    const { courtCaseIdsSelectedForRecall = [] } = journey
-    const cases = journey.recallableCourtCases ?? []
+    const { courtCaseIdsSelectedForRecall = new Set() } = journey
+    const cases: DecoratedCourtCase[] = Array.from(journey.recallableCourtCases ?? new Set())
 
-    return cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid))
+    return cases.filter(courtCase => courtCaseIdsSelectedForRecall.has(courtCase.courtCaseUuid))
   }
 }

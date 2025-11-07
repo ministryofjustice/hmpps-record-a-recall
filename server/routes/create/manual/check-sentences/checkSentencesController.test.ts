@@ -150,7 +150,7 @@ describe('checkSentencesController Tests', () => {
 
   describe('POST', () => {
     beforeEach(() => {
-      existingJourney.courtCaseIdsSelectedForRecall = []
+      existingJourney.courtCaseIdsSelectedForRecall = new Set()
       existingJourney.recallableCourtCases = undefined as DecoratedCourtCase[]
     })
 
@@ -159,7 +159,7 @@ describe('checkSentencesController Tests', () => {
         { courtCaseUuid: 'uuid-1', recallableSentences: [{ sentenceUuid: 'sent-uuid-1' }] },
         { courtCaseUuid: 'uuid-2', recallableSentences: [] },
       ] as DecoratedCourtCase[]
-      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
+      existingJourney.courtCaseIdsSelectedForRecall = new Set(['uuid-1', 'uuid-2'])
 
       const res = await request(app).post(baseUrl).expect(302)
 

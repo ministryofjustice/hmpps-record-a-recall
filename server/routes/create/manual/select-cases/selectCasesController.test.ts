@@ -131,13 +131,54 @@ describe('selectCasesController Tests', () => {
         expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualJourneyStart(nomsId, journeyId))
       })
     })
+
+    describe('Form values are preselected if the page is revisited', () => {
+      it('selects the YES radio when the case is in courtCaseIdsSelectedForRecall', async () => {
+        const courtCase = TestData.recallableCourtCase()
+        recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
+        delete existingJourney.courtCaseIdsExcludedFromRecall
+        existingJourney.courtCaseIdsSelectedForRecall = new Set([courtCase.courtCaseUuid])
+
+        const res = await request(app).get(baseUrl)
+        const $ = cheerio.load(res.text)
+
+        expect($('[data-qa="yes-radio"]').attr('checked')).toBe('checked')
+        expect($('[data-qa="no-radio"]').attr('checked')).toBeUndefined()
+      })
+
+      it('selects the NO radio when the case is in courtCaseIdsSelectedForRecall', async () => {
+        const courtCase = TestData.recallableCourtCase()
+        recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
+        existingJourney.courtCaseIdsExcludedFromRecall = new Set([courtCase.courtCaseUuid])
+        delete existingJourney.courtCaseIdsSelectedForRecall
+
+        const res = await request(app).get(baseUrl)
+        const $ = cheerio.load(res.text)
+
+        expect($('[data-qa="yes-radio"]').attr('checked')).toBeUndefined()
+        expect($('[data-qa="no-radio"]').attr('checked')).toBe('checked')
+      })
+
+      it('selects neither radio when the case hasnt been visited before', async () => {
+        const courtCase = TestData.recallableCourtCase()
+        recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
+        delete existingJourney.courtCaseIdsExcludedFromRecall
+        delete existingJourney.courtCaseIdsSelectedForRecall
+
+        const res = await request(app).get(baseUrl)
+        const $ = cheerio.load(res.text)
+
+        expect($('[data-qa="yes-radio"]').attr('checked')).toBeUndefined()
+        expect($('[data-qa="no-radio"]').attr('checked')).toBeUndefined()
+      })
+    })
   })
 
   describe('POST', () => {
     const selectCasesUrl = (caseIndex?: number) => CreateRecallUrls.manualSelectCases(nomsId, journeyId, caseIndex)
 
     beforeEach(() => {
-      existingJourney.courtCaseIdsSelectedForRecall = []
+      existingJourney.courtCaseIdsSelectedForRecall = new Set()
       existingJourney.recallableCourtCases = undefined as DecoratedCourtCase[]
     })
 
@@ -151,7 +192,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
       expect(res.header.location).toBe(selectCasesUrl(2))
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set(['uuid-2']))
     })
 
     it('NO on a middle case: skips storing and redirects to next case', async () => {
@@ -164,7 +205,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(selectCasesUrl(2))
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set())
     })
 
     it('YES on last case: stores UUID and goes to next step', async () => {
@@ -173,7 +214,8 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'YES' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set(['uuid-1']))
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(new Set())
     })
 
     it('NO on last case: does not store and goes to next step', async () => {
@@ -182,7 +224,7 @@ describe('selectCasesController Tests', () => {
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set())
     })
 
     it('NO removes existing case UUID from selected list', async () => {
@@ -190,11 +232,12 @@ describe('selectCasesController Tests', () => {
         { courtCaseUuid: 'uuid-1' },
         { courtCaseUuid: 'uuid-2' },
       ] as DecoratedCourtCase[]
-      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
+      existingJourney.courtCaseIdsSelectedForRecall = new Set(['uuid-1', 'uuid-2'])
 
       await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
-      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(new Set(['uuid-1']))
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(new Set(['uuid-2']))
     })
   })
 })

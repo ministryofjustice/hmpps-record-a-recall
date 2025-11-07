@@ -25,11 +25,20 @@ export default class SelectCasesController implements Controller {
     const courtCaseIndex = Number(caseIndex) || 0
     const courtCase = cases[courtCaseIndex]
 
+    let selectedRadio: 'YES' | 'NO' | undefined
+
+    if (journey.courtCaseIdsSelectedForRecall?.has(courtCase.courtCaseUuid)) {
+      selectedRadio = 'YES'
+    } else if (journey.courtCaseIdsExcludedFromRecall?.has(courtCase.courtCaseUuid)) {
+      selectedRadio = 'NO'
+    }
+
     return res.render('pages/recall/manual/select-court-cases', {
       prisoner,
       courtCase,
       courtCaseIndex,
       totalCases: cases.length,
+      selectedRadio,
       cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
       backLink: this.getBackLink(journey, nomsId, journeyId, courtCaseIndex),
     })
@@ -50,12 +59,15 @@ export default class SelectCasesController implements Controller {
     const nextCaseIndex = currentCaseIndex + 1
     const currentCaseUuid = cases[currentCaseIndex].courtCaseUuid
 
+    journey.courtCaseIdsSelectedForRecall ??= new Set()
+    journey.courtCaseIdsExcludedFromRecall ??= new Set()
+
     if (activeSentenceChoice === 'YES') {
-      journey.courtCaseIdsSelectedForRecall = [...(journey.courtCaseIdsSelectedForRecall ?? []), currentCaseUuid]
+      journey.courtCaseIdsSelectedForRecall.add(currentCaseUuid)
+      journey.courtCaseIdsExcludedFromRecall.delete(currentCaseUuid)
     } else {
-      journey.courtCaseIdsSelectedForRecall = (journey.courtCaseIdsSelectedForRecall ?? []).filter(
-        caseUuid => caseUuid !== currentCaseUuid,
-      )
+      journey.courtCaseIdsSelectedForRecall.delete(currentCaseUuid)
+      journey.courtCaseIdsExcludedFromRecall.add(currentCaseUuid)
     }
 
     // Move to next case if available
