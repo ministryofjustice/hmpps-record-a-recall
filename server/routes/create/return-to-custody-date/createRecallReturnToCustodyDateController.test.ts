@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
-import GlobalRecallUrls from '../../globalRecallUrls'
 import CreateRecallUrls from '../createRecallUrls'
 
 let app: Express

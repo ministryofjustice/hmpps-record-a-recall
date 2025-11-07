@@ -4,7 +4,6 @@ import { CreateRecallJourney, PersonJourneyParams } from '../../../@types/journe
 import CreateRecallUrls from '../createRecallUrls'
 import { ReturnToCustodyDateForm } from '../../common/return-to-custody-date/returnToCustodyDateSchemas'
 import { Page } from '../../../services/auditService'
-import GlobalRecallUrls from '../../globalRecallUrls'
 
 export default class CreateRecallReturnToCustodyDateController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_ENTER_RETURN_TO_CUSTODY_DATE

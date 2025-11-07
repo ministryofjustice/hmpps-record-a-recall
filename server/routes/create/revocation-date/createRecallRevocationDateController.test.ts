@@ -9,7 +9,6 @@ import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import CreateRecallUrls from '../createRecallUrls'
-import TestData from '../../../testutils/testData'
 import GlobalRecallUrls from '../../globalRecallUrls'
 
 let app: Express
