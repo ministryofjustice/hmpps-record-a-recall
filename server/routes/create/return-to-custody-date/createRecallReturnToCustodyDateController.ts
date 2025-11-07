@@ -1,9 +1,10 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import { PersonJourneyParams } from '../../../@types/journeys'
+import { CreateRecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import CreateRecallUrls from '../createRecallUrls'
 import { ReturnToCustodyDateForm } from '../../common/return-to-custody-date/returnToCustodyDateSchemas'
 import { Page } from '../../../services/auditService'
+import GlobalRecallUrls from '../../globalRecallUrls'
 
 export default class CreateRecallReturnToCustodyDateController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_ENTER_RETURN_TO_CUSTODY_DATE
@@ -12,12 +13,7 @@ export default class CreateRecallReturnToCustodyDateController implements Contro
     const { prisoner, formResponses } = res.locals
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]!
-    let backLink: string
-    if (journey.isCheckingAnswers) {
-      backLink = CreateRecallUrls.checkAnswers(nomsId, journeyId)
-    } else {
-      backLink = CreateRecallUrls.revocationDate(nomsId, journeyId)
-    }
+    const backLink = this.getBackLink(journey, nomsId, journeyId)
     const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
     const day = formResponses?.day ?? journey.returnToCustodyDate?.day
     const month = formResponses?.month ?? journey.returnToCustodyDate?.month
@@ -42,5 +38,14 @@ export default class CreateRecallReturnToCustodyDateController implements Contro
     journey.inCustodyAtRecall = inCustodyAtRecall
     journey.returnToCustodyDate = { day, month, year }
     return res.redirect(CreateRecallUrls.decisionEndpoint(nomsId, journeyId))
+  }
+
+  private getBackLink(journey: CreateRecallJourney, nomsId: string, journeyId: string) {
+    if (journey.isCheckingAnswers) {
+      return journey.calculationRequestId
+        ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
+        : CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+    }
+    return CreateRecallUrls.revocationDate(nomsId, journeyId)
   }
 }

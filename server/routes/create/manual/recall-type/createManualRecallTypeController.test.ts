@@ -111,21 +111,20 @@ describe('GET', () => {
   })
 
   describe('backlink tests', () => {
-    it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
-      existingJourney.isCheckingAnswers = true
+    it.each([
+      [false, CreateRecallUrls.manualCheckSentences(nomsId, journeyId)],
+      [true, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
+    ])(
+      'shows correct back link when check-your-answers is %s',
+      async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+        existingJourney.isCheckingAnswers = isCheckingAnswers
 
-      const res = await request(app).get(baseUrl)
+        const res = await request(app).get(baseUrl)
 
-      const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
-    })
-
-    it('shows back link to check-cases when not checking answers', async () => {
-      const res = await request(app).get(baseUrl)
-
-      const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualCheckSentences(nomsId, journeyId))
-    })
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
+      },
+    )
   })
 })
 
