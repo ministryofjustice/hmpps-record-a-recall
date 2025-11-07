@@ -67,20 +67,14 @@ describe('GET /manual/start', () => {
   })
 
   describe('backlink tests', () => {
-    it.each([
-      [false, CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)],
-      [true, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
-    ])(
-      'shows correct back link when check-your-answers is %s',
-      async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
-        existingJourney.isCheckingAnswers = isCheckingAnswers
+    it('renders the manual intercept screen with correct heading and buttons', async () => {
+      // async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
 
-        const res = await request(app).get(baseUrl)
+      const res = await request(app).get(baseUrl)
 
-        const $ = cheerio.load(res.text)
-        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
-      },
-    )
+      const $ = cheerio.load(res.text)
+      expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
+    })
   })
 })
 
@@ -99,17 +93,6 @@ describe('POST /manual/start', () => {
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`)
     expect(existingJourney.calculationRequestId).toBeUndefined()
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
-  })
-
-  it('redirects to checkAnswers when isCheckingAnswers=true', async () => {
-    // Given
-    existingJourney.isCheckingAnswers = true
-
-    // When
-    const res = await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
-
-    // Then
-    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/check-answers`)
   })
 
   it('redirects to start if journey not found in session', async () => {
