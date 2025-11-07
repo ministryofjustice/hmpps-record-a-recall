@@ -36,16 +36,18 @@ export default class CreateManualRecallCheckAnswersController implements Control
     const recallTypeDescription = Object.values(RecallTypes).find(it => it.code === recall.recallTypeCode).description
     const ual = recall.inPrisonOnRevocationDate ? null : calculateUal(recall.revocationDate, recall.returnToCustodyDate)
 
-    return res.render('pages/recall/check-answers', {
+    return res.render('pages/recall/manual/manual-check-answers', {
       prisoner,
       pageCaption: 'Record a recall',
       backLink,
       cancelUrl,
       recall,
+      courtCasesCount: journey.recallableCourtCases.length,
       ual,
       recallTypeDescription,
       nomsId,
       journeyId,
+      urls: this.buildUrls(nomsId, journeyId),
     })
   }
 
@@ -58,5 +60,15 @@ export default class CreateManualRecallCheckAnswersController implements Control
     const response = await this.recallService.createRecall(recall, username)
 
     return res.redirect(CreateRecallUrls.recallCreatedConfirmation(nomsId, response.recallUuid))
+  }
+
+  private buildUrls(nomsId: string, journeyId: string) {
+    return {
+      revocationDate: CreateRecallUrls.revocationDate(nomsId, journeyId),
+      returnToCustodyDate: CreateRecallUrls.returnToCustodyDate(nomsId, journeyId),
+      manualSelectCases: CreateRecallUrls.manualSelectCases(nomsId, journeyId),
+      manualCheckSentences: CreateRecallUrls.manualCheckSentences(nomsId, journeyId),
+      manualSelectRecallType: CreateRecallUrls.manualSelectRecallType(nomsId, journeyId),
+    }
   }
 }

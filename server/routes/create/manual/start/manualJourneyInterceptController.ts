@@ -1,10 +1,8 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
 import { PersonJourneyParams } from '../../../../@types/journeys'
-import GlobalRecallUrls from '../../../globalRecallUrls'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
-import logger from '../../../../../logger'
 
 export default class ManualJourneyInterceptController implements Controller {
   public PAGE_NAME = Page.CREATE_RECALL_MANUAL_INTERCEPT
@@ -18,8 +16,8 @@ export default class ManualJourneyInterceptController implements Controller {
     return res.render('pages/recall/manual/manual-recall-intercept', {
       prisoner,
       backLink: journey.isCheckingAnswers
-        ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
-        : GlobalRecallUrls.home(nomsId),
+        ? CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+        : CreateRecallUrls.returnToCustodyDate(nomsId, journeyId),
       cancelUrl,
     })
   }
@@ -30,9 +28,6 @@ export default class ManualJourneyInterceptController implements Controller {
 
     // The absence of a calculationRequestId implies manual journey
     delete journey.calculationRequestId
-    journey.lastTouched = new Date().toISOString()
-
-    logger.info(`Manual recall flag set for NOMS ID: ${nomsId}, journeyId: ${journeyId}`)
 
     const nextPath = journey.isCheckingAnswers
       ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
