@@ -12,6 +12,7 @@ import TestData from '../../../../testutils/testData'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import CourtCasesReleaseDatesService from '../../../../services/courtCasesReleaseDatesService'
 import AuditService from '../../../../services/auditService'
+import CreateRecallUrls from '../../createRecallUrls'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -29,6 +30,19 @@ const courtCasesReleaseDatesService = new CourtCasesReleaseDatesService(
 ) as jest.Mocked<CourtCasesReleaseDatesService>
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
+const s1 = TestData.recallableSentence({ offenceCode: 'OFF1', offenceDescription: 'Offence 1' })
+const s2 = TestData.recallableSentence({ offenceCode: 'OFF2', offenceDescription: 'Offence 2' })
+const s3 = TestData.recallableSentence({ offenceCode: 'OFF3', offenceDescription: 'Offence 3' })
+
+const courtCase1 = TestData.recallableCourtCase([s1, s2], [], {
+  courtCaseUuid: 'uuid-1',
+  reference: 'REF-1',
+} as RecallableCourtCase)
+const courtCase2 = TestData.recallableCourtCase([s3], [], {
+  courtCaseUuid: 'uuid-2',
+  reference: 'REF-2',
+} as RecallableCourtCase)
+
 beforeEach(() => {
   existingJourney = {
     id: journeyId,
@@ -40,6 +54,7 @@ beforeEach(() => {
       otherValidationMessages: [],
       earliestSentenceDate: '2025-01-01',
     },
+    recallableCourtCases: [courtCase1, courtCase2],
   }
   app = appWithAllRoutes({
     services: { recallService, calculateReleaseDatesService, courtCasesReleaseDatesService, auditService },
@@ -49,6 +64,8 @@ beforeEach(() => {
       receivedSession.createRecallJourneys[journeyId] = existingJourney
     },
   })
+
+  recallService.getCasesSelectedForRecall.mockReturnValue([courtCase1, courtCase2])
 })
 
 afterEach(() => {
@@ -61,21 +78,7 @@ describe('checkSentencesController Tests', () => {
   describe('GET', () => {
     it('renders the first recallable court case (index defaults to 0) and shows recallable/non-recallable sections', async () => {
       // Given
-      const s1 = TestData.recallableSentence({ offenceCode: 'OFF1', offenceDescription: 'Offence 1' })
-      const s2 = TestData.recallableSentence({ offenceCode: 'OFF2', offenceDescription: 'Offence 2' })
-      const s3 = TestData.recallableSentence({ offenceCode: 'OFF3', offenceDescription: 'Offence 3' })
-
-      const courtCase1 = TestData.recallableCourtCase([s1, s2], [], {
-        courtCaseUuid: 'uuid-1',
-        reference: 'REF-1',
-      } as RecallableCourtCase)
-      const courtCase2 = TestData.recallableCourtCase([s3], [], {
-        courtCaseUuid: 'uuid-2',
-        reference: 'REF-2',
-      } as RecallableCourtCase)
-
       calculateReleaseDatesService.getLedFromLatestCalc.mockResolvedValue('2024-02-03')
-      recallService.getCasesSelectedForRecall.mockReturnValue([courtCase1, courtCase2])
       courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
 
       // When
@@ -119,6 +122,29 @@ describe('checkSentencesController Tests', () => {
       const onlyCard = secondCaseCards.eq(0)
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('OFF3')
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('Offence 3')
+    })
+
+    describe('backlink tests', () => {
+      it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
+        recallService.getCasesSelectedForRecall.mockReturnValue([courtCase1, courtCase2])
+        existingJourney.isCheckingAnswers = true
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+      })
+
+      it('shows back link to previous case when not checking answers', async () => {
+        const courtCaseIndex = 2
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          CreateRecallUrls.manualSelectCases(nomsId, journeyId, courtCaseIndex - 1),
+        )
+      })
     })
   })
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
-import { PersonJourneyParams } from '../../../../@types/journeys'
+import { CreateRecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
 import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
@@ -23,7 +23,6 @@ export default class SelectCasesController implements Controller {
 
     const cases = journey.recallableCourtCases
     const courtCaseIndex = Number(caseIndex) || 0
-
     const courtCase = cases[courtCaseIndex]
 
     return res.render('pages/recall/manual/select-court-cases', {
@@ -32,6 +31,7 @@ export default class SelectCasesController implements Controller {
       courtCaseIndex,
       totalCases: cases.length,
       cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
+      backLink: this.getBackLink(journey, nomsId, journeyId, courtCaseIndex),
     })
   }
 
@@ -65,5 +65,17 @@ export default class SelectCasesController implements Controller {
 
     // last case — decide final route
     return res.redirect(CreateRecallUrls.manualCheckSentences(nomsId, journeyId))
+  }
+
+  private getBackLink(journey: CreateRecallJourney, nomsId: string, journeyId: string, courtCaseIndex: number) {
+    if (journey.isCheckingAnswers) {
+      return CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+    }
+
+    if (courtCaseIndex > 0) {
+      return CreateRecallUrls.manualSelectCases(nomsId, journeyId, courtCaseIndex - 1)
+    }
+
+    return CreateRecallUrls.manualJourneyStart(nomsId, journeyId)
   }
 }

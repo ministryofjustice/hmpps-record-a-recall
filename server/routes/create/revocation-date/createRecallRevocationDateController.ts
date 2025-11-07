@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import { PersonJourneyParams } from '../../../@types/journeys'
+import { CreateRecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import GlobalRecallUrls from '../../globalRecallUrls'
 import CreateRecallUrls from '../createRecallUrls'
 import { RevocationDateForm } from '../../common/revocation-date/revocationDateSchemas'
@@ -13,12 +13,7 @@ export default class CreateRecallRevocationDateController implements Controller 
     const { prisoner, formResponses } = res.locals
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]!
-    let backLink: string
-    if (journey.isCheckingAnswers) {
-      backLink = CreateRecallUrls.checkAnswers(nomsId, journeyId)
-    } else {
-      backLink = GlobalRecallUrls.home(nomsId)
-    }
+    const backLink = this.getBackLink(journey, nomsId, journeyId)
     const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
     const day = formResponses?.day ?? journey.revocationDate?.day
     const month = formResponses?.month ?? journey.revocationDate?.month
@@ -40,8 +35,19 @@ export default class CreateRecallRevocationDateController implements Controller 
     const { day, month, year } = req.body
     journey.revocationDate = { day, month, year }
     if (journey.isCheckingAnswers) {
-      return res.redirect(CreateRecallUrls.checkAnswers(nomsId, journeyId))
+      return journey.calculationRequestId
+        ? res.redirect(CreateRecallUrls.checkAnswers(nomsId, journeyId))
+        : res.redirect(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
     }
     return res.redirect(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
+  }
+
+  private getBackLink(journey: CreateRecallJourney, nomsId: string, journeyId: string) {
+    if (journey.isCheckingAnswers) {
+      return journey.calculationRequestId
+        ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
+        : CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+    }
+    return GlobalRecallUrls.home(nomsId)
   }
 }

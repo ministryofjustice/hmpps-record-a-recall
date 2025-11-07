@@ -8,6 +8,8 @@ import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
+import CreateRecallUrls from '../createRecallUrls'
+import GlobalRecallUrls from '../../globalRecallUrls'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -47,6 +49,8 @@ afterEach(() => {
 })
 
 describe('GET', () => {
+  const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/revocation-date`
+
   it('should render revocation date page with correct navigation', async () => {
     // Given
 
@@ -107,18 +111,39 @@ describe('GET', () => {
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
+
+  describe('backlink tests', () => {
+    it.each([
+      [false, undefined, GlobalRecallUrls.home(nomsId)],
+      [true, 991, CreateRecallUrls.checkAnswers(nomsId, journeyId)],
+      [true, undefined, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
+    ])(
+      'shows correct back link when check-your-answers is %s and calculationRequestId is %s',
+      async (isCheckingAnswers: boolean, calculationRequestId: number, expectedNextUrl: string) => {
+        existingJourney.isCheckingAnswers = isCheckingAnswers
+        existingJourney.calculationRequestId = calculationRequestId
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
+      },
+    )
+  })
 })
 
 describe('POST', () => {
   it.each([
-    [false, `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`],
-    [true, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
+    [false, undefined, `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`],
+    [true, 991, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
+    [true, undefined, `/person/${nomsId}/recall/create/${journeyId}/manual/check-answers`],
   ])(
-    'should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
-    async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+    'should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s, %s)',
+    async (isCheckingAnswers: boolean, calculationRequestId: number, expectedNextUrl: string) => {
       // Given
       recallService.getLatestRevocationDate.mockResolvedValue(new Date('2024-01-01'))
       existingJourney.isCheckingAnswers = isCheckingAnswers
+      existingJourney.calculationRequestId = calculationRequestId
 
       // When
       await request(app)

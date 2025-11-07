@@ -9,6 +9,8 @@ import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import RecallService from '../../../../services/recallService'
 import { CreateRecall } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import AuditService from '../../../../services/auditService'
+import CreateRecallUrls from '../../createRecallUrls'
+import TestData from '../../../../testutils/testData'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -54,6 +56,7 @@ beforeEach(() => {
     },
     recallType: 'LR',
     sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
+    recallableCourtCases: [TestData.recallableCourtCase()],
   }
   app = appWithAllRoutes({
     services: { recallService, auditService },
@@ -92,28 +95,27 @@ describe('GET', () => {
     const revocationRow = checkAnswerRows.eq(0)
     expect(revocationRow.text()).toContain('Date of revocation')
     expect(revocationRow.text()).toContain('01 Oct 2025')
-    expect(revocationRow.find('a').attr('href')).toContain(
-      `/person/${nomsId}/recall/create/${journeyId}/revocation-date`,
-    )
+    expect(revocationRow.find('a').attr('href')).toContain(CreateRecallUrls.revocationDate(nomsId, journeyId))
 
     const arrestDateRow = checkAnswerRows.eq(1)
     expect(arrestDateRow.text()).toContain('Arrest date')
     expect(arrestDateRow.text()).toContain('05 Oct 2025')
-    expect(arrestDateRow.find('a').attr('href')).toContain(
-      `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`,
-    )
+    expect(arrestDateRow.find('a').attr('href')).toContain(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
 
-    const sentencesRow = checkAnswerRows.eq(2)
+    const courtCaseRows = checkAnswerRows.eq(2)
+    expect(courtCaseRows.text()).toContain('Cases')
+    expect(courtCaseRows.text()).toContain('1 case')
+    expect(courtCaseRows.find('a').attr('href')).toContain(CreateRecallUrls.manualSelectCases(nomsId, journeyId))
+
+    const sentencesRow = checkAnswerRows.eq(3)
     expect(sentencesRow.text()).toContain('Sentences')
     expect(sentencesRow.text()).toContain('1 sentence')
-    expect(sentencesRow.find('a').attr('href')).toContain(
-      `/person/${nomsId}/recall/create/${journeyId}/review-sentences`,
-    )
+    expect(sentencesRow.find('a').attr('href')).toContain(CreateRecallUrls.manualCheckSentences(nomsId, journeyId))
 
-    const recallTypeRow = checkAnswerRows.eq(3)
+    const recallTypeRow = checkAnswerRows.eq(4)
     expect(recallTypeRow.text()).toContain('Recall type')
     expect(recallTypeRow.text()).toContain('Standard')
-    expect(recallTypeRow.find('a').attr('href')).toContain(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
+    expect(recallTypeRow.find('a').attr('href')).toContain(CreateRecallUrls.manualSelectRecallType(nomsId, journeyId))
 
     const ualText = $('#ual-text')
     expect(ualText.text()).toContain('3 days of UAL')

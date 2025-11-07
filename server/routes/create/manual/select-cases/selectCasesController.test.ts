@@ -54,6 +54,8 @@ beforeEach(() => {
     }
     next()
   })
+
+  recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
 })
 
 afterEach(() => {
@@ -93,6 +95,41 @@ describe('selectCasesController Tests', () => {
       const nonRecallableText = $('[data-qa="non-recallable-sentences"]').text()
       expect(nonRecallableText).toContain('OFF2')
       expect(nonRecallableText).toContain('Offence 2')
+    })
+
+    describe('backlink tests', () => {
+      it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
+        existingJourney.isCheckingAnswers = true
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+      })
+
+      it('shows back link to previous case when not checking answers and index > 0', async () => {
+        recallService.getRecallableCourtCases.mockResolvedValue([
+          TestData.recallableCourtCase(),
+          TestData.recallableCourtCase(),
+        ])
+        const courtCaseIndex = 2
+
+        const res = await request(app).get(`${baseUrl}/${courtCaseIndex}`)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          CreateRecallUrls.manualSelectCases(nomsId, journeyId, courtCaseIndex - 1),
+        )
+      })
+
+      it('shows back link to journey start when not checking answers and index = 0', async () => {
+        const courtCaseIndex = 0
+
+        const res = await request(app).get(`${baseUrl}?index=${courtCaseIndex}`)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualJourneyStart(nomsId, journeyId))
+      })
     })
   })
 

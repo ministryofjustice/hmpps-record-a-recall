@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
+import CreateRecallUrls from '../createRecallUrls'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -48,6 +49,8 @@ afterEach(() => {
 })
 
 describe('GET', () => {
+  const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`
+
   it('should render return to custody page with correct navigation', async () => {
     // Given
 
@@ -117,6 +120,25 @@ describe('GET', () => {
       .get(`/person/${nomsId}/recall/create/${uuidv4()}/return-to-custody-date`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+
+  describe('backlink tests', () => {
+    it.each([
+      [false, undefined, CreateRecallUrls.revocationDate(nomsId, journeyId)],
+      [true, 991, CreateRecallUrls.checkAnswers(nomsId, journeyId)],
+      [true, undefined, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
+    ])(
+      'shows correct back link when check-your-answers is %s and calculationRequestId is %s',
+      async (isCheckingAnswers: boolean, calculationRequestId: number, expectedNextUrl: string) => {
+        existingJourney.isCheckingAnswers = isCheckingAnswers
+        existingJourney.calculationRequestId = calculationRequestId
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
+      },
+    )
   })
 })
 

@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../../testutils/appSetup'
 import AuditService from '../../../../services/auditService'
+import CreateRecallUrls from '../../createRecallUrls'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -49,8 +50,9 @@ afterEach(() => {
 })
 
 describe('GET', () => {
+  const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`
   it('should render return recall type page with correct navigation', async () => {
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
+    const response = await request(app).get(baseUrl)
 
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
@@ -72,7 +74,7 @@ describe('GET', () => {
     existingJourney.recallType = 'LR'
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
+    const response = await request(app).get(baseUrl)
 
     // Then
     expect(response.status).toEqual(200)
@@ -90,7 +92,7 @@ describe('GET', () => {
     flashProvider.mockImplementation((key: string) => (key === 'formResponses' ? [JSON.stringify(form)] : []))
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
+    const response = await request(app).get(baseUrl)
 
     // Then
     expect(response.status).toEqual(200)
@@ -106,6 +108,23 @@ describe('GET', () => {
       .get(`/person/${nomsId}/recall/create/${uuidv4()}/manual/select-recall-type`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+
+  describe('backlink tests', () => {
+    it.each([
+      [false, CreateRecallUrls.manualCheckSentences(nomsId, journeyId)],
+      [true, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
+    ])(
+      'shows correct back link when check-your-answers is %s',
+      async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+        existingJourney.isCheckingAnswers = isCheckingAnswers
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
+      },
+    )
   })
 })
 

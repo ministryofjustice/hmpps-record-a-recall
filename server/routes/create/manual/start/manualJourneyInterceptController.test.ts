@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import AuditService from '../../../../services/auditService'
+import CreateRecallUrls from '../../createRecallUrls'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -44,9 +45,11 @@ afterEach(() => {
 })
 
 describe('GET /manual/start', () => {
+  const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
+
   it('renders the manual intercept screen with correct heading and buttons', async () => {
     // When
-    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/manual/start`).expect(200)
+    const res = await request(app).get(baseUrl).expect(200)
 
     const $ = cheerio.load(res.text)
 
@@ -61,6 +64,23 @@ describe('GET /manual/start', () => {
     const cancelLink = $('.moj-interruption-card__actions a[href]')
     expect(cancelLink.attr('href')).toBe(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
     expect(cancelLink.text().trim()).toBe('Cancel recall')
+  })
+
+  describe('backlink tests', () => {
+    it.each([
+      [false, CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)],
+      [true, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
+    ])(
+      'shows correct back link when check-your-answers is %s',
+      async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+        existingJourney.isCheckingAnswers = isCheckingAnswers
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
+      },
+    )
   })
 })
 
