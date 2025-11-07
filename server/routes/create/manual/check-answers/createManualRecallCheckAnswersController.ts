@@ -42,7 +42,7 @@ export default class CreateManualRecallCheckAnswersController implements Control
       backLink,
       cancelUrl,
       recall,
-      courtCasesCount: journey.recallableCourtCases.length,
+      courtCasesCount: journey.courtCaseIdsSelectedForRecall.length,
       ual,
       recallTypeDescription,
       nomsId,
