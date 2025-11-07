@@ -68,8 +68,6 @@ describe('GET /manual/start', () => {
 
   describe('backlink tests', () => {
     it('renders the manual intercept screen with correct heading and buttons', async () => {
-      // async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
-
       const res = await request(app).get(baseUrl)
 
       const $ = cheerio.load(res.text)
