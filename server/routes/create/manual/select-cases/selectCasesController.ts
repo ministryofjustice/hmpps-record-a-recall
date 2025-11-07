@@ -5,6 +5,7 @@ import CreateRecallUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchema'
+import { addUnique, removeItem } from '../../../../utils/utils'
 
 export default class SelectCasesController implements Controller {
   public PAGE_NAME = Page.CREATE_RECALL_MANUAL_SELECT_CASES
@@ -25,11 +26,20 @@ export default class SelectCasesController implements Controller {
     const courtCaseIndex = Number(caseIndex) || 0
     const courtCase = cases[courtCaseIndex]
 
+    let selectedRadio: 'YES' | 'NO' | undefined
+
+    if (journey.courtCaseIdsSelectedForRecall?.includes(courtCase.courtCaseUuid)) {
+      selectedRadio = 'YES'
+    } else if (journey.courtCaseIdsExcludedFromRecall?.includes(courtCase.courtCaseUuid)) {
+      selectedRadio = 'NO'
+    }
+
     return res.render('pages/recall/manual/select-court-cases', {
       prisoner,
       courtCase,
       courtCaseIndex,
       totalCases: cases.length,
+      selectedRadio,
       cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
       backLink: this.getBackLink(journey, nomsId, journeyId, courtCaseIndex),
     })
@@ -50,12 +60,15 @@ export default class SelectCasesController implements Controller {
     const nextCaseIndex = currentCaseIndex + 1
     const currentCaseUuid = cases[currentCaseIndex].courtCaseUuid
 
+    journey.courtCaseIdsSelectedForRecall ??= []
+    journey.courtCaseIdsExcludedFromRecall ??= []
+
     if (activeSentenceChoice === 'YES') {
-      journey.courtCaseIdsSelectedForRecall = [...(journey.courtCaseIdsSelectedForRecall ?? []), currentCaseUuid]
+      journey.courtCaseIdsSelectedForRecall = addUnique(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
+      journey.courtCaseIdsExcludedFromRecall = removeItem(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     } else {
-      journey.courtCaseIdsSelectedForRecall = (journey.courtCaseIdsSelectedForRecall ?? []).filter(
-        caseUuid => caseUuid !== currentCaseUuid,
-      )
+      journey.courtCaseIdsSelectedForRecall = removeItem(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
+      journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     }
 
     // Move to next case if available

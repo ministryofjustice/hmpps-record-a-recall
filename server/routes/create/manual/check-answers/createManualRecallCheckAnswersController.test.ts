@@ -33,6 +33,7 @@ const recallService = new RecallService(null, null, null, null) as jest.Mocked<R
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
+  const courtCase = TestData.recallableCourtCase()
   existingJourney = {
     id: journeyId,
     lastTouched: new Date().toISOString(),
@@ -56,7 +57,8 @@ beforeEach(() => {
     },
     recallType: 'LR',
     sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
-    recallableCourtCases: [TestData.recallableCourtCase()],
+    recallableCourtCases: [courtCase],
+    courtCaseIdsSelectedForRecall: [courtCase.courtCaseUuid],
   }
   app = appWithAllRoutes({
     services: { recallService, auditService },

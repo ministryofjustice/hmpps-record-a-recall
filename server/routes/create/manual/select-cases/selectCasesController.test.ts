@@ -131,6 +131,47 @@ describe('selectCasesController Tests', () => {
         expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualJourneyStart(nomsId, journeyId))
       })
     })
+
+    describe('Form values are preselected if the page is revisited', () => {
+      it('selects the YES radio when the case is in courtCaseIdsSelectedForRecall', async () => {
+        const courtCase = TestData.recallableCourtCase()
+        recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
+        delete existingJourney.courtCaseIdsExcludedFromRecall
+        existingJourney.courtCaseIdsSelectedForRecall = [courtCase.courtCaseUuid]
+
+        const res = await request(app).get(baseUrl)
+        const $ = cheerio.load(res.text)
+
+        expect($('[data-qa="yes-radio"]').attr('checked')).toBe('checked')
+        expect($('[data-qa="no-radio"]').attr('checked')).toBeUndefined()
+      })
+
+      it('selects the NO radio when the case is in courtCaseIdsSelectedForRecall', async () => {
+        const courtCase = TestData.recallableCourtCase()
+        recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
+        existingJourney.courtCaseIdsExcludedFromRecall = [courtCase.courtCaseUuid]
+        delete existingJourney.courtCaseIdsSelectedForRecall
+
+        const res = await request(app).get(baseUrl)
+        const $ = cheerio.load(res.text)
+
+        expect($('[data-qa="yes-radio"]').attr('checked')).toBeUndefined()
+        expect($('[data-qa="no-radio"]').attr('checked')).toBe('checked')
+      })
+
+      it('selects neither radio when the case hasnt been visited before', async () => {
+        const courtCase = TestData.recallableCourtCase()
+        recallService.getRecallableCourtCases.mockResolvedValue([courtCase])
+        delete existingJourney.courtCaseIdsExcludedFromRecall
+        delete existingJourney.courtCaseIdsSelectedForRecall
+
+        const res = await request(app).get(baseUrl)
+        const $ = cheerio.load(res.text)
+
+        expect($('[data-qa="yes-radio"]').attr('checked')).toBeUndefined()
+        expect($('[data-qa="no-radio"]').attr('checked')).toBeUndefined()
+      })
+    })
   })
 
   describe('POST', () => {
@@ -174,6 +215,7 @@ describe('selectCasesController Tests', () => {
 
       expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual([])
     })
 
     it('NO on last case: does not store and goes to next step', async () => {
@@ -195,6 +237,7 @@ describe('selectCasesController Tests', () => {
       await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-2'])
     })
   })
 })
