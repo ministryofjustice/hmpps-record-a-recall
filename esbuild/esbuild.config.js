@@ -1,7 +1,7 @@
 const childProcess = require('node:child_process')
 const path = require('node:path')
 
-const { globSync } = require('node:fs')
+const { globSync } = require('glob')
 const chokidar = require('chokidar')
 const buildAssets = require('./assets.config')
 const buildApp = require('./app.config')

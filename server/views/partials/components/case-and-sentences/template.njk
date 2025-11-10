@@ -6,8 +6,8 @@
   {% if courtCase.reference %}
     {{ courtCase.reference }} at
   {% endif %}
-  {# TODO this shouldnt be the formattedOverallConvictionDate - should use the sentencing appearance date - to fix#}
-  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.formattedOverallConvictionDate | default("N/A") }}
+  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.appearanceDate | formatDate | default("N/A") }}
+
 </h2>
 
 {% for sentence in sentences %}
