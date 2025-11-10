@@ -18,7 +18,6 @@
     {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
   {% endif %}
   {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
-  {# Determine numeric values for count and line number #}
 
   {# TODO sentence.consecutiveToChargeNumber is never set #}
   {# TODO will prob align this offenceCard with RAS #}
