@@ -18,18 +18,6 @@
     {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
   {% endif %}
   {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
-  {# Determine numeric values for count and line number #}
-  {% if sentence.countNumber and sentence.countNumber != '-1' %}
-    {% set countNumberWithText = sentence.countNumber %}
-    {% set lineNumberWithText = null %}
-  {% elseif not sentence.countNumber %}
-    {% set countNumberWithText = null %}
-    {% set lineNumberWithText = sentence.lineNumber %}
-  {% else %}
-    {# countNumber is '-1' → show neither #}
-    {% set countNumberWithText = null %}
-    {% set lineNumberWithText = null %}
-  {% endif %}
 
   {# TODO sentence.consecutiveToChargeNumber is never set #}
   {# TODO will prob align this offenceCard with RAS #}
@@ -39,8 +27,8 @@
     offenceName: sentence.offenceDescription or 'Offence description not available',
     offenceStartDate: sentence.offenceStartDate | default('N/A'),
     offenceEndDate: sentence.offenceEndDate | default(null),
-    countNumber: countNumberWithText,
-    lineNumber: lineNumberWithText,
+    countNumber: sentence.countNumber,
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
     terrorRelated: sentence.terrorRelated | default(false),
     isSentenced: true,
     periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
