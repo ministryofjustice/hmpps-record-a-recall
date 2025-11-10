@@ -28,7 +28,7 @@ const baseCase = {
   id: uuidv4(),
   reference: 'CASE123',
   courtName: 'Bradford Crown Court',
-  formattedOverallConvictionDate: '01 Jan 2024',
+  appearanceDate: '2024-01-01',
   sentences: [] as unknown[],
 }
 
