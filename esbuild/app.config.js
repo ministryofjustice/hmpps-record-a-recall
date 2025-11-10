@@ -1,7 +1,7 @@
 const { copy } = require('esbuild-plugin-copy')
 const { typecheckPlugin } = require('@jgoz/esbuild-plugin-typecheck')
 const esbuild = require('esbuild')
-const { globSync } = require('node:fs')
+const { globSync } = require('glob')
 
 /**
  * Build typescript application into CommonJS
