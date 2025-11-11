@@ -1,7 +1,5 @@
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-{# TODO this code has been lifted from one of the screens in the recall journey, it will eventually evolve into a reusable design component for listing a court case with associated sentences#}
-
 <h2 data-qa="court-case-main-heading" class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
   {% if courtCase.reference %}
     {{ courtCase.reference }} at
@@ -11,33 +9,25 @@
 </h2>
 
 {% for sentence in sentences %}
-  {% if sentence.sentenceTypeDescription == 'Required' %}
-    {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
-  {% else %}
-    {% set sentenceTypeDisplay = sentence.sentenceType | default("N/A") %}
-  {% endif %}
   {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
 
-  {# TODO sentence.consecutiveToChargeNumber is never set #}
+  {# TODO sentence.consecutiveToChargeNumber is never set, needs api change #}
   {# TODO will prob align this offenceCard with RAS #}
-  {# TODO sentenceDate isnt what I think it should be (from api)  #}
   {{ offenceCard({
-    offenceCode: sentence.offenceCode | default("N/A"),
-    offenceName: sentence.offenceDescription or 'Offence description not available',
-    offenceStartDate: sentence.offenceStartDate | default('N/A'),
-    offenceEndDate: sentence.offenceEndDate | default(null),
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription,
+    offenceStartDate: sentence.offenceStartDate | formatDate,
+    offenceEndDate: sentence.offenceEndDate | formatDate,
     countNumber: sentence.countNumber,
     lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
-    terrorRelated: sentence.terrorRelated | default(false),
+    terrorRelated: sentence.terrorRelated,
     isSentenced: true,
-    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
-    sentenceServeType: sentence.sentenceServeType | default(null),
-    consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
-    sentenceType: sentenceTypeDisplay | safe,
-    sentenceDate: sentenceDate,
-    fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-    detailsClasses: 'govuk-!-padding-4',
-    actions: null,
-    listItems: null
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    consecutiveTo: sentence.consecutiveToChargeNumber,
+    sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
+    sentenceDate: sentenceDate | formatDate,
+    fineAmount: sentence.fineAmount,
+    detailsClasses: 'govuk-!-padding-4'
   }) }}
 {% endfor %}
