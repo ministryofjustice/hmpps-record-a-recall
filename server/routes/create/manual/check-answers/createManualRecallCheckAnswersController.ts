@@ -30,7 +30,7 @@ export default class CreateManualRecallCheckAnswersController implements Control
     journey.isCheckingAnswers = true
 
     const backLink = CreateRecallUrls.manualSelectRecallType(nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualCheckAnswers.name)
 
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
     const recallTypeDescription = Object.values(RecallTypes).find(it => it.code === recall.recallTypeCode).description

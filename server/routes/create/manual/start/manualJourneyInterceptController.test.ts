@@ -62,7 +62,9 @@ describe('GET /manual/start', () => {
     expect(continueButton.attr('id')).toBe('continue-manual')
 
     const cancelLink = $('.moj-interruption-card__actions a[href]')
-    expect(cancelLink.attr('href')).toBe(`/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`)
+    expect(cancelLink.attr('href')).toBe(
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=manualJourneyStart`,
+    )
     expect(cancelLink.text().trim()).toBe('Cancel recall')
   })
 

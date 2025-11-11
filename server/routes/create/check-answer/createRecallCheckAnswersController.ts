@@ -30,7 +30,7 @@ export default class CreateRecallCheckAnswersController implements Controller {
     journey.isCheckingAnswers = true
 
     const backLink = CreateRecallUrls.recallType(nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.checkAnswers.name)
 
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
     const recallTypeDescription = Object.values(RecallTypes).find(it => it.code === recall.recallTypeCode).description

@@ -30,7 +30,7 @@ export default class CheckSentencesController implements Controller {
       prisoner,
       casesSelectedForRecall,
       licenceExpiryDate,
-      cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
+      cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualCheckSentences.name),
       serviceDefinitions,
       backLink: this.getBackLink(journey, nomsId, journeyId),
     })

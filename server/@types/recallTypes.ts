@@ -51,3 +51,5 @@ export const getRecallType = (code: string): RecallType => {
 export interface SentenceAndOffence extends RecallableCourtCaseSentence {
   offenceDescription?: string | null
 }
+
+export type ExtraQueryParams = { caseIndex?: number }

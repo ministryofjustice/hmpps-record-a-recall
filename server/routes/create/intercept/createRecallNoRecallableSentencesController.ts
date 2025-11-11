@@ -18,7 +18,7 @@ export default class CreateRecallNoRecallableSentencesController implements Cont
     }
 
     const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
-    const cancelLink = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelLink = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualJourneyStart.name)
     const revocationDateLink = CreateRecallUrls.revocationDate(nomsId, journeyId)
     return res.render('pages/recall/no-recallable-sentences', {
       prisoner,

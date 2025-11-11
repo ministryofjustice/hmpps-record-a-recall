@@ -40,7 +40,12 @@ export default class SelectCasesController implements Controller {
       courtCaseIndex,
       totalCases: cases.length,
       selectedRadio,
-      cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId),
+      cancelUrl: CreateRecallUrls.confirmCancel(
+        nomsId,
+        journeyId,
+        CreateRecallUrls.manualSelectCases.name,
+        courtCaseIndex,
+      ),
       backLink: this.getBackLink(journey, nomsId, journeyId, courtCaseIndex),
     })
   }

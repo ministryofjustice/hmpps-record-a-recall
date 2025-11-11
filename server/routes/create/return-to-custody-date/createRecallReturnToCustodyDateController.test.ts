@@ -65,7 +65,7 @@ describe('GET', () => {
       `/person/${nomsId}/recall/create/${journeyId}/revocation-date`,
     )
     expect($('#cancel-button').attr('href')).toStrictEqual(
-      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`,
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=returnToCustodyDate`,
     )
 
     expect($('#day').val()).toBeUndefined()

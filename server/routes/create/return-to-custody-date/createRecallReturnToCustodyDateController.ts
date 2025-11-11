@@ -13,7 +13,7 @@ export default class CreateRecallReturnToCustodyDateController implements Contro
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]!
     const backLink = this.getBackLink(journey, nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.returnToCustodyDate.name)
     const day = formResponses?.day ?? journey.returnToCustodyDate?.day
     const month = formResponses?.month ?? journey.returnToCustodyDate?.month
     const year = formResponses?.year ?? journey.returnToCustodyDate?.year

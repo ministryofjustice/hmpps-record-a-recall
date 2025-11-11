@@ -61,7 +61,7 @@ describe('GET', () => {
       `/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`,
     )
     expect($('#cancel-button').attr('href')).toStrictEqual(
-      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`,
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=manualSelectRecallType`,
     )
 
     expect($('#recallType-LR').attr('checked')).toBeFalsy()

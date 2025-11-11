@@ -81,7 +81,10 @@
       {{ govukButton({
         text: "Cancel",
         classes: "govuk-button--secondary",
-        href: cancelUrl
+        href: cancelUrl,
+        attributes: {
+          id: "cancel-button"
+        }
       }) }}
     </div>
   </form>

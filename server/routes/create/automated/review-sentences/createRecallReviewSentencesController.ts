@@ -43,7 +43,11 @@ export default class CreateRecallReviewSentencesController implements Controller
     const matchedCourtCases = this.matchRasSentencesAndCrdsSentences(recallableCourtCases, decision)
 
     const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      CreateRecallUrls.reviewSentencesAutomatedJourney.name,
+    )
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
       pageCaption: 'Record a recall',
