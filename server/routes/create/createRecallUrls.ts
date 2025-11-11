@@ -109,7 +109,6 @@ export const buildReturnUrlFromKey = (
   extraParams: ExtraQueryParams = {},
 ): string => {
   const createUrlFunction = urlMapByName[key as ReturnKey] ?? urlMapByName.start
-  // pass extras only if the function expects it
   return createUrlFunction.length === 3
     ? createUrlFunction(nomsId, journeyId, extraParams)
     : createUrlFunction(nomsId, journeyId)
