@@ -1,8 +1,6 @@
 {% from "partials/components/sentence/macro.njk" import sentenceCard %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
-{# TODO this code has been lifted from one of the screens in the recall journey, it will eventually evolve into a reusable design component for listing a court case with associated sentences#}
-
 <h2 data-qa="court-case-main-heading" class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
   {% if courtCase.reference %}
     {{ courtCase.reference }} at
@@ -12,7 +10,26 @@
 </h2>
 
 {% for sentence in sentences %}
-  {{sentenceCard(sentence)}}
+  {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
+
+  {# TODO sentence.consecutiveToChargeNumber is never set, needs api change #}
+  {# TODO will prob align this offenceCard with RAS #}
+  {{ offenceCard({
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription,
+    offenceStartDate: sentence.offenceStartDate | formatDate,
+    offenceEndDate: sentence.offenceEndDate | formatDate,
+    countNumber: sentence.countNumber,
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
+    terrorRelated: sentence.terrorRelated,
+    isSentenced: true,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    consecutiveTo: sentence.consecutiveToChargeNumber,
+    sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
+    sentenceDate: sentenceDate | formatDate,
+    fineAmount: sentence.fineAmount,
+    detailsClasses: 'govuk-!-padding-4'
 {% endfor %}
 
 {% if expiredSentences.length %}

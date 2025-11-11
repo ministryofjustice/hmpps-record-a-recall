@@ -1,3 +1,4 @@
+import path from 'path'
 import nunjucks from 'nunjucks'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
@@ -7,22 +8,27 @@ import {
   formatCountNumber,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, periodLengthsToSentenceLengths } from '../../../../utils/utils'
+import { formatDate, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy } from '../../../../utils/utils'
+import TestData from '../../../../testutils/testData'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
-const njkEnv = nunjucks.configure([
-  path.join(__dirname, '../../../'),
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/govuk-frontend/dist/components/',
-  'node_modules/@ministryofjustice/frontend/',
-  'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
-  'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/components/',
-])
+const njkEnv = nunjucks.configure(
+  [
+    path.join(process.cwd(), 'server/views'),
+    'node_modules/govuk-frontend/dist/',
+    'node_modules/govuk-frontend/dist/components/',
+    'node_modules/@ministryofjustice/frontend/',
+    'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
+    'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/components/',
+  ],
+  { autoescape: true },
+)
 
 njkEnv.addFilter('formatDate', formatDate)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
+njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 
 const baseCase = {
   id: uuidv4(),
@@ -32,13 +38,20 @@ const baseCase = {
   sentences: [] as unknown[],
 }
 
+const serviceDefinitions = TestData.serviceDefinitions()
+
+// Absolute path to the template
+const templatePath = path.resolve(process.cwd(), 'server/views/partials/components/case-and-sentences/test.njk')
+
 describe('Tests for case-and-sentences component', () => {
   it.each([
     [{ ...baseCase }, 'CASE123 at Bradford Crown Court on 01 Jan 2024'],
     [{ ...baseCase, reference: undefined }, 'Bradford Crown Court on 01 Jan 2024'],
   ])('renders the heading correctly (%j)', (courtCase, expectedText) => {
-    const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase,
+      sentences: courtCase.sentences,
+      serviceDefinitions,
     })
     const $ = cheerio.load(html)
 
@@ -46,7 +59,7 @@ describe('Tests for case-and-sentences component', () => {
     expect(headingText).toBe(expectedText)
   })
 
-  it('renders an offence card when recallableSentences are provided', () => {
+  it('renders an offence card when sentences are provided', () => {
     const caseWithSentence = {
       ...baseCase,
       recallableSentences: [
@@ -62,33 +75,10 @@ describe('Tests for case-and-sentences component', () => {
       ],
     }
 
-    const ineligible = [
-      {
-        sentenceType: 'Required',
-        offenceCode: '123AB',
-        offenceDescription: 'Murder',
-        offenceStartDate: '2023-06-01',
-        sentenceDate: '2023-07-01',
-        countNumber: '1',
-        periodLengths: [],
-      } as unknown as RecallableCourtCaseSentence,
-    ]
-
-    const expired = [
-      {
-        sentenceType: 'Required',
-        offenceCode: '123AB',
-        offenceDescription: 'Violence',
-        offenceStartDate: '2023-06-01',
-        sentenceDate: '2023-07-01',
-        countNumber: '1',
-        periodLengths: [],
-      } as unknown as RecallableCourtCaseSentence,
-    ]
-    const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase: caseWithSentence,
-      ineligible,
-      expired,
+      sentences: caseWithSentence.sentences,
+      serviceDefinitions,
     })
     const $ = cheerio.load(html)
 
@@ -131,10 +121,11 @@ describe('Tests for case-and-sentences component', () => {
       recallableSentences: [sentenceWithCount, sentenceWithLineNumber],
     }
 
-    const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase,
+      sentences: courtCase.sentences,
+      serviceDefinitions,
     })
-
     const $ = cheerio.load(html)
 
     // Expect offences to appear
@@ -150,5 +141,44 @@ describe('Tests for case-and-sentences component', () => {
     expect(secondOffence).toContain('L-10')
   })
 
-  // TODO add more tests for the sentence section (test all permutations of offence cards) - sentence card population is currently under rework
+  it('renders the sentenceType correctly for each sentence', () => {
+    const sentenceWithType = {
+      sentenceType: 'Imprisonment in Default of Fine',
+      offenceCode: 'TP47017',
+      offenceDescription: 'Accidentally allow a chimney to be on fire',
+      offenceStartDate: '2025-02-02',
+      sentenceDate: '2025-03-03',
+      countNumber: '1',
+      periodLengths: [],
+    } as unknown as RecallableCourtCaseSentence
+
+    const sentenceWithRequiredTypeDesc = {
+      sentenceType: '',
+      offenceCode: 'X999',
+      offenceDescription: 'Theft from shop',
+      offenceStartDate: '2025-02-01',
+      sentenceDate: '2025-03-01',
+      countNumber: '2',
+      periodLengths: [],
+    } as unknown as RecallableCourtCaseSentence
+
+    const courtCase = {
+      ...baseCase,
+      recallableSentences: [sentenceWithType, sentenceWithRequiredTypeDesc],
+    }
+
+    const html = njkEnv.render(templatePath, {
+      courtCase,
+      sentences: courtCase.sentences,
+      serviceDefinitions,
+    })
+
+    const $ = cheerio.load(html)
+
+    // Should contain the first sentenceType text
+    expect($.html()).toContain('Imprisonment in Default of Fine')
+
+    // Should have an empty sentenceType for the second sentence
+    expect(sentenceWithRequiredTypeDesc.sentenceType).toBe('')
+  })
 })

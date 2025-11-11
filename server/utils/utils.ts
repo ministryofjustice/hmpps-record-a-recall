@@ -36,7 +36,10 @@ export const dateToIsoString = (date: Date): string => {
   return formatISO(date).split('T')[0]
 }
 
-export const formatDate = (date: string, format = 'DD MMM YYYY') => dayjs(date).format(format)
+export const formatDate = (date?: string, format = 'DD MMM YYYY') => {
+  if (!date) return null
+  return dayjs(date).format(format)
+}
 
 const periodLengthTypeHeadings = {
   SENTENCE_LENGTH: 'Sentence length',
@@ -101,3 +104,13 @@ export const lowercaseFirstLetter = (s: string): string => {
 
 export const addUnique = (list: string[], addValue: string) => (list.includes(addValue) ? list : [...list, addValue])
 export const removeItem = (list: string[], removeValue: string) => list.filter(it => it !== removeValue)
+
+export const sentenceTypeValueOrLegacy = (sentenceTypeValue: string, legacyData: Record<string, never>) => {
+  if (sentenceTypeValue) {
+    return sentenceTypeValue
+  }
+  if (legacyData?.sentenceTypeDesc) {
+    return legacyData.sentenceTypeDesc
+  }
+  return null
+}
