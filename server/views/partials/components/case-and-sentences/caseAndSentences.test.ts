@@ -1,3 +1,4 @@
+import path from 'path'
 import nunjucks from 'nunjucks'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
@@ -6,23 +7,27 @@ import {
   formatCountNumber,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, periodLengthsToSentenceLengths } from '../../../../utils/utils'
+import { formatDate, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy } from '../../../../utils/utils'
 import TestData from '../../../../testutils/testData'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
-const njkEnv = nunjucks.configure([
-  __dirname,
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/govuk-frontend/dist/components/',
-  'node_modules/@ministryofjustice/frontend/',
-  'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
-  'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/components/',
-])
+const njkEnv = nunjucks.configure(
+  [
+    path.join(process.cwd(), 'server/views'),
+    'node_modules/govuk-frontend/dist/',
+    'node_modules/govuk-frontend/dist/components/',
+    'node_modules/@ministryofjustice/frontend/',
+    'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
+    'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/components/',
+  ],
+  { autoescape: true },
+)
 
 njkEnv.addFilter('formatDate', formatDate)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
+njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 
 const baseCase = {
   id: uuidv4(),
@@ -34,13 +39,17 @@ const baseCase = {
 
 const serviceDefinitions = TestData.serviceDefinitions()
 
+// Absolute path to the template
+const templatePath = path.resolve(process.cwd(), 'server/views/partials/components/case-and-sentences/test.njk')
+
 describe('Tests for case-and-sentences component', () => {
   it.each([
     [{ ...baseCase }, 'CASE123 at Bradford Crown Court on 01 Jan 2024'],
     [{ ...baseCase, reference: undefined }, 'Bradford Crown Court on 01 Jan 2024'],
   ])('renders the heading correctly (%j)', (courtCase, expectedText) => {
-    const html = nunjucks.render('test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase,
+      sentences: courtCase.sentences,
       serviceDefinitions,
     })
     const $ = cheerio.load(html)
@@ -49,7 +58,7 @@ describe('Tests for case-and-sentences component', () => {
     expect(headingText).toBe(expectedText)
   })
 
-  it('renders an offence card when recallableSentences are provided', () => {
+  it('renders an offence card when sentences are provided', () => {
     const caseWithSentence = {
       ...baseCase,
       recallableSentences: [
@@ -65,8 +74,9 @@ describe('Tests for case-and-sentences component', () => {
       ],
     }
 
-    const html = nunjucks.render('test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase: caseWithSentence,
+      sentences: caseWithSentence.sentences,
       serviceDefinitions,
     })
     const $ = cheerio.load(html)
@@ -104,11 +114,11 @@ describe('Tests for case-and-sentences component', () => {
       recallableSentences: [sentenceWithCount, sentenceWithLineNumber],
     }
 
-    const html = nunjucks.render('test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase,
+      sentences: courtCase.sentences,
       serviceDefinitions,
     })
-
     const $ = cheerio.load(html)
 
     // Expect offences to appear
@@ -136,8 +146,7 @@ describe('Tests for case-and-sentences component', () => {
     } as unknown as RecallableCourtCaseSentence
 
     const sentenceWithRequiredTypeDesc = {
-      sentenceTypeDescription: 'Required',
-      sentenceType: 'Should not show this text',
+      sentenceType: '',
       offenceCode: 'X999',
       offenceDescription: 'Theft from shop',
       offenceStartDate: '2025-02-01',
@@ -151,8 +160,9 @@ describe('Tests for case-and-sentences component', () => {
       recallableSentences: [sentenceWithType, sentenceWithRequiredTypeDesc],
     }
 
-    const html = nunjucks.render('test.njk', {
+    const html = njkEnv.render(templatePath, {
       courtCase,
+      sentences: courtCase.sentences,
       serviceDefinitions,
     })
 
@@ -161,9 +171,7 @@ describe('Tests for case-and-sentences component', () => {
     // Should contain the first sentenceType text
     expect($.html()).toContain('Imprisonment in Default of Fine')
 
-    const requiredTag = $('strong.govuk-tag.govuk-tag--blue').text().trim()
-    expect(requiredTag).toBe('Required')
+    // Should have an empty sentenceType for the second sentence
+    expect(sentenceWithRequiredTypeDesc.sentenceType).toBe('')
   })
-
-  // TODO add more tests for the sentence section (test all permutations of offence cards) - sentence card population is currently under rework
 })
