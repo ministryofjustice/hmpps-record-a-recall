@@ -9,4 +9,5 @@ export type RecordARecallValidationResult = components['schemas']['RecordARecall
 export type RecordARecallRequest = components['schemas']['RecordARecallRequest']
 export type RecordARecallDecisionResult = components['schemas']['RecordARecallDecisionResult']
 export type RecallableSentence = components['schemas']['RecallableSentence']
+export type AutomatedCalculationData = components['schemas']['AutomatedCalculationData']
 export type RecallSentenceCalculation = components['schemas']['RecallSentenceCalculation']

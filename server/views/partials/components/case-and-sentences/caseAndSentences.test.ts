@@ -2,6 +2,7 @@ import path from 'path'
 import nunjucks from 'nunjucks'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
+import path from 'path'
 
 import {
   formatCountNumber,
@@ -83,8 +84,14 @@ describe('Tests for case-and-sentences component', () => {
 
     expect($.text()).toContain('Robbery')
 
+    expect($.text()).toContain('View sentences with an expired SLED (1)')
+    expect($.text()).toContain('Violence')
+
+    expect($.text()).toContain('View sentences that are ineligible for recall (1)')
+    expect($.text()).toContain('Murder')
+
     const offenceCardCount = $('[class*="offence-card"], [data-qa*="offence"]').length
-    expect(offenceCardCount).toBeGreaterThan(0)
+    expect(offenceCardCount).toBe(9)
   })
 
   it('renders count number and line number correctly for sentences', () => {

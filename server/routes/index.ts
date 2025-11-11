@@ -40,6 +40,7 @@ export default function routes({
   courtCasesReleaseDatesService,
   recallService,
   auditService,
+  adjustmentsService,
 }: Services): Router {
   const apiRoutes = new ApiRoutes(prisonerService)
 
@@ -137,7 +138,7 @@ export default function routes({
 
   route({
     path: '/person/:nomsId/recall/create/:journeyId/conflicting-adjustments',
-    controller: new CreateRecallConflictingAdjustmentsController(),
+    controller: new CreateRecallConflictingAdjustmentsController(calculateReleaseDatesService, adjustmentsService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

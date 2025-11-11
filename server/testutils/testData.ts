@@ -7,9 +7,13 @@ import {
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
 import { ExistingRecall } from '../model/ExistingRecall'
-import { RecordARecallDecisionResult } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  AutomatedCalculationData,
+  RecordARecallDecisionResult,
+} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { RecallTypes } from '../@types/recallTypes'
 import { DecoratedCourtCase } from '../@types/journeys'
+import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 
 export default class TestData {
   static prisoner = ({
@@ -170,23 +174,73 @@ export default class TestData {
     }
   }
 
-  static automatedRecallDecision(overrides: Partial<RecordARecallDecisionResult> = {}): RecordARecallDecisionResult {
+  static ualAdjustment(overrides: Partial<AdjustmentDto> = {}): AdjustmentDto {
+    return {
+      id: 'b85dd6e3-9305-45a3-919b-02d78ba8588c',
+      bookingId: 1,
+      person: 'person',
+      adjustmentType: 'UNLAWFULLY_AT_LARGE',
+      days: 3,
+      effectiveDays: 3,
+      fromDate: '2025-10-02',
+      toDate: '2025-10-04',
+      unlawfullyAtLarge: {
+        type: 'RECALL',
+      },
+      ...overrides,
+    }
+  }
+
+  static conflictingAdjustmentsDecision(
+    overrides: Partial<RecordARecallDecisionResult> = {},
+  ): RecordARecallDecisionResult {
+    return {
+      decision: 'CONFLICTING_ADJUSTMENTS',
+      conflictingAdjustments: ['b85dd6e3-9305-45a3-919b-02d78ba8588c'],
+      automatedCalculationData: null,
+      validationMessages: [],
+      ...overrides,
+    }
+  }
+
+  static automatedRecallDecision(
+    overrides: Partial<RecordARecallDecisionResult> = {},
+    automatedCalculationDataOverrides: Partial<AutomatedCalculationData> = {},
+  ): RecordARecallDecisionResult {
     return {
       decision: 'AUTOMATED',
-      calculationRequestId: 991,
-      eligibleRecallTypes: Object.values(RecallTypes).map(it => it.code),
-      recallableSentences: [
-        {
-          bookingId: 1,
-          sentenceSequence: 1,
-          uuid: '72f79e94-b932-4e0f-9c93-3964047c76f0',
-          sentenceCalculation: {
-            actualReleaseDate: '2025-06-01',
-            conditionalReleaseDate: '2025-06-01',
-            licenseExpiry: '2025-12-01',
+      automatedCalculationData: {
+        calculationRequestId: 991,
+        eligibleRecallTypes: Object.values(RecallTypes).map(it => it.code),
+        recallableSentences: [
+          {
+            bookingId: 1,
+            sentenceSequence: 1,
+            uuid: '72f79e94-b932-4e0f-9c93-3964047c76f0',
+            sentenceCalculation: {
+              actualReleaseDate: '2025-06-01',
+              conditionalReleaseDate: '2025-06-01',
+              licenseExpiry: '2025-12-01',
+            },
           },
-        },
-      ],
+        ],
+        ineligibleSentences: [
+          {
+            bookingId: 1,
+            sentenceSequence: 2,
+            uuid: '0ef67702-99cd-4821-9235-46ce42c9f39e',
+            sentenceCalculation: {
+              actualReleaseDate: '2025-06-01',
+              conditionalReleaseDate: '2025-06-01',
+              licenseExpiry: null,
+            },
+          },
+        ],
+        expiredSentences: [],
+        sentencesBeforeInitialRelease: [],
+        ...automatedCalculationDataOverrides,
+      },
+      conflictingAdjustments: [],
       validationMessages: [],
       ...overrides,
     }

@@ -65,8 +65,8 @@ describe('GET', () => {
       // Given
       calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue({
         decision,
-        eligibleRecallTypes: [],
-        recallableSentences: [],
+        automatedCalculationData: null,
+        conflictingAdjustments: [],
         validationMessages: [],
       })
 

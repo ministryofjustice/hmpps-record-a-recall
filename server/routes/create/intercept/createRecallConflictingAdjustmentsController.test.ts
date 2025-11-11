@@ -7,6 +7,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { CreateRecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
+import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
+import AdjustmentsService from '../../../services/adjustmentsService'
+import TestData from '../../../testutils/testData'
 
 let app: Express
 let existingJourney: CreateRecallJourney
@@ -15,6 +18,12 @@ const journeyId: string = uuidv4()
 
 jest.mock('../../../services/auditService')
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
+
+jest.mock('../../../services/calculateReleaseDatesService')
+const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
+
+jest.mock('../../../services/adjustmentsService')
+const adjustmentsService = new AdjustmentsService(null) as jest.Mocked<AdjustmentsService>
 
 beforeEach(() => {
   existingJourney = {
@@ -40,7 +49,7 @@ beforeEach(() => {
     },
   }
   app = appWithAllRoutes({
-    services: { auditService },
+    services: { auditService, calculateReleaseDatesService, adjustmentsService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.createRecallJourneys = {}
@@ -56,6 +65,10 @@ afterEach(() => {
 describe('GET', () => {
   it('should render conflicting adjustment intercept', async () => {
     // Given
+    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(
+      TestData.conflictingAdjustmentsDecision(),
+    )
+    adjustmentsService.getAdjustmentById.mockResolvedValue(TestData.ualAdjustment())
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`)
@@ -69,6 +82,9 @@ describe('GET', () => {
     expect(text).toContain('The revocation date and arrest date overlap with existing adjustments')
     expect(text).toContain('A revocation date of 01 Oct 2025')
     expect(text).toContain('An arrest date of 05 Oct 2025')
+    expect(text).toContain('Unlawfully at large')
+    expect(text).toContain('(Recall)')
+    expect(text).toContain('from 02 Oct 2025 to 04 Oct 2025')
   })
 
   it('should return to start of journey if not found in session', async () => {

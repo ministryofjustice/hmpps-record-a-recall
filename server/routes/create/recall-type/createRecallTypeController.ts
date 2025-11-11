@@ -36,7 +36,7 @@ export default class CreateRecallTypeController implements Controller {
     )
     // Build recall type options
     const recallTypeOptions = Object.values(RecallTypes)
-      .filter(({ code }) => decision.eligibleRecallTypes.includes(code))
+      .filter(({ code }) => decision.automatedCalculationData.eligibleRecallTypes.includes(code))
       .map(({ code, description }) => ({
         id: `recallType-${code}`,
         value: code,
