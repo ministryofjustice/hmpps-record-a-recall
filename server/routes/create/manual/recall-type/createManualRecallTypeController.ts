@@ -21,7 +21,7 @@ export default class CreateManualRecallTypeController implements Controller {
     } else {
       backLink = CreateRecallUrls.manualCheckSentences(nomsId, journeyId)
     }
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualSelectRecallType.name)
 
     const recallType = formResponses?.recallType ?? journey.recallType
 

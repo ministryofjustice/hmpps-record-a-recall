@@ -8,40 +8,36 @@
 {% set pageCaption = "Record a recall" %}
 
 {% block pageContent %}
-    <h1 class="govuk-heading-l">{{ title }}</h1>
+  <h1 data-qa='main-heading' class="govuk-heading-l">{{ title }}</h1>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {% set confirmCancelError = validationErrors | findError('confirmCancel') %}
 
-    <form method="post" action="">
-        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {{ govukRadios({
+      id: "confirmCancel",
+      name: "confirmCancel",
+      errorMessage: confirmCancelError,
+      items: [
+        {
+          value: "YES",
+          text: "Yes, cancel the recall"
+        },
+        {
+          value: "NO",
+          text: "No, go back to the recall"
+        }
+      ]
+    }) }}
 
-        {% set confirmCancelError = validationErrors | findError('confirmCancel') %}
-
-        {{ govukRadios({
-            id: "confirmCancel",
-            name: "confirmCancel",
-            errorMessage: confirmCancelError,
-            items: [
-                {
-                    value: "true",
-                    text: "Yes, cancel the recall",
-                    checked: formResponses.confirmCancel === "true"
-                },
-                {
-                    value: "false",
-                    text: "No, go back to the recall",
-                    checked: formResponses.confirmCancel === "false"
-                }
-            ]
-        }) }}
-
-        <div class="govuk-button-group">
-            {{ govukButton({
-                text: "Continue",
-                preventDoubleClick: true,
-                attributes: {
-                    id: "submit",
-                    "data-qa": "continue-btn"
-                }
-            }) }}
-        </div>
-    </form>
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        preventDoubleClick: true,
+        attributes: {
+          id: "submit",
+          "data-qa": "continue-btn"
+        }
+      }) }}
+    </div>
+  </form>
 {% endblock %}

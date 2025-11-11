@@ -24,7 +24,7 @@ export default class CreateRecallTypeController implements Controller {
     } else {
       backLink = CreateRecallUrls.reviewSentencesAutomatedJourney(nomsId, journeyId)
     }
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.recallType.name)
 
     const recallType = formResponses?.recallType ?? journey.recallType
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(

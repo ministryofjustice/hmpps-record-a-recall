@@ -18,7 +18,11 @@ export default class CreateRecallConflictingAdjustmentsController implements Con
     }
 
     const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
-    const cancelLink = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelLink = CreateRecallUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      CreateRecallUrls.conflictingAdjustmentsIntercept.name,
+    )
     const revocationDateLink = CreateRecallUrls.revocationDate(nomsId, journeyId)
     const returnToCustodyDateLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
     return res.render('pages/recall/conflicting-adjustments-intercept', {

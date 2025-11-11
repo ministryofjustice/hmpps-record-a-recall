@@ -14,7 +14,7 @@ export default class CreateRecallRevocationDateController implements Controller 
     const { nomsId, journeyId } = req.params
     const journey = req.session.createRecallJourneys[journeyId]!
     const backLink = this.getBackLink(journey, nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.revocationDate.name)
     const day = formResponses?.day ?? journey.revocationDate?.day
     const month = formResponses?.month ?? journey.revocationDate?.month
     const year = formResponses?.year ?? journey.revocationDate?.year

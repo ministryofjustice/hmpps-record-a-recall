@@ -31,6 +31,8 @@ import CreateManualRecallTypeController from './create/manual/recall-type/create
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
 import { returnToCustodyDateSchemaFactory } from './common/return-to-custody-date/returnToCustodyDateSchemas'
 import CreateManualRecallCheckAnswersController from './create/manual/check-answers/createManualRecallCheckAnswersController'
+import CreateRecallCancelController from './create/cancel/createRecallCancelController'
+import { confirmCancelSchema } from './common/confirm-cancel/confirmCancelSchema'
 
 export default function routes({
   prisonerService,
@@ -186,6 +188,13 @@ export default function routes({
   route({
     path: '/person/:nomsId/recall/create/:journeyId/manual/check-answers',
     controller: new CreateManualRecallCheckAnswersController(recallService),
+    additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/create/:journeyId/confirm-cancel',
+    controller: new CreateRecallCancelController(),
+    validateToSchema: confirmCancelSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 

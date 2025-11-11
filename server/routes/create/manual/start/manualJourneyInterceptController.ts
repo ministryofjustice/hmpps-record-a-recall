@@ -11,7 +11,7 @@ export default class ManualJourneyInterceptController implements Controller {
     const { prisoner } = res.locals
     const { nomsId, journeyId } = req.params
 
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId)
+    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualJourneyStart.name)
     return res.render('pages/recall/manual/manual-recall-intercept', {
       prisoner,
       backLink: CreateRecallUrls.returnToCustodyDate(nomsId, journeyId),

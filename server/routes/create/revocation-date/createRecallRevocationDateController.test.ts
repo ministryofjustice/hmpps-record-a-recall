@@ -63,7 +63,7 @@ describe('GET', () => {
 
     expect($('[data-qa=back-link]').attr('href')).toStrictEqual(`/person/${nomsId}`)
     expect($('#cancel-button').attr('href')).toStrictEqual(
-      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel`,
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=revocationDate`,
     )
 
     expect($('#day').val()).toBeUndefined()

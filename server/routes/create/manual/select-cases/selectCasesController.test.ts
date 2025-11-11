@@ -95,6 +95,9 @@ describe('selectCasesController Tests', () => {
       const nonRecallableText = $('[data-qa="non-recallable-sentences"]').text()
       expect(nonRecallableText).toContain('OFF2')
       expect(nonRecallableText).toContain('Offence 2')
+      expect($('#cancel-button').attr('href')).toStrictEqual(
+        `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=manualSelectCases&caseIndex=0`,
+      )
     })
 
     describe('backlink tests', () => {
