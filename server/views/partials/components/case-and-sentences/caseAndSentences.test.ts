@@ -28,7 +28,7 @@ const baseCase = {
   id: uuidv4(),
   reference: 'CASE123',
   courtName: 'Bradford Crown Court',
-  formattedOverallConvictionDate: '01 Jan 2024',
+  appearanceDate: '2024-01-01',
   sentences: [] as unknown[],
 }
 
@@ -75,6 +75,53 @@ describe('Tests for case-and-sentences component', () => {
 
     const offenceCardCount = $('[class*="offence-card"], [data-qa*="offence"]').length
     expect(offenceCardCount).toBeGreaterThan(0)
+  })
+
+  it('renders count number and line number correctly for sentences', () => {
+    const sentenceWithCount = {
+      sentenceTypeDescription: 'Standard',
+      offenceCode: 'X123',
+      offenceDescription: 'Assault',
+      offenceStartDate: '2024-02-01',
+      sentenceDate: '2024-03-01',
+      countNumber: '2',
+      periodLengths: [],
+    } as unknown as RecallableCourtCaseSentence
+
+    const sentenceWithLineNumber = {
+      sentenceTypeDescription: 'Standard',
+      offenceCode: 'Y456',
+      offenceDescription: 'Theft',
+      offenceStartDate: '2024-04-01',
+      sentenceDate: '2024-05-01',
+      lineNumber: 'L-10',
+      sentenceLegacyData: true,
+      periodLengths: [],
+    } as unknown as RecallableCourtCaseSentence
+
+    const courtCase = {
+      ...baseCase,
+      recallableSentences: [sentenceWithCount, sentenceWithLineNumber],
+    }
+
+    const html = nunjucks.render('test.njk', {
+      courtCase,
+      serviceDefinitions,
+    })
+
+    const $ = cheerio.load(html)
+
+    // Expect offences to appear
+    expect($.text()).toContain('Assault')
+    expect($.text()).toContain('Theft')
+
+    // Check count number for first offence
+    const firstOffence = $('[class*="offence-card"]').first().text()
+    expect(firstOffence).toContain('Count 2')
+
+    // Check line number for second offence
+    const secondOffence = $('[class*="offence-card"]').last().text()
+    expect(secondOffence).toContain('L-10')
   })
 
   // TODO add more tests for the sentence section (test all permutations of offence cards) - sentence card population is currently under rework

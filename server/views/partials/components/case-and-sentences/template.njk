@@ -6,8 +6,8 @@
   {% if courtCase.reference %}
     {{ courtCase.reference }} at
   {% endif %}
-  {# TODO this shouldnt be the formattedOverallConvictionDate - should use the sentencing appearance date - to fix#}
-  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.formattedOverallConvictionDate | default("N/A") }}
+  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.appearanceDate | formatDate | default("N/A") }}
+
 </h2>
 
 {% for sentence in sentences %}
@@ -18,8 +18,6 @@
     {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
   {% endif %}
   {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
-  {# Determine numeric values for count and line number #}
-
 
   {# TODO sentence.consecutiveToChargeNumber is never set #}
   {# TODO will prob align this offenceCard with RAS #}
@@ -30,7 +28,7 @@
     offenceStartDate: sentence.offenceStartDate | default('N/A'),
     offenceEndDate: sentence.offenceEndDate | default(null),
     countNumber: sentence.countNumber,
-    lineNumber: sentence.lineNumber,
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
     terrorRelated: sentence.terrorRelated | default(false),
     isSentenced: true,
     periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
