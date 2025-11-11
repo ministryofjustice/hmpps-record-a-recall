@@ -3,19 +3,43 @@ import { Controller } from '../../controller'
 import CreateRecallUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
-import { datePartsToDate } from '../../../utils/utils'
+import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
+import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
+import AdjustmentsService from '../../../services/adjustmentsService'
 
 export default class CreateRecallConflictingAdjustmentsController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_CONFLICTING_ADJUSTMENTS_INTERCEPT
 
+  constructor(
+    private readonly calculateReleaseDatesService: CalculateReleaseDatesService,
+    private readonly adjustmentsService: AdjustmentsService,
+  ) {}
+
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
     const { nomsId, journeyId } = req.params
+    const { username } = req.user
     const journey = req.session.createRecallJourneys[journeyId]!
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined) {
       return res.redirect(CreateRecallUrls.start(nomsId))
     }
+
+    const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
+      nomsId,
+      {
+        revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+      },
+      username,
+    )
+
+    if (decision.decision !== 'CONFLICTING_ADJUSTMENTS') {
+      return res.redirect(CreateRecallUrls.decisionEndpoint(nomsId, journeyId))
+    }
+
+    const adjustments = await Promise.all(
+      decision.conflictingAdjustments.map(id => this.adjustmentsService.getAdjustmentById(id, username)),
+    )
 
     const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
     const cancelLink = CreateRecallUrls.confirmCancel(
@@ -35,6 +59,7 @@ export default class CreateRecallConflictingAdjustmentsController implements Con
       returnToCustodyDateLink,
       revocationDate: datePartsToDate(journey.revocationDate),
       returnToCustodyDate: journey.inCustodyAtRecall ? null : datePartsToDate(journey.returnToCustodyDate),
+      adjustments,
     })
   }
 }

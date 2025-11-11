@@ -80,10 +80,11 @@ describe('GET', () => {
       "The latest SLED (Sentence and licence expiry date) is 01 Dec 2025. This is the SLED on this person's licence.",
     )
     expect($('[data-qa=court-case-count]').text()).toContain('Court cases with sentences eligible for recall (1)')
-    const offenceCardText = $('[data-qa=recallable-sentences]').text()
+    const offenceCardText = $('[data-qa=recallable-court-cases]').text()
     expect(offenceCardText).toContain('OFF1 Offence 1')
     expect(offenceCardText).toContain('Standard Determinate')
-    expect(existingJourney.calculationRequestId).toEqual(991)
+    expect(offenceCardText).toContain('View sentences that are ineligible for recall (1)')
+    expect(offenceCardText).toContain('OFF2 Offence 2')
   })
 
   it('should return to start of journey if not found in session', async () => {

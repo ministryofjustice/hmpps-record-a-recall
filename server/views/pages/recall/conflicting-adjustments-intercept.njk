@@ -26,33 +26,30 @@
       <p>An arrest date of <b>{{ returnToCustodyDate | formatDate }}</b></p>
     {% endif %}
 
-{# TODO fetch adjustment thats conflicting in CRDS-api
-       {% if hasMultipleOverlappingUALTypeRecall %}
-          <p>There are multiple overlapping periods of recall UAL already recorded</p>
-        {% endif %}
-        {% if relevantAdjustments.length != 0 %}
-          <p>These dates overlap with:</p>
-          <ul class="govuk-list govuk-list--bullet">
-            {% for adjustment in relevantAdjustments %}
-              <li>
-                {{ adjustment.adjustmentType | lower | replace("_", " ") | capitalize }}
-                {% if adjustment.unlawfullyAtLarge.type %}
-                  ({{ adjustment.unlawfullyAtLarge.type | lower | replace("_", " ") | capitalize }})
-                {% endif %}
-                {% if adjustment.fromDate == adjustment.toDate %}
-                  on {{ adjustment.fromDate | fullMonthdate }} 
-                {% else %} 
-                  from {{ adjustment.fromDate | fullMonthdate }} to {{ adjustment.toDate | fullMonthdate }}
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ul>
-        {% endif %} #}
+      {% if adjustments.length > 1 %}
+        <p>There are multiple overlapping periods of recall UAL already recorded</p>
+      {% endif %}
+      <p>These dates overlap with:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for adjustment in adjustments %}
+          <li>
+            {{ adjustment.adjustmentType | lower | replace("_", " ") | capitalize }}
+            {% if adjustment.unlawfullyAtLarge.type %}
+              ({{ adjustment.unlawfullyAtLarge.type | lower | replace("_", " ") | capitalize }})
+            {% endif %}
+            {% if adjustment.fromDate == adjustment.toDate %}
+              on {{ adjustment.fromDate | formatDate }} 
+            {% else %} 
+              from {{ adjustment.fromDate | formatDate }} to {{ adjustment.toDate | formatDate }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
         
-        <h2 class='govuk-heading-m moj-interruption-card__heading'>What you need to do</h2>
-        <p>If the revocation date or arrest date are incorrect, go back and update these recall dates.</p>
-        <p>If the adjustment dates are incorrect, cancel this recall and update the relevant adjustments.</p>
-        {% endcall %}
+      <h2 class='govuk-heading-m moj-interruption-card__heading'>What you need to do</h2>
+      <p>If the revocation date or arrest date are incorrect, go back and update these recall dates.</p>
+      <p>If the adjustment dates are incorrect, cancel this recall and update the relevant adjustments.</p>
+      {% endcall %}
 {% endblock %}
 
 

@@ -89,26 +89,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/record-a-recall/{prisonerId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Calculate release dates for a prisoner - used explicitly by the record-a-recall service, this does not publish to NOMIS
-     * @description This endpoint will calculate release dates based on a prisoners latest booking - this is a transitory calculation that will not be published to NOMIS
-     */
-    post: operations['calculateForRecall']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/record-a-recall/{prisonerId}/decision': {
     parameters: {
       query?: never
@@ -1398,76 +1378,18 @@ export interface components {
       unusedDeductions?: number
       validationMessages: components['schemas']['ValidationMessage'][]
     }
-    CalculatedReleaseDates: {
-      dates: {
-        [key: string]: string
-      }
-      /** Format: int64 */
-      calculationRequestId: number
-      /** Format: int64 */
-      bookingId: number
-      prisonerId: string
-      /** @enum {string} */
-      calculationStatus: 'PRELIMINARY' | 'CONFIRMED' | 'ERROR' | 'TEST' | 'RECORD_A_RECALL' | 'BULK' | 'OVERRIDDEN'
-      calculationFragments?: components['schemas']['CalculationFragments']
-      effectiveSentenceLength?: string
-      /** @enum {string} */
-      calculationType:
-        | 'CALCULATED'
-        | 'MANUAL_DETERMINATE'
-        | 'MANUAL_INDETERMINATE'
-        | 'CALCULATED_WITH_APPROVED_DATES'
-        | 'GENUINE_OVERRIDE'
-      approvedDates?: {
-        [key: string]: string
-      }
-      /** Format: uuid */
-      calculationReference: string
-      calculationReason?: components['schemas']['CalculationReason']
-      otherReasonDescription?: string
-      /** Format: date */
-      calculationDate?: string
-      /** @enum {string} */
-      historicalTusedSource?: 'CRDS' | 'CRDS_OVERRIDDEN' | 'NOMIS' | 'NOMIS_OVERRIDDEN'
-      /** @enum {string} */
-      sdsEarlyReleaseAllocatedTranche?:
-        | 'TRANCHE_0'
-        | 'TRANCHE_1'
-        | 'TRANCHE_2'
-        | 'FTR_56_TRANCHE_1'
-        | 'FTR_56_TRANCHE_2'
-        | 'FTR_56_TRANCHE_3'
-        | 'FTR_56_TRANCHE_4'
-        | 'FTR_56_TRANCHE_5'
-        | 'FTR_56_TRANCHE_6'
-      /** @enum {string} */
-      sdsEarlyReleaseTranche?:
-        | 'TRANCHE_0'
-        | 'TRANCHE_1'
-        | 'TRANCHE_2'
-        | 'FTR_56_TRANCHE_1'
-        | 'FTR_56_TRANCHE_2'
-        | 'FTR_56_TRANCHE_3'
-        | 'FTR_56_TRANCHE_4'
-        | 'FTR_56_TRANCHE_5'
-        | 'FTR_56_TRANCHE_6'
-    }
-    CalculationFragments: {
-      breakdownHtml: string
-    }
-    CalculationReason: {
-      /** Format: int64 */
-      id: number
-      isOther: boolean
-      displayName: string
-    }
-    RecordARecallResult: {
-      validationMessages: components['schemas']['ValidationMessage'][]
-      calculatedReleaseDates?: components['schemas']['CalculatedReleaseDates']
-    }
     RecordARecallRequest: {
       /** Format: date */
       revocationDate: string
+    }
+    AutomatedCalculationData: {
+      /** Format: int64 */
+      calculationRequestId: number
+      recallableSentences: components['schemas']['RecallableSentence'][]
+      expiredSentences: components['schemas']['RecallableSentence'][]
+      ineligibleSentences: components['schemas']['RecallableSentence'][]
+      sentencesBeforeInitialRelease: components['schemas']['RecallableSentence'][]
+      eligibleRecallTypes: ('LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC')[]
     }
     RecallSentenceCalculation: {
       /** Format: date */
@@ -1475,7 +1397,7 @@ export interface components {
       /** Format: date */
       actualReleaseDate: string
       /** Format: date */
-      licenseExpiry: string
+      licenseExpiry?: string
     }
     RecallableSentence: {
       /** Format: int32 */
@@ -1495,10 +1417,8 @@ export interface components {
         | 'VALIDATION'
         | 'CONFLICTING_ADJUSTMENTS'
       validationMessages: components['schemas']['ValidationMessage'][]
-      recallableSentences: components['schemas']['RecallableSentence'][]
-      eligibleRecallTypes: ('LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC')[]
-      /** Format: int64 */
-      calculationRequestId?: number
+      conflictingAdjustments: string[]
+      automatedCalculationData?: components['schemas']['AutomatedCalculationData']
     }
     OverallSentenceLength: {
       /** Format: int64 */
@@ -1728,6 +1648,69 @@ export interface components {
       /** Format: int64 */
       calculationReasonId: number
       otherReasonDescription?: string
+    }
+    CalculatedReleaseDates: {
+      dates: {
+        [key: string]: string
+      }
+      /** Format: int64 */
+      calculationRequestId: number
+      /** Format: int64 */
+      bookingId: number
+      prisonerId: string
+      /** @enum {string} */
+      calculationStatus: 'PRELIMINARY' | 'CONFIRMED' | 'ERROR' | 'TEST' | 'RECORD_A_RECALL' | 'BULK' | 'OVERRIDDEN'
+      calculationFragments?: components['schemas']['CalculationFragments']
+      effectiveSentenceLength?: string
+      /** @enum {string} */
+      calculationType:
+        | 'CALCULATED'
+        | 'MANUAL_DETERMINATE'
+        | 'MANUAL_INDETERMINATE'
+        | 'CALCULATED_WITH_APPROVED_DATES'
+        | 'GENUINE_OVERRIDE'
+      approvedDates?: {
+        [key: string]: string
+      }
+      /** Format: uuid */
+      calculationReference: string
+      calculationReason?: components['schemas']['CalculationReason']
+      otherReasonDescription?: string
+      /** Format: date */
+      calculationDate?: string
+      /** @enum {string} */
+      historicalTusedSource?: 'CRDS' | 'CRDS_OVERRIDDEN' | 'NOMIS' | 'NOMIS_OVERRIDDEN'
+      /** @enum {string} */
+      sdsEarlyReleaseAllocatedTranche?:
+        | 'TRANCHE_0'
+        | 'TRANCHE_1'
+        | 'TRANCHE_2'
+        | 'FTR_56_TRANCHE_1'
+        | 'FTR_56_TRANCHE_2'
+        | 'FTR_56_TRANCHE_3'
+        | 'FTR_56_TRANCHE_4'
+        | 'FTR_56_TRANCHE_5'
+        | 'FTR_56_TRANCHE_6'
+      /** @enum {string} */
+      sdsEarlyReleaseTranche?:
+        | 'TRANCHE_0'
+        | 'TRANCHE_1'
+        | 'TRANCHE_2'
+        | 'FTR_56_TRANCHE_1'
+        | 'FTR_56_TRANCHE_2'
+        | 'FTR_56_TRANCHE_3'
+        | 'FTR_56_TRANCHE_4'
+        | 'FTR_56_TRANCHE_5'
+        | 'FTR_56_TRANCHE_6'
+    }
+    CalculationFragments: {
+      breakdownHtml: string
+    }
+    CalculationReason: {
+      /** Format: int64 */
+      id: number
+      isOther: boolean
+      displayName: string
     }
     RelevantRemand: {
       /** Format: date */
@@ -2776,59 +2759,6 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['UnusedDeductionCalculationResponse']
-        }
-      }
-    }
-  }
-  calculateForRecall: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        /**
-         * @description The prisoners ID (aka nomsId)
-         * @example A1234AB
-         */
-        prisonerId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Returns calculated dates */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['RecordARecallResult']
-        }
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['RecordARecallResult']
-        }
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['RecordARecallResult']
-        }
-      }
-      /** @description Unprocessable request, the existing data cannot be used to perform a calculation */
-      422: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          '*/*': components['schemas']['RecordARecallResult']
         }
       }
     }

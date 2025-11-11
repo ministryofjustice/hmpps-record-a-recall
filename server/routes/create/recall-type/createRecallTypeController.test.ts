@@ -115,9 +115,12 @@ describe('GET', () => {
   it('should not display options for ineligible recall types', async () => {
     // Given
     calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(
-      TestData.automatedRecallDecision({
-        eligibleRecallTypes: ['LR'],
-      }),
+      TestData.automatedRecallDecision(
+        {},
+        {
+          eligibleRecallTypes: ['LR'],
+        },
+      ),
     )
 
     // When
