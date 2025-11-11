@@ -9,24 +9,21 @@
 
 {# TODO sentence.consecutiveToChargeNumber is never set #}
 {# TODO will prob align this offenceCard with RAS #}
-{# TODO sentenceDate isnt what I think it should be (from api)  #}
 {{ offenceCard({
-  offenceCode: sentence.offenceCode | default("N/A"),
-  offenceName: sentence.offenceDescription or 'Offence description not available',
-  offenceStartDate: sentence.offenceStartDate | default('N/A'),
-  offenceEndDate: sentence.offenceEndDate | default(null),
-  countNumber: sentence.countNumber,
-  lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
-  terrorRelated: sentence.terrorRelated | default(false),
-  isSentenced: true,
-  periodLengthls: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
-  sentenceServeType: sentence.sentenceServeType | default(null),
-  consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
-  sentenceType: sentenceTypeDisplay | safe,
-  sentenceDate: sentenceDate,
-  fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-  detailsClasses: 'govuk-!-padding-4',
-  actions: null,
-  listItems: nul
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription,
+    offenceStartDate: sentence.offenceStartDate | formatDate,
+    offenceEndDate: sentence.offenceEndDate | formatDate,
+    countNumber: sentence.countNumber,
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
+    terrorRelated: sentence.terrorRelated,
+    isSentenced: true,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    consecutiveTo: sentence.consecutiveToChargeNumber,
+    sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
+    sentenceDate: sentenceDate | formatDate,
+    fineAmount: sentence.fineAmount,
+    detailsClasses: 'govuk-!-padding-4'
 }) }}
 
