@@ -124,5 +124,46 @@ describe('Tests for case-and-sentences component', () => {
     expect(secondOffence).toContain('L-10')
   })
 
+  it('renders the sentenceType correctly for each sentence', () => {
+    const sentenceWithType = {
+      sentenceType: 'Imprisonment in Default of Fine',
+      offenceCode: 'TP47017',
+      offenceDescription: 'Accidentally allow a chimney to be on fire',
+      offenceStartDate: '2025-02-02',
+      sentenceDate: '2025-03-03',
+      countNumber: '1',
+      periodLengths: [],
+    } as unknown as RecallableCourtCaseSentence
+
+    const sentenceWithRequiredTypeDesc = {
+      sentenceTypeDescription: 'Required',
+      sentenceType: 'Should not show this text',
+      offenceCode: 'X999',
+      offenceDescription: 'Theft from shop',
+      offenceStartDate: '2025-02-01',
+      sentenceDate: '2025-03-01',
+      countNumber: '2',
+      periodLengths: [],
+    } as unknown as RecallableCourtCaseSentence
+
+    const courtCase = {
+      ...baseCase,
+      recallableSentences: [sentenceWithType, sentenceWithRequiredTypeDesc],
+    }
+
+    const html = nunjucks.render('test.njk', {
+      courtCase,
+      serviceDefinitions,
+    })
+
+    const $ = cheerio.load(html)
+
+    // Should contain the first sentenceType text
+    expect($.html()).toContain('Imprisonment in Default of Fine')
+
+    const requiredTag = $('strong.govuk-tag.govuk-tag--blue').text().trim()
+    expect(requiredTag).toBe('Required')
+  })
+
   // TODO add more tests for the sentence section (test all permutations of offence cards) - sentence card population is currently under rework
 })

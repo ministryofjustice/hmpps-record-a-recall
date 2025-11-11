@@ -11,11 +11,10 @@
 </h2>
 
 {% for sentence in sentences %}
-  {# TODO not sure why we're setting sentenceTypeDisplay #}
   {% if sentence.sentenceTypeDescription == 'Required' %}
     {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
   {% else %}
-    {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
+    {% set sentenceTypeDisplay = sentence.sentenceType | default("N/A") %}
   {% endif %}
   {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
 
