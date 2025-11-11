@@ -1,6 +1,6 @@
 <html lang="en">
     <body>
         {% from "./macro.njk" import caseAndSentences %}
-        {{ caseAndSentences(courtCase, courtCase.recallableSentences) }}
+        {{ caseAndSentences(courtCase, courtCase.recallableSentences, expired, ineligible) }}
     </body>
 </html>

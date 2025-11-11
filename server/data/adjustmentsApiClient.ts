@@ -9,16 +9,12 @@ export default class AdjustmentsApiClient extends RestClient {
     super('Adjustments API', config.apis.adjustmentsApi, logger, authenticationClient)
   }
 
-  async getAdjustmentsForRecall(prisonerId: string, recallUuid: string, username: string): Promise<AdjustmentDto[]> {
+  async getAdjustmentById(adjustmentId: string, username: string): Promise<AdjustmentDto> {
     return this.get(
       {
-        query: {
-          person: prisonerId,
-          recallId: recallUuid,
-        },
-        path: `/adjustments`,
+        path: `/adjustments/${adjustmentId}`,
       },
       asSystem(username),
-    ) as Promise<AdjustmentDto[]>
+    ) as Promise<AdjustmentDto>
   }
 }

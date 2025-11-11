@@ -3,6 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
+{% from "partials/components/case-and-sentences/macro.njk" import caseAndSentences %}
 
 {% set title = "Check that the sentences and offences are correct" %}
 {% set pageTitle = applicationName + " - " + title %}
@@ -18,60 +19,13 @@
     <h2 class="govuk-heading-l" data-qa="court-case-count">
         Court cases with sentences eligible for recall ({{ courtCases.length }})
     </h2>
-  {# Recallable Offences Section #}
-{% for courtCase in courtCases %}
-    <div data-qa="recallable-sentences">
-      <h2 class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-        {% if courtCase.caseReferences and courtCase.caseReferences != 'N/A' %}{{ courtCase.caseReferences }} at {% endif %}
-        {{ courtCase.courtName | default("N/A") }} on {{ courtCase.formattedOverallConvictionDate | default("N/A") }}
-      </h2>
-
-
-      {% for sentence in courtCase.recallableSentences %}
-        {# TODO not sure why we're setting sentenceTypeDisplay #}
-        {% if sentence.sentenceTypeDescription == 'Required' %}
-          {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
-        {% else %}
-          {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
-        {% endif %}
-        {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
-        {# Determine numeric values for count and line number #}
-        {% if sentence.countNumber and sentence.countNumber != '-1' %}
-          {% set countNumberWithText = sentence.countNumber %}
-          {% set lineNumberWithText = null %}
-        {% elseif not sentence.countNumber %}
-          {% set countNumberWithText = null %}
-          {% set lineNumberWithText = sentence.lineNumber %}
-        {% else %}
-          {# countNumber is '-1' → show neither #}
-          {% set countNumberWithText = null %}
-          {% set lineNumberWithText = null %}
-        {% endif %}
-
-        {# TODO sentence.consecutiveToChargeNumber is never set #}
-        {# TODO will prob align this offenceCard with RAS #}
-        {# TODO sentenceDate isnt what I think it should be (from api)  #}
-        {{ offenceCard({
-          offenceCode: sentence.offenceCode | default("N/A"),
-          offenceName: sentence.offenceDescription or 'Offence description not available',
-          offenceStartDate: sentence.offenceStartDate | default('N/A'),
-          offenceEndDate: sentence.offenceEndDate | default(null),
-          countNumber: countNumberWithText,
-          lineNumber: lineNumberWithText,
-          terrorRelated: sentence.terrorRelated | default(false),
-          isSentenced: true,
-          periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths | default([]),
-          sentenceServeType: sentence.sentenceServeType | default(null),
-          consecutiveTo: sentence.consecutiveToChargeNumber | default(null),
-          sentenceType: sentenceTypeDisplay | safe,
-          sentenceDate: sentenceDate,
-          fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
-          detailsClasses: 'govuk-!-padding-4',
-          actions: null,
-          listItems: null
-        }) }}
-      {% endfor %}
-    {% endfor %}
+  
+    {# Recallable Offences Section #}
+    <div data-qa="recallable-court-cases">
+        {% for courtCase in courtCases %}
+            {{ caseAndSentences(courtCase, courtCase.eligibleSentences, courtCase.expiredSentences, courtCase.ineligibleSentences) }}
+        {% endfor %}
+    </div>
 
     <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
 

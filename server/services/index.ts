@@ -7,6 +7,7 @@ import PrisonerService from './prisonerService'
 import UserService from './userService'
 import CourtCasesReleaseDatesService from './courtCasesReleaseDatesService'
 import RecallService from './recallService'
+import AdjustmentsService from './adjustmentsService'
 
 export const services = () => {
   const {
@@ -21,6 +22,7 @@ export const services = () => {
     prisonRegisterApiClient,
     manageOffencesApiClient,
     courtRegisterApiClient,
+    adjustmentsApiClient,
   } = dataAccess()
 
   const prisonerService = new PrisonerService(prisonApiClient)
@@ -39,6 +41,7 @@ export const services = () => {
       prisonRegisterApiClient,
       courtRegisterApiClient,
     ),
+    adjustmentsService: new AdjustmentsService(adjustmentsApiClient),
   }
 }
 

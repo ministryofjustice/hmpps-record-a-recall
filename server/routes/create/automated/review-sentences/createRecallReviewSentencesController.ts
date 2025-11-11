@@ -7,10 +7,7 @@ import RecallService from '../../../../services/recallService'
 import { datePartsToDate, dateToIsoString, maxOf } from '../../../../utils/utils'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../../@types/recallTypes'
-import {
-  RecallSentenceCalculation,
-  RecordARecallDecisionResult,
-} from '../../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { AutomatedCalculationData } from '../../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class CreateRecallReviewSentencesController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_REVIEW_SENTENCES_AUTOMATED
@@ -33,14 +30,12 @@ export default class CreateRecallReviewSentencesController implements Controller
       },
       username,
     )
-    journey.calculationRequestId = decision.calculationRequestId
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined || decision?.decision !== 'AUTOMATED') {
       return res.redirect(CreateRecallUrls.start(nomsId))
     }
 
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
-    const matchedCourtCases = this.matchRasSentencesAndCrdsSentences(recallableCourtCases, decision)
 
     const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
     const cancelUrl = CreateRecallUrls.confirmCancel(
@@ -51,9 +46,9 @@ export default class CreateRecallReviewSentencesController implements Controller
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
       pageCaption: 'Record a recall',
-      courtCases: matchedCourtCases,
+      courtCases: this.matchRasSentencesAndCrdsSentences(recallableCourtCases, decision.automatedCalculationData),
       sled: maxOf(
-        matchedCourtCases.flatMap(it => it.recallableSentences),
+        decision.automatedCalculationData.recallableSentences,
         it => new Date(it.sentenceCalculation.licenseExpiry),
       ),
       backLink,
@@ -72,44 +67,56 @@ export default class CreateRecallReviewSentencesController implements Controller
       },
       username,
     )
-    journey.sentenceIds = decision.recallableSentences.map(it => it.uuid)
-    journey.calculationRequestId = decision.calculationRequestId
+    journey.sentenceIds = decision.automatedCalculationData.recallableSentences.map(it => it.uuid)
+    journey.calculationRequestId = decision.automatedCalculationData.calculationRequestId
 
     return res.redirect(CreateRecallUrls.recallType(nomsId, journeyId))
   }
 
   private matchRasSentencesAndCrdsSentences(
     recallableCourtCases: DecoratedCourtCase[],
-    decision: RecordARecallDecisionResult,
-  ): DecoratedCalculatedCourtCase[] {
+    automatedCalculationData: AutomatedCalculationData,
+  ): DecoratedCourtCaseWithCrdsResults[] {
+    const recallableIds = automatedCalculationData.recallableSentences.map(it => it.uuid)
+    const ineligibleIds = [
+      ...automatedCalculationData.ineligibleSentences.map(it => it.uuid),
+      automatedCalculationData.sentencesBeforeInitialRelease.map(it => it.uuid),
+    ]
+    const expiredIds = automatedCalculationData.expiredSentences.map(it => it.uuid)
     return recallableCourtCases
       .map(courtCase => {
-        const filteredSentences = courtCase.recallableSentences
-          .map(sentence => {
-            const matchingCalculatedSentence = decision.recallableSentences.find(
-              calculatedSentence => calculatedSentence.uuid === sentence.sentenceUuid,
-            )
-            if (matchingCalculatedSentence) {
-              return {
-                ...sentence,
-                sentenceCalculation: matchingCalculatedSentence.sentenceCalculation,
-              } as DecoratedCalculatedSentence
-            }
-            return null
-          })
-          .filter(it => !!it)
-        if (filteredSentences.length) {
-          return { ...courtCase, recallableSentences: filteredSentences }
+        const sentences = {
+          eligible: [] as SentenceAndOffence[],
+          ineligible: [] as SentenceAndOffence[],
+          expired: [] as SentenceAndOffence[],
         }
-        return null
+
+        const allSentences = [...courtCase.recallableSentences, ...courtCase.nonRecallableSentences]
+        allSentences.forEach(sentence => {
+          if (recallableIds.includes(sentence.sentenceUuid)) {
+            sentences.eligible.push(sentence)
+          }
+          if (ineligibleIds.includes(sentence.sentenceUuid)) {
+            sentences.ineligible.push(sentence)
+          }
+          if (expiredIds.includes(sentence.sentenceUuid)) {
+            sentences.expired.push(sentence)
+          }
+        })
+
+        return {
+          ...courtCase,
+          eligibleSentences: sentences.eligible,
+          ineligibleSentences: sentences.ineligible,
+          expiredSentences: sentences.expired,
+        } as DecoratedCourtCaseWithCrdsResults
       })
-      .filter(it => !!it)
+      .filter(courtCase => courtCase.eligibleSentences.length)
   }
 }
 
-export type DecoratedCalculatedSentence = SentenceAndOffence & {
-  sentenceCalculation: RecallSentenceCalculation
-}
-export type DecoratedCalculatedCourtCase = DecoratedCourtCase & {
-  recallableSentences: DecoratedCalculatedSentence[]
+type DecoratedCourtCaseWithCrdsResults = DecoratedCourtCase & {
+  eligibleSentences: SentenceAndOffence[]
+  ineligibleSentences: SentenceAndOffence[]
+  expiredSentences: SentenceAndOffence[]
 }

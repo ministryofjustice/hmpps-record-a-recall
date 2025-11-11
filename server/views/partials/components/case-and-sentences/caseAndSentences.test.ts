@@ -1,17 +1,17 @@
 import nunjucks from 'nunjucks'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
+import path from 'path'
 
 import {
   formatCountNumber,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { formatDate, periodLengthsToSentenceLengths } from '../../../../utils/utils'
-import TestData from '../../../../testutils/testData'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 const njkEnv = nunjucks.configure([
-  __dirname,
+  path.join(__dirname, '../../../'),
   'node_modules/govuk-frontend/dist/',
   'node_modules/govuk-frontend/dist/components/',
   'node_modules/@ministryofjustice/frontend/',
@@ -32,16 +32,13 @@ const baseCase = {
   sentences: [] as unknown[],
 }
 
-const serviceDefinitions = TestData.serviceDefinitions()
-
 describe('Tests for case-and-sentences component', () => {
   it.each([
     [{ ...baseCase }, 'CASE123 at Bradford Crown Court on 01 Jan 2024'],
     [{ ...baseCase, reference: undefined }, 'Bradford Crown Court on 01 Jan 2024'],
   ])('renders the heading correctly (%j)', (courtCase, expectedText) => {
-    const html = nunjucks.render('test.njk', {
+    const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
       courtCase,
-      serviceDefinitions,
     })
     const $ = cheerio.load(html)
 
@@ -65,16 +62,46 @@ describe('Tests for case-and-sentences component', () => {
       ],
     }
 
-    const html = nunjucks.render('test.njk', {
+    const ineligible = [
+      {
+        sentenceType: 'Required',
+        offenceCode: '123AB',
+        offenceDescription: 'Murder',
+        offenceStartDate: '2023-06-01',
+        sentenceDate: '2023-07-01',
+        countNumber: '1',
+        periodLengths: [],
+      } as unknown as RecallableCourtCaseSentence,
+    ]
+
+    const expired = [
+      {
+        sentenceType: 'Required',
+        offenceCode: '123AB',
+        offenceDescription: 'Violence',
+        offenceStartDate: '2023-06-01',
+        sentenceDate: '2023-07-01',
+        countNumber: '1',
+        periodLengths: [],
+      } as unknown as RecallableCourtCaseSentence,
+    ]
+    const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
       courtCase: caseWithSentence,
-      serviceDefinitions,
+      ineligible,
+      expired,
     })
     const $ = cheerio.load(html)
 
     expect($.text()).toContain('Robbery')
 
+    expect($.text()).toContain('View sentences with an expired SLED (1)')
+    expect($.text()).toContain('Violence')
+
+    expect($.text()).toContain('View sentences that are ineligible for recall (1)')
+    expect($.text()).toContain('Murder')
+
     const offenceCardCount = $('[class*="offence-card"], [data-qa*="offence"]').length
-    expect(offenceCardCount).toBeGreaterThan(0)
+    expect(offenceCardCount).toBe(9)
   })
 
   it('renders count number and line number correctly for sentences', () => {
@@ -104,9 +131,8 @@ describe('Tests for case-and-sentences component', () => {
       recallableSentences: [sentenceWithCount, sentenceWithLineNumber],
     }
 
-    const html = nunjucks.render('test.njk', {
+    const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
       courtCase,
-      serviceDefinitions,
     })
 
     const $ = cheerio.load(html)
