@@ -14,7 +14,13 @@ import {
   sortPeriodLengths,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, initialiseName, lowercaseFirstLetter, periodLengthsToSentenceLengths } from './utils'
+import {
+  formatDate,
+  initialiseName,
+  lowercaseFirstLetter,
+  periodLengthsToSentenceLengths,
+  sentenceTypeValueOrLegacy,
+} from './utils'
 import config from '../config'
 import logger from '../../logger'
 
@@ -65,6 +71,7 @@ export default function nunjucksSetup(app: express.Express): void {
   njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
   njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
   njkEnv.addFilter('formatLengths', formatLengths)
+  njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 

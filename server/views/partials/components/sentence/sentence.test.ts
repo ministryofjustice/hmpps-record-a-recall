@@ -5,7 +5,7 @@ import {
   formatCountNumber,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, periodLengthsToSentenceLengths } from '../../../../utils/utils'
+import { formatDate, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy } from '../../../../utils/utils'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 const njkEnv = nunjucks.configure([
@@ -21,6 +21,7 @@ njkEnv.addFilter('formatDate', formatDate)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
+njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 
 describe('Tests for sentence component', () => {
   it('renders an offence card when sentence is provided', () => {

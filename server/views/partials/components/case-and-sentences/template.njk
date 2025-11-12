@@ -1,8 +1,6 @@
 {% from "partials/components/sentence/macro.njk" import sentenceCard %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
-{# TODO this code has been lifted from one of the screens in the recall journey, it will eventually evolve into a reusable design component for listing a court case with associated sentences#}
-
 <h2 data-qa="court-case-main-heading" class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
   {% if courtCase.reference %}
     {{ courtCase.reference }} at
