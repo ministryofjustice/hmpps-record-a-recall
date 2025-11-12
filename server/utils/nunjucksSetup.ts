@@ -14,7 +14,13 @@ import {
   sortPeriodLengths,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, initialiseName, lowercaseFirstLetter, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy, } from './utils'
+import {
+  formatDate,
+  initialiseName,
+  lowercaseFirstLetter,
+  periodLengthsToSentenceLengths,
+  sentenceTypeValueOrLegacy,
+} from './utils'
 import config from '../config'
 import logger from '../../logger'
 

@@ -8,7 +8,6 @@
 {% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
 
 {# TODO sentence.consecutiveToChargeNumber is never set #}
-{# TODO will prob align this offenceCard with RAS #}
 {{ offenceCard({
     offenceCode: sentence.offenceCode,
     offenceName: sentence.offenceDescription,

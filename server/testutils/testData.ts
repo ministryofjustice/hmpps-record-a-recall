@@ -135,7 +135,7 @@ export default class TestData {
     return {
       sentenceUuid: '72f79e94-b932-4e0f-9c93-3964047c76f0',
       isRecallable: true,
-      sentenceTypeDescription: 'Standard Determinate',
+      sentenceType: 'Standard Determinate',
       offenceCode: 'OFF1',
       offenceDescription: 'Offence 1',
       ...overrides,
