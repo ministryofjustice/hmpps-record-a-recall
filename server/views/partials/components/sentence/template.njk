@@ -1,18 +1,11 @@
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-{% if sentence.sentenceTypeDescription == 'Required' %}
-  {% set sentenceTypeDisplay = '<strong class="govuk-tag govuk-tag--blue">Required</strong>' %}
-{% else %}
-  {% set sentenceTypeDisplay = sentence.sentenceTypeDescription | default("N/A") %}
-{% endif %}
-{% set sentenceDate = sentence.sentenceDate | formatDate if sentence.sentenceDate else 'N/A' %}
-
 {# TODO sentence.consecutiveToChargeNumber is never set #}
 {{ offenceCard({
     offenceCode: sentence.offenceCode,
     offenceName: sentence.offenceDescription,
-    offenceStartDate: sentence.offenceStartDate | formatDate,
-    offenceEndDate: sentence.offenceEndDate | formatDate,
+    offenceStartDate: sentence.offenceStartDate | formatDate('DD/MM/YYYY'),
+    offenceEndDate: sentence.offenceEndDate | formatDate('DD/MM/YYYY'),
     countNumber: sentence.countNumber,
     lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
     terrorRelated: sentence.terrorRelated,
@@ -21,7 +14,7 @@
     sentenceServeType: sentence.sentenceServeType,
     consecutiveTo: sentence.consecutiveToChargeNumber,
     sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
-    sentenceDate: sentenceDate | formatDate,
+    sentenceDate: sentence.sentenceDate | formatDate('DD/MM/YYYY'),
     fineAmount: sentence.fineAmount,
     detailsClasses: 'govuk-!-padding-4'
 }) }}
