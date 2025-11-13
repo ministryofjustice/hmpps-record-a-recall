@@ -178,5 +178,6 @@ export default {
       'https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk',
       requiredInProduction,
     ),
+    digitalPrisonServices: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
   },
 }
