@@ -1,6 +1,5 @@
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
-{# TODO sentence.consecutiveToChargeNumber is never set #}
 {{ offenceCard({
     offenceCode: sentence.offenceCode,
     offenceName: sentence.offenceDescription,
@@ -12,10 +11,8 @@
     isSentenced: true,
     periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
     sentenceServeType: sentence.sentenceServeType,
-    consecutiveTo: sentence.consecutiveToChargeNumber,
     sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
     sentenceDate: sentence.sentenceDate | formatDate('DD/MM/YYYY'),
     fineAmount: sentence.fineAmount,
     detailsClasses: 'govuk-!-padding-4'
 }) }}
-
