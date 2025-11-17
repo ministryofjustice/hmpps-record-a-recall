@@ -37,7 +37,10 @@ export default class CreateRecallReviewSentencesController implements Controller
 
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
-    const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
+    const backLink = journey.isCheckingAnswers
+      ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
+      : CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
+
     const cancelUrl = CreateRecallUrls.confirmCancel(
       nomsId,
       journeyId,
