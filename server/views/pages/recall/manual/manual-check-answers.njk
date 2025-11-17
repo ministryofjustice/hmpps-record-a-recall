@@ -19,7 +19,7 @@
                     text: 'Date of revocation'
                 },
                 value: {
-                    text: recall.revocationDate | formatDate
+                    text: recall.revocationDate | formatDate('DD/MM/YYYY')
                 },
                 actions: {
                     items: [{
@@ -33,7 +33,7 @@
                     text: 'Arrest date'
                 },
                 value: {
-                    text: 'In custody at revocation' if recall.inPrisonOnRevocationDate else (recall.returnToCustodyDate | formatDate) 
+                    text: 'In custody at revocation' if recall.inPrisonOnRevocationDate else (recall.returnToCustodyDate | formatDate('DD/MM/YYYY')) 
                 },
                 actions: {
                     items: [{
