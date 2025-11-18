@@ -352,7 +352,9 @@ describe('Tests for recall card component', () => {
     expect(maximumOffenceCard.find('dt:contains("Sentence type")').next().text().trim()).toStrictEqual(
       'Serious Offence Sec 250 Sentencing Code (U18)',
     )
-    expect(maximumOffenceCard.find('dt:contains("Sentence date")').next().text().trim()).toStrictEqual('12/04/2021')
+    expect(maximumOffenceCard.find('dt:contains("Sentencing warrant date")').next().text().trim()).toStrictEqual(
+      '12/04/2021',
+    )
     expect(maximumOffenceCard.find('dt:contains("Sentence length")').next().text().trim()).toStrictEqual(
       '1 years  0 months 0 weeks 0 days',
     )
@@ -368,7 +370,9 @@ describe('Tests for recall card component', () => {
     expect(minimumOffenceCard.children('h4').text().trim()).toStrictEqual('B2 Burglary')
     expect(minimumOffenceCard.find('dt:contains("Committed on")').next().text().trim()).toStrictEqual('Not entered')
     expect(minimumOffenceCard.find('dt:contains("Sentence type")').next().text().trim()).toStrictEqual('Not entered')
-    expect(minimumOffenceCard.find('dt:contains("Sentence date")').next().text().trim()).toStrictEqual('Not entered')
+    expect(minimumOffenceCard.find('dt:contains("Sentencing warrant date")').next().text().trim()).toStrictEqual(
+      'Not entered',
+    )
     expect(minimumOffenceCard.find('dt:contains("Sentence length")').next().text().trim()).toStrictEqual(
       '0 years  0 months 0 weeks 0 days',
     )

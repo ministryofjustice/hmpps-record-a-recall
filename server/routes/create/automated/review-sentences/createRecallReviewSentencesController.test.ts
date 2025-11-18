@@ -10,6 +10,8 @@ import RecallService from '../../../../services/recallService'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import TestData from '../../../../testutils/testData'
 import AuditService from '../../../../services/auditService'
+import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -92,6 +94,33 @@ describe('GET', () => {
       .get(`/person/${nomsId}/recall/create/${uuidv4()}/review-sentences`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+
+  describe('backlink tests', () => {
+    it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
+      recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+      calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
+      existingJourney.isCheckingAnswers = true
+
+      const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
+
+      const $ = cheerio.load(res.text)
+      expect($('[data-qa="back-link"]').attr('href')).toBe(
+        RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null),
+      )
+    })
+
+    it('shows back link to return-to-custody when not checking answers', async () => {
+      recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+      calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
+
+      const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
+
+      const $ = cheerio.load(res.text)
+      expect($('[data-qa="back-link"]').attr('href')).toBe(
+        RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, 'create', null),
+      )
+    })
   })
 })
 

@@ -97,14 +97,14 @@ describe('GET', () => {
     const checkAnswerRows = $('#check-answers').children()
     const revocationRow = checkAnswerRows.eq(0)
     expect(revocationRow.text()).toContain('Date of revocation')
-    expect(revocationRow.text()).toContain('01 Oct 2025')
+    expect(revocationRow.text()).toContain('01/10/2025')
     expect(revocationRow.find('a').attr('href')).toContain(
       `/person/${nomsId}/recall/create/${journeyId}/revocation-date`,
     )
 
     const arrestDateRow = checkAnswerRows.eq(1)
     expect(arrestDateRow.text()).toContain('Arrest date')
-    expect(arrestDateRow.text()).toContain('05 Oct 2025')
+    expect(arrestDateRow.text()).toContain('05/10/2025')
     expect(arrestDateRow.find('a').attr('href')).toContain(
       `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`,
     )

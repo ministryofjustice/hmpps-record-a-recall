@@ -14,7 +14,6 @@ const njkEnv = nunjucks.configure([
   'node_modules/govuk-frontend/dist/components/',
   'node_modules/@ministryofjustice/frontend/',
   'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
-  'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/components/',
 ])
 
 njkEnv.addFilter('formatDate', formatDate)
@@ -23,26 +22,47 @@ njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 
+function valueInOffenceCard(key: string, $: cheerio.CheerioAPI) {
+  const summaryList = $('[data-qa="offenceSummaryList"]')
+  const rows = summaryList.find('.govuk-summary-list__row')
+  return rows
+    .filter((_, el) => $(el).find('.govuk-summary-list__key').text().trim() === key)
+    .find('.govuk-summary-list__value')
+    .text()
+    .trim()
+}
+
 describe('Tests for sentence component', () => {
-  it('renders an offence card when sentence is provided', () => {
+  it('renders an offence card with all expected fields', () => {
     const sentence = {
-      sentenceType: 'Required',
       offenceCode: '123AB',
       offenceDescription: 'Robbery',
       offenceStartDate: '2023-06-01',
+      offenceEndDate: '2023-06-02',
       sentenceDate: '2023-07-01',
       countNumber: '1',
+      sentenceLegacyData: null,
+      terrorRelated: false,
       periodLengths: [],
+      sentenceServeType: 'CONCURRENT',
+      sentenceType: 'ORA SDS',
     } as unknown as RecallableCourtCaseSentence
 
-    const html = nunjucks.render('test.njk', {
-      sentence,
-    })
+    const html = njkEnv.render('test.njk', { sentence })
     const $ = cheerio.load(html)
 
-    expect($.text()).toContain('Robbery')
+    const summaryList = $('[data-qa="offenceSummaryList"]')
+    expect(summaryList.length).toBe(1)
+    const card = summaryList.closest('.offence-card')
+    expect(card.length).toBe(1)
+    const countText = card.find('span.govuk-body').text().trim()
+    expect(countText).toBe('Count 1')
+    const headingText = card.find('h4.govuk-heading-s').text().replace(/\s+/g, ' ').trim()
+    expect(headingText).toBe('123AB Robbery')
 
-    const offenceCardCount = $('[class*="offence-card"], [data-qa*="offence"]').length
-    expect(offenceCardCount).toBeGreaterThan(0)
+    expect(valueInOffenceCard('Committed on', $)).toBe('01/06/2023 to 02/06/2023')
+    expect(valueInOffenceCard('Sentence type', $)).toBe('ORA SDS')
+    expect(valueInOffenceCard('Consecutive or concurrent', $)).toBe('Concurrent')
+    expect(valueInOffenceCard('Sentencing warrant date', $)).toBe('01/07/2023')
   })
 })
