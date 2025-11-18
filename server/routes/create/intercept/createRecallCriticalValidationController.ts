@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import config from '../../../config'
@@ -11,11 +11,11 @@ export default class CreateRecallCriticalValidationController implements Control
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
 
     if (!journey.crdsValidationResult.criticalValidationMessages?.length) {
-      return res.redirect(CreateRecallUrls.start(nomsId))
+      return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
     const backLink = GlobalRecallUrls.home(nomsId)

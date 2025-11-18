@@ -27,12 +27,11 @@ import CreateRecallCriticalValidationController from './create/intercept/createR
 import CreateRecallConflictingAdjustmentsController from './create/intercept/createRecallConflictingAdjustmentsController'
 import CreateRecallNoRecallableSentencesController from './create/intercept/createRecallNoRecallableSentencesController'
 import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
-import CreateManualRecallTypeController from './create/manual/recall-type/createManualRecallTypeController'
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
 import { returnToCustodyDateSchemaFactory } from './common/return-to-custody-date/returnToCustodyDateSchemas'
-import CreateManualRecallCheckAnswersController from './create/manual/check-answers/createManualRecallCheckAnswersController'
 import CreateRecallCancelController from './create/cancel/createRecallCancelController'
 import { confirmCancelSchema } from './common/confirm-cancel/confirmCancelSchema'
+import StartEditRecallJourneyController from './create/start/startEditRecallJourneyController'
 
 export default function routes({
   prisonerService,
@@ -84,93 +83,95 @@ export default function routes({
     path: '/person/:nomsId/recall/create/start',
     controller: new StartCreateRecallJourneyController(calculateReleaseDatesService),
   })
-
+  // edit recall
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/revocation-date',
+    path: '/person/:nomsId/recall/edit/:recallId/start',
+    controller: new StartEditRecallJourneyController(calculateReleaseDatesService, recallService),
+  })
+
+  // Common pages for edit and create
+  const journeyPath = '/person/:nomsId/recall/:createOrEdit{/:recallId}/:journeyId'
+  route({
+    path: `${journeyPath}/revocation-date`,
     controller: new CreateRecallRevocationDateController(),
     validateToSchema: revocationDateSchemaFactory(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/return-to-custody-date',
+    path: `${journeyPath}/return-to-custody-date`,
     controller: new CreateRecallReturnToCustodyDateController(),
     validateToSchema: returnToCustodyDateSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/recall-decision',
+    path: `${journeyPath}/recall-decision`,
     controller: new CreateRecallDecisionController(calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/review-sentences',
+    path: `${journeyPath}/review-sentences`,
     controller: new CreateRecallReviewSentencesController(recallService, calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/recall-type',
-    controller: new CreateRecallTypeController(calculateReleaseDatesService),
+    path: `${journeyPath}/recall-type`,
+    controller: new CreateRecallTypeController(),
     validateToSchema: recallTypeSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/check-answers',
+    path: `${journeyPath}/check-answers`,
     controller: new CreateRecallCheckAnswersController(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
-  route({
-    path: '/person/:nomsId/recall/create/:recallId/confirmed',
-    controller: new CreateRecallConfirmationController(),
-  })
-
   // create - intercepts
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/validation-intercept',
+    path: `${journeyPath}/validation-intercept`,
     controller: new CreateRecallCriticalValidationController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/conflicting-adjustments',
+    path: `${journeyPath}/conflicting-adjustments`,
     controller: new CreateRecallConflictingAdjustmentsController(calculateReleaseDatesService, adjustmentsService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/no-recallable-sentences-found',
+    path: `${journeyPath}/no-recallable-sentences-found`,
     controller: new CreateRecallNoRecallableSentencesController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   // create - manual journey
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/start',
+    path: `${journeyPath}/manual/start`,
     controller: new ManualJourneyInterceptController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases',
+    path: `${journeyPath}/manual/select-court-cases`,
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/select-court-cases/:caseIndex',
+    path: `${journeyPath}/manual/select-court-cases/:caseIndex`,
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/check-sentences',
+    path: `${journeyPath}/manual/check-sentences`,
     controller: new CheckSentencesController(
       recallService,
       calculateReleaseDatesService,
@@ -180,23 +181,15 @@ export default function routes({
   })
 
   route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/select-recall-type',
-    controller: new CreateManualRecallTypeController(),
-    validateToSchema: recallTypeSchema,
-    additionalMiddleware: [ensureInCreateRecallJourney],
-  })
-
-  route({
-    path: '/person/:nomsId/recall/create/:journeyId/manual/check-answers',
-    controller: new CreateManualRecallCheckAnswersController(recallService),
-    additionalMiddleware: [ensureInCreateRecallJourney],
-  })
-
-  route({
-    path: '/person/:nomsId/recall/create/:journeyId/confirm-cancel',
+    path: `${journeyPath}/confirm-cancel`,
     controller: new CreateRecallCancelController(),
     validateToSchema: confirmCancelSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+    path: '/person/:nomsId/recall/:createOrEdit/:recallId/confirmed',
+    controller: new CreateRecallConfirmationController(),
   })
 
   // delete recall

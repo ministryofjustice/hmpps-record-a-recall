@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
 import { PersonJourneyParams } from '../../../../@types/journeys'
-import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 
 export default class ManualJourneyInterceptController implements Controller {
@@ -9,25 +9,31 @@ export default class ManualJourneyInterceptController implements Controller {
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
 
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualJourneyStart.name)
+    const cancelUrl = RecallJourneyUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      createOrEdit,
+      recallId,
+      RecallJourneyUrls.manualJourneyStart.name,
+    )
     return res.render('pages/recall/manual/manual-recall-intercept', {
       prisoner,
-      backLink: CreateRecallUrls.returnToCustodyDate(nomsId, journeyId),
+      backLink: RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId),
       cancelUrl,
     })
   }
 
   POST = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]
 
     // The absence of a calculationRequestId implies manual journey
     delete journey.calculationRequestId
     // If the user navigated here from check your-answers then they must repeat full journey
     journey.isCheckingAnswers = false
 
-    return res.redirect(CreateRecallUrls.manualSelectCases(nomsId, journeyId))
+    return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId))
   }
 }

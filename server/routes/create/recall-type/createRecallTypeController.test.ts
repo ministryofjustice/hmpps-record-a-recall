@@ -4,21 +4,16 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
-import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
-import TestData from '../../../testutils/testData'
 import AuditService from '../../../services/auditService'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
-jest.mock('../../../services/calculateReleaseDatesService')
 jest.mock('../../../services/auditService')
-
-const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 beforeEach(() => {
@@ -38,13 +33,14 @@ beforeEach(() => {
       otherValidationMessages: [],
       earliestSentenceDate: '2025-01-01',
     },
+    calculationRequestId: 1,
   }
   app = appWithAllRoutes({
-    services: { calculateReleaseDatesService, auditService },
+    services: { auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 })
@@ -56,8 +52,6 @@ afterEach(() => {
 describe('GET', () => {
   it('should render return recall type page with correct navigation', async () => {
     // Given
-    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
-
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
 
@@ -80,7 +74,6 @@ describe('GET', () => {
   it('should populate the form with session values if there are no form values', async () => {
     // Given
     existingJourney.recallType = 'LR'
-    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
@@ -99,7 +92,6 @@ describe('GET', () => {
     existingJourney.recallType = 'LR'
     const form = { recallType: 'FTR_14' }
     flashProvider.mockImplementation(key => (key === 'formResponses' ? [JSON.stringify(form)] : []))
-    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
@@ -112,16 +104,9 @@ describe('GET', () => {
     expect($('#recallType-FTR_14').attr('checked')).toBeTruthy()
     expect($('#recallType-FTR_28').attr('checked')).toBeFalsy()
   })
-  it('should not display options for ineligible recall types', async () => {
+  it('should go back to manual check sentences.', async () => {
     // Given
-    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(
-      TestData.automatedRecallDecision(
-        {},
-        {
-          eligibleRecallTypes: ['LR'],
-        },
-      ),
-    )
+    existingJourney.calculationRequestId = null
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
@@ -130,11 +115,13 @@ describe('GET', () => {
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
 
-    expect($('#recallType-LR').attr('checked')).toBeFalsy()
-    expect($('#recallType-FTR_14').length).toBe(0)
-    expect($('#recallType-FTR_28').length).toBe(0)
+    expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`,
+    )
+    expect($('#cancel-button').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=recallType`,
+    )
   })
-
   it('should return to start of journey if not found in session', async () => {
     await request(app)
       .get(`/person/${nomsId}/recall/create/${uuidv4()}/recall-type`)

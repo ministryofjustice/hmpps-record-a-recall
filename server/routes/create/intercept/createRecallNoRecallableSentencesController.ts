@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import { datePartsToDate } from '../../../utils/utils'
@@ -10,16 +10,22 @@ export default class CreateRecallNoRecallableSentencesController implements Cont
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined) {
-      return res.redirect(CreateRecallUrls.start(nomsId))
+      return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
-    const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
-    const cancelLink = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualJourneyStart.name)
-    const revocationDateLink = CreateRecallUrls.revocationDate(nomsId, journeyId)
+    const backLink = RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId)
+    const cancelLink = RecallJourneyUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      createOrEdit,
+      recallId,
+      RecallJourneyUrls.manualJourneyStart.name,
+    )
+    const revocationDateLink = RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId)
     return res.render('pages/recall/no-recallable-sentences', {
       prisoner,
       pageCaption: 'Record a recall',

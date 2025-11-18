@@ -8,7 +8,7 @@ const MISSING_IN_CUSTODY_SELECTION = 'Select whether the person was in prison wh
 
 export const returnToCustodyDateSchemaFactory = () => async (req: Request) => {
   const { journeyId } = req.params
-  const journey = req.session.createRecallJourneys[journeyId]
+  const journey = req.session.recallJourneys[journeyId]
   return createSchema({
     day: z.string().trim().optional(),
     month: z.string().trim().optional(),

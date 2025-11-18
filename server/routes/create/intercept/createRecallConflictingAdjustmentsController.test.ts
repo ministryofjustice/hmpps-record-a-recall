@@ -4,7 +4,7 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
@@ -12,7 +12,7 @@ import AdjustmentsService from '../../../services/adjustmentsService'
 import TestData from '../../../testutils/testData'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
@@ -52,8 +52,8 @@ beforeEach(() => {
     services: { auditService, calculateReleaseDatesService, adjustmentsService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 })

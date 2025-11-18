@@ -4,16 +4,18 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import RecallService from '../../../services/recallService'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import AuditService from '../../../services/auditService'
+import TestData from '../../../testutils/testData'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
+const courtCase = TestData.recallableCourtCase()
 const recallToBeCreated = {
   createdByPrison: 'KMI',
   createdByUsername: 'user',
@@ -23,7 +25,9 @@ const recallToBeCreated = {
   revocationDate: '2025-10-01',
   returnToCustodyDate: '2025-10-05',
   sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
+  calculationRequestId: 1,
 } as CreateRecall
+const recallId: string = uuidv4()
 
 jest.mock('../../../services/recallService')
 jest.mock('../../../services/auditService')
@@ -54,13 +58,15 @@ beforeEach(() => {
     },
     recallType: 'LR',
     sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
+    recallableCourtCases: [courtCase],
+    courtCaseIdsSelectedForRecall: [courtCase.courtCaseUuid],
   }
   app = appWithAllRoutes({
     services: { recallService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 })
@@ -118,6 +124,22 @@ describe('GET', () => {
     const ualText = $('#ual-text')
     expect(ualText.text()).toContain('3 days of UAL')
   })
+  it('should render check your answers page for edit', async () => {
+    // Given
+    recallService.getApiRecallFromJourney.mockReturnValue(recallToBeCreated)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/edit/${recallId}/${journeyId}/check-answers`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    expect($('[data-qa=back-link]').attr('href')).toStrictEqual(`/person/${nomsId}`)
+    expect($('#cancel-button').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/confirm-cancel?returnKey=checkAnswers`,
+    )
+  })
 
   it('should render check your answers page in custody at recall', async () => {
     // Given
@@ -144,6 +166,36 @@ describe('GET', () => {
 
     const ualText = $('#ual-text')
     expect(ualText.length).toBe(0)
+  })
+
+  it('should render check your answers page for manual journey', async () => {
+    // Given
+    recallService.getApiRecallFromJourney.mockReturnValue({
+      ...recallToBeCreated,
+      calculationRequestId: null,
+    })
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/check-answers`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    const checkAnswerRows = $('#check-answers').children()
+    const casesRow = checkAnswerRows.eq(2)
+    expect(casesRow.text()).toContain('Cases')
+    expect(casesRow.text()).toContain('1 case')
+    expect(casesRow.find('a').attr('href')).toContain(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`,
+    )
+
+    const sentencesRow = checkAnswerRows.eq(3)
+    expect(sentencesRow.text()).toContain('Sentences')
+    expect(sentencesRow.text()).toContain('1 sentence')
+    expect(sentencesRow.find('a').attr('href')).toContain(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`,
+    )
   })
 
   it('should return to start of journey if not found in session', async () => {

@@ -15,7 +15,7 @@ describe('revocationDateSchema', () => {
   const request = {
     params: { nomsId: 'xyz123', journeyId: 'abc' },
     user: { username: 'username' },
-    session: { createRecallJourneys: { abc: { crdsValidationResult: { earliestSentenceDate: '2024-01-01' } } } },
+    session: { recallJourneys: { abc: { crdsValidationResult: { earliestSentenceDate: '2024-01-01' } } } },
   } as unknown as Request
 
   afterEach(() => {

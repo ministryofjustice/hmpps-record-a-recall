@@ -4,16 +4,20 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
-{% set title = "Check your answers" %}
+{% if createOrEdit == 'create' %}
+    {% set title = "Check your answers" %}
+{% else %}
+    {% set title = "Recorded on " + (recallBeingEditted.createdAtTimestamp | formatDate) %}
+{% endif %}
 {% set pageTitle = applicationName + " - " + title %}
 {% set pageCaption = "Record a recall" %}
 
 {% block pageContent %}
     <h1 class="govuk-heading-l" id="check-answers-heading">{{ title }}</h1>
 
-    {{ govukSummaryList({
-        attributes: { id: "check-answers" },
-        rows: [
+
+
+{% set checkAnswersRows = [
             {
                 key: {
                     text: 'Date of revocation'
@@ -23,7 +27,7 @@
                 },
                 actions: {
                     items: [{
-                        href: '/person/' + nomsId + '/recall/create/' + journeyId + '/revocation-date',
+                        href: urls.revocationDate,
                         text: 'Edit'
                     }]
                 }
@@ -37,11 +41,35 @@
                 },
                 actions: {
                     items: [{
-                        href: '/person/' + nomsId + '/recall/create/' + journeyId + '/return-to-custody-date',
+                        href: urls.returnToCustodyDate,
                         text: 'Edit'
                     }]
                 }
-            },
+            }
+        ]
+%}
+
+{% if courtCasesCount != 0 %}
+        {% set checkAnswersRows = (checkAnswersRows.push({
+    
+                key: {
+                    text: 'Cases'
+                },
+                value: {
+                    text: courtCasesCount + (' case'  | pluralise(courtCasesCount))
+                },
+                actions: {
+                    items: [{
+                        href: urls.manualSelectCases,
+                        text: 'Edit'
+                    }]
+                }
+            }), checkAnswersRows)
+            
+        %}
+
+{% endif %}
+        {% set checkAnswersRows = (checkAnswersRows.push(
             {
                 key: {
                     text: 'Sentences'
@@ -51,11 +79,13 @@
                 },
                 actions: {
                     items: [{
-                        href: '/person/' + nomsId + '/recall/create/' + journeyId + '/review-sentences',
+                        href: urls.reviewSentences,
                         text: 'Review'
                     }]
                 }
-            },
+            }), checkAnswersRows)
+        %}
+        {% set checkAnswersRows = (checkAnswersRows.push(
             {
                 key: {
                     text: 'Recall type'
@@ -65,12 +95,15 @@
                 },
                 actions: {
                     items: [{
-                        href: '/person/' + nomsId + '/recall/create/' + journeyId + '/recall-type',
+                        href: urls.recallType,
                         text: 'Edit'
                     }]
                 }
-            }
-        ]
+            }), checkAnswersRows)            
+        %}
+    {{ govukSummaryList({
+        attributes: { id: "check-answers" },
+        rows: checkAnswersRows
     }) }}
 
 

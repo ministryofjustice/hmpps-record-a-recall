@@ -5,24 +5,38 @@ import RecallJourneyUrls from '../createRecallUrls'
 import { RecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { Page } from '../../../services/auditService'
+import RecallService from '../../../services/recallService'
+import { dateStringToDateParts } from '../../../utils/utils'
 
-export default class StartCreateRecallJourneyController implements Controller {
-  public PAGE_NAME = Page.START_CREATE_RECALL
+export default class StartEditRecallJourneyController implements Controller {
+  public PAGE_NAME = Page.START_EDIT_RECALL
 
-  constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
+  constructor(
+    private readonly calculateReleaseDatesService: CalculateReleaseDatesService,
+    private readonly recallService: RecallService,
+  ) {}
 
   private MAX_JOURNEYS = 5
 
-  GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
+  GET = async (req: Request<{ nomsId: string; recallId: string }>, res: Response): Promise<void> => {
     const { username } = req.user
-    const { nomsId } = req.params
+    const { nomsId, recallId } = req.params
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
+    const recall = await this.recallService.getRecall(recallId, username)
     const journey: RecallJourney = {
       id: uuidv4(),
       lastTouched: new Date().toISOString(),
-      isCheckingAnswers: false,
       nomsId,
+      recallId,
+      isCheckingAnswers: true,
       crdsValidationResult,
+      revocationDate: dateStringToDateParts(recall.revocationDate),
+      inCustodyAtRecall: recall.inPrisonOnRevocationDate,
+      returnToCustodyDate: recall.inPrisonOnRevocationDate ? null : dateStringToDateParts(recall.returnToCustodyDate),
+      recallType: recall.recallTypeCode,
+      calculationRequestId: recall.calculationRequestId,
+      sentenceIds: recall.sentenceIds,
+      recallBeingEditted: recall,
     }
     if (!req.session.recallJourneys) {
       req.session.recallJourneys = {}
@@ -37,9 +51,9 @@ export default class StartCreateRecallJourneyController implements Controller {
         .forEach(journeyToRemove => delete req.session.recallJourneys![journeyToRemove.id])
     }
     if (crdsValidationResult.criticalValidationMessages.length) {
-      res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'create', null))
+      res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'edit', recallId))
     } else {
-      res.redirect(RecallJourneyUrls.revocationDate(nomsId, journey.id, 'create', null))
+      res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journey.id, 'edit', recallId))
     }
   }
 }

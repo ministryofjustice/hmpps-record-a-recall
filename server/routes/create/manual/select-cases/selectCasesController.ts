@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
-import { CreateRecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
-import CreateRecallUrls from '../../createRecallUrls'
+import { RecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
+import RecallJourneyUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { SelectCourtCasesForm } from '../../../common/select-court-cases/selectCourtCasesSchema'
@@ -15,8 +15,8 @@ export default class SelectCasesController implements Controller {
   GET = async (req: Request<PersonJourneyParams & { caseIndex?: string }>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
     const { username } = req.user
-    const { nomsId, journeyId, caseIndex } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]
+    const { nomsId, journeyId, createOrEdit, recallId, caseIndex } = req.params
+    const journey = req.session.recallJourneys[journeyId]
 
     if (!journey.recallableCourtCases) {
       journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
@@ -40,13 +40,15 @@ export default class SelectCasesController implements Controller {
       courtCaseIndex,
       totalCases: cases.length,
       selectedRadio,
-      cancelUrl: CreateRecallUrls.confirmCancel(
+      cancelUrl: RecallJourneyUrls.confirmCancel(
         nomsId,
         journeyId,
-        CreateRecallUrls.manualSelectCases.name,
+        createOrEdit,
+        recallId,
+        RecallJourneyUrls.manualSelectCases.name,
         courtCaseIndex,
       ),
-      backLink: this.getBackLink(journey, nomsId, journeyId, courtCaseIndex),
+      backLink: this.getBackLink(journey, nomsId, journeyId, createOrEdit, recallId, courtCaseIndex),
     })
   }
 
@@ -54,10 +56,10 @@ export default class SelectCasesController implements Controller {
     req: Request<PersonJourneyParams & { caseIndex?: string }, unknown, SelectCourtCasesForm>,
     res: Response,
   ): Promise<void> => {
-    const { nomsId, journeyId, caseIndex } = req.params
+    const { nomsId, journeyId, createOrEdit, recallId, caseIndex } = req.params
     const { activeSentenceChoice } = req.body
 
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const journey = req.session.recallJourneys[journeyId]!
     const cases = journey.recallableCourtCases ?? []
 
     const currentCaseIndex = Number(caseIndex) || 0
@@ -82,18 +84,25 @@ export default class SelectCasesController implements Controller {
     }
 
     // last case — decide final route
-    return res.redirect(CreateRecallUrls.manualCheckSentences(nomsId, journeyId))
+    return res.redirect(RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId))
   }
 
-  private getBackLink(journey: CreateRecallJourney, nomsId: string, journeyId: string, courtCaseIndex: number) {
+  private getBackLink(
+    journey: RecallJourney,
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+    courtCaseIndex: number,
+  ) {
     if (journey.isCheckingAnswers) {
-      return CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+      return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
 
     if (courtCaseIndex > 0) {
-      return CreateRecallUrls.manualSelectCases(nomsId, journeyId, courtCaseIndex - 1)
+      return RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, courtCaseIndex - 1)
     }
 
-    return CreateRecallUrls.manualJourneyStart(nomsId, journeyId)
+    return RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId)
   }
 }

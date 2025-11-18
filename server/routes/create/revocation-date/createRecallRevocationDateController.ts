@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import { CreateRecallJourney, PersonJourneyParams } from '../../../@types/journeys'
+import { RecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import GlobalRecallUrls from '../../globalRecallUrls'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import { RevocationDateForm } from '../../common/revocation-date/revocationDateSchemas'
 import { Page } from '../../../services/auditService'
 
@@ -11,10 +11,16 @@ export default class CreateRecallRevocationDateController implements Controller 
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
-    const backLink = this.getBackLink(journey, nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.revocationDate.name)
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+    const backLink = this.getBackLink(journey, nomsId, journeyId, createOrEdit, recallId)
+    const cancelUrl = RecallJourneyUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      createOrEdit,
+      recallId,
+      RecallJourneyUrls.revocationDate.name,
+    )
     const day = formResponses?.day ?? journey.revocationDate?.day
     const month = formResponses?.month ?? journey.revocationDate?.month
     const year = formResponses?.year ?? journey.revocationDate?.year
@@ -30,23 +36,25 @@ export default class CreateRecallRevocationDateController implements Controller 
   }
 
   POST = async (req: Request<PersonJourneyParams, unknown, RevocationDateForm>, res: Response): Promise<void> => {
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year } = req.body
     journey.revocationDate = { day, month, year }
     if (journey.isCheckingAnswers) {
-      return journey.calculationRequestId
-        ? res.redirect(CreateRecallUrls.checkAnswers(nomsId, journeyId))
-        : res.redirect(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
-    return res.redirect(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
+    return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
 
-  private getBackLink(journey: CreateRecallJourney, nomsId: string, journeyId: string) {
+  private getBackLink(
+    journey: RecallJourney,
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) {
     if (journey.isCheckingAnswers) {
-      return journey.calculationRequestId
-        ? CreateRecallUrls.checkAnswers(nomsId, journeyId)
-        : CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+      return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
     return GlobalRecallUrls.home(nomsId)
   }

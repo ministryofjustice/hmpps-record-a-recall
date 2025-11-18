@@ -38,6 +38,7 @@ export default class TestData {
     }) as PrisonerSearchApiPrisoner
 
   static apiRecall = ({
+    calculationRequestId = 1,
     recallUuid = uuidv4(),
     prisonerId = 'A1234BC',
     revocationDate = undefined,
@@ -52,6 +53,7 @@ export default class TestData {
     ual = undefined,
   }: Partial<ApiRecall> = {}): ApiRecall =>
     ({
+      calculationRequestId,
       recallUuid,
       prisonerId,
       revocationDate,
@@ -79,6 +81,10 @@ export default class TestData {
     canDelete = false,
     recallTypeDescription = '28-day fixed-term',
     courtCases = [],
+    calculationRequestId = 1,
+    inPrisonOnRevocationDate = false,
+    recallTypeCode = 'FTR_28',
+    sentenceIds = [],
   }: Partial<ExistingRecall> = {}): ExistingRecall =>
     ({
       recallUuid,
@@ -93,6 +99,10 @@ export default class TestData {
       canDelete,
       recallTypeDescription,
       courtCases,
+      calculationRequestId,
+      inPrisonOnRevocationDate,
+      recallTypeCode,
+      sentenceIds,
     }) as ExistingRecall
 
   static serviceDefinitions = ({

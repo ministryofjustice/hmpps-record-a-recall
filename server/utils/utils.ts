@@ -28,6 +28,15 @@ export const initialiseName = (fullName?: string): string | null => {
   return `${array[0][0]}. ${array.reverse()[0]}`
 }
 
+export const dateStringToDateParts = (dateString: string): DateParts => {
+  const date = new Date(dateString)
+  return {
+    day: date.getDate(),
+    month: date.getMonth() + 1,
+    year: date.getFullYear(),
+  }
+}
+
 export const datePartsToDate = (dateParts: DateParts): Date => {
   return parse(`${dateParts.year}-${dateParts.month}-${dateParts.day}`, 'yyyy-MM-dd', new Date())
 }

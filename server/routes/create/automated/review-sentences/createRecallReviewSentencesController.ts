@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
-import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../../@types/journeys'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
@@ -20,8 +20,8 @@ export default class CreateRecallReviewSentencesController implements Controller
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { username } = req.user
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
 
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
@@ -32,16 +32,18 @@ export default class CreateRecallReviewSentencesController implements Controller
     )
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined || decision?.decision !== 'AUTOMATED') {
-      return res.redirect(CreateRecallUrls.start(nomsId))
+      return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
-    const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(
+    const backLink = RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId)
+    const cancelUrl = RecallJourneyUrls.confirmCancel(
       nomsId,
       journeyId,
-      CreateRecallUrls.reviewSentencesAutomatedJourney.name,
+      createOrEdit,
+      recallId,
+      RecallJourneyUrls.reviewSentencesAutomatedJourney.name,
     )
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
@@ -58,8 +60,8 @@ export default class CreateRecallReviewSentencesController implements Controller
 
   POST = async (req: Request<PersonJourneyParams, unknown, unknown>, res: Response): Promise<void> => {
     const { username } = req.user
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
       {
@@ -70,7 +72,7 @@ export default class CreateRecallReviewSentencesController implements Controller
     journey.sentenceIds = decision.automatedCalculationData.recallableSentences.map(it => it.uuid)
     journey.calculationRequestId = decision.automatedCalculationData.calculationRequestId
 
-    return res.redirect(CreateRecallUrls.recallType(nomsId, journeyId))
+    return res.redirect(RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId))
   }
 
   private matchRasSentencesAndCrdsSentences(

@@ -4,14 +4,14 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import GlobalRecallUrls from '../../globalRecallUrls'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 let sessionRef: Partial<SessionData>
@@ -42,8 +42,8 @@ beforeEach(() => {
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       sessionRef = receivedSession
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 })
@@ -65,7 +65,7 @@ describe('GET', () => {
     expect(headingText).toContain('Are you sure you want to cancel')
 
     const backLink = $('[data-qa="back-link"]')
-    expect(backLink.attr('href')).toBe(CreateRecallUrls.revocationDate(nomsId, journeyId))
+    expect(backLink.attr('href')).toBe(RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', null))
   })
 })
 
@@ -74,8 +74,8 @@ describe('POST', () => {
     const response = await request(app).post(baseUrl).type('form').send({ confirmCancel: 'NO' })
 
     expect(response.status).toBe(302)
-    expect(response.header.location).toBe(CreateRecallUrls.revocationDate(nomsId, journeyId))
-    expect(sessionRef.createRecallJourneys?.[journeyId]).toBeDefined()
+    expect(response.header.location).toBe(RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', null))
+    expect(sessionRef.recallJourneys?.[journeyId]).toBeDefined()
   })
 
   it('should clear the journey and redirect home when confirmCancel = YES', async () => {
@@ -83,6 +83,6 @@ describe('POST', () => {
 
     expect(response.status).toBe(302)
     expect(response.header.location).toBe(GlobalRecallUrls.home(nomsId))
-    expect(sessionRef.createRecallJourneys?.[journeyId]).toBeUndefined()
+    expect(sessionRef.recallJourneys?.[journeyId]).toBeUndefined()
   })
 })
