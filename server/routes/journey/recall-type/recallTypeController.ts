@@ -6,8 +6,8 @@ import { Page } from '../../../services/auditService'
 import { RecallTypes } from '../../../@types/recallTypes'
 import { RecallTypeForm } from './recallTypeSchema'
 
-export default class CreateRecallTypeController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_TYPE_AUTOMATED
+export default class RecallTypeController implements Controller {
+  PAGE_NAME: Page = Page.TYPE_AUTOMATED
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, formResponses } = res.locals

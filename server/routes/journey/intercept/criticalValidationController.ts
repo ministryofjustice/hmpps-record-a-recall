@@ -6,8 +6,8 @@ import { Page } from '../../../services/auditService'
 import config from '../../../config'
 import GlobalRecallUrls from '../../globalRecallUrls'
 
-export default class CreateRecallCriticalValidationController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_CRITICAL_VALIDATION_INTERCEPT
+export default class CriticalValidationController implements Controller {
+  PAGE_NAME: Page = Page.CRITICAL_VALIDATION_INTERCEPT
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals

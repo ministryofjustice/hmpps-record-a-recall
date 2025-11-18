@@ -14,7 +14,7 @@ export default class CheckSentencesController implements Controller {
     private readonly courtCasesReleaseDatesService: CourtCasesReleaseDatesService,
   ) {}
 
-  public PAGE_NAME = Page.CREATE_RECALL_MANUAL_CHECK_SENTENCES
+  public PAGE_NAME = Page.MANUAL_CHECK_SENTENCES
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, user } = res.locals

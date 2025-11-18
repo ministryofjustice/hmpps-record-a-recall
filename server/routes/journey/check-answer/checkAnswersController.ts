@@ -9,8 +9,8 @@ import { RecallTypes } from '../../../@types/recallTypes'
 import GlobalRecallUrls from '../../globalRecallUrls'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
-export default class CreateRecallCheckAnswersController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_CHECK_ANSWERS
+export default class CheckAnswersController implements Controller {
+  PAGE_NAME: Page = Page.CHECK_ANSWERS
 
   constructor(private readonly recallService: RecallService) {}
 

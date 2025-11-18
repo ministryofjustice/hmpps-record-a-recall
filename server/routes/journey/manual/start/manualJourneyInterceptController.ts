@@ -5,7 +5,7 @@ import RecallJourneyUrls from '../../recallJourneyUrls'
 import { Page } from '../../../../services/auditService'
 
 export default class ManualJourneyInterceptController implements Controller {
-  public PAGE_NAME = Page.CREATE_RECALL_MANUAL_INTERCEPT
+  public PAGE_NAME = Page.MANUAL_INTERCEPT
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals

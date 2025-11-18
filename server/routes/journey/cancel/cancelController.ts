@@ -3,13 +3,13 @@ import { Controller } from '../../controller'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { buildReturnUrlFromKey } from '../recallJourneyUrls'
 import { Page } from '../../../services/auditService'
-import { ConfirmCancelForm } from '../confirm-cancel/confirmCancelSchema'
+import { ConfirmCancelForm } from './confirmCancelSchema'
 import GlobalRecallUrls from '../../globalRecallUrls'
 
-export default class CreateRecallCancelController implements Controller {
+export default class CancelController implements Controller {
   constructor() {}
 
-  PAGE_NAME: Page = Page.CREATE_RECALL_CANCEL
+  PAGE_NAME: Page = Page.CANCEL
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals

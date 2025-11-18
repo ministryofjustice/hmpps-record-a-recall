@@ -1,4 +1,4 @@
-import { deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
+import { deduplicateFieldErrors } from '../../../../middleware/validationMiddleware'
 import { selectCourtCasesSchema } from './selectCourtCasesSchema'
 
 describe('selectCourtCasesSchema', () => {

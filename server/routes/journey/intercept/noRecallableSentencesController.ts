@@ -5,8 +5,8 @@ import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import { datePartsToDate } from '../../../utils/utils'
 
-export default class CreateRecallNoRecallableSentencesController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_NO_RECALLABLE_SENTENCES_INTERCEPT
+export default class NoRecallableSentencesController implements Controller {
+  PAGE_NAME: Page = Page.NO_RECALLABLE_SENTENCES_INTERCEPT
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals

@@ -7,8 +7,8 @@ import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import AdjustmentsService from '../../../services/adjustmentsService'
 
-export default class CreateRecallConflictingAdjustmentsController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_CONFLICTING_ADJUSTMENTS_INTERCEPT
+export default class ConflictingAdjustmentsController implements Controller {
+  PAGE_NAME: Page = Page.CONFLICTING_ADJUSTMENTS_INTERCEPT
 
   constructor(
     private readonly calculateReleaseDatesService: CalculateReleaseDatesService,

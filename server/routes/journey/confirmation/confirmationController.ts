@@ -3,8 +3,8 @@ import { Controller } from '../../controller'
 import { Page } from '../../../services/auditService'
 import config from '../../../config'
 
-export default class CreateRecallConfirmationController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_CONFIRMATION
+export default class ConfirmationController implements Controller {
+  PAGE_NAME: Page = Page.CONFIRMATION
 
   GET = async (
     req: Request<{ nomsId: string; recallId: string; createOrEdit: 'edit' | 'create' }>,

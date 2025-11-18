@@ -9,8 +9,8 @@ import CalculateReleaseDatesService from '../../../services/calculateReleaseDate
 import { SentenceAndOffence } from '../../../@types/recallTypes'
 import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
-export default class CreateRecallReviewSentencesController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_REVIEW_SENTENCES_AUTOMATED
+export default class ReviewSentencesController implements Controller {
+  PAGE_NAME: Page = Page.REVIEW_SENTENCES_AUTOMATED
 
   constructor(
     private readonly recallService: RecallService,

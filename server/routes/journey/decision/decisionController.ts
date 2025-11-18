@@ -6,8 +6,8 @@ import CalculateReleaseDatesService from '../../../services/calculateReleaseDate
 import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
 import { Page } from '../../../services/auditService'
 
-export default class CreateRecallDecisionController implements Controller {
-  PAGE_NAME: Page = Page.CREATE_RECALL_DECISION
+export default class DecisionController implements Controller {
+  PAGE_NAME: Page = Page.DECISION
 
   constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
 
