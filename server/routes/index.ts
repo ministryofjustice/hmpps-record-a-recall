@@ -4,34 +4,34 @@ import { z } from 'zod'
 import type { Services } from '../services'
 import { Controller } from './controller'
 import { SchemaFactory, validate } from '../middleware/validationMiddleware'
-import CreateRecallRevocationDateController from './create/revocation-date/createRecallRevocationDateController'
+import RevocationDateController from './journey/revocation-date/revocationDateController'
 import ApiRoutes from './prisonerImageRoute'
-import StartCreateRecallJourneyController from './create/start/startCreateRecallJourneyController'
-import { revocationDateSchemaFactory } from './common/revocation-date/revocationDateSchemas'
+import StartCreateRecallJourneyController from './journey/start/startCreateRecallJourneyController'
+import { revocationDateSchemaFactory } from './journey/revocation-date/revocationDateSchemas'
 import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
-import CreateRecallReturnToCustodyDateController from './create/return-to-custody-date/createRecallReturnToCustodyDateController'
-import CreateRecallDecisionController from './create/decision/createRecallDecisionController'
+import ReturnToCustodyDateController from './journey/return-to-custody-date/returnToCustodyDateController'
+import DecisionController from './journey/decision/decisionController'
 import HomeController from './home/homeController'
-import ManualJourneyInterceptController from './create/manual/start/manualJourneyInterceptController'
-import SelectCasesController from './create/manual/select-cases/selectCasesController'
-import { selectCourtCasesSchema } from './common/select-court-cases/selectCourtCasesSchema'
-import CreateRecallReviewSentencesController from './create/automated/review-sentences/createRecallReviewSentencesController'
-import CreateRecallTypeController from './create/recall-type/createRecallTypeController'
-import { recallTypeSchema } from './common/recall-type/recallTypeSchema'
+import ManualJourneyInterceptController from './journey/manual/start/manualJourneyInterceptController'
+import SelectCasesController from './journey/manual/select-cases/selectCasesController'
+import { selectCourtCasesSchema } from './journey/manual/select-cases/selectCourtCasesSchema'
+import ReviewSentencesController from './journey/automated/reviewSentencesController'
+import RecallTypeController from './journey/recall-type/recallTypeController'
+import { recallTypeSchema } from './journey/recall-type/recallTypeSchema'
 import ConfirmDeleteRecallController from './delete/confirmDeleteRecallController'
 import { confirmDeleteRecallSchema } from './delete/confirmDeleteRecallSchema'
-import CreateRecallCheckAnswersController from './create/check-answer/createRecallCheckAnswersController'
-import CheckSentencesController from './create/manual/check-sentences/checkSentencesController'
-import CreateRecallCriticalValidationController from './create/intercept/createRecallCriticalValidationController'
-import CreateRecallConflictingAdjustmentsController from './create/intercept/createRecallConflictingAdjustmentsController'
-import CreateRecallNoRecallableSentencesController from './create/intercept/createRecallNoRecallableSentencesController'
-import CreateRecallConfirmationController from './create/confirmation/createRecallConfirmationController'
+import CheckAnswersController from './journey/check-answer/checkAnswersController'
+import CheckSentencesController from './journey/manual/check-sentences/checkSentencesController'
+import CriticalValidationController from './journey/intercept/criticalValidationController'
+import ConflictingAdjustmentsController from './journey/intercept/conflictingAdjustmentsController'
+import NoRecallableSentencesController from './journey/intercept/noRecallableSentencesController'
+import ConfirmationController from './journey/confirmation/confirmationController'
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
-import { returnToCustodyDateSchemaFactory } from './common/return-to-custody-date/returnToCustodyDateSchemas'
-import CreateRecallCancelController from './create/cancel/createRecallCancelController'
-import { confirmCancelSchema } from './common/confirm-cancel/confirmCancelSchema'
-import StartEditRecallJourneyController from './create/start/startEditRecallJourneyController'
+import { returnToCustodyDateSchemaFactory } from './journey/return-to-custody-date/returnToCustodyDateSchemas'
+import CancelController from './journey/cancel/cancelController'
+import { confirmCancelSchema } from './journey/cancel/confirmCancelSchema'
+import StartEditRecallJourneyController from './journey/start/startEditRecallJourneyController'
 
 export default function routes({
   prisonerService,
@@ -93,59 +93,59 @@ export default function routes({
   const journeyPath = '/person/:nomsId/recall/:createOrEdit{/:recallId}/:journeyId'
   route({
     path: `${journeyPath}/revocation-date`,
-    controller: new CreateRecallRevocationDateController(),
+    controller: new RevocationDateController(),
     validateToSchema: revocationDateSchemaFactory(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/return-to-custody-date`,
-    controller: new CreateRecallReturnToCustodyDateController(),
+    controller: new ReturnToCustodyDateController(),
     validateToSchema: returnToCustodyDateSchemaFactory(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/recall-decision`,
-    controller: new CreateRecallDecisionController(calculateReleaseDatesService),
+    controller: new DecisionController(calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/review-sentences`,
-    controller: new CreateRecallReviewSentencesController(recallService, calculateReleaseDatesService),
+    controller: new ReviewSentencesController(recallService, calculateReleaseDatesService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/recall-type`,
-    controller: new CreateRecallTypeController(),
+    controller: new RecallTypeController(),
     validateToSchema: recallTypeSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/check-answers`,
-    controller: new CreateRecallCheckAnswersController(recallService),
+    controller: new CheckAnswersController(recallService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   // create - intercepts
   route({
     path: `${journeyPath}/validation-intercept`,
-    controller: new CreateRecallCriticalValidationController(),
+    controller: new CriticalValidationController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/conflicting-adjustments`,
-    controller: new CreateRecallConflictingAdjustmentsController(calculateReleaseDatesService, adjustmentsService),
+    controller: new ConflictingAdjustmentsController(calculateReleaseDatesService, adjustmentsService),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: `${journeyPath}/no-recallable-sentences-found`,
-    controller: new CreateRecallNoRecallableSentencesController(),
+    controller: new NoRecallableSentencesController(),
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
@@ -182,14 +182,14 @@ export default function routes({
 
   route({
     path: `${journeyPath}/confirm-cancel`,
-    controller: new CreateRecallCancelController(),
+    controller: new CancelController(),
     validateToSchema: confirmCancelSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({
     path: '/person/:nomsId/recall/:createOrEdit/:recallId/confirmed',
-    controller: new CreateRecallConfirmationController(),
+    controller: new ConfirmationController(),
   })
 
   // delete recall
