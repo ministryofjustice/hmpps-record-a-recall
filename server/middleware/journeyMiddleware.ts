@@ -3,7 +3,7 @@ import { Request } from 'express'
 import logger from '../../logger'
 import { PersonJourneyParams } from '../@types/journeys'
 import asyncMiddleware from './asyncMiddleware'
-import RecallJourneyUrls from '../routes/create/createRecallUrls'
+import RecallJourneyUrls from '../routes/journey/recallJourneyUrls'
 
 export const ensureInCreateRecallJourney = asyncMiddleware(async (req: Request<PersonJourneyParams>, res, next) => {
   const { journeyId, nomsId, createOrEdit, recallId } = req.params
