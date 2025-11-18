@@ -10,7 +10,6 @@ import RecallService from '../../../../services/recallService'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import TestData from '../../../../testutils/testData'
 import AuditService from '../../../../services/auditService'
-import CreateRecallUrls from '../../createRecallUrls'
 import RecallJourneyUrls from '../../createRecallUrls'
 
 let app: Express
