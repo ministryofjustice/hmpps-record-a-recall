@@ -39,6 +39,8 @@ const aRecall: ExistingRecall = {
   recallTypeDescription: 'Standard Recall',
   revocationDate: '2021-02-01',
   courtCases: [],
+  recallTypeCode: 'LR',
+  sentenceIds: [],
 }
 
 const serviceDefinitions = TestData.serviceDefinitions()
@@ -66,7 +68,7 @@ describe('Tests for recall card component', () => {
   it.each([
     [
       { ...aRecall, source: 'DPS', canEdit: true, canDelete: true },
-      '#edit',
+      '/person/A1234BC/recall/edit/abc123/start',
       'Edit recall recorded on 03 Feb 2021',
       '/person/A1234BC/recall/abc123/delete',
       'Delete recall recorded on 03 Feb 2021',
@@ -80,7 +82,7 @@ describe('Tests for recall card component', () => {
     ],
     [
       { ...aRecall, source: 'DPS', canEdit: true, canDelete: false },
-      '#edit',
+      '/person/A1234BC/recall/edit/abc123/start',
       'Edit recall recorded on 03 Feb 2021',
       undefined,
       undefined,

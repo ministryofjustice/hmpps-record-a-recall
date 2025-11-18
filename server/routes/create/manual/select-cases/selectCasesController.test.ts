@@ -4,15 +4,15 @@ import request from 'supertest'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
 import * as cheerio from 'cheerio'
-import { CreateRecallJourney, DecoratedCourtCase } from '../../../../@types/journeys'
+import { RecallJourney, DecoratedCourtCase } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import RecallService from '../../../../services/recallService'
 import TestData from '../../../../testutils/testData'
-import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 import AuditService from '../../../../services/auditService'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
@@ -38,8 +38,8 @@ beforeEach(() => {
     services: { recallService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
   app.use((req, res, next) => {
@@ -107,7 +107,9 @@ describe('selectCasesController Tests', () => {
         const res = await request(app).get(baseUrl)
 
         const $ = cheerio.load(res.text)
-        expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null),
+        )
       })
 
       it('shows back link to previous case when not checking answers and index > 0', async () => {
@@ -121,7 +123,7 @@ describe('selectCasesController Tests', () => {
 
         const $ = cheerio.load(res.text)
         expect($('[data-qa="back-link"]').attr('href')).toBe(
-          CreateRecallUrls.manualSelectCases(nomsId, journeyId, courtCaseIndex - 1),
+          RecallJourneyUrls.manualSelectCases(nomsId, journeyId, 'create', null, courtCaseIndex - 1),
         )
       })
 
@@ -131,7 +133,9 @@ describe('selectCasesController Tests', () => {
         const res = await request(app).get(`${baseUrl}?index=${courtCaseIndex}`)
 
         const $ = cheerio.load(res.text)
-        expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualJourneyStart(nomsId, journeyId))
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', null),
+        )
       })
     })
 
@@ -178,7 +182,8 @@ describe('selectCasesController Tests', () => {
   })
 
   describe('POST', () => {
-    const selectCasesUrl = (caseIndex?: number) => CreateRecallUrls.manualSelectCases(nomsId, journeyId, caseIndex)
+    const selectCasesUrl = (caseIndex?: number) =>
+      RecallJourneyUrls.manualSelectCases(nomsId, journeyId, 'create', null, caseIndex)
 
     beforeEach(() => {
       existingJourney.courtCaseIdsSelectedForRecall = []

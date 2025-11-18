@@ -1,4 +1,4 @@
-import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { ApiRecallType, PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export interface ExistingRecall {
   recallUuid: string
@@ -8,10 +8,14 @@ export interface ExistingRecall {
   createdAtLocationName?: string
   canEdit: boolean
   canDelete: boolean
+  recallTypeCode: ApiRecallType
   recallTypeDescription: string
   revocationDate?: string
+  inPrisonOnRevocationDate?: boolean
   returnToCustodyDate?: string
+  calculationRequestId?: number
   ualAdjustmentTotalDays?: number
+  sentenceIds: string[]
   courtCases: ExistingRecallCourtCase[]
 }
 

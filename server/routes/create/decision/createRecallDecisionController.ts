@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
@@ -13,11 +13,11 @@ export default class CreateRecallDecisionController implements Controller {
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { username } = req.user
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined) {
-      return res.redirect(CreateRecallUrls.start(nomsId))
+      return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
@@ -29,19 +29,21 @@ export default class CreateRecallDecisionController implements Controller {
     )
 
     if (decision.decision === 'CRITICAL_ERRORS') {
-      return res.redirect(CreateRecallUrls.criticalValidationIntercept(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journeyId, createOrEdit, recallId))
     }
     if (decision.decision === 'CONFLICTING_ADJUSTMENTS') {
-      return res.redirect(CreateRecallUrls.conflictingAdjustmentsIntercept(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.conflictingAdjustmentsIntercept(nomsId, journeyId, createOrEdit, recallId))
     }
     if (decision.decision === 'NO_RECALLABLE_SENTENCES_FOUND') {
-      return res.redirect(CreateRecallUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId))
+      return res.redirect(
+        RecallJourneyUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId, createOrEdit, recallId),
+      )
     }
     if (decision.decision === 'VALIDATION') {
-      return res.redirect(CreateRecallUrls.manualJourneyStart(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId))
     }
     if (decision.decision === 'AUTOMATED') {
-      return res.redirect(CreateRecallUrls.reviewSentencesAutomatedJourney(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.reviewSentencesAutomatedJourney(nomsId, journeyId, createOrEdit, recallId))
     }
 
     throw Error(`Unknown decision type: ${decision.decision}`)

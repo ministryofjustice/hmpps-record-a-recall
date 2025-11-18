@@ -27,6 +27,16 @@ export default class RemandAndSentencingApiClient extends RestClient {
     ) as Promise<CreateRecallResponse>
   }
 
+  async editRecall(recallId: string, createRecall: CreateRecall, username: string): Promise<CreateRecallResponse> {
+    return this.put(
+      {
+        data: createRecall,
+        path: `/recall/${recallId}`,
+      },
+      asSystem(username),
+    ) as Promise<CreateRecallResponse>
+  }
+
   async getRecall(recallId: string, username: string): Promise<ApiRecall> {
     return this.get(
       {

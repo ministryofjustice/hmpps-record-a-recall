@@ -1,103 +1,172 @@
 import { ExtraQueryParams } from '../../@types/recallTypes'
 
-export default class CreateRecallUrls {
-  static start = (nomsId: string) => {
-    return `/person/${nomsId}/recall/create/start`
+export default class RecallJourneyUrls {
+  static start = (nomsId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
+    return `/person/${nomsId}/recall/${createOrEdit}${recallId ? `/${recallId}` : ''}/start`
   }
 
-  static revocationDate = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/revocation-date`
+  private static journeyUrl = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `/person/${nomsId}/recall/${createOrEdit}${recallId ? `/${recallId}` : ''}/${journeyId}`
   }
 
-  static returnToCustodyDate = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`
+  static revocationDate = (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/revocation-date`
   }
 
-  static decisionEndpoint = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/recall-decision`
+  static returnToCustodyDate = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/return-to-custody-date`
   }
 
-  static reviewSentencesAutomatedJourney = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/review-sentences`
+  static decisionEndpoint = (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/recall-decision`
   }
 
-  static recallType = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/recall-type`
+  static reviewSentencesAutomatedJourney = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/review-sentences`
   }
 
-  static checkAnswers = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/check-answers`
+  static recallType = (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/recall-type`
   }
 
-  static recallCreatedConfirmation = (nomsId: string, recallId: string) => {
-    return `/person/${nomsId}/recall/create/${recallId}/confirmed`
+  static checkAnswers = (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/check-answers`
   }
 
-  static confirmCancel = (nomsId: string, journeyId: string, returnKey: string, caseIndex?: number) => {
+  static recallConfirmation = (nomsId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
+    return `/person/${nomsId}/recall/${createOrEdit}/${recallId}/confirmed`
+  }
+
+  static confirmCancel = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+    returnKey: string,
+    caseIndex?: number,
+  ) => {
     const query = new URLSearchParams({ returnKey })
     if (caseIndex !== undefined) query.set('caseIndex', caseIndex.toString())
 
-    return `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?${query.toString()}`
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/confirm-cancel?${query.toString()}`
   }
 
-  static criticalValidationIntercept = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`
+  static criticalValidationIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/validation-intercept`
   }
 
-  static conflictingAdjustmentsIntercept = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`
+  static conflictingAdjustmentsIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/conflicting-adjustments`
   }
 
-  static noRecallableSentencesFoundIntercept = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`
+  static noRecallableSentencesFoundIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/no-recallable-sentences-found`
   }
 
   // Manual routes
-  static manualJourneyStart = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/manual/start`
+  static manualJourneyStart = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/start`
   }
 
-  static manualSelectCases = (nomsId: string, journeyId: string, caseIndex?: number) => {
-    return caseIndex !== undefined
-      ? `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/${caseIndex}`
-      : `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`
+  static manualSelectCases = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+    caseIndex?: number,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
   }
 
-  static manualCheckSentences = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`
-  }
-
-  static manualSelectRecallType = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`
-  }
-
-  static manualCheckAnswers = (nomsId: string, journeyId: string) => {
-    return `/person/${nomsId}/recall/create/${journeyId}/manual/check-answers`
+  static manualCheckSentences = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/check-sentences`
   }
 }
 
 export const urlMapByName = {
-  start: (nomsId: string) => CreateRecallUrls.start(nomsId),
-  revocationDate: (nomsId: string, journeyId: string) => CreateRecallUrls.revocationDate(nomsId, journeyId),
-  returnToCustodyDate: (nomsId: string, journeyId: string) => CreateRecallUrls.returnToCustodyDate(nomsId, journeyId),
-  decisionEndpoint: (nomsId: string, journeyId: string) => CreateRecallUrls.decisionEndpoint(nomsId, journeyId),
-  reviewSentencesAutomatedJourney: (nomsId: string, journeyId: string) =>
-    CreateRecallUrls.reviewSentencesAutomatedJourney(nomsId, journeyId),
-  recallType: (nomsId: string, journeyId: string) => CreateRecallUrls.recallType(nomsId, journeyId),
-  checkAnswers: (nomsId: string, journeyId: string) => CreateRecallUrls.checkAnswers(nomsId, journeyId),
-  criticalValidationIntercept: (nomsId: string, journeyId: string) =>
-    CreateRecallUrls.criticalValidationIntercept(nomsId, journeyId),
-  conflictingAdjustmentsIntercept: (nomsId: string, journeyId: string) =>
-    CreateRecallUrls.conflictingAdjustmentsIntercept(nomsId, journeyId),
-  noRecallableSentencesFoundIntercept: (nomsId: string, journeyId: string) =>
-    CreateRecallUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId),
-  manualJourneyStart: (nomsId: string, journeyId: string) => CreateRecallUrls.manualJourneyStart(nomsId, journeyId),
-  manualSelectCases: (nomsId: string, journeyId: string, extras?: ExtraQueryParams) =>
-    CreateRecallUrls.manualSelectCases(nomsId, journeyId, extras?.caseIndex),
-  manualCheckSentences: (nomsId: string, journeyId: string) => CreateRecallUrls.manualCheckSentences(nomsId, journeyId),
-  manualSelectRecallType: (nomsId: string, journeyId: string) =>
-    CreateRecallUrls.manualSelectRecallType(nomsId, journeyId),
-  manualCheckAnswers: (nomsId: string, journeyId: string) => CreateRecallUrls.manualCheckAnswers(nomsId, journeyId),
+  start: (nomsId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.start(nomsId, createOrEdit, recallId),
+  revocationDate: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId),
+  returnToCustodyDate: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId),
+  decisionEndpoint: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId),
+  reviewSentencesAutomatedJourney: (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => RecallJourneyUrls.reviewSentencesAutomatedJourney(nomsId, journeyId, createOrEdit, recallId),
+  recallType: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId),
+  checkAnswers: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId),
+  criticalValidationIntercept: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.criticalValidationIntercept(nomsId, journeyId, createOrEdit, recallId),
+  conflictingAdjustmentsIntercept: (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => RecallJourneyUrls.conflictingAdjustmentsIntercept(nomsId, journeyId, createOrEdit, recallId),
+  noRecallableSentencesFoundIntercept: (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => RecallJourneyUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId, createOrEdit, recallId),
+  manualJourneyStart: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId),
+  manualSelectCases: (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+    extras?: ExtraQueryParams,
+  ) => RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, extras?.caseIndex),
+  manualCheckSentences: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId),
 } as const
 
 export type ReturnKey = keyof typeof urlMapByName
@@ -106,10 +175,12 @@ export const buildReturnUrlFromKey = (
   key: string,
   nomsId: string,
   journeyId: string,
+  createOrEdit: 'edit' | 'create',
+  recallId: string,
   extraParams: ExtraQueryParams = {},
 ): string => {
   const createUrlFunction = urlMapByName[key as ReturnKey] ?? urlMapByName.start
-  return createUrlFunction.length === 3
-    ? createUrlFunction(nomsId, journeyId, extraParams)
-    : createUrlFunction(nomsId, journeyId)
+  return createUrlFunction.length === 5
+    ? createUrlFunction(nomsId, journeyId, createOrEdit, recallId, extraParams)
+    : createUrlFunction(nomsId, journeyId, createOrEdit, recallId)
 }

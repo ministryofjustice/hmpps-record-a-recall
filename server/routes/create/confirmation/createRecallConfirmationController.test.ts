@@ -24,7 +24,7 @@ afterEach(() => {
 })
 
 describe('GET', () => {
-  it('should render confirmation page', async () => {
+  it('should render confirmation create page', async () => {
     // Given
 
     // When
@@ -36,6 +36,7 @@ describe('GET', () => {
     const $ = cheerio.load(response.text)
 
     const mainContent = $('#main-content')
+    expect(mainContent.text()).not.toContain('Recall edited')
     expect(mainContent.text()).toContain('Recall recorded')
 
     const links = mainContent.find('a')
@@ -53,10 +54,19 @@ describe('GET', () => {
     )
   })
 
-  it('should return to start of journey if not found in session', async () => {
-    await request(app)
-      .get(`/person/${nomsId}/recall/create/${uuidv4()}/conflicting-adjustments`)
-      .expect(302)
-      .expect('Location', `/person/${nomsId}/recall/create/start`)
+  it('should render confirmation edit page', async () => {
+    // Given
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/edit/${recallId}/confirmed`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    const mainContent = $('#main-content')
+    expect(mainContent.text()).not.toContain('Recall recorded')
+    expect(mainContent.text()).toContain('Recall edited')
   })
 })

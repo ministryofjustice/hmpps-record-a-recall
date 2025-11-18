@@ -10,7 +10,7 @@ const AFTER_SENTENCE_DATE_ERROR = 'Revocation date must be after the earliest se
 
 export const revocationDateSchemaFactory = (recallService: RecallService) => async (req: Request) => {
   const { nomsId, journeyId } = req.params
-  const journey = req.session.createRecallJourneys[journeyId]
+  const journey = req.session.recallJourneys[journeyId]
   const { username } = req.user
   const latestRevocationDate = await recallService.getLatestRevocationDate(nomsId, username)
   return createSchema({

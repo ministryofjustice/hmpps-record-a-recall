@@ -13,7 +13,7 @@ import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
-import { CreateRecallJourney, DecoratedCourtCase } from '../@types/journeys'
+import { RecallJourney, DecoratedCourtCase } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString } from '../utils/utils'
 
 export default class RecallService {
@@ -128,7 +128,8 @@ export default class RecallService {
     isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
   ): ExistingRecall {
     const isLatestAndDPSRecall = isEditableAndDeletable(recall)
-    return {
+    const sentenceIds: string[] = []
+    const existingRecall = {
       recallUuid: recall.recallUuid,
       prisonerId: recall.prisonerId,
       source: recall.source,
@@ -136,9 +137,12 @@ export default class RecallService {
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: isLatestAndDPSRecall,
       canDelete: isLatestAndDPSRecall,
+      recallTypeCode: recall.recallType,
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,
+      inPrisonOnRevocationDate: recall.inPrisonOnRevocationDate,
       returnToCustodyDate: recall.returnToCustodyDate,
+      calculationRequestId: recall.calculationRequestId,
       ualAdjustmentTotalDays: recall.ual?.days,
       courtCases: (recall.courtCases ?? []).map(courtCase => ({
         courtCaseReference: courtCase.courtCaseReference,
@@ -146,24 +150,28 @@ export default class RecallService {
           ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
           : undefined,
         courtCaseDate: courtCase.sentencingAppearanceDate,
-        sentences: courtCase.sentences.map(sentence => ({
-          sentenceUuid: sentence.sentenceUuid,
-          offenceCode: sentence.offenceCode,
-          offenceDescription: offences.find(offence => offence.code === sentence.offenceCode)?.description,
-          offenceStartDate: sentence.offenceStartDate,
-          offenceEndDate: sentence.offenceEndDate,
-          sentenceDate: sentence.sentenceDate,
-          lineNumber: sentence.lineNumber,
-          countNumber: sentence.countNumber,
-          periodLengths: sentence.periodLengths,
-          sentenceServeType: sentence.sentenceServeType,
-          sentenceTypeDescription: sentence.sentenceTypeDescription,
-        })),
+        sentences: courtCase.sentences.map(sentence => {
+          sentenceIds.push(sentence.sentenceUuid)
+          return {
+            sentenceUuid: sentence.sentenceUuid,
+            offenceCode: sentence.offenceCode,
+            offenceDescription: offences.find(offence => offence.code === sentence.offenceCode)?.description,
+            offenceStartDate: sentence.offenceStartDate,
+            offenceEndDate: sentence.offenceEndDate,
+            sentenceDate: sentence.sentenceDate,
+            lineNumber: sentence.lineNumber,
+            countNumber: sentence.countNumber,
+            periodLengths: sentence.periodLengths,
+            sentenceServeType: sentence.sentenceServeType,
+            sentenceTypeDescription: sentence.sentenceTypeDescription,
+          }
+        }),
       })),
     }
+    return { ...existingRecall, sentenceIds }
   }
 
-  public getApiRecallFromJourney(journey: CreateRecallJourney, username: string, prison: string): CreateRecall {
+  public getApiRecallFromJourney(journey: RecallJourney, username: string, prison: string): CreateRecall {
     return {
       prisonerId: journey.nomsId,
       createdByUsername: username,
@@ -183,11 +191,15 @@ export default class RecallService {
     return this.remandAndSentencingApiClient.createRecall(recall, username)
   }
 
+  async editRecall(recallId: string, recall: CreateRecall, username: string): Promise<CreateRecallResponse> {
+    return this.remandAndSentencingApiClient.editRecall(recallId, recall, username)
+  }
+
   async deleteRecall(recallUuid: string, username: string) {
     return this.remandAndSentencingApiClient.deleteRecall(recallUuid, username)
   }
 
-  public getCasesSelectedForRecall(journey: CreateRecallJourney) {
+  public getCasesSelectedForRecall(journey: RecallJourney) {
     const { courtCaseIdsSelectedForRecall = [] } = journey
     const cases = journey.recallableCourtCases ?? []
 

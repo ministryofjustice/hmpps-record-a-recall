@@ -4,7 +4,7 @@ import request from 'supertest'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
 import * as cheerio from 'cheerio'
-import { CreateRecallJourney, DecoratedCourtCase } from '../../../../@types/journeys'
+import { RecallJourney, DecoratedCourtCase } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import RecallService from '../../../../services/recallService'
 import { RecallableCourtCase } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -12,10 +12,10 @@ import TestData from '../../../../testutils/testData'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import CourtCasesReleaseDatesService from '../../../../services/courtCasesReleaseDatesService'
 import AuditService from '../../../../services/auditService'
-import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
@@ -60,8 +60,8 @@ beforeEach(() => {
     services: { recallService, calculateReleaseDatesService, courtCasesReleaseDatesService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 
@@ -132,7 +132,9 @@ describe('checkSentencesController Tests', () => {
         const res = await request(app).get(baseUrl)
 
         const $ = cheerio.load(res.text)
-        expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null),
+        )
       })
 
       it('shows back link to previous case when not checking answers', async () => {
@@ -142,7 +144,7 @@ describe('checkSentencesController Tests', () => {
 
         const $ = cheerio.load(res.text)
         expect($('[data-qa="back-link"]').attr('href')).toBe(
-          CreateRecallUrls.manualSelectCases(nomsId, journeyId, courtCaseIndex - 1),
+          RecallJourneyUrls.manualSelectCases(nomsId, journeyId, 'create', null, courtCaseIndex - 1),
         )
       })
     })
@@ -163,7 +165,7 @@ describe('checkSentencesController Tests', () => {
 
       const res = await request(app).post(baseUrl).expect(302)
 
-      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-recall-type`)
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
       expect(existingJourney.sentenceIds).toEqual(['sent-uuid-1'])
     })
   })

@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import { deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
 import { returnToCustodyDateSchemaFactory } from './returnToCustodyDateSchemas'
-import { CreateRecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 
 describe('returnToCustodyDateSchema', () => {
   type Form = {
@@ -14,7 +14,7 @@ describe('returnToCustodyDateSchema', () => {
   const request = {
     params: { journeyId: 'abc' },
     session: {
-      createRecallJourneys: {
+      recallJourneys: {
         abc: {
           crdsValidationResult: { earliestSentenceDate: '2025-01-01' },
           revocationDate: {
@@ -22,7 +22,7 @@ describe('returnToCustodyDateSchema', () => {
             month: 6,
             year: 2025,
           },
-        } as CreateRecallJourney,
+        } as RecallJourney,
       },
     },
   } as unknown as Request

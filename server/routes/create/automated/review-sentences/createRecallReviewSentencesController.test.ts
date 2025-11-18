@@ -4,16 +4,16 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../../@types/journeys'
+import { RecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import RecallService from '../../../../services/recallService'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
 import TestData from '../../../../testutils/testData'
 import AuditService from '../../../../services/auditService'
-import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
@@ -47,8 +47,8 @@ beforeEach(() => {
     services: { calculateReleaseDatesService, recallService, auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 })
@@ -104,7 +104,9 @@ describe('GET', () => {
       const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
 
       const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.checkAnswers(nomsId, journeyId))
+      expect($('[data-qa="back-link"]').attr('href')).toBe(
+        RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null),
+      )
     })
 
     it('shows back link to return-to-custody when not checking answers', async () => {
@@ -114,7 +116,9 @@ describe('GET', () => {
       const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
 
       const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
+      expect($('[data-qa="back-link"]').attr('href')).toBe(
+        RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, 'create', null),
+      )
     })
   })
 })

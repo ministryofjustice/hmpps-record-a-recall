@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
@@ -17,12 +17,12 @@ export default class CreateRecallConflictingAdjustmentsController implements Con
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const { username } = req.user
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const journey = req.session.recallJourneys[journeyId]!
 
     if (!journey.revocationDate || journey.inCustodyAtRecall === undefined) {
-      return res.redirect(CreateRecallUrls.start(nomsId))
+      return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
@@ -34,21 +34,23 @@ export default class CreateRecallConflictingAdjustmentsController implements Con
     )
 
     if (decision.decision !== 'CONFLICTING_ADJUSTMENTS') {
-      return res.redirect(CreateRecallUrls.decisionEndpoint(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
     }
 
     const adjustments = await Promise.all(
       decision.conflictingAdjustments.map(id => this.adjustmentsService.getAdjustmentById(id, username)),
     )
 
-    const backLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
-    const cancelLink = CreateRecallUrls.confirmCancel(
+    const backLink = RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId)
+    const cancelLink = RecallJourneyUrls.confirmCancel(
       nomsId,
       journeyId,
-      CreateRecallUrls.conflictingAdjustmentsIntercept.name,
+      createOrEdit,
+      recallId,
+      RecallJourneyUrls.conflictingAdjustmentsIntercept.name,
     )
-    const revocationDateLink = CreateRecallUrls.revocationDate(nomsId, journeyId)
-    const returnToCustodyDateLink = CreateRecallUrls.returnToCustodyDate(nomsId, journeyId)
+    const revocationDateLink = RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId)
+    const returnToCustodyDateLink = RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId)
     return res.render('pages/recall/conflicting-adjustments-intercept', {
       prisoner,
       pageCaption: 'Record a recall',

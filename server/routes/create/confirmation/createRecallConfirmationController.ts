@@ -6,9 +6,12 @@ import config from '../../../config'
 export default class CreateRecallConfirmationController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_CONFIRMATION
 
-  GET = async (req: Request<{ nomsId: string; recallId: string }>, res: Response): Promise<void> => {
+  GET = async (
+    req: Request<{ nomsId: string; recallId: string; createOrEdit: 'edit' | 'create' }>,
+    res: Response,
+  ): Promise<void> => {
     const { prisoner } = res.locals
-    const { nomsId } = req.params
+    const { nomsId, createOrEdit } = req.params
     const urls = {
       adjustments: `${config.urls.adjustments}/${nomsId}`,
       crds: `${config.urls.crds}?prisonId=${nomsId}`,
@@ -18,6 +21,7 @@ export default class CreateRecallConfirmationController implements Controller {
     return res.render('pages/recall/recall-confirmation', {
       prisoner,
       pageCaption: 'Record a recall',
+      createOrEdit,
       urls,
     })
   }

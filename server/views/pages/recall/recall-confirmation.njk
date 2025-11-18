@@ -9,8 +9,13 @@
 
 {% block pageContent %}
 
+  {% if createOrEdit == 'create' %}
+   {% set messageTitle = 'Recall recorded' %}
+  {% else %}
+   {% set messageTitle = 'Recall edited' %}
+  {% endif %}
   {{ govukPanel({
-    titleText: 'Recall recorded',
+    titleText: messageTitle,
     attributes: {
       "data-qa": "success-message"
     }

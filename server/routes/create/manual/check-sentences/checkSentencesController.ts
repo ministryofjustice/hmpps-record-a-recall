@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
-import { CreateRecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
-import CreateRecallUrls from '../../createRecallUrls'
+import { RecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
+import RecallJourneyUrls from '../../createRecallUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import CalculateReleaseDatesService from '../../../../services/calculateReleaseDatesService'
@@ -18,10 +18,10 @@ export default class CheckSentencesController implements Controller {
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, user } = res.locals
-    const { nomsId, journeyId } = req.params
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
 
-    const journey = req.session.createRecallJourneys[journeyId]
+    const journey = req.session.recallJourneys[journeyId]
 
     const licenceExpiryDate = await this.calculateReleaseDatesService.getLedFromLatestCalc(nomsId)
     const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey)
@@ -30,33 +30,45 @@ export default class CheckSentencesController implements Controller {
       prisoner,
       casesSelectedForRecall,
       licenceExpiryDate,
-      cancelUrl: CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.manualCheckSentences.name),
+      cancelUrl: RecallJourneyUrls.confirmCancel(
+        nomsId,
+        journeyId,
+        createOrEdit,
+        recallId,
+        RecallJourneyUrls.manualCheckSentences.name,
+      ),
       serviceDefinitions,
-      backLink: this.getBackLink(journey, nomsId, journeyId),
+      backLink: this.getBackLink(journey, nomsId, journeyId, createOrEdit, recallId),
     })
   }
 
   POST = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]
     const { courtCaseIdsSelectedForRecall } = journey
     const casesSelectedForRecall = journey.recallableCourtCases.filter(c =>
       courtCaseIdsSelectedForRecall.includes(c.courtCaseUuid),
     )
     journey.sentenceIds = casesSelectedForRecall.flatMap(c => (c.recallableSentences ?? []).map(s => s.sentenceUuid))
     if (journey.isCheckingAnswers) {
-      return res.redirect(CreateRecallUrls.manualCheckAnswers(nomsId, journeyId))
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
 
-    return res.redirect(CreateRecallUrls.manualSelectRecallType(nomsId, journeyId))
+    return res.redirect(RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId))
   }
 
-  private getBackLink(journey: CreateRecallJourney, nomsId: string, journeyId: string) {
+  private getBackLink(
+    journey: RecallJourney,
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId?: string,
+  ) {
     const lastCaseIndex = journey.recallableCourtCases.length - 1
     if (journey.isCheckingAnswers) {
-      return CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)
+      return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
 
-    return CreateRecallUrls.manualSelectCases(nomsId, journeyId, lastCaseIndex)
+    return RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, lastCaseIndex)
   }
 }

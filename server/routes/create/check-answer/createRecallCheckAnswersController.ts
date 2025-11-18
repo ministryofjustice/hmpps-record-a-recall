@@ -1,11 +1,13 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import { calculateUal } from '../../../utils/utils'
 import { RecallTypes } from '../../../@types/recallTypes'
+import GlobalRecallUrls from '../../globalRecallUrls'
+import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class CreateRecallCheckAnswersController implements Controller {
   PAGE_NAME: Page = Page.CREATE_RECALL_CHECK_ANSWERS
@@ -15,8 +17,8 @@ export default class CreateRecallCheckAnswersController implements Controller {
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { username } = req.user
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
 
     if (
       !journey.revocationDate ||
@@ -24,13 +26,25 @@ export default class CreateRecallCheckAnswersController implements Controller {
       !journey.recallType ||
       !journey.sentenceIds?.length
     ) {
-      return res.redirect(CreateRecallUrls.start(nomsId))
+      return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
     journey.isCheckingAnswers = true
 
-    const backLink = CreateRecallUrls.recallType(nomsId, journeyId)
-    const cancelUrl = CreateRecallUrls.confirmCancel(nomsId, journeyId, CreateRecallUrls.checkAnswers.name)
+    let backLink: string
+    if (createOrEdit === 'create') {
+      backLink = RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId)
+    } else {
+      backLink = GlobalRecallUrls.home(nomsId)
+    }
+
+    const cancelUrl = RecallJourneyUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      createOrEdit,
+      recallId,
+      RecallJourneyUrls.checkAnswers.name,
+    )
 
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
     const recallTypeDescription = Object.values(RecallTypes).find(it => it.code === recall.recallTypeCode).description
@@ -46,17 +60,49 @@ export default class CreateRecallCheckAnswersController implements Controller {
       recallTypeDescription,
       nomsId,
       journeyId,
+      createOrEdit,
+      courtCasesCount:
+        !recall.calculationRequestId && journey.courtCaseIdsSelectedForRecall?.length
+          ? journey.courtCaseIdsSelectedForRecall?.length
+          : 0,
+      recallBeingEditted: journey.recallBeingEditted,
+      urls: this.buildUrls(nomsId, journeyId, createOrEdit, recallId, recall),
     })
+  }
+
+  private buildUrls(
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+    recall: CreateRecall,
+  ) {
+    return {
+      revocationDate: RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId),
+      returnToCustodyDate: RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId),
+      reviewSentences: recall.calculationRequestId
+        ? RecallJourneyUrls.reviewSentencesAutomatedJourney(nomsId, journeyId, createOrEdit, recallId)
+        : RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId),
+      manualSelectCases: recall.calculationRequestId
+        ? null
+        : RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId),
+      recallType: RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId),
+    }
   }
 
   POST = async (req: Request<PersonJourneyParams, unknown, unknown>, res: Response): Promise<void> => {
     const { username } = req.user
     const { prisoner } = res.locals
-    const { nomsId, journeyId } = req.params
-    const journey = req.session.createRecallJourneys[journeyId]!
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
-    const response = await this.recallService.createRecall(recall, username)
+    let responseId = recallId
+    if (createOrEdit === 'create') {
+      responseId = (await this.recallService.createRecall(recall, username)).recallUuid
+    } else {
+      await this.recallService.editRecall(recallId, recall, username)
+    }
 
-    return res.redirect(CreateRecallUrls.recallCreatedConfirmation(nomsId, response.recallUuid))
+    return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, responseId))
   }
 }

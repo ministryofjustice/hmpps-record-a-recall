@@ -103,6 +103,10 @@ describe('Recall service', () => {
 
       expect(result).toStrictEqual([
         {
+          calculationRequestId: 1,
+          inPrisonOnRevocationDate: false,
+          recallTypeCode: 'FTR_28',
+          sentenceIds: [],
           recallUuid: withPrisonName.recallUuid,
           prisonerId: 'A1234BC',
           revocationDate: undefined,
@@ -117,6 +121,10 @@ describe('Recall service', () => {
           canEdit: true,
         },
         {
+          calculationRequestId: 1,
+          inPrisonOnRevocationDate: false,
+          recallTypeCode: 'FTR_28',
+          sentenceIds: [],
           recallUuid: withNoPrisonName.recallUuid,
           prisonerId: 'A1234BC',
           revocationDate: undefined,
@@ -161,6 +169,10 @@ describe('Recall service', () => {
 
       expect(result).toStrictEqual([
         {
+          calculationRequestId: 1,
+          inPrisonOnRevocationDate: false,
+          recallTypeCode: 'FTR_28',
+          sentenceIds: [],
           recallUuid: recall.recallUuid,
           prisonerId: 'A1234BC',
           revocationDate: '2025-11-12',
@@ -242,11 +254,13 @@ describe('Recall service', () => {
         sentenceTypeDescription: undefined,
       }
       const recall = TestData.apiRecall({
+        calculationRequestId: 1,
         prisonerId: 'A1234BC',
         returnToCustodyDate: '2025-07-04',
         revocationDate: '2025-11-12',
         createdAt: '2021-03-19T13:40:56Z',
         source: 'DPS',
+        inPrisonOnRevocationDate: false,
         courtCases: [
           {
             courtCode: undefined,
@@ -262,15 +276,19 @@ describe('Recall service', () => {
 
       expect(result).toStrictEqual([
         {
+          calculationRequestId: 1,
           recallUuid: recall.recallUuid,
           prisonerId: 'A1234BC',
           revocationDate: '2025-11-12',
           returnToCustodyDate: '2025-07-04',
+          inPrisonOnRevocationDate: false,
           recallTypeDescription: '28-day fixed-term',
           source: 'DPS',
+          recallTypeCode: 'FTR_28',
           ualAdjustmentTotalDays: undefined,
           createdAtLocationName: undefined,
           createdAtTimestamp: '2021-03-19T13:40:56Z',
+          sentenceIds: [sentenceWithMaximum.sentenceUuid, sentenceWithMinimum.sentenceUuid],
           courtCases: [
             {
               courtName: undefined,
@@ -403,6 +421,10 @@ describe('Recall service', () => {
       const result = await service.getRecall(withPrisonName.recallUuid, 'user1')
 
       expect(result).toStrictEqual({
+        calculationRequestId: 1,
+        inPrisonOnRevocationDate: false,
+        recallTypeCode: 'FTR_28',
+        sentenceIds: [],
         recallUuid: withPrisonName.recallUuid,
         prisonerId: 'A1234BC',
         revocationDate: undefined,
@@ -430,6 +452,10 @@ describe('Recall service', () => {
       const result = await service.getRecall(withNoPrisonName.recallUuid, 'user1')
 
       expect(result).toStrictEqual({
+        calculationRequestId: 1,
+        inPrisonOnRevocationDate: false,
+        recallTypeCode: 'FTR_28',
+        sentenceIds: [],
         recallUuid: withNoPrisonName.recallUuid,
         prisonerId: 'A1234BC',
         revocationDate: undefined,
@@ -473,6 +499,10 @@ describe('Recall service', () => {
       const result = await service.getRecall(recall.recallUuid, 'user1')
 
       expect(result).toStrictEqual({
+        calculationRequestId: 1,
+        inPrisonOnRevocationDate: false,
+        recallTypeCode: 'FTR_28',
+        sentenceIds: [],
         recallUuid: recall.recallUuid,
         prisonerId: 'A1234BC',
         revocationDate: '2025-11-12',
@@ -572,6 +602,10 @@ describe('Recall service', () => {
       const result = await service.getRecall(recall.recallUuid, 'user1')
 
       expect(result).toStrictEqual({
+        calculationRequestId: 1,
+        inPrisonOnRevocationDate: false,
+        recallTypeCode: 'FTR_28',
+        sentenceIds: [sentenceWithMaximum.sentenceUuid, sentenceWithMinimum.sentenceUuid],
         recallUuid: recall.recallUuid,
         prisonerId: 'A1234BC',
         revocationDate: '2025-11-12',

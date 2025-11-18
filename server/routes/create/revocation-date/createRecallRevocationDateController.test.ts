@@ -4,17 +4,18 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
-import CreateRecallUrls from '../createRecallUrls'
+import RecallJourneyUrls from '../createRecallUrls'
 import GlobalRecallUrls from '../../globalRecallUrls'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
+const recallId = 'd9561b78-6df3-4ec2-9a47-41ffbb407364'
 
 jest.mock('../../../services/auditService')
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
@@ -38,8 +39,8 @@ beforeEach(() => {
     services: { auditService, recallService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      receivedSession.createRecallJourneys = {}
-      receivedSession.createRecallJourneys[journeyId] = existingJourney
+      receivedSession.recallJourneys = {}
+      receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
 })
@@ -49,8 +50,6 @@ afterEach(() => {
 })
 
 describe('GET', () => {
-  const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/revocation-date`
-
   it('should render revocation date page with correct navigation', async () => {
     // Given
 
@@ -114,16 +113,28 @@ describe('GET', () => {
 
   describe('backlink tests', () => {
     it.each([
-      [false, undefined, GlobalRecallUrls.home(nomsId)],
-      [true, 991, CreateRecallUrls.checkAnswers(nomsId, journeyId)],
-      [true, undefined, CreateRecallUrls.manualCheckAnswers(nomsId, journeyId)],
+      [false, undefined, 'create', GlobalRecallUrls.home(nomsId)],
+      [true, 991, 'create', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null)],
+      [true, undefined, 'create', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null)],
+      [false, undefined, 'edit', GlobalRecallUrls.home(nomsId)],
+      [true, 991, 'edit', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', recallId)],
+      [true, undefined, 'edit', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', recallId)],
     ])(
-      'shows correct back link when check-your-answers is %s and calculationRequestId is %s',
-      async (isCheckingAnswers: boolean, calculationRequestId: number, expectedNextUrl: string) => {
+      'shows correct back link when check-your-answers is %s and calculationRequestId is %s and %s journey',
+      async (
+        isCheckingAnswers: boolean,
+        calculationRequestId: number,
+        editOrCreate: string,
+        expectedNextUrl: string,
+      ) => {
+        const url =
+          editOrCreate === 'create'
+            ? `/person/${nomsId}/recall/create/${journeyId}/revocation-date`
+            : `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/revocation-date`
         existingJourney.isCheckingAnswers = isCheckingAnswers
         existingJourney.calculationRequestId = calculationRequestId
 
-        const res = await request(app).get(baseUrl)
+        const res = await request(app).get(url)
 
         const $ = cheerio.load(res.text)
         expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
@@ -136,7 +147,7 @@ describe('POST', () => {
   it.each([
     [false, undefined, `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`],
     [true, 991, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
-    [true, undefined, `/person/${nomsId}/recall/create/${journeyId}/manual/check-answers`],
+    [true, undefined, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
   ])(
     'should set the revocation date on the session and pass to return to custody if valid and pass to next page (%s, %s, %s)',
     async (isCheckingAnswers: boolean, calculationRequestId: number, expectedNextUrl: string) => {

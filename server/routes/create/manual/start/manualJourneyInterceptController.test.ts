@@ -3,13 +3,13 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateRecallJourney } from '../../../../@types/journeys'
+import { RecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import AuditService from '../../../../services/auditService'
-import CreateRecallUrls from '../../createRecallUrls'
+import RecallJourneyUrls from '../../createRecallUrls'
 
 let app: Express
-let existingJourney: CreateRecallJourney
+let existingJourney: RecallJourney
 const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
@@ -35,7 +35,7 @@ beforeEach(() => {
     userSupplier: () => user,
     sessionReceiver: (session: Partial<SessionData>) => {
       // eslint-disable-next-line no-param-reassign
-      session.createRecallJourneys = { [journeyId]: existingJourney }
+      session.recallJourneys = { [journeyId]: existingJourney }
     },
   })
 })
@@ -73,7 +73,9 @@ describe('GET /manual/start', () => {
       const res = await request(app).get(baseUrl)
 
       const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(CreateRecallUrls.returnToCustodyDate(nomsId, journeyId))
+      expect($('[data-qa="back-link"]').attr('href')).toBe(
+        RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, 'create', null),
+      )
     })
   })
 })
