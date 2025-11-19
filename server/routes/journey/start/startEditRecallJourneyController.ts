@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
-import { RecallJourney } from '../../../@types/journeys'
+import { DecoratedCourtCase, RecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
@@ -28,11 +28,12 @@ export default class StartEditRecallJourneyController implements Controller {
 
     let courtCaseIdsSelectedForRecall: string[] = []
     let courtCaseIdsExcludedFromRecall: string[] = []
+    let recallableCourtCases: DecoratedCourtCase[] = []
 
     if (isManualJourney) {
       courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseReference)
 
-      const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
+      recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
       courtCaseIdsExcludedFromRecall = recallableCourtCases
         .filter(it => !courtCaseIdsSelectedForRecall.includes(it.courtCaseUuid))
@@ -55,6 +56,7 @@ export default class StartEditRecallJourneyController implements Controller {
       recallBeingEditted: recall,
       courtCaseIdsSelectedForRecall,
       courtCaseIdsExcludedFromRecall,
+      recallableCourtCases,
     }
     if (!req.session.recallJourneys) {
       req.session.recallJourneys = {}
