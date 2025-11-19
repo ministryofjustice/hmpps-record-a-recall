@@ -1381,6 +1381,7 @@ export interface components {
     RecordARecallRequest: {
       /** Format: date */
       revocationDate: string
+      recallId?: string
     }
     AutomatedCalculationData: {
       /** Format: int64 */

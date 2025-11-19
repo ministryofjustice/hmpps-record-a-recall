@@ -24,6 +24,7 @@ export default class DecisionController implements Controller {
       nomsId,
       {
         revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+        recallId,
       },
       username,
     )

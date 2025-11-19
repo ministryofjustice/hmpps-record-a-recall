@@ -29,6 +29,7 @@ export default class ConflictingAdjustmentsController implements Controller {
       nomsId,
       {
         revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+        recallId,
       },
       username,
     )
