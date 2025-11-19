@@ -23,6 +23,22 @@ export default class StartEditRecallJourneyController implements Controller {
     const { nomsId, recallId } = req.params
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const recall = await this.recallService.getRecall(recallId, username)
+
+    const isManualJourney = !recall.calculationRequestId
+
+    let courtCaseIdsSelectedForRecall: string[] = []
+    let courtCaseIdsExcludedFromRecall: string[] = []
+
+    if (isManualJourney) {
+      courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseReference)
+
+      const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
+
+      courtCaseIdsExcludedFromRecall = recallableCourtCases
+        .filter(it => !courtCaseIdsSelectedForRecall.includes(it.courtCaseUuid))
+        .map(it => it.courtCaseUuid)
+    }
+
     const journey: RecallJourney = {
       id: uuidv4(),
       lastTouched: new Date().toISOString(),
@@ -37,6 +53,8 @@ export default class StartEditRecallJourneyController implements Controller {
       calculationRequestId: recall.calculationRequestId,
       sentenceIds: recall.sentenceIds,
       recallBeingEditted: recall,
+      courtCaseIdsSelectedForRecall,
+      courtCaseIdsExcludedFromRecall,
     }
     if (!req.session.recallJourneys) {
       req.session.recallJourneys = {}
