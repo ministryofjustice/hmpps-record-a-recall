@@ -21,7 +21,17 @@ export default class CalculateReleaseDatesService {
   }
 
   async getLedFromLatestCalc(nomsId: string): Promise<string | undefined> {
-    const latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
+    let latestCalc
+
+    try {
+      latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
+    } catch (error) {
+      if (error?.status === 404) {
+        return undefined
+      }
+      throw error
+    }
+
     if (!latestCalc?.dates) return undefined
 
     const sled = latestCalc.dates.find(it => it.type === 'SLED')?.date
