@@ -43,7 +43,7 @@ describe('Calculate release dates service', () => {
     })
 
     it('returns undefined when API returns 404', async () => {
-      const error = { status: 404 }
+      const error = { responseStatus: 404 }
       calculateReleaseDatesApiClient.getLatestCalculation.mockRejectedValue(error)
 
       const result = await service.getLedFromLatestCalc('A1234BC')
