@@ -78,6 +78,11 @@ export default class SelectCasesController implements Controller {
       journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     }
 
+    // if editing from Check Answers, return immediately
+    if (journey.isCheckingAnswers) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+
     // Move to next case if available
     if (hasNextCase) {
       return res.redirect(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/${nextCaseIndex}`)
