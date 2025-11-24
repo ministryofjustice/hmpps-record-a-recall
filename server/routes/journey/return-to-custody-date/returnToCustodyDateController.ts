@@ -37,20 +37,19 @@ export default class ReturnToCustodyDateController implements Controller {
   }
 
   POST = async (req: Request<PersonJourneyParams, unknown, ReturnToCustodyDateForm>, res: Response): Promise<void> => {
-  const { nomsId, journeyId, createOrEdit, recallId } = req.params
-  const journey = req.session.recallJourneys[journeyId]!
-  const { day, month, year, inCustodyAtRecall } = req.body
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+    const { day, month, year, inCustodyAtRecall } = req.body
 
-  journey.inCustodyAtRecall = inCustodyAtRecall
-  journey.returnToCustodyDate = { day, month, year }
+    journey.inCustodyAtRecall = inCustodyAtRecall
+    journey.returnToCustodyDate = { day, month, year }
 
-  if (journey.isCheckingAnswers) {
-    return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    if (journey.isCheckingAnswers) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+
+    return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
   }
-
-  return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
-}
-
 
   private getBackLink(
     journey: RecallJourney,
