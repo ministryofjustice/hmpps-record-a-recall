@@ -27,6 +27,7 @@ export default class ReviewSentencesController implements Controller {
       nomsId,
       {
         revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+        recallId,
       },
       username,
     )
@@ -68,6 +69,7 @@ export default class ReviewSentencesController implements Controller {
       nomsId,
       {
         revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+        recallId,
       },
       username,
     )
