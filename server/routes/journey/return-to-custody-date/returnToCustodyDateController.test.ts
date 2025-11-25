@@ -42,6 +42,14 @@ beforeEach(() => {
       receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
+
+  app.use((req, res, next) => {
+    res.locals.prisoner = {
+      firstName: 'John',
+      lastName: 'Doe',
+    } as any
+    next()
+  })
 })
 
 afterEach(() => {
@@ -68,6 +76,7 @@ describe('GET', () => {
       `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=returnToCustodyDate`,
     )
 
+    expect($('#prisonerName').val()).toBe('John Doe')
     expect($('#day').val()).toBeUndefined()
     expect($('#month').val()).toBeUndefined()
     expect($('#year').val()).toBeUndefined()
@@ -87,6 +96,7 @@ describe('GET', () => {
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
 
+    expect($('#prisonerName').val()).toBe('John Doe')
     expect($('#day').val()).toStrictEqual('1')
     expect($('#month').val()).toStrictEqual('2')
     expect($('#year').val()).toStrictEqual('2012')
@@ -108,6 +118,7 @@ describe('GET', () => {
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
 
+    expect($('#prisonerName').val()).toBe('John Doe')
     expect($('#day').val()).toStrictEqual('15')
     expect($('#month').val()).toStrictEqual('06')
     expect($('#year').val()).toStrictEqual('1982')

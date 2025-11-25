@@ -4,7 +4,7 @@
 {% from "partials/components/validatedDateInput/macro.njk" import validatedDateInput %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
-{% set title = "Was this person in prison when the recall was made?" %}
+{% set title = "Was this " + prisonerName + " in prison when the recall was made?" %}
 {% set pageTitle = applicationName + " - " + title %}
 {% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
 

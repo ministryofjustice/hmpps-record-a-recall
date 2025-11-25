@@ -4,6 +4,7 @@ import { RecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { ReturnToCustodyDateForm } from './returnToCustodyDateSchemas'
 import { Page } from '../../../services/auditService'
+import { capitaliseFirstLetter } from '../../../utils/utils'
 
 export default class ReturnToCustodyDateController implements Controller {
   PAGE_NAME: Page = Page.ENTER_RETURN_TO_CUSTODY_DATE
@@ -24,8 +25,11 @@ export default class ReturnToCustodyDateController implements Controller {
     const month = formResponses?.month ?? journey.returnToCustodyDate?.month
     const year = formResponses?.year ?? journey.returnToCustodyDate?.year
     const inCustodyAtRecall = formResponses?.inCustodyAtRecall ?? journey.inCustodyAtRecall
+    const prisonerName = `${capitaliseFirstLetter(prisoner.firstName)} ${capitaliseFirstLetter(prisoner.lastName)}`;
+
     return res.render('pages/recall/return-to-custody-date', {
       prisoner,
+      prisonerName,
       pageCaption: 'Record a recall',
       day,
       month,
