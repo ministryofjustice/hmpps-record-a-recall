@@ -1,72 +1,105 @@
-{% extends "./prisonerBannerBackLayout.njk" %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 
-{% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "partials/components/validatedDateInput/macro.njk" import validatedDateInput %}
-{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% macro validatedDateInput(opts) %}
+  {% set id = opts.id %}
+  {% set name = opts.name %}
+  {% set title = opts.title %}
+  {% set hintHeading = opts.hintHeading %}
+  {% set hintText = opts.hintText %}
 
-{% set title = "Was this person in prison when the recall was made?" %}
-{% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
+  {% set day = opts.day %}
+  {% set month = opts.month %}
+  {% set year = opts.year %}
 
-{% block pageContent %}
+  {# --- Handle validation errors --- #}
+  {% if opts.validationErrors %}
+    {% set dayError = opts.validationErrors['day'] if opts.validationErrors['day'] else '' %}
+    {% set monthError = opts.validationErrors['month'] if opts.validationErrors['month'] else '' %}
+    {% set yearError = opts.validationErrors['year'] if opts.validationErrors['year'] else '' %}
+  {% else %}
+    {% set dayError = '' %}
+    {% set monthError = '' %}
+    {% set yearError = '' %}
+  {% endif %}
 
-    <form method="post" action="">
-        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  {# --- Join errors helper --- #}
+  {% macro joinErrors(error) %}
+    {% if error and error|length > 0 %}
+      {{ error }}
+    {% endif %}
+  {% endmacro %}
 
-        {% set rtcDateHtml %}
-                 {{ validatedDateInput({
-                    id: "returnToCustodyDate",
-                    preHintText: "Date they were arrested",
-                    hintText: "For example, 31 3 2024",
-                    validationErrors: validationErrors,
-                    day: day,
-                    month: month,
-                    year: year
-                }) }}
-        {% endset %}
+  {# --- Prepare fieldset object --- #}
+  {% set fieldsetObj = undefined %}
+  {% if title %}
+    {% if title.text is defined %}
+      {% set fieldsetObj = {
+          legend: {
+            text: title.text,
+            isPageHeading: title.isPageHeading,
+            classes: title.classes
+          }
+        } %}
+    {% else %}
+      {% set fieldsetObj = {
+          legend: {
+            text: title,
+            isPageHeading: false
+          }
+        } %}
+    {% endif %}
+  {% endif %}
 
-        {{ govukRadios({
-            idPrefix: "inCustodyAtRecall",
-            name: "inCustodyAtRecall",
-            fieldset: {
-                legend: {
-                    text: title,
-                    isPageHeading: true,
-                    classes: "govuk-fieldset__legend--l"
-                }
-            },
-            errorMessage: inPrisonError,
-            items: [
-                {
-                    value: "true",
-                    id: "inCustodyAtRecall-true",
-                    text: "Yes",
-                    checked: inCustodyAtRecall === true or inCustodyAtRecall === "true"
-                },
-                {
-                    value: "false",
-                    id: "inCustodyAtRecall-false",
-                    text: "No",
-                    checked: inCustodyAtRecall === false or inCustodyAtRecall === "false",
-                    conditional: {
-                        html: rtcDateHtml
-                    }
-                }
-            ]
-        }) }}
+  {# --- Prepare hint object --- #}
+  {% set hintObj = undefined %}
+  {% if hintText %}
+    {% set hintHtml = '' %}
+    {% if hintHeading %}
+      {% set hintHtml = '<strong>' + hintHeading + '</strong><br>' %}
+    {% endif %}
+    {% set hintHtml = hintHtml + hintText %}
+    {% set hintObj = { html: hintHtml } %}
+  {% endif %}
 
-        <div class="govuk-button-group">
-            {{ govukButton({
-                text: "Continue",
-                preventDoubleClick: true,
-                attributes: { id: "submit" }
-            }) }}
-            {{ govukButton({
-                text: "Cancel",
-                classes: "govuk-button--secondary",
-                href: cancelUrl,
-                attributes: { id: "cancel-button" }
-            }) }}
-        </div>
-    </form>
-{% endblock %}
+  {# --- Prepare error message object --- #}
+  {% set errorObj = undefined %}
+  {% if dayError or monthError or yearError %}
+    {% set errorObj = {
+        html: '<span id="day-error" class="govuk-error-message">' + joinErrors(dayError) + '</span>' +
+              '<span id="month-error" class="govuk-error-message">' + joinErrors(monthError) + '</span>' +
+              '<span id="year-error" class="govuk-error-message">' + joinErrors(yearError) + '</span>'
+      } %}
+  {% endif %}
+
+  {# --- Render the GOV.UK date input component --- #}
+  {{ govukDateInput({
+    id: id,
+    name: name or id,
+    fieldset: fieldsetObj,
+    hint: hintObj,
+    errorMessage: errorObj,
+    items: [
+      {
+        id: 'day',
+        label: 'Day',
+        name: 'day',
+        classes: 'govuk-input--width-2' + (' govuk-input--error' if dayError else ''),
+        value: day
+      },
+      {
+        id: 'month',
+        label: 'Month',
+        name: 'month',
+        classes: 'govuk-input--width-2' + (' govuk-input--error' if monthError else ''),
+        value: month
+      },
+      {
+        id: 'year',
+        label: 'Year',
+        name: 'year',
+        classes: 'govuk-input--width-4' + (' govuk-input--error' if yearError else ''),
+        value: year
+      }
+    ]
+  }) }}
+{% endmacro %}

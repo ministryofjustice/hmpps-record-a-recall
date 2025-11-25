@@ -4,8 +4,8 @@
   {% set id = opts.id %}
   {% set name = opts.name %}
   {% set title = opts.title %}
+  {% set hintHeading = opts.hintHeading %}
   {% set hintText = opts.hintText %}
-  {% set preHintText = opts.preHintText %}
 
   {% set day = opts.day %}
   {% set month = opts.month %}
@@ -14,56 +14,78 @@
   {% if opts.validationErrors %}
     {% set dayError = opts.validationErrors['day'] if opts.validationErrors['day'] else '' %}
     {% set monthError = opts.validationErrors['month'] if opts.validationErrors['month'] else '' %}
-    {% set yearError = opts.validationErrors['year']  if opts.validationErrors['year'] else '' %}
+    {% set yearError = opts.validationErrors['year'] if opts.validationErrors['year'] else '' %}
+  {% else %}
+    {% set dayError = '' %}
+    {% set monthError = '' %}
+    {% set yearError = '' %}
   {% endif %}
 
   {% macro joinErrors(errors) %}
-    {% if errors %}{% for error in errors %}{% if error and error.length > 0 %}{{ error }}{% endif %}{% endfor %}{% endif %}
+    {% if errors %}
+      {% for error in errors %}
+        {% if error and error.length > 0 %}
+          {{ error }}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
   {% endmacro %}
+
+  {% set fieldsetObj = undefined %}
+  {% if title %}
+    {% set fieldsetObj = {
+        legend: {
+          text: title.text,
+          isPageHeading: title.isPageHeading,
+          classes: title.classes
+        }
+      } %}
+  {% endif %}
+
+  {% set hintHtml = undefined %}
+  {% if hintText %}
+    {% set hintHtml = '<div class="govuk-hint">' %}
+    {% if hintHeading %}
+      {% set hintHtml = hintHtml + '<strong>' + hintHeading + '</strong><br>' %}
+    {% endif %}
+    {% set hintHtml = hintHtml + hintText + '</div>' %}
+  {% endif %}
+
+  {% set errorObj = undefined %}
+  {% if dayError or monthError or yearError %}
+    {% set errorObj = {
+        html: '<span id="day-error" class="govuk-error-message">' + joinErrors(dayError) + '</span>' +
+              '<span id="month-error" class="govuk-error-message">' + joinErrors(monthError) + '</span>' +
+              '<span id="year-error" class="govuk-error-message">' + joinErrors(yearError) + '</span>'
+      } %}
+  {% endif %}
 
   {{ govukDateInput({
     id: id,
     name: name or id,
-    fieldset: {
-      legend: {
-        text: title.text,
-        isPageHeading: title.isPageHeading,
-        classes: title.classes
-      }
-    } if title else undefined,
-
-    hint: {
-      html:
-        (preHintText ? '<p class="govuk-body govuk-!-margin-bottom-1">' + preHintText + '</p>' : '') +
-        (hintText ? '<span class="govuk-hint">' + hintText + '</span>' : '')
-    } if preHintText or hintText else undefined,
-
-    errorMessage: {
-      html: '<span id="day-error" class="govuk-error-message">' + joinErrors(dayError) + '</span>
-                            <span id="month-error" class="govuk-error-message">' + joinErrors(monthError) + '</span>
-                            <span id="year-error" class="govuk-error-message">' + joinErrors(yearError) + '</span>'
-    } if dayError or monthError or yearError,
-
+    fieldset: fieldsetObj,
+    hint: hintHtml,
+    errorMessage: errorObj,
     items: [
       {
         id: 'day',
         label: 'Day',
         name: 'day',
-        classes: 'govuk-input--width-2' + (' govuk-input--error' if dayError),
+        classes: 'govuk-input--width-2' + (' govuk-input--error' if dayError else ''),
         value: day
       },
       {
         id: 'month',
         label: 'Month',
         name: 'month',
-        classes: 'govuk-input--width-2' + (' govuk-input--error' if monthError),
+        classes: 'govuk-input--width-2' + (' govuk-input--error' if monthError else ''),
         value: month
       },
       {
         id: 'year',
         label: 'Year',
         name: 'year',
-        classes: 'govuk-input--width-4' + (' govuk-input--error' if yearError),
+        classes: 'govuk-input--width-4' + (' govuk-input--error' if yearError else ''),
         value: year
       }
     ]
