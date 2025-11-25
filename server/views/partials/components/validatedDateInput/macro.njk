@@ -4,7 +4,7 @@
   {% set id = opts.id %}
   {% set name = opts.name %}
   {% set title = opts.title %}
-  {% set hintText = opts.hintText %}
+  {% set html = opts.html %}
 
   {% set day = opts.day %}
   {% set month = opts.month %}
@@ -20,6 +20,19 @@
     {% if errors %}{% for error in errors %}{% if error and error.length > 0 %}{{ error }}{% endif %}{% endfor %}{% endif %}
   {% endmacro %}
 
+  {% if html %}
+    {% set hintHtml %}
+      <span>
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ html[0] }}</h2>
+        </legend>
+        <div id="dob-hint" class="govuk-hint">
+          {{ html[1] }}
+        </div>
+      </span>
+    {% endset %}
+  {% endif %}
+
   {{ govukDateInput({
     id: id,
     name: name or id,
@@ -30,9 +43,9 @@
         classes: title.classes
       }
     } if title else undefined,
-    hint: {
-      text: hintText
-    } if hintText else undeinfed,
+   hint: {
+      html: hintHtml
+    } if html else undefined,
     errorMessage: {
       html: '<span id="day-error" class="govuk-error-message">' + joinErrors(dayError) + '</span>
                             <span id="month-error" class="govuk-error-message">' + joinErrors(monthError) + '</span>
