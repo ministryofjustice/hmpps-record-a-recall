@@ -14,14 +14,15 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
         {% set rtcDateHtml %}
-                  {{ validatedDateInput({
-                        id: "returnToCustodyDate",
-                        validationErrors: validationErrors,
-                        hintText: "For example, 27 3 2007",
-                        day: day,
-                        month: month,
-                        year: year
-                    }) }}
+                 {{ validatedDateInput({
+                    id: "returnToCustodyDate",
+                    preHintText: "Date they were arrested",
+                    hintText: "For example, 31 3 2024",
+                    validationErrors: validationErrors,
+                    day: day,
+                    month: month,
+                    year: year
+                }) }}
         {% endset %}
 
         {{ govukRadios({

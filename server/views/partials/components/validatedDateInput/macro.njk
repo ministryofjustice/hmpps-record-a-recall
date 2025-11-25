@@ -5,6 +5,7 @@
   {% set name = opts.name %}
   {% set title = opts.title %}
   {% set hintText = opts.hintText %}
+  {% set preHintText = opts.preHintText %}
 
   {% set day = opts.day %}
   {% set month = opts.month %}
@@ -30,33 +31,38 @@
         classes: title.classes
       }
     } if title else undefined,
+
     hint: {
-      text: hintText
-    } if hintText else undeinfed,
+      html:
+        (preHintText ? '<p class="govuk-body govuk-!-margin-bottom-1">' + preHintText + '</p>' : '') +
+        (hintText ? '<span class="govuk-hint">' + hintText + '</span>' : '')
+    } if preHintText or hintText else undefined,
+
     errorMessage: {
       html: '<span id="day-error" class="govuk-error-message">' + joinErrors(dayError) + '</span>
                             <span id="month-error" class="govuk-error-message">' + joinErrors(monthError) + '</span>
                             <span id="year-error" class="govuk-error-message">' + joinErrors(yearError) + '</span>'
     } if dayError or monthError or yearError,
+
     items: [
       {
         id: 'day',
         label: 'Day',
-        name: "day",
+        name: 'day',
         classes: 'govuk-input--width-2' + (' govuk-input--error' if dayError),
         value: day
       },
       {
         id: 'month',
         label: 'Month',
-        name: "month",
+        name: 'month',
         classes: 'govuk-input--width-2' + (' govuk-input--error' if monthError),
         value: month
       },
       {
         id: 'year',
         label: 'Year',
-        name: "year",
+        name: 'year',
         classes: 'govuk-input--width-4' + (' govuk-input--error' if yearError),
         value: year
       }
