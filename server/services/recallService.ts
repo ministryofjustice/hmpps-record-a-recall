@@ -146,6 +146,7 @@ export default class RecallService {
       ualAdjustmentTotalDays: recall.ual?.days,
       courtCases: (recall.courtCases ?? []).map(courtCase => ({
         courtCaseReference: courtCase.courtCaseReference,
+        courtCaseUuid: courtCase.courtCaseUuid,
         courtName: courtCase.courtCode
           ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
           : undefined,

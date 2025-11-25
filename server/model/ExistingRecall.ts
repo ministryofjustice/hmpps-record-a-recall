@@ -21,6 +21,7 @@ export interface ExistingRecall {
 
 export interface ExistingRecallCourtCase {
   courtCaseReference?: string
+  courtCaseUuid?: string
   courtName?: string
   courtCaseDate?: string
   sentences?: ExistingRecallSentence[]

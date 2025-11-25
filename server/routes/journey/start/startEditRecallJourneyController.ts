@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
-import { RecallJourney } from '../../../@types/journeys'
+import { DecoratedCourtCase, RecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
@@ -23,6 +23,23 @@ export default class StartEditRecallJourneyController implements Controller {
     const { nomsId, recallId } = req.params
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const recall = await this.recallService.getRecall(recallId, username)
+
+    const isManualJourney = !recall.calculationRequestId
+
+    let courtCaseIdsSelectedForRecall: string[] = []
+    let courtCaseIdsExcludedFromRecall: string[] = []
+    let recallableCourtCases: DecoratedCourtCase[] = []
+
+    if (isManualJourney) {
+      courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseUuid)
+
+      recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
+
+      courtCaseIdsExcludedFromRecall = recallableCourtCases
+        .filter(it => !courtCaseIdsSelectedForRecall.includes(it.courtCaseUuid))
+        .map(it => it.courtCaseUuid)
+    }
+
     const journey: RecallJourney = {
       id: uuidv4(),
       lastTouched: new Date().toISOString(),
@@ -37,6 +54,9 @@ export default class StartEditRecallJourneyController implements Controller {
       calculationRequestId: recall.calculationRequestId,
       sentenceIds: recall.sentenceIds,
       recallBeingEditted: recall,
+      courtCaseIdsSelectedForRecall,
+      courtCaseIdsExcludedFromRecall,
+      recallableCourtCases,
     }
     if (!req.session.recallJourneys) {
       req.session.recallJourneys = {}
