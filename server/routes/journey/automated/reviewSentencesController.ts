@@ -65,6 +65,7 @@ export default class ReviewSentencesController implements Controller {
     const { username } = req.user
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
+
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
       {
@@ -73,8 +74,13 @@ export default class ReviewSentencesController implements Controller {
       },
       username,
     )
+
     journey.sentenceIds = decision.automatedCalculationData.recallableSentences.map(it => it.uuid)
     journey.calculationRequestId = decision.automatedCalculationData.calculationRequestId
+
+    if (journey.isCheckingAnswers) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
 
     return res.redirect(RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId))
   }

@@ -40,8 +40,14 @@ export default class ReturnToCustodyDateController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year, inCustodyAtRecall } = req.body
+
     journey.inCustodyAtRecall = inCustodyAtRecall
     journey.returnToCustodyDate = { day, month, year }
+
+    if (journey.isCheckingAnswers) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+
     return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
   }
 
