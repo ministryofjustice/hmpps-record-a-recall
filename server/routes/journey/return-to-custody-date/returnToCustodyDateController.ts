@@ -25,7 +25,7 @@ export default class ReturnToCustodyDateController implements Controller {
     const month = formResponses?.month ?? journey.returnToCustodyDate?.month
     const year = formResponses?.year ?? journey.returnToCustodyDate?.year
     const inCustodyAtRecall = formResponses?.inCustodyAtRecall ?? journey.inCustodyAtRecall
-    const prisonerName = `${capitaliseFirstLetter(prisoner.firstName)} ${capitaliseFirstLetter(prisoner.lastName)}`;
+    const prisonerName = `${capitaliseFirstLetter(prisoner.firstName)} ${capitaliseFirstLetter(prisoner.lastName)}`
 
     return res.render('pages/recall/return-to-custody-date', {
       prisoner,

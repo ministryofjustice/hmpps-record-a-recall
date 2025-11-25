@@ -125,6 +125,6 @@ export const sentenceTypeValueOrLegacy = (sentenceTypeValue: string, legacyData:
 }
 
 export const capitaliseFirstLetter = (str: string): string => {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
