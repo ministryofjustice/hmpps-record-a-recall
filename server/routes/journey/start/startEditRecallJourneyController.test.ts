@@ -9,6 +9,7 @@ import { RecordARecallValidationResult } from '../../../@types/calculateReleaseD
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import TestData from '../../../testutils/testData'
+import { ExistingRecallCourtCase } from '../../../model/ExistingRecall'
 
 let app: Express
 let session: Partial<SessionData>
@@ -181,5 +182,58 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
     expect(Object.keys(session.recallJourneys!).sort()).toStrictEqual(
       [newId, 'old', 'middle-aged', 'young', 'youngest'].sort(),
     )
+  })
+
+  it('should call getRecallableCourtCases on manual journey and set courtCaseIdsExcludedFromRecall correctly', async () => {
+    // Given: manual journey (no calculationRequestId)
+    const existingRecall = TestData.existingRecall()
+    existingRecall.calculationRequestId = undefined
+    preExistingJourneysToAddToSession = []
+
+    recallService.getRecall.mockResolvedValue(existingRecall)
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/edit/${recallId}/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, user.username)
+
+    const journeys = Object.values(session.recallJourneys!)
+    expect(journeys).toHaveLength(1)
+    const newJourney = journeys[0]
+    expect(newJourney.courtCaseIdsSelectedForRecall).toEqual([])
+    expect(newJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-1'])
+    expect(response.headers.location).toContain('/check-answers')
+  })
+
+  it('should call getRecallableCourtCases on manual journey and set courtCaseIdsSelectedForRecall correctly', async () => {
+    // Given: manual journey (no calculationRequestId)
+    const courtCase = { courtCaseUuid: 'uuid-1' } as ExistingRecallCourtCase
+    const existingRecall = TestData.existingRecall({ courtCases: [courtCase] })
+    existingRecall.calculationRequestId = undefined
+    preExistingJourneysToAddToSession = []
+
+    recallService.getRecall.mockResolvedValue(existingRecall)
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/edit/${recallId}/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, user.username)
+
+    const journeys = Object.values(session.recallJourneys!)
+    expect(journeys).toHaveLength(1)
+    const newJourney = journeys[0]
+    expect(newJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+    expect(newJourney.courtCaseIdsExcludedFromRecall).toEqual([])
+    expect(response.headers.location).toContain('/check-answers')
   })
 })
