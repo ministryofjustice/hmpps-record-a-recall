@@ -20,18 +20,19 @@
     {% if errors %}{% for error in errors %}{% if error and error.length > 0 %}{{ error }}{% endif %}{% endfor %}{% endif %}
   {% endmacro %}
 
-  {% if html %}
-    {% set hintHtml %}
-      <span>
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-          <h2 class="govuk-fieldset__heading">{{ html[0] }}</h2>
-        </legend>
-        <div id="dob-hint" class="govuk-hint">
-          {{ html[1] }}
-        </div>
-      </span>
-    {% endset %}
-  {% endif %}
+{% if html and html[1] and html[1] | trim %}
+  {% set hintHtml %}
+    <span>
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ html[0] }}</h2>
+      </legend>
+      <div id="dob-hint" class="govuk-hint">
+        {{ html[1] }}
+      </div>
+    </span>
+  {% endset %}
+{% endif %}
+
 
   {{ govukDateInput({
     id: id,
