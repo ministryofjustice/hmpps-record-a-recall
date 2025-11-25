@@ -152,12 +152,14 @@ describe('Recall service', () => {
           {
             courtCode: 'INNRCC',
             courtCaseReference: undefined,
+            courtCaseUuid: undefined,
             sentencingAppearanceDate: undefined,
             sentences: [],
           },
           {
             courtCode: undefined,
             courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: '2024-04-19',
             sentences: [],
           },
@@ -186,12 +188,14 @@ describe('Recall service', () => {
             {
               courtName: 'Inner London Sessions House Crown Court',
               courtCaseReference: undefined,
+              courtCaseUuid: undefined,
               courtCaseDate: undefined,
               sentences: [],
             },
             {
               courtName: undefined,
               courtCaseReference: 'CC1',
+              courtCaseUuid: 'cc1-uuid',
               courtCaseDate: '2024-04-19',
               sentences: [],
             },
@@ -265,6 +269,7 @@ describe('Recall service', () => {
           {
             courtCode: undefined,
             courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: undefined,
             sentences: [sentenceWithMaximum, sentenceWithMinimum],
           },
@@ -293,6 +298,7 @@ describe('Recall service', () => {
             {
               courtName: undefined,
               courtCaseReference: 'CC1',
+              courtCaseUuid: 'cc1-uuid',
               courtCaseDate: undefined,
               sentences: [
                 {
@@ -483,12 +489,14 @@ describe('Recall service', () => {
           {
             courtCode: 'INNRCC',
             courtCaseReference: undefined,
+            courtCaseUuid: undefined,
             sentencingAppearanceDate: undefined,
             sentences: [],
           },
           {
             courtCode: undefined,
             courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: '2024-04-19',
             sentences: [],
           },
@@ -516,12 +524,14 @@ describe('Recall service', () => {
           {
             courtName: 'Inner London Sessions House Crown Court',
             courtCaseReference: undefined,
+            courtCaseUuid: undefined,
             courtCaseDate: undefined,
             sentences: [],
           },
           {
             courtName: undefined,
             courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             courtCaseDate: '2024-04-19',
             sentences: [],
           },
@@ -592,6 +602,7 @@ describe('Recall service', () => {
           {
             courtCode: undefined,
             courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: undefined,
             sentences: [sentenceWithMaximum, sentenceWithMinimum],
           },
@@ -619,6 +630,7 @@ describe('Recall service', () => {
           {
             courtName: undefined,
             courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             courtCaseDate: undefined,
             sentences: [
               {

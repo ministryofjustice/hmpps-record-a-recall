@@ -31,7 +31,7 @@ export default class StartEditRecallJourneyController implements Controller {
     let recallableCourtCases: DecoratedCourtCase[] = []
 
     if (isManualJourney) {
-      courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseReference)
+      courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseUuid)
 
       recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
