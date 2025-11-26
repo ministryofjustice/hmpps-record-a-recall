@@ -20,30 +20,38 @@
     {% if errors %}{% for error in errors %}{% if error and error.length > 0 %}{{ error }}{% endif %}{% endfor %}{% endif %}
   {% endmacro %}
 
-{% if html and html[1] and html[1] | trim %}
+{% if html and (html[0] or html[1]) %}
   {% set hintHtml %}
     <span>
-      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-        <h2 class="govuk-fieldset__heading">{{ html[0] }}</h2>
-      </legend>
-      <div id="dob-hint" class="govuk-hint">
-        {{ html[1] }}
-      </div>
+      {% if html[0] %}
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ html[0] }}</h2>
+        </legend>
+      {% endif %}
+      {% if html[1] %}
+        <div id="dob-hint" class="govuk-hint">
+          {{ html[1] }}
+        </div>
+      {% endif %}
     </span>
   {% endset %}
 {% endif %}
 
 
+
   {{ govukDateInput({
     id: id,
     name: name or id,
-    fieldset: {
-      legend: {
-        text: title.text,
-        isPageHeading: title.isPageHeading,
-        classes: title.classes
-      }
-    } if title else undefined,
+fieldset: (
+  {
+    legend: {
+      text: title.text,
+      isPageHeading: title.isPageHeading,
+      classes: title.classes
+    }
+  } if html and html[0] else undefined
+),
+
    hint: {
       html: hintHtml
     } if html else undefined,
