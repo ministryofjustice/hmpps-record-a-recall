@@ -23,7 +23,6 @@ const journeyId: string = uuidv4()
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 const prisonerSearchService = new PrisonerSearchService(null) as jest.Mocked<PrisonerSearchService>
 
-
 beforeEach(() => {
   existingJourney = {
     id: journeyId,
@@ -43,7 +42,7 @@ beforeEach(() => {
   }
 
   prisonerSearchService.getPrisonerDetails.mockResolvedValue(
-    TestData.prisoner({ prisonerNumber: nomsId, firstName: 'JOHN', lastName: 'SMITH' })
+    TestData.prisoner({ prisonerNumber: nomsId, firstName: 'JOHN', lastName: 'SMITH' }),
   )
 
   app = appWithAllRoutes({
@@ -56,11 +55,11 @@ beforeEach(() => {
   })
 })
 
-// re-added this but ive had this since yday in diff formats 
+// re-added this but ive had this since yday in diff formats
 app.use((req, res, next) => {
   res.locals.prisoner = {
     firstName: 'JOHN',
-    lastName: 'SMITH'
+    lastName: 'SMITH',
   } as PrisonerSearchApiPrisoner
   next()
 })
@@ -68,7 +67,6 @@ app.use((req, res, next) => {
 afterEach(() => {
   jest.resetAllMocks()
 })
-
 
 describe('GET', () => {
   const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`
