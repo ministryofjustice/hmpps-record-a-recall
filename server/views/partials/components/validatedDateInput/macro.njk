@@ -20,11 +20,6 @@
     {% if errors %}{% for error in errors %}{% if error and error.length > 0 %}{{ error }}{% endif %}{% endfor %}{% endif %}
   {% endmacro %}
 
-  {% if not legendText %}
-
-  {% endif %}
-
-
   {% if legendText %}
     {% set hintWithLegendHtml %}
       <span>
