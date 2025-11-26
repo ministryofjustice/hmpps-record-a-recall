@@ -8,12 +8,8 @@ import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import RecallJourneyUrls from '../recallJourneyUrls'
-import TestData from '../../../testutils/testData'
-import PrisonerSearchService from '../../../services/prisonerSearchService'
-import { PrisonerSearchApiPrisoner } from '../../../@types/prisonerSearchApi/prisonerSearchTypes'
 
 jest.mock('../../../services/auditService')
-jest.mock('../../../services/prisonerSearchService')
 
 let app: Express
 let existingJourney: RecallJourney
@@ -21,7 +17,6 @@ const nomsId = 'A1234BC'
 const journeyId: string = uuidv4()
 
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
-const prisonerSearchService = new PrisonerSearchService(null) as jest.Mocked<PrisonerSearchService>
 
 beforeEach(() => {
   existingJourney = {
@@ -41,27 +36,14 @@ beforeEach(() => {
     },
   }
 
-  prisonerSearchService.getPrisonerDetails.mockResolvedValue(
-    TestData.prisoner({ prisonerNumber: nomsId, firstName: 'JOHN', lastName: 'SMITH' }),
-  )
-
   app = appWithAllRoutes({
-    services: { auditService, prisonerSearchService },
+    services: { auditService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.recallJourneys = {}
       receivedSession.recallJourneys[journeyId] = existingJourney
     },
   })
-})
-
-// re-added this but ive had this since yday in diff formats
-app.use((req, res, next) => {
-  res.locals.prisoner = {
-    firstName: 'JOHN',
-    lastName: 'SMITH',
-  } as PrisonerSearchApiPrisoner
-  next()
 })
 
 afterEach(() => {
