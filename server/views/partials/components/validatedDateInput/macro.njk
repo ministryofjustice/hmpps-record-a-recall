@@ -42,15 +42,15 @@
   {{ govukDateInput({
     id: id,
     name: name or id,
-fieldset: (
-  {
-    legend: {
-      text: title.text,
-      isPageHeading: title.isPageHeading,
-      classes: title.classes
-    }
-  } if html and html[0] else undefined
-),
+    fieldset: (
+      {
+        legend: {
+          text: title.text,
+          isPageHeading: title.isPageHeading,
+          classes: title.classes
+        }
+      } if html and html[0] else undefined
+    ),
 
    hint: {
       html: hintHtml
