@@ -10,6 +10,7 @@ import AuditService from '../../services/auditService'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import setUpWebSession from '../../middleware/setUpWebSession'
 import populateValidationErrors from '../../middleware/populateValidationErrors'
+import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
 
 jest.mock('../../services/auditService')
 
@@ -53,6 +54,10 @@ function appSetup(
     req.flash = flashProvider
     res.locals = {
       user: { ...req.user } as HmppsUser,
+      prisoner: {
+        firstName: 'JOHN',
+        lastName: 'SMITH',
+      } as PrisonerSearchApiPrisoner,
     }
     next()
   })

@@ -4,68 +4,69 @@
 {% from "partials/components/validatedDateInput/macro.njk" import validatedDateInput %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
-{% set title = "Was this person in prison when the recall was made?" %}
+{% set title = "Was " + prisonerName + " in prison when the recall was made?" %}
 {% set pageTitle = applicationName + " - " + title %}
 {% set pageCaption = "Edit a recall" if isEditRecall else "Record a recall" %}
 
 {% block pageContent %}
 
-    <form method="post" action="">
-        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <form method="post" action="">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
-        {% set rtcDateHtml %}
-                  {{ validatedDateInput({
-                        id: "returnToCustodyDate",
-                        validationErrors: validationErrors,
-                        hintText: "For example, 27 3 2007",
-                        day: day,
-                        month: month,
-                        year: year
-                    }) }}
-        {% endset %}
+    {% set rtcDateHtml %}
+      {{ validatedDateInput({
+        id: "returnToCustodyDate",
+        validationErrors: validationErrors,
+        hintText: "For example, 31 3 2024",
+        legendText: "Date they were arrested",
+        day: day,
+        month: month,
+        year: year
+      }) }}
+    {% endset %}
 
-        {{ govukRadios({
-            idPrefix: "inCustodyAtRecall",
-            name: "inCustodyAtRecall",
-            fieldset: {
-                legend: {
-                    text: title,
-                    isPageHeading: true,
-                    classes: "govuk-fieldset__legend--l"
-                }
-            },
-            errorMessage: inPrisonError,
-            items: [
-                {
-                    value: "true",
-                    id: "inCustodyAtRecall-true",
-                    text: "Yes",
-                    checked: inCustodyAtRecall === true or inCustodyAtRecall === "true"
-                },
-                {
-                    value: "false",
-                    id: "inCustodyAtRecall-false",
-                    text: "No",
-                    checked: inCustodyAtRecall === false or inCustodyAtRecall === "false",
-                    conditional: {
-                        html: rtcDateHtml
-                    }
-                }
-            ]
-        }) }}
+    {{ govukRadios({
+      idPrefix: "inCustodyAtRecall",
+      name: "inCustodyAtRecall",
+      fieldset: {
+        legend: {
+          text: title,
+          isPageHeading: true,
+          classes: "govuk-fieldset__legend--l"
+        }
+      },
+      errorMessage: inPrisonError,
+      items: [
+        {
+          value: "true",
+          id: "inCustodyAtRecall-true",
+          text: "Yes",
+          checked: inCustodyAtRecall === true or inCustodyAtRecall === "true"
+        },
+        {
+          value: "false",
+          id: "inCustodyAtRecall-false",
+          text: "No",
+          checked: inCustodyAtRecall === false or inCustodyAtRecall === "false",
+          conditional: {
+          html: rtcDateHtml
+        }
+        }
+      ]
+    }) }}
 
-        <div class="govuk-button-group">
-            {{ govukButton({
-                text: "Continue",
-                preventDoubleClick: true,
-                attributes: { id: "submit" }
-            }) }}
-            {{ govukButton({
-                text: "Cancel",
-                classes: "govuk-button--secondary",
-                href: cancelUrl,
-                attributes: { id: "cancel-button" }
-            }) }}
-        </div>
-    </form>
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Continue",
+        preventDoubleClick: true,
+        attributes: { id: "submit" }
+      }) }}
+      {{ govukButton({
+        text: "Cancel",
+        classes: "govuk-button--secondary",
+        href: cancelUrl,
+        attributes: { id: "cancel-button" }
+      }) }}
+    </div>
+  </form>
 {% endblock %}

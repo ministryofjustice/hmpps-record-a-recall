@@ -3,8 +3,8 @@
 {% macro validatedDateInput(opts) %}
   {% set id = opts.id %}
   {% set name = opts.name %}
-  {% set title = opts.title %}
   {% set hintText = opts.hintText %}
+  {% set legendText = opts.legendText %}
 
   {% set day = opts.day %}
   {% set month = opts.month %}
@@ -20,19 +20,29 @@
     {% if errors %}{% for error in errors %}{% if error and error.length > 0 %}{{ error }}{% endif %}{% endfor %}{% endif %}
   {% endmacro %}
 
+  {% if legendText %}
+    {% set hintWithLegendHtml %}
+      <span>
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ legendText }}</h2>
+        </legend>
+          <div id="dob-hint" class="govuk-hint">
+            {{ hintText }}
+          </div>
+      </span>
+    {% endset %}
+  {% endif %}
+
+  {% if hintWithLegendHtml %}
+    {% set hint = { html: hintWithLegendHtml } %}
+  {% else %}
+    {% set hint = { text: hintText } %}
+  {% endif %}
+
   {{ govukDateInput({
     id: id,
     name: name or id,
-    fieldset: {
-      legend: {
-        text: title.text,
-        isPageHeading: title.isPageHeading,
-        classes: title.classes
-      }
-    } if title else undefined,
-    hint: {
-      text: hintText
-    } if hintText else undeinfed,
+    hint: hint,
     errorMessage: {
       html: '<span id="day-error" class="govuk-error-message">' + joinErrors(dayError) + '</span>
                             <span id="month-error" class="govuk-error-message">' + joinErrors(monthError) + '</span>
