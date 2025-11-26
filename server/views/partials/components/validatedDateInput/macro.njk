@@ -33,7 +33,7 @@
     {% endset %}
   {% endif %}
 
-  {% if hintWithLegendHtml is defined %}
+  {% if hintWithLegendHtml %}
     {% set hint = { html: hintWithLegendHtml } %}
   {% else %}
     {% set hint = { text: hintText } %}
