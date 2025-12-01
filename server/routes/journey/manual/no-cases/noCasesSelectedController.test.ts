@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import type { Express } from 'express'
 import request from 'supertest'
 import * as cheerio from 'cheerio'
