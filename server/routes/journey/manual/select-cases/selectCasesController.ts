@@ -84,7 +84,15 @@ export default class SelectCasesController implements Controller {
     }
 
     // last case — decide final route
-    return res.redirect(RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId))
+    if (journey.courtCaseIdsSelectedForRecall.length === 0) {
+      return res.redirect(
+        RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId)
+      )
+    }
+
+    return res.redirect(
+      RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId)
+    )
   }
 
   private getBackLink(

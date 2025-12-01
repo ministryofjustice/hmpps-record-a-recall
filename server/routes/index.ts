@@ -32,6 +32,7 @@ import { returnToCustodyDateSchemaFactory } from './journey/return-to-custody-da
 import CancelController from './journey/cancel/cancelController'
 import { confirmCancelSchema } from './journey/cancel/confirmCancelSchema'
 import StartEditRecallJourneyController from './journey/start/startEditRecallJourneyController'
+import NoCasesSelectedController from './journey/manual/no-cases/noCasesSelectedController'
 
 export default function routes({
   prisonerService,
@@ -168,6 +169,12 @@ export default function routes({
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
     additionalMiddleware: [ensureInCreateRecallJourney],
+  })
+
+  route({
+  path: `${journeyPath}/manual/no-cases-selected`,
+  controller: new NoCasesSelectedController(),
+  additionalMiddleware: [ensureInCreateRecallJourney],
   })
 
   route({

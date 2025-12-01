@@ -113,6 +113,15 @@ export default class RecallJourneyUrls {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
   }
 
+  static manualNoCasesSelected = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/no-cases-selected`
+  }
+
   static manualCheckSentences = (
     nomsId: string,
     journeyId: string,
