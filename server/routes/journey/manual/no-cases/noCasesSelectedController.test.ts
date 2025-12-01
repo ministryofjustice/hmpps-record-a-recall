@@ -22,8 +22,8 @@ beforeEach(() => {
     services: { recallService, auditService },
     userSupplier: () => user,
     sessionReceiver: session => {
-      session.recallJourneys = {}
-      session.recallJourneys[journeyId] = {
+      const journeys = {} as typeof session.recallJourneys
+      journeys[journeyId] = {
         id: journeyId,
         nomsId,
         lastTouched: new Date().toISOString(),
@@ -35,6 +35,7 @@ beforeEach(() => {
           earliestSentenceDate: '2025-01-01',
         },
       }
+      session.recallJourneys = journeys
     },
   })
 
@@ -62,30 +63,26 @@ describe('NoCasesSelectedController', () => {
   })
 
   it('sets correct links using RecallJourneyUrls', async () => {
-  const res = await request(app).get(url).expect(200)
+    const res = await request(app).get(url).expect(200)
 
-  // Calculate expected URLs
-  const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', '')
-  const revocationUrl = RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', '')
-  const cancelLink = RecallJourneyUrls.confirmCancel(
-    nomsId,
-    journeyId,
-    'create',
-    '',
-    RecallJourneyUrls.manualSelectCases.name,
-  )
+    const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', '')
+    const revocationUrl = RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', '')
+    const cancelLink = RecallJourneyUrls.confirmCancel(
+      nomsId,
+      journeyId,
+      'create',
+      '',
+      RecallJourneyUrls.manualSelectCases.name,
+    )
 
-  // Just check that the rendered HTML contains the URLs
-  expect(res.text).toContain(manualBase)
-  expect(res.text).toContain(revocationUrl)
-  expect(res.text).toContain(cancelLink)
-})
-
+    expect(res.text).toContain(manualBase)
+    expect(res.text).toContain(revocationUrl)
+    expect(res.text).toContain(cancelLink)
+  })
 
   it('handles missing recallId gracefully', async () => {
     const urlWithoutRecallId = `/person/${nomsId}/recall/create/${journeyId}/manual/no-cases-selected`
     const res = await request(app).get(urlWithoutRecallId).expect(200)
-    const $ = cheerio.load(res.text)
 
     const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', undefined)
     const revocationUrl = RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', undefined)
@@ -99,8 +96,8 @@ describe('NoCasesSelectedController', () => {
       services: { recallService, auditService },
       userSupplier: () => user,
       sessionReceiver: session => {
-        session.recallJourneys = {}
-        session.recallJourneys[journeyId] = {
+        const journeys = {} as typeof session.recallJourneys
+        journeys[journeyId] = {
           id: journeyId,
           nomsId,
           lastTouched: new Date().toISOString(),
@@ -111,6 +108,7 @@ describe('NoCasesSelectedController', () => {
             earliestSentenceDate: '2025-01-01',
           },
         }
+        session.recallJourneys = journeys
       },
     })
 

@@ -32,7 +32,7 @@ export default class NoCasesSelectedController implements Controller {
         journeyId,
         createOrEdit,
         safeRecallId,
-        RecallJourneyUrls.manualSelectCases.name
+        RecallJourneyUrls.manualSelectCases.name,
       ),
       resetToRevocationDateUrl: RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, safeRecallId),
       resetToManualInterceptUrl: manualBase,
