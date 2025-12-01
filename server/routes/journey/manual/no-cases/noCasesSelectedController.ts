@@ -15,12 +15,7 @@ export default class NoCasesSelectedController implements Controller {
     const createOrEdit = createOrEditParam as 'edit' | 'create'
 
     // Use empty string if recallId is undefined to match the route
-    const safeRecallId = recallId ?? ''
-
-    // Convert DateParts to ISO string
-    const formattedRevocationDate = journey.revocationDate
-      ? datePartsToDate(journey.revocationDate).toISOString()
-      : null
+    const safeRecallId = recallId || undefined
 
     // base manual journey path
     const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, safeRecallId)
