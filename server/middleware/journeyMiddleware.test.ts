@@ -2,7 +2,7 @@ import { Request as ExpressRequest, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { SessionData } from 'express-session'
 import { PersonJourneyParams } from '../@types/journeys'
-import { ensureInCreateRecallJourney } from './journeyMiddleware'
+import { ensureInRecallJourney } from './journeyMiddleware'
 import { user } from '../routes/testutils/appSetup'
 
 type Request = ExpressRequest<PersonJourneyParams>
@@ -39,7 +39,7 @@ describe('journeyMiddleware', () => {
           earliestSentenceDate: '2019-01-01',
         },
       }
-      ensureInCreateRecallJourney(req, res, next)
+      ensureInRecallJourney(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)
       expect(new Date(req.session.recallJourneys[journeyId].lastTouched).getTime()).toBeGreaterThan(
         lastTouchedBeforeCall.getTime(),
@@ -48,13 +48,13 @@ describe('journeyMiddleware', () => {
     it('should return to start if the journey is not in the session', () => {
       const next = jest.fn()
       req.session.recallJourneys = {}
-      ensureInCreateRecallJourney(req, res, next)
+      ensureInRecallJourney(req, res, next)
       expect(next).toHaveBeenCalledTimes(0)
       expect(res.redirect).toHaveBeenCalledWith(`/person/${nomsId}/recall/create/start`)
     })
     it('should return to start if no journeys created at all', () => {
       const next = jest.fn()
-      ensureInCreateRecallJourney(req, res, next)
+      ensureInRecallJourney(req, res, next)
       expect(next).toHaveBeenCalledTimes(0)
       expect(res.redirect).toHaveBeenCalledWith(`/person/${nomsId}/recall/create/start`)
     })

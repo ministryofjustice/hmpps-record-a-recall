@@ -1,0 +1,24 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+
+{% block content %}
+      {% call interruptionCard({
+        heading: "Some sentence types need updating",
+        primaryAction: {
+          text: "Continue",
+          href: continueLink
+        },
+        secondaryAction: {
+          text: "Cancel recall",
+          href: cancelLink
+        }
+    }) -%}
+        <p>When the previous recall was recorded on NOMIS, some sentences were deleted. This means the service cannot determine the original sentence type.</p>
+        <h2 class="govuk-heading-m moj-interruption-card__heading">What you need to do</h2>
+        <p>To make sure that the recall is recorded correctly, update the following court cases to reflect the original sentence types:</p>
+        <!-- TODO -->
+        <p>Once the updates have been made, come back to the recalls service to record the recall.</p>
+      {%- endcall %}
+{% endblock %}

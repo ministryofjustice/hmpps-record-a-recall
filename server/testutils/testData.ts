@@ -221,7 +221,7 @@ export default class TestData {
       decision: 'AUTOMATED',
       automatedCalculationData: {
         calculationRequestId: 991,
-        eligibleRecallTypes: Object.values(RecallTypes).map(it => it.code),
+        unexpectedRecallTypes: Object.values(RecallTypes).map(it => it.code),
         recallableSentences: [
           {
             bookingId: 1,

@@ -75,6 +75,7 @@ export default class ReviewSentencesController implements Controller {
     )
     journey.sentenceIds = decision.automatedCalculationData.recallableSentences.map(it => it.uuid)
     journey.calculationRequestId = decision.automatedCalculationData.calculationRequestId
+    journey.automatedCalculationData = decision.automatedCalculationData
 
     return res.redirect(RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId))
   }
