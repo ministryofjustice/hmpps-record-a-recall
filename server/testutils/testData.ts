@@ -148,6 +148,8 @@ export default class TestData {
       sentenceType: 'Standard Determinate',
       offenceCode: 'OFF1',
       offenceDescription: 'Offence 1',
+      lineNumber: 1,
+      countNumber: 1,
       ...overrides,
     } as RecallableCourtCaseSentence
   }
@@ -159,6 +161,8 @@ export default class TestData {
       sentenceTypeDescription: 'Community Order',
       offenceCode: 'OFF2',
       offenceDescription: 'Offence 2',
+      lineNumber: 2,
+      countNumber: 2,
       ...overrides,
     } as RecallableCourtCaseSentence
   }
