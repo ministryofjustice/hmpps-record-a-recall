@@ -166,7 +166,7 @@ export default function routes({
 
   route({
     path: `${journeyPath}/unknown-pre-recall-sentence-type`,
-    controller: new UnknownPreRecallSentenceTypeController(),
+    controller: new UnknownPreRecallSentenceTypeController(recallService),
     additionalMiddleware: [ensureInRecallJourney],
   })
 

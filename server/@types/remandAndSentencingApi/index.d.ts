@@ -1981,6 +1981,7 @@ export interface components {
     IsRecallPossibleResponse: {
       /** @enum {string} */
       isRecallPossible: 'YES' | 'UNKNOWN_PRE_RECALL_MAPPING' | 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE'
+      sentenceIds: string[]
     }
     LegacySentenceCreatedResponse: {
       prisonerId: string

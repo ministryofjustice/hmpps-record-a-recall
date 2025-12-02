@@ -160,7 +160,7 @@ describe('POST', () => {
       existingJourney.automatedCalculationData = {
         unexpectedRecallTypes: unexpectedType,
       } as unknown as AutomatedCalculationData
-      recallService.isRecallPossible.mockResolvedValue({ isRecallPossible })
+      recallService.isRecallPossible.mockResolvedValue({ isRecallPossible, sentenceIds: [] })
 
       // When
       await request(app)

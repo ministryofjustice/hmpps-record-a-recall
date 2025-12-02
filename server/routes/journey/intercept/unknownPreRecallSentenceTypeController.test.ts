@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
+import RecallService from '../../../services/recallService'
+import TestData from '../../../testutils/testData'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -15,6 +17,8 @@ const journeyId: string = uuidv4()
 
 jest.mock('../../../services/auditService')
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
+jest.mock('../../../services/recallService')
+const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
   existingJourney = {
@@ -41,7 +45,7 @@ beforeEach(() => {
     recallType: 'LR',
   }
   app = appWithAllRoutes({
-    services: { auditService },
+    services: { auditService, recallService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.recallJourneys = {}
@@ -57,7 +61,11 @@ afterEach(() => {
 describe('GET', () => {
   it('should unknown recall type', async () => {
     // Given
-
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    recallService.isRecallPossible.mockResolvedValue({
+      isRecallPossible: 'UNKNOWN_PRE_RECALL_MAPPING',
+      sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0', '0ef67702-99cd-4821-9235-46ce42c9f39e'],
+    })
     // When
     const response = await request(app).get(
       `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`,
@@ -70,6 +78,8 @@ describe('GET', () => {
 
     const text = $('#main-content').text()
     expect(text).toContain('Some sentence types need updating')
+    expect(text).toContain('Count 1 of court case REF-1')
+    expect(text).toContain('Count 2 of court case REF-1')
     expect(text).toContain('Continue')
   })
 
