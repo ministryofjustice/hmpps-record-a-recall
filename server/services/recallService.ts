@@ -3,6 +3,8 @@ import {
   ApiRecall,
   CreateRecall,
   CreateRecallResponse,
+  IsRecallPossibleRequest,
+  IsRecallPossibleResponse,
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
@@ -203,7 +205,10 @@ export default class RecallService {
   public getCasesSelectedForRecall(journey: RecallJourney) {
     const { courtCaseIdsSelectedForRecall = [] } = journey
     const cases = journey.recallableCourtCases ?? []
-
     return cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid))
+  }
+
+  async isRecallPossible(request: IsRecallPossibleRequest, username: string): Promise<IsRecallPossibleResponse> {
+    return this.remandAndSentencingApiClient.isRecallPossible(request, username)
   }
 }

@@ -7,6 +7,12 @@ import { v4 as uuidv4 } from 'uuid'
 import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
+import {
+  ApiRecallType,
+  IsRecallPossibleResponse,
+} from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import RecallService from '../../../services/recallService'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -15,6 +21,8 @@ const journeyId: string = uuidv4()
 
 jest.mock('../../../services/auditService')
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
+jest.mock('../../../services/recallService')
+const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
   existingJourney = {
@@ -36,7 +44,7 @@ beforeEach(() => {
     calculationRequestId: 1,
   }
   app = appWithAllRoutes({
-    services: { auditService },
+    services: { auditService, recallService },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
       receivedSession.recallJourneys = {}
@@ -131,20 +139,41 @@ describe('GET', () => {
 })
 
 describe('POST', () => {
-  it('should redirect to check your answers if passed validation', async () => {
-    // Given
+  it.each([
+    ['YES', [], `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
+    ['YES', ['FTR_28'], `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
+    ['YES', ['FTR_14'], `/person/${nomsId}/recall/create/${journeyId}/unexpected-recall-type`],
+    ['UNKNOWN_PRE_RECALL_MAPPING', [], `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`],
+    [
+      'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE',
+      [],
+      `/person/${nomsId}/recall/create/${journeyId}/unsupported-recall-type`,
+    ],
+  ])(
+    'should redirect to correct location if recall is possible',
+    async (
+      isRecallPossible: IsRecallPossibleResponse['isRecallPossible'],
+      unexpectedType: ApiRecallType[],
+      resultUrl: string,
+    ) => {
+      // Given
+      existingJourney.automatedCalculationData = {
+        unexpectedRecallTypes: unexpectedType,
+      } as unknown as AutomatedCalculationData
+      recallService.isRecallPossible.mockResolvedValue({ isRecallPossible })
 
-    // When
-    await request(app)
-      .post(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
-      .type('form')
-      .send({ recallType: 'FTR_14' })
-      .expect(302)
-      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/check-answers`)
+      // When
+      await request(app)
+        .post(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
+        .type('form')
+        .send({ recallType: 'FTR_14' })
+        .expect(302)
+        .expect('Location', resultUrl)
 
-    // Then
-    expect(existingJourney.recallType).toStrictEqual('FTR_14')
-  })
+      // Then
+      expect(existingJourney.recallType).toStrictEqual('FTR_14')
+    },
+  )
 
   it('should return to the input page if there are validation errors', async () => {
     // Given

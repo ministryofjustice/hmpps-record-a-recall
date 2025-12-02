@@ -1,0 +1,24 @@
+{% extends "../../partials/prisonerBannerLayout.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
+
+{% block content %}
+      {% call interruptionCard({
+        heading: "The recall type cannot be saved",
+        primaryAction: {
+          text: "Update recall type",
+          href: updateRecallTypeLink
+        },
+        secondaryAction: {
+          text: "Cancel recall",
+          href: cancelLink
+        }
+    }) -%}
+        <p>This recall type is not valid for the sentences selected.</p>
+        <p>The recall type currently selected is <b>{{recallTypeDescription}}</b></p>
+        <h2 class="govuk-heading-m moj-interruption-card__heading">What to do next</h2>
+        <p>1. Check with PPCS that the recall type has been recorded correctly.</p>
+        <p>2. Once you have confirmed the correct recall type, go back and update the recall type.</p>
+      {%- endcall %}
+{% endblock %}

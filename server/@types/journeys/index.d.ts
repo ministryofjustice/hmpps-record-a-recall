@@ -1,4 +1,7 @@
-import { RecordARecallValidationResult } from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import {
+  AutomatedCalculationData,
+  RecordARecallValidationResult,
+} from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { ApiRecallType, RecallableCourtCase } from '../remandAndSentencingApi/remandAndSentencingTypes'
 import { SentenceAndOffence } from '../recallTypes'
 import { ExistingRecall } from '../../model/ExistingRecall'
@@ -20,6 +23,7 @@ export interface RecallJourney {
   courtCaseIdsExcludedFromRecall?: string[]
   calculationRequestId?: number // this is only set in the auto journey
   recallBeingEditted?: ExistingRecall
+  automatedCalculationData?: AutomatedCalculationData
 }
 
 export interface DateParts {
