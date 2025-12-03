@@ -21,13 +21,15 @@
   <p class="govuk-body">
     Check the date of revocation is correct, and if not,
     <a class="govuk-link govuk-link--no-visited-state"
-       href="{{ resetToRevocationDateUrl }}">update the revocation date</a>.
+       href="{{ resetToRevocationDateUrl }}"
+       data-qa="revocation-link">update the revocation date</a>.
   </p>
 
   <p class="govuk-body">
     Go back through the court cases again and
     <a class="govuk-link govuk-link--no-visited-state"
-       href="{{ resetToManualInterceptUrl }}">check for relevant sentences</a>.
+       href="{{ resetToManualInterceptUrl }}"
+       data-qa="back-link">check for relevant sentences</a>.
   </p>
 
   <div class="govuk-button-group">
@@ -36,7 +38,8 @@
       classes: "govuk-button--secondary",
       preventDoubleClick: true,
       type: "reset",
-      href: cancelLink
+      href: cancelLink,
+      attributes: { "data-qa": "cancel-link" }
     }) }}
   </div>
 {% endblock %}

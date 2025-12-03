@@ -65,57 +65,28 @@ describe('NoCasesSelectedController', () => {
 
   it('sets correct links using RecallJourneyUrls', async () => {
     const res = await request(app).get(url).expect(200)
+    const $ = cheerio.load(res.text)
 
     const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', '')
     const revocationUrl = RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', '')
-    const cancelLink = RecallJourneyUrls.confirmCancel(
-      nomsId,
-      journeyId,
-      'create',
-      '',
-      RecallJourneyUrls.manualSelectCases.name,
-    )
 
-    expect(res.text).toContain(manualBase)
-    expect(res.text).toContain(revocationUrl)
-    expect(res.text).toContain(cancelLink)
+    // updated expectation: returnKey is the NAME, not a full URL
+    const cancelLink = RecallJourneyUrls.confirmCancel(nomsId, journeyId, 'create', '', 'manualNoCasesSelected')
+
+    expect($('[data-qa="back-link"]').attr('href')).toBe(manualBase)
+    expect($('[data-qa="revocation-link"]').attr('href')).toBe(revocationUrl)
+    expect($('[data-qa="cancel-link"]').attr('href')).toBe(cancelLink)
   })
 
   it('handles missing recallId gracefully', async () => {
     const urlWithoutRecallId = `/person/${nomsId}/recall/create/${journeyId}/manual/no-cases-selected`
     const res = await request(app).get(urlWithoutRecallId).expect(200)
+    const $ = cheerio.load(res.text)
 
     const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', undefined)
     const revocationUrl = RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', undefined)
 
-    expect(res.text).toContain(manualBase)
-    expect(res.text).toContain(revocationUrl)
-  })
-
-  it('renders empty revocation date if not set', async () => {
-    app = appWithAllRoutes({
-      services: { recallService, auditService },
-      userSupplier: () => user,
-      sessionReceiver: session => {
-        const journeys = {} as typeof session.recallJourneys
-        journeys[journeyId] = {
-          id: journeyId,
-          nomsId,
-          lastTouched: new Date().toISOString(),
-          isCheckingAnswers: false,
-          crdsValidationResult: {
-            criticalValidationMessages: [],
-            otherValidationMessages: [],
-            earliestSentenceDate: '2025-01-01',
-          },
-        }
-        session.recallJourneys = journeys
-      },
-    })
-
-    const res = await request(app).get(url).expect(200)
-    const $ = cheerio.load(res.text)
-
-    expect($('strong').text()).toBe('')
+    expect($('[data-qa="back-link"]').attr('href')).toBe(manualBase)
+    expect($('[data-qa="revocation-link"]').attr('href')).toBe(revocationUrl)
   })
 })

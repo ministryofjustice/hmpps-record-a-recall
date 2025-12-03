@@ -195,7 +195,7 @@ export default function routes({
   route({
     path: `${journeyPath}/manual/no-cases-selected`,
     controller: new NoCasesSelectedController(),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({

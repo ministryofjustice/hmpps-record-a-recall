@@ -192,6 +192,8 @@ export const urlMapByName = {
     createOrEdit: 'edit' | 'create',
     recallId: string,
   ) => RecallJourneyUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId, createOrEdit, recallId),
+  manualNoCasesSelected: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId),
   manualJourneyStart: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
     RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId),
   manualSelectCases: (
