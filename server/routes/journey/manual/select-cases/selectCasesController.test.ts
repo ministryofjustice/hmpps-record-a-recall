@@ -182,8 +182,8 @@ describe('selectCasesController Tests', () => {
   })
 
   describe('POST', () => {
-    const selectCasesUrl = (caseIndex?: number) =>
-      RecallJourneyUrls.manualSelectCases(nomsId, journeyId, 'create', null, caseIndex)
+    const selectCasesUrl = (caseIndex?: number, createOrEdit: 'create' | 'edit' = 'create') =>
+      RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, null, caseIndex)
 
     beforeEach(() => {
       existingJourney.courtCaseIdsSelectedForRecall = []
@@ -246,6 +246,19 @@ describe('selectCasesController Tests', () => {
 
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
       expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-2'])
+    })
+
+    it('When editing redirects to next case in edit journey', async () => {
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+        { courtCaseUuid: 'uuid-3' },
+      ] as DecoratedCourtCase[]
+
+      const res = await request(app).post(selectCasesUrl(1, 'edit')).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      expect(res.header.location).toBe(selectCasesUrl(2, 'edit'))
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
     })
   })
 })

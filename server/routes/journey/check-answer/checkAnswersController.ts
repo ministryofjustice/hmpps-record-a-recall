@@ -65,7 +65,7 @@ export default class CheckAnswersController implements Controller {
         !recall.calculationRequestId && journey.courtCaseIdsSelectedForRecall?.length
           ? journey.courtCaseIdsSelectedForRecall?.length
           : 0,
-      recallBeingEditted: journey.recallBeingEditted,
+      recallBeingEdited: journey.recallBeingEdited,
       urls: this.buildUrls(nomsId, journeyId, createOrEdit, recallId, recall),
     })
   }
