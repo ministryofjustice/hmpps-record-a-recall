@@ -53,7 +53,7 @@ export default class StartEditRecallJourneyController implements Controller {
       recallType: recall.recallTypeCode,
       calculationRequestId: recall.calculationRequestId,
       sentenceIds: recall.sentenceIds,
-      recallBeingEditted: recall,
+      recallBeingEdited: recall,
       courtCaseIdsSelectedForRecall,
       courtCaseIdsExcludedFromRecall,
       recallableCourtCases,
