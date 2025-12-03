@@ -6,6 +6,14 @@
 {% set title = "Select all cases that had an active sentence" %}
 {% set pageTitle = applicationName + " - " + title %}
 
+{% block beforePageContent %}
+  {% if isEdit %}
+    <span class="govuk-caption-l">Edit a recall</span>
+  {% else %}
+    <span class="govuk-caption-l">Record a recall</span>
+  {% endif %}
+{% endblock %}
+
 {% block pageContent %}
   <h1 class="govuk-heading-l">
     {{ title }}
