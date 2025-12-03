@@ -997,26 +997,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/calculation/nomis-calculation-summary/booking/{bookingId}/calculation/{offenderSentCalculationId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get Nomis calculation summary with release dates (including overrides) for a offenderSentCalculationId
-     * @description This endpoint will return the nomis calculation summary with release dates based on a offenderSentCalculationId. Any date overridden in Nomis will be highlighted
-     */
-    get: operations['getNomisCalculationSummaryWithOverrides']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/calculation/detailed-results/{calculationRequestId}': {
     parameters: {
       query?: never
@@ -1176,10 +1156,21 @@ export interface components {
     CalculationUserInputs: {
       /** @description List of sentences and the users input for each sentence */
       sentenceCalculationUserInputs: components['schemas']['CalculationSentenceUserInput'][]
-      /** @description A flag to indicate whether to calculate ERSED. */
+      /**
+       * @description A flag to indicate whether to calculate ERSED.
+       * @default false
+       */
       calculateErsed: boolean
-      /** @description Whether to use offence indicators from another system for the calculation or user's input. */
+      /**
+       * @description Whether to use offence indicators from another system for the calculation or user's input.
+       * @default true
+       */
       useOffenceIndicators: boolean
+      /**
+       * @description If true, use a SLED from a previous calculation if it is later than the calculated one. If false, any previously recorded SLED is ignored and the newly calculated one is used.
+       * @default false
+       */
+      usePreviouslyRecordedSLEDIfFound: boolean
     }
     /** @description Validation message details */
     ValidationMessage: {
@@ -1220,6 +1211,7 @@ export interface components {
         | 'FTR_TYPE_28_DAYS_SENTENCE_LT_12_MONTHS'
         | 'FTR_TYPE_28_DAYS_AGGREGATE_LT_12_MONTHS'
         | 'FTR_TYPE_48_DAYS_OVERLAPPING_SENTENCE'
+        | 'FTR_TYPE_56_UNSUPPORTED_RECALL'
         | 'FTR_RTC_DATE_IN_FUTURE'
         | 'FTR_RTC_DATE_BEFORE_SENTENCE_DATE'
         | 'FTR_RTC_DATE_BEFORE_REVOCATION_DATE'
@@ -1256,10 +1248,10 @@ export interface components {
         | 'BOTUS_CONSECUTIVE_OR_CONCURRENT_TO_OTHER_SENTENCE'
         | 'UNSUPPORTED_SDS40_RECALL_SENTENCE_TYPE'
         | 'UNSUPPORTED_SDS40_CONSECUTIVE_SDS_BETWEEN_TRANCHE_COMMENCEMENTS'
-        | 'UNSUPPORTED_OFFENCE_ENCOURAGING_OR_ASSISTING'
-        | 'UNSUPPORTED_GENERIC_CONSPIRACY_OFFENCE'
-        | 'UNSUPPORTED_BREACH_97'
-        | 'UNSUPPORTED_SUSPENDED_OFFENCE'
+        | 'INCORRECT_OFFENCE_ENCOURAGING_OR_ASSISTING'
+        | 'INCORRECT_OFFENCE_GENERIC_CONSPIRACY'
+        | 'INCORRECT_OFFENCE_BREACH_97'
+        | 'INCORRECT_SUSPENDED_OFFENCE'
         | 'FTR_NO_RETURN_TO_CUSTODY_DATE'
         | 'NO_SENTENCES'
         | 'UNABLE_TO_DETERMINE_SHPO_RELEASE_PROVISIONS'
@@ -1283,7 +1275,7 @@ export interface components {
         | 'UNSUPPORTED_SENTENCE'
         | 'UNSUPPORTED_CALCULATION'
         | 'VALIDATION'
-        | 'UNSUPPORTED_OFFENCE'
+        | 'INCORRECT_OFFENCE'
         | 'SUSPENDED_OFFENCE'
         | 'MANUAL_ENTRY_JOURNEY_REQUIRED'
         | 'CONCURRENT_CONSECUTIVE'
@@ -1381,7 +1373,7 @@ export interface components {
     RecordARecallRequest: {
       /** Format: date */
       revocationDate: string
-      recallId?: string
+      recallId: string
     }
     AutomatedCalculationData: {
       /** Format: int64 */
@@ -1390,7 +1382,7 @@ export interface components {
       expiredSentences: components['schemas']['RecallableSentence'][]
       ineligibleSentences: components['schemas']['RecallableSentence'][]
       sentencesBeforeInitialRelease: components['schemas']['RecallableSentence'][]
-      eligibleRecallTypes: ('LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC')[]
+      unexpectedRecallTypes: ('LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC')[]
     }
     RecallSentenceCalculation: {
       /** Format: date */
@@ -1532,13 +1524,11 @@ export interface components {
       dates: components['schemas']['GenuineOverrideDate'][]
       /** @enum {string} */
       reason:
-        | 'ORDER_OF_IMPRISONMENT_OR_WARRANT_DOES_NOT_MATCH_TRIAL_RECORD'
-        | 'TERRORISM'
+        | 'TRIAL_RECORD_OR_BREAKDOWN_DOES_NOT_MATCH_OVERALL_SENTENCE_LENGTH'
+        | 'RELEASE_DATE_FROM_ANOTHER_CUSTODY_PERIOD'
         | 'POWER_TO_DETAIN'
         | 'CROSS_BORDER_SECTION_RELEASE_DATE'
-        | 'ADD_RELEASE_DATE_FROM_ANOTHER_BOOKING'
-        | 'ERS_BREACH'
-        | 'COURT_OF_APPEAL'
+        | 'AGGRAVATING_FACTOR_OFFENCE'
         | 'OTHER'
       reasonFurtherDetail?: string
     }
@@ -1703,6 +1693,7 @@ export interface components {
         | 'FTR_56_TRANCHE_4'
         | 'FTR_56_TRANCHE_5'
         | 'FTR_56_TRANCHE_6'
+      usedPreviouslyRecordedSLED?: components['schemas']['PreviouslyRecordedSLED']
     }
     CalculationFragments: {
       breakdownHtml: string
@@ -1712,6 +1703,23 @@ export interface components {
       id: number
       isOther: boolean
       displayName: string
+    }
+    PreviouslyRecordedSLED: {
+      /**
+       * Format: date
+       * @description The SLED that has been used instead of the calculated one.
+       */
+      previouslyRecordedSLEDDate: string
+      /**
+       * Format: date
+       * @description The SLED that was calculated but is not being used.
+       */
+      calculatedDate: string
+      /**
+       * Format: int64
+       * @description The calculation request id of the calculation containing the previously recorded SLED
+       */
+      previouslyRecordedSLEDCalculationRequestId: number
     }
     RelevantRemand: {
       /** Format: date */
@@ -1884,13 +1892,11 @@ export interface components {
       offenderSentCalculationId?: number
       /** @enum {string} */
       genuineOverrideReasonCode?:
-        | 'ORDER_OF_IMPRISONMENT_OR_WARRANT_DOES_NOT_MATCH_TRIAL_RECORD'
-        | 'TERRORISM'
+        | 'TRIAL_RECORD_OR_BREAKDOWN_DOES_NOT_MATCH_OVERALL_SENTENCE_LENGTH'
+        | 'RELEASE_DATE_FROM_ANOTHER_CUSTODY_PERIOD'
         | 'POWER_TO_DETAIN'
         | 'CROSS_BORDER_SECTION_RELEASE_DATE'
-        | 'ADD_RELEASE_DATE_FROM_ANOTHER_BOOKING'
-        | 'ERS_BREACH'
-        | 'COURT_OF_APPEAL'
+        | 'AGGRAVATING_FACTOR_OFFENCE'
         | 'OTHER'
       genuineOverrideReasonDescription?: string
     }
@@ -1913,13 +1919,11 @@ export interface components {
       dates: components['schemas']['GenuineOverrideDate'][]
       /** @enum {string} */
       reason:
-        | 'ORDER_OF_IMPRISONMENT_OR_WARRANT_DOES_NOT_MATCH_TRIAL_RECORD'
-        | 'TERRORISM'
+        | 'TRIAL_RECORD_OR_BREAKDOWN_DOES_NOT_MATCH_OVERALL_SENTENCE_LENGTH'
+        | 'RELEASE_DATE_FROM_ANOTHER_CUSTODY_PERIOD'
         | 'POWER_TO_DETAIN'
         | 'CROSS_BORDER_SECTION_RELEASE_DATE'
-        | 'ADD_RELEASE_DATE_FROM_ANOTHER_BOOKING'
-        | 'ERS_BREACH'
-        | 'COURT_OF_APPEAL'
+        | 'AGGRAVATING_FACTOR_OFFENCE'
         | 'OTHER'
       reasonFurtherDetail?: string
     }
@@ -2058,6 +2062,7 @@ export interface components {
     }
     /** @description Calculation breakdown details for a release date type */
     ReleaseDateCalculationBreakdown: {
+      /** @description Calculation rules used to determine this calculation. */
       rules: (
         | 'HDCED_GE_MIN_PERIOD_LT_MIDPOINT'
         | 'HDCED_GE_MIDPOINT_LT_MAX_PERIOD'
@@ -2086,6 +2091,7 @@ export interface components {
         | 'ADJUSTED_AFTER_TRANCHE_COMMENCEMENT'
         | 'BOTUS_LATEST_TUSED_USED'
         | 'BOTUS_LATEST_TUSED_USED_POST_REPEAL'
+        | 'PREVIOUSLY_RECORDED_SLED_USED'
       )[]
       /** @description Adjustments details associated that are specifically added as part of a rule */
       rulesWithExtraAdjustments: {
@@ -2233,15 +2239,14 @@ export interface components {
         | 'GENUINE_OVERRIDE'
       /** @enum {string} */
       genuineOverrideReasonCode?:
-        | 'ORDER_OF_IMPRISONMENT_OR_WARRANT_DOES_NOT_MATCH_TRIAL_RECORD'
-        | 'TERRORISM'
+        | 'TRIAL_RECORD_OR_BREAKDOWN_DOES_NOT_MATCH_OVERALL_SENTENCE_LENGTH'
+        | 'RELEASE_DATE_FROM_ANOTHER_CUSTODY_PERIOD'
         | 'POWER_TO_DETAIN'
         | 'CROSS_BORDER_SECTION_RELEASE_DATE'
-        | 'ADD_RELEASE_DATE_FROM_ANOTHER_BOOKING'
-        | 'ERS_BREACH'
-        | 'COURT_OF_APPEAL'
+        | 'AGGRAVATING_FACTOR_OFFENCE'
         | 'OTHER'
       genuineOverrideReasonDescription?: string
+      usePreviouslyRecordedSLEDIfFound: boolean
     }
     ReleaseDatesAndCalculationContext: {
       calculation: components['schemas']['CalculationContext']
@@ -2446,6 +2451,7 @@ export interface components {
         | 'FTR_56_TRANCHE_4'
         | 'FTR_56_TRANCHE_5'
         | 'FTR_56_TRANCHE_6'
+      usedPreviouslyRecordedSLED?: components['schemas']['PreviouslyRecordedSLED']
     }
     ExternalSentenceId: {
       /** Format: int32 */
@@ -4994,60 +5000,6 @@ export interface operations {
          * @example 123456
          */
         offenderSentCalculationId: number
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Returns Nomis calculation summary with release dates based on a offenderSentCalculationId */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NomisCalculationSummary']
-        }
-      }
-      /** @description Unauthorised, requires a valid Oauth2 token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NomisCalculationSummary']
-        }
-      }
-      /** @description Forbidden, requires an appropriate role */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NomisCalculationSummary']
-        }
-      }
-      /** @description No nomis calculation summary - release dates exists for this offenderSentCalculationId */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NomisCalculationSummary']
-        }
-      }
-    }
-  }
-  getNomisCalculationSummaryWithOverrides: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        /**
-         * @description The offenderSentCalculationId of the offender booking or a calculation
-         * @example 123456
-         */
-        offenderSentCalculationId: number
-        bookingId: number
       }
       cookie?: never
     }

@@ -28,3 +28,6 @@ export type UpdateSentenceTypesResponse = components['schemas']['UpdateSentenceT
 
 export type SentenceType = components['schemas']['SentenceType']
 export type PeriodLength = components['schemas']['PeriodLength']
+
+export type IsRecallPossibleRequest = components['schemas']['IsRecallPossibleRequest']
+export type IsRecallPossibleResponse = components['schemas']['IsRecallPossibleResponse']

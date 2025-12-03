@@ -48,6 +48,33 @@ export default class RecallJourneyUrls {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/check-answers`
   }
 
+  static unexpectedRecallTypeIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unexpected-recall-type`
+  }
+
+  static unsupportedRecallTypeSentenceTypeMappingIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unsupported-recall-type`
+  }
+
+  static unkownPreRecallTypeIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unknown-pre-recall-sentence-type`
+  }
+
   static recallConfirmation = (nomsId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
     return `/person/${nomsId}/recall/${createOrEdit}/${recallId}/confirmed`
   }

@@ -8,7 +8,7 @@ import RevocationDateController from './journey/revocation-date/revocationDateCo
 import ApiRoutes from './prisonerImageRoute'
 import StartCreateRecallJourneyController from './journey/start/startCreateRecallJourneyController'
 import { revocationDateSchemaFactory } from './journey/revocation-date/revocationDateSchemas'
-import { ensureInCreateRecallJourney } from '../middleware/journeyMiddleware'
+import { ensureInRecallJourney } from '../middleware/journeyMiddleware'
 import asyncMiddleware from '../middleware/asyncMiddleware'
 import ReturnToCustodyDateController from './journey/return-to-custody-date/returnToCustodyDateController'
 import DecisionController from './journey/decision/decisionController'
@@ -33,6 +33,9 @@ import CancelController from './journey/cancel/cancelController'
 import { confirmCancelSchema } from './journey/cancel/confirmCancelSchema'
 import StartEditRecallJourneyController from './journey/start/startEditRecallJourneyController'
 import NoCasesSelectedController from './journey/manual/no-cases/noCasesSelectedController'
+import UnexpectedRecallTypeController from './journey/intercept/unexpectedRecallTypeController'
+import UnsupportedRecallTypeController from './journey/intercept/unsupportedRecallTypeController'
+import UnknownPreRecallSentenceTypeController from './journey/intercept/unknownPreRecallSentenceTypeController'
 
 export default function routes({
   prisonerService,
@@ -96,79 +99,97 @@ export default function routes({
     path: `${journeyPath}/revocation-date`,
     controller: new RevocationDateController(),
     validateToSchema: revocationDateSchemaFactory(recallService),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/return-to-custody-date`,
     controller: new ReturnToCustodyDateController(),
     validateToSchema: returnToCustodyDateSchemaFactory(),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/recall-decision`,
     controller: new DecisionController(calculateReleaseDatesService),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/review-sentences`,
     controller: new ReviewSentencesController(recallService, calculateReleaseDatesService),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/recall-type`,
-    controller: new RecallTypeController(),
+    controller: new RecallTypeController(recallService),
     validateToSchema: recallTypeSchema,
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/check-answers`,
     controller: new CheckAnswersController(recallService),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
-  // create - intercepts
+  // intercepts
   route({
     path: `${journeyPath}/validation-intercept`,
     controller: new CriticalValidationController(),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/conflicting-adjustments`,
     controller: new ConflictingAdjustmentsController(calculateReleaseDatesService, adjustmentsService),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/no-recallable-sentences-found`,
     controller: new NoRecallableSentencesController(),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
-  // create - manual journey
+  route({
+    path: `${journeyPath}/unexpected-recall-type`,
+    controller: new UnexpectedRecallTypeController(),
+    additionalMiddleware: [ensureInRecallJourney],
+  })
+
+  route({
+    path: `${journeyPath}/unsupported-recall-type`,
+    controller: new UnsupportedRecallTypeController(),
+    additionalMiddleware: [ensureInRecallJourney],
+  })
+
+  route({
+    path: `${journeyPath}/unknown-pre-recall-sentence-type`,
+    controller: new UnknownPreRecallSentenceTypeController(recallService),
+    additionalMiddleware: [ensureInRecallJourney],
+  })
+
+  // manual journey
   route({
     path: `${journeyPath}/manual/start`,
     controller: new ManualJourneyInterceptController(),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/manual/select-court-cases`,
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/manual/select-court-cases/:caseIndex`,
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
@@ -184,14 +205,14 @@ export default function routes({
       calculateReleaseDatesService,
       courtCasesReleaseDatesService,
     ),
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({
     path: `${journeyPath}/confirm-cancel`,
     controller: new CancelController(),
     validateToSchema: confirmCancelSchema,
-    additionalMiddleware: [ensureInCreateRecallJourney],
+    additionalMiddleware: [ensureInRecallJourney],
   })
 
   route({

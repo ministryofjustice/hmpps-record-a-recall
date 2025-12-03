@@ -8,6 +8,8 @@ import {
   UpdateSentenceTypesResponse,
   SentenceType,
   RecallableCourtCasesResponseAugmented,
+  IsRecallPossibleRequest,
+  IsRecallPossibleResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
@@ -114,5 +116,15 @@ export default class RemandAndSentencingApiClient extends RestClient {
       },
       asSystem(),
     ) as Promise<SentenceType[]>
+  }
+
+  async isRecallPossible(request: IsRecallPossibleRequest, username: string): Promise<IsRecallPossibleResponse> {
+    return this.post(
+      {
+        path: `/recall/is-possible`,
+        data: request,
+      },
+      asSystem(username),
+    ) as Promise<IsRecallPossibleResponse>
   }
 }
