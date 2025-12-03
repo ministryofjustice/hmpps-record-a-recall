@@ -1,21 +1,10 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-
-{% block beforeContent %}
-  {{ super() }}
-  {% if errorlist.length %}
-    {{ govukErrorSummary({
-      titleText: "There is a problem",
-      errorList: validationErrors
-    }) }}
-  {% endif %}
-{% endblock %}
 
 {% block content %}
   <h1 class="govuk-heading-xl">
-    <span class="govuk-caption-xl">{{ pageHeading }}</span>
+    <span class="govuk-caption-xl">Record a Recall</span>
     No cases have been selected
   </h1>
 

@@ -9,10 +9,10 @@ export default class NoCasesSelectedController implements Controller {
   PAGE_NAME = Page.NO_CASES_SELECTED
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
-    const { nomsId, journeyId, createOrEdit: createOrEditParam, recallId } = req.params
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]
 
-    const createOrEdit = createOrEditParam as 'edit' | 'create'
+    // const createOrEdit = createOrEditParam as 'edit' | 'create'
 
     // Use empty string if recallId is undefined to match the route
     const safeRecallId = recallId || undefined
@@ -22,7 +22,6 @@ export default class NoCasesSelectedController implements Controller {
 
     return res.render('pages/recall/no-cases-selected', {
       prisoner: res.locals.prisoner,
-      pageHeading: 'Manual recall',
       revocationDate: journey.revocationDate
         ? dateToIsoString(datePartsToDate(journey.revocationDate as DateParts))
         : null,
@@ -36,8 +35,8 @@ export default class NoCasesSelectedController implements Controller {
       ),
       resetToRevocationDateUrl: RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, safeRecallId),
       resetToManualInterceptUrl: manualBase,
-      errorlist: [],
-      validationErrors: [],
+      //   errorlist: [],
+      //   validationErrors: [],
     })
   }
 }
