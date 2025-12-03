@@ -231,7 +231,7 @@ describe('selectCasesController Tests', () => {
 
       const res = await request(app).post(selectCasesUrl(0)).send({ activeSentenceChoice: 'NO' }).expect(302)
 
-      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/no-cases-selected`)
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
     })
 

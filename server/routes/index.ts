@@ -32,6 +32,7 @@ import { returnToCustodyDateSchemaFactory } from './journey/return-to-custody-da
 import CancelController from './journey/cancel/cancelController'
 import { confirmCancelSchema } from './journey/cancel/confirmCancelSchema'
 import StartEditRecallJourneyController from './journey/start/startEditRecallJourneyController'
+import NoCasesSelectedController from './journey/manual/no-cases/noCasesSelectedController'
 import UnexpectedRecallTypeController from './journey/intercept/unexpectedRecallTypeController'
 import UnsupportedRecallTypeController from './journey/intercept/unsupportedRecallTypeController'
 import UnknownPreRecallSentenceTypeController from './journey/intercept/unknownPreRecallSentenceTypeController'
@@ -188,6 +189,12 @@ export default function routes({
     path: `${journeyPath}/manual/select-court-cases/:caseIndex`,
     controller: new SelectCasesController(recallService),
     validateToSchema: selectCourtCasesSchema,
+    additionalMiddleware: [ensureInRecallJourney],
+  })
+
+  route({
+    path: `${journeyPath}/manual/no-cases-selected`,
+    controller: new NoCasesSelectedController(),
     additionalMiddleware: [ensureInRecallJourney],
   })
 

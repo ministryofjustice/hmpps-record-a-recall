@@ -140,6 +140,15 @@ export default class RecallJourneyUrls {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
   }
 
+  static manualNoCasesSelected = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/no-cases-selected`
+  }
+
   static manualCheckSentences = (
     nomsId: string,
     journeyId: string,
@@ -183,6 +192,8 @@ export const urlMapByName = {
     createOrEdit: 'edit' | 'create',
     recallId: string,
   ) => RecallJourneyUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId, createOrEdit, recallId),
+  manualNoCasesSelected: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
+    RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId),
   manualJourneyStart: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
     RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId),
   manualSelectCases: (
