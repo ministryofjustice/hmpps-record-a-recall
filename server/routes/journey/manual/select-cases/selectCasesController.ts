@@ -36,6 +36,7 @@ export default class SelectCasesController implements Controller {
 
     return res.render('pages/recall/manual/select-court-cases', {
       prisoner,
+      isEdit: false,
       courtCase,
       courtCaseIndex,
       totalCases: cases.length,

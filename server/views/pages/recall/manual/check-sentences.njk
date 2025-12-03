@@ -11,9 +11,17 @@
   {{ super() }}
 {% endblock %}
 
+{# Override the caption block #}
+{% block beforePageContent %}
+  {% if isEdit %}
+    <span class="govuk-caption-l">Edit a recall</span>
+  {% else %}
+    <span class="govuk-caption-l">Record a recall</span>
+  {% endif %}
+{% endblock %}
+
 {% block pageContent %}
   <h1 class="govuk-heading-xl">
-    <span class="govuk-caption-xl">{{ pageCaption }}</span>
     {{ title }}
   </h1>
 
