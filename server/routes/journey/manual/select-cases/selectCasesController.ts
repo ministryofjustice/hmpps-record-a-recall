@@ -80,7 +80,7 @@ export default class SelectCasesController implements Controller {
 
     // Move to next case if available
     if (hasNextCase) {
-      return res.redirect(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases/${nextCaseIndex}`)
+      return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, nextCaseIndex))
     }
 
     // last case — decide final route
