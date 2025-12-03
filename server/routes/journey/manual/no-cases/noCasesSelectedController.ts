@@ -12,9 +12,6 @@ export default class NoCasesSelectedController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]
 
-    // base manual journey path
-    const manualBase = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId)
-
     return res.render('pages/recall/no-cases-selected', {
       prisoner: res.locals.prisoner,
       revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate as DateParts)),
@@ -26,7 +23,7 @@ export default class NoCasesSelectedController implements Controller {
         RecallJourneyUrls.manualNoCasesSelected.name,
       ),
       resetToRevocationDateUrl: RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId),
-      resetToManualInterceptUrl: manualBase,
+      resetToManualInterceptUrl: RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId),
     })
   }
 }
