@@ -1382,7 +1382,16 @@ export interface components {
       expiredSentences: components['schemas']['RecallableSentence'][]
       ineligibleSentences: components['schemas']['RecallableSentence'][]
       sentencesBeforeInitialRelease: components['schemas']['RecallableSentence'][]
-      unexpectedRecallTypes: ('LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC')[]
+      unexpectedRecallTypes: (
+        | 'LR'
+        | 'FTR_14'
+        | 'FTR_28'
+        | 'FTR_HDC_14'
+        | 'FTR_HDC_28'
+        | 'CUR_HDC'
+        | 'IN_HDC'
+        | 'FTR_56'
+      )[]
     }
     RecallSentenceCalculation: {
       /** Format: date */
