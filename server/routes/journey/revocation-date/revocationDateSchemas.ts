@@ -9,10 +9,10 @@ const BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED = ''
 const AFTER_SENTENCE_DATE_ERROR = 'Revocation date must be after the earliest sentence date'
 
 export const revocationDateSchemaFactory = (recallService: RecallService) => async (req: Request) => {
-  const { nomsId, journeyId } = req.params
+  const { nomsId, journeyId, recallId } = req.params
   const journey = req.session.recallJourneys[journeyId]
   const { username } = req.user
-  const latestRevocationDate = await recallService.getLatestRevocationDate(nomsId, username)
+  const latestRevocationDate = await recallService.getLatestRevocationDate(nomsId, username, recallId)
   return createSchema({
     day: z.string().trim().optional(),
     month: z.string().trim().optional(),
