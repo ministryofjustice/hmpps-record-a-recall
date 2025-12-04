@@ -23,7 +23,7 @@ export const revocationDateSchemaFactory = (recallService: RecallService) => asy
       if (parsedDate) {
         if (
           journey.crdsValidationResult.earliestSentenceDate &&
-          new Date(journey.crdsValidationResult.earliestSentenceDate) > parsedDate
+          new Date(journey.crdsValidationResult.earliestSentenceDate) >= parsedDate
         ) {
           ctx.addIssue({ code: 'custom', message: AFTER_SENTENCE_DATE_ERROR, path: ['day'] })
           ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['month'] })
@@ -32,7 +32,7 @@ export const revocationDateSchemaFactory = (recallService: RecallService) => asy
         futureDateValidation('Revocation date', parsedDate, ctx)
 
         if (!ctx.issues.length) {
-          if (latestRevocationDate && latestRevocationDate > parsedDate) {
+          if (latestRevocationDate && latestRevocationDate >= parsedDate) {
             ctx.addIssue({
               code: 'custom',
               message: `Revocation date must be after previously recorded recall date ${formatDate(latestRevocationDate.toString())}`,
