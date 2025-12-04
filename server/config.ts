@@ -180,4 +180,7 @@ export default {
     ),
     digitalPrisonServices: get('DIGITAL_PRISON_SERVICES_URL', 'http://127.0.0.1:3000/dps', requiredInProduction),
   },
+  featureToggles: {
+    ftr56: get('FTR_56_ENABLED', 'false'),
+  },
 }

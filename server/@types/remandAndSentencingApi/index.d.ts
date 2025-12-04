@@ -204,6 +204,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/legacy/court-case/{courtCaseUuid}/case-references/refresh': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Refresh case references
+     * @description This endpoint will refresh case references
+     */
+    put: operations['refreshCaseReferences']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/legacy/court-appearance/{lifetimeUuid}': {
     parameters: {
       query?: never
@@ -388,7 +408,7 @@ export interface paths {
      * Refresh case references
      * @description This endpoint will refresh case references
      */
-    put: operations['refreshCaseReferences']
+    put: operations['refreshCaseReferences_1']
     post?: never
     delete?: never
     options?: never
@@ -1623,7 +1643,7 @@ export interface components {
       returnToCustodyDate?: string
       inPrisonOnRevocationDate?: boolean
       /** @enum {string} */
-      recallTypeCode: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
+      recallTypeCode: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_56' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
       createdByUsername: string
       createdByPrison: string
       sentenceIds?: string[]
@@ -1756,6 +1776,12 @@ export interface components {
       prisonerId: string
       active: boolean
       legacyData: components['schemas']['CourtCaseLegacyData']
+      /** Format: int64 */
+      bookingId?: number
+      performedByUser?: string
+    }
+    RefreshCaseReferences: {
+      caseReferences: components['schemas']['CaseReferenceLegacyData'][]
       performedByUser?: string
     }
     CourtAppearanceLegacyData: {
@@ -1764,7 +1790,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -1818,6 +1844,8 @@ export interface components {
     }
     CreateImmigrationDetention: {
       prisonerId: string
+      /** Format: uuid */
+      appearanceOutcomeUuid: string
       /** @enum {string} */
       immigrationDetentionRecordType: 'IS91' | 'DEPORTATION_ORDER' | 'NO_LONGER_OF_INTEREST'
       /** Format: date */
@@ -1884,7 +1912,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -1976,7 +2004,7 @@ export interface components {
     IsRecallPossibleRequest: {
       sentenceIds: string[]
       /** @enum {string} */
-      recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
+      recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_56' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
     }
     IsRecallPossibleResponse: {
       /** @enum {string} */
@@ -2544,7 +2572,7 @@ export interface components {
       returnToCustodyDate?: string
       inPrisonOnRevocationDate?: boolean
       /** @enum {string} */
-      recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
+      recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_56' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
       /** Format: date-time */
       createdAt: string
       createdByUsername: string
@@ -2709,7 +2737,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -2934,7 +2962,7 @@ export interface components {
       revocationDate?: string
       sentenceIds: string[]
       /** @enum {string} */
-      recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
+      recallType: 'LR' | 'FTR_14' | 'FTR_28' | 'FTR_56' | 'FTR_HDC_14' | 'FTR_HDC_28' | 'CUR_HDC' | 'IN_HDC'
       recallBy: string
     }
     LegacyCourtCaseUuids: {
@@ -2990,7 +3018,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -3010,7 +3038,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime?: string
       courtId: string
     }
@@ -3065,7 +3093,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -3075,7 +3103,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime?: string
       courtId: string
     }
@@ -3201,9 +3229,9 @@ export interface components {
       sort?: components['schemas']['SortObject']
       /** Format: int32 */
       pageSize?: number
-      paged?: boolean
       /** Format: int32 */
       pageNumber?: number
+      paged?: boolean
       unpaged?: boolean
     }
     SortObject: {
@@ -3317,7 +3345,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:28.551336987 */
+      /** @example 14:28:13.148353311 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
@@ -4052,6 +4080,44 @@ export interface operations {
       }
     }
   }
+  refreshCaseReferences: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        courtCaseUuid: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RefreshCaseReferences']
+      }
+    }
+    responses: {
+      /** @description No content */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
   get_3: {
     parameters: {
       query?: never
@@ -4698,7 +4764,7 @@ export interface operations {
       }
     }
   }
-  refreshCaseReferences: {
+  refreshCaseReferences_1: {
     parameters: {
       query?: never
       header?: never
