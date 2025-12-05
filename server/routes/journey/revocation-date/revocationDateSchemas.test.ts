@@ -40,6 +40,22 @@ describe('revocationDateSchema', () => {
       year: [''],
     })
   })
+
+  it('Should return a  error if revocation date is equal to earliest sentence date', async () => {
+    recallService.getLatestRevocationDate.mockResolvedValue(new Date('2025-01-01'))
+    const form = { day: '1', month: '1', year: '2024' }
+
+    const result = await doValidate(form)
+
+    expect(result.success).toStrictEqual(false)
+    const errors = deduplicateFieldErrors(result.error!)
+    expect(errors).toStrictEqual({
+      day: ['Revocation date must be after the earliest sentence date'],
+      month: [''],
+      year: [''],
+    })
+  })
+
   it('Should return a combined error if revocation date is before previous recall', async () => {
     // Given
     recallService.getLatestRevocationDate.mockResolvedValue(new Date('2025-01-01'))
@@ -53,6 +69,21 @@ describe('revocationDateSchema', () => {
     expect(result.success).toStrictEqual(false)
     const deduplicatedFieldErrors = deduplicateFieldErrors(result.error!)
     expect(deduplicatedFieldErrors).toStrictEqual({
+      day: ['Revocation date must be after previously recorded recall date 01 Jan 2025'],
+      month: [''],
+      year: [''],
+    })
+  })
+
+  it('Should return a error if revocation date is equal to previous revocation date', async () => {
+    recallService.getLatestRevocationDate.mockResolvedValue(new Date('2025-01-01'))
+    const form = { day: '1', month: '01', year: '2025' }
+
+    const result = await doValidate(form)
+
+    expect(result.success).toStrictEqual(false)
+    const errors = deduplicateFieldErrors(result.error!)
+    expect(errors).toStrictEqual({
       day: ['Revocation date must be after previously recorded recall date 01 Jan 2025'],
       month: [''],
       year: [''],
