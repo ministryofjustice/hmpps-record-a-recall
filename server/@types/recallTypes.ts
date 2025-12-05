@@ -1,3 +1,4 @@
+import config from '../config'
 import { ApiRecallType, RecallableCourtCaseSentence } from './remandAndSentencingApi/remandAndSentencingTypes'
 
 export type RecallType = {
@@ -22,6 +23,15 @@ export const RecallTypes = {
     description: '28-day fixed-term',
     fixedTerm: true,
   },
+  ...(config.featureToggles.ftr56
+    ? {
+        FIFTY_SIX_DAY_RECALL: {
+          code: 'FTR_56',
+          description: '56-day fixed-term',
+          fixedTerm: true,
+        } as RecallType,
+      }
+    : {}),
   HDC_FOURTEEN_DAY_RECALL: {
     code: 'FTR_HDC_14',
     description: '14-day fixed-term from HDC',
