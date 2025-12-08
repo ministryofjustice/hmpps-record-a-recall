@@ -43,6 +43,8 @@ export default class RevocationDateController implements Controller {
     // Save the entered revocation date to the journey
     journey.revocationDate = { day, month, year }
 
+    // After editing from CYA, continue to RTC page
+    journey.isEditingRevocationDate = true
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
 
@@ -53,9 +55,10 @@ export default class RevocationDateController implements Controller {
     createOrEdit: 'edit' | 'create',
     recallId: string,
   ) {
-    if (journey.isCheckingAnswers) {
+    if (journey.isEditingRevocationDate) {
       return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
     return GlobalRecallUrls.home(nomsId)
   }
+
 }

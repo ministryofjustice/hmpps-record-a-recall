@@ -29,6 +29,7 @@ export default class CheckAnswersController implements Controller {
       return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
+    // Set CYA flag
     journey.isCheckingAnswers = true
 
     let backLink: string
@@ -68,6 +69,30 @@ export default class CheckAnswersController implements Controller {
       recallBeingEdited: journey.recallBeingEdited,
       urls: this.buildUrls(nomsId, journeyId, createOrEdit, recallId, recall),
     })
+  }
+
+  // New handler: user clicks "edit revocation date"
+  editRevocationDate = (req: Request<PersonJourneyParams>, res: Response) => {
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+
+    journey.isCheckingAnswers = true
+    journey.isEditingRevocationDate = true
+    journey.isEditingReturnToCustodyDate = false
+
+    return res.redirect(RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId))
+  }
+
+  // New handler: user clicks "edit return to custody (arrest) date"
+  editReturnToCustodyDate = (req: Request<PersonJourneyParams>, res: Response) => {
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+
+    journey.isCheckingAnswers = true
+    journey.isEditingRevocationDate = false
+    journey.isEditingReturnToCustodyDate = true
+
+    return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
 
   private buildUrls(
