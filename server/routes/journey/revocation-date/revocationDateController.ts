@@ -39,10 +39,10 @@ export default class RevocationDateController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year } = req.body
+
+    // Save the entered revocation date to the journey
     journey.revocationDate = { day, month, year }
-    if (journey.isCheckingAnswers) {
-      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
-    }
+
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
 
