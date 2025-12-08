@@ -8,7 +8,7 @@ import { RecallTypeForm } from './recallTypeSchema'
 import RecallService from '../../../services/recallService'
 
 export default class RecallTypeController implements Controller {
-  PAGE_NAME: Page = Page.TYPE_AUTOMATED
+  PAGE_NAME: Page = Page.RECALL_TYPE
 
   constructor(private readonly recallService: RecallService) {}
 

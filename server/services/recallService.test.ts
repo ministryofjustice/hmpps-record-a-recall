@@ -677,4 +677,53 @@ describe('Recall service', () => {
       expect(result.ualAdjustmentTotalDays).toBeUndefined()
     })
   })
+
+  describe('getLatestRevocationDate', () => {
+    it('should return the latest revocation date when recalls have revocation dates', async () => {
+      const olderRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        revocationDate: '2024-01-01',
+        source: 'DPS',
+      })
+      const newerRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        revocationDate: '2024-06-15',
+        source: 'DPS',
+      })
+
+      const recallWithoutRevocationDate = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        source: 'NOMIS',
+      })
+
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([
+        olderRecall,
+        newerRecall,
+        recallWithoutRevocationDate,
+      ])
+
+      const result = await service.getLatestRevocationDate('A1234BC', 'user1')
+
+      expect(result).toEqual(new Date('2024-06-15'))
+    })
+
+    it('should exclude the given recall when calculating the latest revocation date', async () => {
+      const excludedRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        revocationDate: '2024-06-15',
+        source: 'DPS',
+      })
+      const includedRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        revocationDate: '2024-03-10',
+        source: 'DPS',
+      })
+
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([excludedRecall, includedRecall])
+
+      const result = await service.getLatestRevocationDate('A1234BC', 'user1', excludedRecall.recallUuid)
+
+      expect(result).toEqual(new Date('2024-03-10'))
+    })
+  })
 })
