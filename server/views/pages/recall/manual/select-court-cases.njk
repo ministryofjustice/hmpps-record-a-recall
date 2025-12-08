@@ -7,11 +7,8 @@
 {% set pageTitle = applicationName + " - " + title %}
 
 {% block beforePageContent %}
-  {% if isEdit %}
-    <span class="govuk-caption-l">Edit a recall</span>
-  {% else %}
-    <span class="govuk-caption-l">Record a recall</span>
-  {% endif %}
+  {% set caption = isEdit and "Edit a recall" or "Record a recall" %}
+  <span class="govuk-caption-l">{{ caption }}</span>
 {% endblock %}
 
 {% block pageContent %}
