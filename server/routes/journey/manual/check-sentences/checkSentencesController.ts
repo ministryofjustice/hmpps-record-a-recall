@@ -28,6 +28,7 @@ export default class CheckSentencesController implements Controller {
 
     return res.render('pages/recall/manual/check-sentences', {
       prisoner,
+      isEdit: createOrEdit === 'edit',
       casesSelectedForRecall,
       licenceExpiryDate,
       cancelUrl: RecallJourneyUrls.confirmCancel(
