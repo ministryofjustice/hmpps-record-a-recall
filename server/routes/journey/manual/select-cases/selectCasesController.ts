@@ -83,7 +83,11 @@ export default class SelectCasesController implements Controller {
       return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, nextCaseIndex))
     }
 
-    // last case — decide final route
+    // last case — if coming from check-your-answers, go straight back
+    if (journey.isCheckingAnswers) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+
     if (journey.courtCaseIdsSelectedForRecall.length === 0) {
       return res.redirect(RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId))
     }
