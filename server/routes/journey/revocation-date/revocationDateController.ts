@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { isEqual } from 'lodash'
+import isEqual from 'lodash/isEqual.js'
 import { Controller } from '../../controller'
 import { RecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import GlobalRecallUrls from '../../globalRecallUrls'
