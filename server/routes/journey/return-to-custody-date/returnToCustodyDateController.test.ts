@@ -134,7 +134,7 @@ describe('GET', () => {
     ])(
       'shows correct back link when check-your-answers is %s and calculationRequestId is %s',
       async (isCheckingAnswers: boolean, calculationRequestId: number, expectedNextUrl: string) => {
-        existingJourney.isCheckingAnswers = isCheckingAnswers
+        existingJourney.isEditingReturnToCustodyDate = isCheckingAnswers
         existingJourney.calculationRequestId = calculationRequestId
 
         const res = await request(app).get(baseUrl)
@@ -148,13 +148,13 @@ describe('GET', () => {
 
 describe('POST', () => {
   it.each([
-    [false, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
-    [true, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
+    [true, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`], // isEditingRevocationDate = true → decisionEndpoint
+    [false, `/person/${nomsId}/recall/create/${journeyId}/check-answers`], // isEditingRevocationDate = false → checkAnswers
   ])(
     'should set the return to custody date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
-    async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+    async (isEditingRevocationDate: boolean, expectedNextUrl: string) => {
       // Given
-      existingJourney.isCheckingAnswers = isCheckingAnswers
+      existingJourney.isEditingRevocationDate = isEditingRevocationDate
 
       // When
       await request(app)

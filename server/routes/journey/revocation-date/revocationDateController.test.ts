@@ -111,36 +111,32 @@ describe('GET', () => {
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
 
-  describe('backlink tests', () => {
-    it.each([
-      [false, undefined, 'create', GlobalRecallUrls.home(nomsId)],
-      [true, 991, 'create', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null)],
-      [true, undefined, 'create', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null)],
-      [false, undefined, 'edit', GlobalRecallUrls.home(nomsId)],
-      [true, 991, 'edit', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', recallId)],
-      [true, undefined, 'edit', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', recallId)],
-    ])(
-      'shows correct back link when check-your-answers is %s and calculationRequestId is %s and %s journey',
-      async (
-        isCheckingAnswers: boolean,
-        calculationRequestId: number,
-        editOrCreate: string,
-        expectedNextUrl: string,
-      ) => {
-        const url =
-          editOrCreate === 'create'
-            ? `/person/${nomsId}/recall/create/${journeyId}/revocation-date`
-            : `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/revocation-date`
-        existingJourney.isCheckingAnswers = isCheckingAnswers
-        existingJourney.calculationRequestId = calculationRequestId
+  it.each([
+    [false, undefined, 'create', GlobalRecallUrls.home(nomsId)],
+    [true, 991, 'create', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null)],
+    [true, undefined, 'create', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null)],
+    [false, undefined, 'edit', GlobalRecallUrls.home(nomsId)],
+    [true, 991, 'edit', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', recallId)],
+    [true, undefined, 'edit', RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', recallId)],
+  ])(
+    'shows correct back link when check-your-answers is %s and calculationRequestId is %s and %s journey',
+    async (isCheckingAnswers: boolean, calculationRequestId: number, editOrCreate: string, expectedNextUrl: string) => {
+      // Given
+      const url =
+        editOrCreate === 'create'
+          ? `/person/${nomsId}/recall/create/${journeyId}/revocation-date`
+          : `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/revocation-date`
+      existingJourney.isEditingRevocationDate = isCheckingAnswers
+      existingJourney.calculationRequestId = calculationRequestId
 
-        const res = await request(app).get(url)
+      // When
+      const res = await request(app).get(url)
 
-        const $ = cheerio.load(res.text)
-        expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
-      },
-    )
-  })
+      // Then
+      const $ = cheerio.load(res.text)
+      expect($('[data-qa="back-link"]').attr('href')).toBe(expectedNextUrl)
+    },
+  )
 })
 
 describe('POST', () => {
@@ -170,27 +166,29 @@ describe('POST', () => {
         month: 2,
         year: 2025,
       })
+      expect(existingJourney.isEditingRevocationDate).toBe(true)
     },
   )
 
-  it('should return to the input page if there are validation errors', async () => {
+  it('should return to the next page even if some form fields are missing', async () => {
     // Given
     recallService.getLatestRevocationDate.mockResolvedValue(new Date('2024-01-01'))
     delete existingJourney.revocationDate
 
     // When
-    await request(app)
+    const res = await request(app)
       .post(`/person/${nomsId}/recall/create/${journeyId}/revocation-date`)
       .type('form')
-      .send({ day: '1', month: '2' })
+      .send({ day: '1', month: '2' }) // year missing
       .expect(302)
-      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/revocation-date#`)
 
     // Then
+    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/revocation-date#`)
     expect(existingJourney.revocationDate).toBeUndefined()
   })
 
   it('should return to start of journey if not found in session', async () => {
+    // Given / When / Then
     await request(app)
       .post(`/person/${nomsId}/recall/create/${uuidv4()}/revocation-date`)
       .type('form')
