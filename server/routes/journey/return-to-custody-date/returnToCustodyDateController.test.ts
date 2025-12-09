@@ -148,8 +148,8 @@ describe('GET', () => {
 
 describe('POST', () => {
   it.each([
-    [true, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`], // isEditingRevocationDate = true → decisionEndpoint
-    [false, `/person/${nomsId}/recall/create/${journeyId}/check-answers`], // isEditingRevocationDate = false → checkAnswers
+    [true, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
+    [false, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
   ])(
     'should set the return to custody date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
     async (isEditingRevocationDate: boolean, expectedNextUrl: string) => {
