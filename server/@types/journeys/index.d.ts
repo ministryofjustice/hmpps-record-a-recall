@@ -15,6 +15,8 @@ export interface RecallJourney {
   revocationDate?: DateParts
   inCustodyAtRecall?: boolean
   returnToCustodyDate?: DateParts
+  isEditingRevocationDate?: boolean
+  isEditingReturnToCustodyDate?: boolean
   recallId?: string
   sentenceIds?: string[]
   recallType?: ApiRecallType

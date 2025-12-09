@@ -46,7 +46,14 @@ export default class ReturnToCustodyDateController implements Controller {
     const { day, month, year, inCustodyAtRecall } = req.body
     journey.inCustodyAtRecall = inCustodyAtRecall
     journey.returnToCustodyDate = { day, month, year }
-    return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
+
+    if (journey.isEditingRevocationDate) {
+      journey.isEditingRevocationDate = false
+
+      return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
+    }
+
+    return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
   }
 
   private getBackLink(
@@ -56,7 +63,7 @@ export default class ReturnToCustodyDateController implements Controller {
     createOrEdit: 'edit' | 'create',
     recallId: string,
   ) {
-    if (journey.isCheckingAnswers) {
+    if (journey.isEditingReturnToCustodyDate) {
       return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
     return RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId)

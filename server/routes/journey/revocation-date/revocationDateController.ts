@@ -39,10 +39,10 @@ export default class RevocationDateController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year } = req.body
+
     journey.revocationDate = { day, month, year }
-    if (journey.isCheckingAnswers) {
-      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
-    }
+
+    journey.isEditingRevocationDate = true
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
 
@@ -53,7 +53,7 @@ export default class RevocationDateController implements Controller {
     createOrEdit: 'edit' | 'create',
     recallId: string,
   ) {
-    if (journey.isCheckingAnswers) {
+    if (journey.isEditingRevocationDate) {
       return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
     return GlobalRecallUrls.home(nomsId)

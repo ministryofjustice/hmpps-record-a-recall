@@ -70,6 +70,28 @@ export default class CheckAnswersController implements Controller {
     })
   }
 
+  editRevocationDate = (req: Request<PersonJourneyParams>, res: Response) => {
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+
+    journey.isCheckingAnswers = true
+    journey.isEditingRevocationDate = true
+    journey.isEditingReturnToCustodyDate = false
+
+    return res.redirect(RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId))
+  }
+
+  editReturnToCustodyDate = (req: Request<PersonJourneyParams>, res: Response) => {
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+
+    journey.isCheckingAnswers = true
+    journey.isEditingRevocationDate = false
+    journey.isEditingReturnToCustodyDate = true
+
+    return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
+  }
+
   private buildUrls(
     nomsId: string,
     journeyId: string,
