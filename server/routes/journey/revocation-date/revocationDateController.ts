@@ -36,22 +36,22 @@ export default class RevocationDateController implements Controller {
     })
   }
 
-POST = async (req: Request<PersonJourneyParams, unknown, RevocationDateForm>, res: Response): Promise<void> => {
-  const { nomsId, journeyId, createOrEdit, recallId } = req.params
-  const journey = req.session.recallJourneys[journeyId]!
-  const { day, month, year } = req.body
-  const newRevocationDate = { day, month, year }
+  POST = async (req: Request<PersonJourneyParams, unknown, RevocationDateForm>, res: Response): Promise<void> => {
+    const { nomsId, journeyId, createOrEdit, recallId } = req.params
+    const journey = req.session.recallJourneys[journeyId]!
+    const { day, month, year } = req.body
+    const newRevocationDate = { day, month, year }
 
-  if (journey.isCheckingAnswers &&   isEqual(newRevocationDate, journey.revocationDate)) {
-    return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    if (journey.isCheckingAnswers && isEqual(newRevocationDate, journey.revocationDate)) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+    journey.revocationDate = { day, month, year }
+    journey.isCheckingAnswers = false
+    if (journey.isCheckingAnswers && isEqual(newRevocationDate, journey.revocationDate)) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+    return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
-  journey.revocationDate = { day, month, year }
-  journey.isCheckingAnswers = false
-  if (journey.isCheckingAnswers && journey.revocationDate == journey.revocationDate) {
-    return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
-  }
-  return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
-}
 
   private getBackLink(
     journey: RecallJourney,
