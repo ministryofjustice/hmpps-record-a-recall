@@ -40,10 +40,8 @@ export default class RevocationDateController implements Controller {
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year } = req.body
 
-    // Save the entered revocation date to the journey
     journey.revocationDate = { day, month, year }
 
-    // After editing from CYA, continue to RTC page
     journey.isEditingRevocationDate = true
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
@@ -60,5 +58,4 @@ export default class RevocationDateController implements Controller {
     }
     return GlobalRecallUrls.home(nomsId)
   }
-
 }
