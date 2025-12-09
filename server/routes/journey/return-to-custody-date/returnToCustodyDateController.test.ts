@@ -148,8 +148,8 @@ describe('GET', () => {
 
 describe('POST', () => {
   it.each([
+    [true, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
     [false, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
-    [true, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
   ])(
     'should set the return to custody date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
     async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
