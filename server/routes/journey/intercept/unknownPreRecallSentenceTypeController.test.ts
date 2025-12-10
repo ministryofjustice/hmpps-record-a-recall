@@ -86,7 +86,7 @@ describe('GET', () => {
     const href = $('[data-qa="continue-unknown-pre-recall"]').attr('href')
 
     expect(href).toBe(
-      `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0%2C0ef67702-99cd-4821-9235-46ce42c9f39e`,
+      `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0&sentenceUuids=0ef67702-99cd-4821-9235-46ce42c9f39e`,
     )
   })
 

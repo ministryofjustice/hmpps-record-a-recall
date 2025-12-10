@@ -22,7 +22,7 @@
         
             <ul class="govuk-list govuk-list--bullet">
       
-        {% for case in unkownPreRecallCourtCases %}
+        {% for case in unknownPreRecallCourtCases %}
           {% for sentence in case.sentences %}
           <li>Count {{sentence.countNumber or sentence.lineNumber}} of court case {{case.reference}}</li>
           {% endfor %}
