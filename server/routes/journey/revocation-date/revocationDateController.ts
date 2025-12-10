@@ -47,9 +47,7 @@ export default class RevocationDateController implements Controller {
     }
     journey.revocationDate = { day, month, year }
     journey.isCheckingAnswers = false
-    if (journey.isCheckingAnswers && isEqual(newRevocationDate, journey.revocationDate)) {
-      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
-    }
+
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
 
