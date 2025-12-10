@@ -7,7 +7,7 @@
 {% if createOrEdit == 'create' %}
     {% set title = "Check your answers" %}
 {% else %}
-    {% set title = "Recorded on " + (recallBeingEditted.createdAtTimestamp | formatDate) %}
+    {% set title = "Recorded on " + (recallBeingEdited.createdAtTimestamp | formatDate) %}
 {% endif %}
 {% set pageTitle = applicationName + " - " + title %}
 {% set pageCaption = "Record a recall" %}
