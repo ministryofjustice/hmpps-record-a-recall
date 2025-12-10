@@ -52,7 +52,7 @@ export default class CheckAnswersController implements Controller {
 
     return res.render('pages/recall/check-answers', {
       prisoner,
-      pageCaption: 'Record a recall',
+      isEdit: createOrEdit === 'edit',
       backLink,
       cancelUrl,
       recall,

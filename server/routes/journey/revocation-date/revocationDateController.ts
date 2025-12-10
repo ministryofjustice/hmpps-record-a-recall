@@ -25,9 +25,10 @@ export default class RevocationDateController implements Controller {
     const day = formResponses?.day ?? journey.revocationDate?.day
     const month = formResponses?.month ?? journey.revocationDate?.month
     const year = formResponses?.year ?? journey.revocationDate?.year
+
     return res.render('pages/recall/revocation-date', {
       prisoner,
-      pageCaption: 'Record a recall',
+      isEdit: createOrEdit === 'edit',
       day,
       month,
       year,
