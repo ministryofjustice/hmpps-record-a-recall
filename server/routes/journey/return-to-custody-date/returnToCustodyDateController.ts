@@ -30,7 +30,7 @@ export default class ReturnToCustodyDateController implements Controller {
     return res.render('pages/recall/return-to-custody-date', {
       prisoner,
       prisonerName,
-      pageCaption: 'Record a recall',
+      isEdit: createOrEdit === 'edit',
       day,
       month,
       year,

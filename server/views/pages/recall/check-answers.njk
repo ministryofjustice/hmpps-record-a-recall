@@ -10,7 +10,11 @@
     {% set title = "Recorded on " + (recallBeingEdited.createdAtTimestamp | formatDate) %}
 {% endif %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
+
+{% block beforePageContent %}
+  {% set caption = isEdit and "Edit a recall" or "Record a recall" %}
+  <span class="govuk-caption-l">{{ caption }}</span>
+{% endblock %}
 
 {% block pageContent %}
     <h1 class="govuk-heading-l" id="check-answers-heading">{{ title }}</h1>

@@ -43,6 +43,7 @@ export default class RecallTypeController implements Controller {
 
     return res.render('pages/recall/recall-type', {
       prisoner,
+      isEdit: createOrEdit === 'edit',
       pageCaption: 'Record a recall',
       recallTypeOptions,
       backLink,

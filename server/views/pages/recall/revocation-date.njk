@@ -6,6 +6,11 @@
 {% set title = "Enter the date of revocation" %}
 {% set pageTitle = applicationName + " - " + title %}
 
+{% block beforePageContent %}
+  {% set caption = isEdit and "Edit a recall" or "Record a recall" %}
+  <span class="govuk-caption-l">{{ caption }}</span>
+{% endblock %}
+
 {% block pageContent %}
   <h1 class="govuk-heading-l">{{ title }}</h1>
 
