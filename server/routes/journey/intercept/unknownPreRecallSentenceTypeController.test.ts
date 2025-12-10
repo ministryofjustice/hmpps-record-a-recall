@@ -4,16 +4,12 @@ import request from 'supertest'
 import * as cheerio from 'cheerio'
 import { SessionData } from 'express-session'
 import { v4 as uuidv4 } from 'uuid'
-import { DecoratedCourtCase, RecallJourney } from '../../../@types/journeys'
+import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import TestData from '../../../testutils/testData'
 import config from '../../../config'
-import {
-  IsRecallPossibleResponse,
-  RecallableCourtCase,
-} from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -99,5 +95,22 @@ describe('GET', () => {
       .get(`/person/${nomsId}/recall/create/${uuidv4()}/unknown-pre-recall-sentence-type`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+
+  it('should set the RAS URL correctly - limit to only where recall is possible', async () => {
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    recallService.isRecallPossible.mockResolvedValue({
+      isRecallPossible: 'UNKNOWN_PRE_RECALL_MAPPING',
+      sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
+    })
+
+    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`)
+
+    const $ = cheerio.load(res.text)
+
+    const href = $('[data-qa="continue-unknown-pre-recall"]').attr('href')
+    expect(href).toBe(
+      `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0`,
+    )
   })
 })
