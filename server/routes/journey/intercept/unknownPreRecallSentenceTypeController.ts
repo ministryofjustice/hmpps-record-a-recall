@@ -46,7 +46,13 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       recallId,
       RecallJourneyUrls.manualJourneyStart.name,
     )
-    const continueLink = `${config.urls.remandAndSentencing}/person/${nomsId}`
+
+    const sentenceUuids = Array.from(
+      unkownPreRecallCourtCases.flatMap(courtCase => courtCase.sentences.map(sentence => sentence.sentenceUuid)),
+    )
+    const continueLink = `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=${encodeURIComponent(
+      sentenceUuids.join(','),
+    )}`
     return res.render('pages/recall/unknown-pre-recall-type', {
       prisoner,
       pageCaption: 'Record a recall',
