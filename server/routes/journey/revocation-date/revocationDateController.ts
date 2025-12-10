@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import isEqual from 'lodash/isEqual'
 import { Controller } from '../../controller'
 import { RecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import GlobalRecallUrls from '../../globalRecallUrls'
@@ -39,8 +40,14 @@ export default class RevocationDateController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year } = req.body
+    const newRevocationDate = { day, month, year }
+
+    if (journey.isCheckingAnswers && isEqual(newRevocationDate, journey.revocationDate)) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
     journey.revocationDate = { day, month, year }
-    if (journey.isCheckingAnswers) {
+    journey.isCheckingAnswers = false
+    if (journey.isCheckingAnswers && isEqual(newRevocationDate, journey.revocationDate)) {
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
