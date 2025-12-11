@@ -47,11 +47,8 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       RecallJourneyUrls.manualJourneyStart.name,
     )
 
-    const sentenceUuids = Array.from(
-      unknownPreRecallCourtCases.flatMap(courtCase => courtCase.sentences.map(sentence => sentence.sentenceUuid)),
-    )
     const params = new URLSearchParams()
-    sentenceUuids.forEach(uuid => params.append('sentenceUuids', uuid))
+    isPossible.sentenceIds.forEach(uuid => params.append('sentenceUuids', uuid))
 
     const continueLink = `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?${params.toString()}`
 
