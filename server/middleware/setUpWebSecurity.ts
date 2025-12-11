@@ -26,8 +26,14 @@ export default function setUpWebSecurity(): Router {
           // page by an attacker.
           scriptSrc: ["'self'", (_req: Request, res: Response) => `'nonce-${res.locals.cspNonce}'`],
           styleSrc: ["'self'", (_req: Request, res: Response) => `'nonce-${res.locals.cspNonce}'`],
-          fontSrc: ["'self'"],
+          fontSrc: ["'self'", 'https://frontend-components-dev.hmpps.service.justice.gov.uk'],
           formAction: [`'self' ${config.apis.hmppsAuth.externalUrl}`],
+          connectSrc: [
+            "'self'",
+            (_req: Request, res: Response) => `'nonce-${res.locals.cspNonce}'`,
+            'https://northeurope-0.in.applicationinsights.azure.com',
+            'https://js.monitor.azure.com',
+          ],
           ...(config.production ? {} : { upgradeInsecureRequests: null }),
         },
       },
