@@ -38,7 +38,6 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       })
       .filter(it => !!it)
 
-    const backLink = RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId)
     const cancelLink = RecallJourneyUrls.confirmCancel(
       nomsId,
       journeyId,
@@ -54,8 +53,6 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
 
     return res.render('pages/recall/unknown-pre-recall-type', {
       prisoner,
-      pageCaption: 'Record a recall',
-      backLink,
       continueLink,
       cancelLink,
       unknownPreRecallCourtCases,
