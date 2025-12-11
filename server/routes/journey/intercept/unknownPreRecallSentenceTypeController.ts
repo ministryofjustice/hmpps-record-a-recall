@@ -26,7 +26,7 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
     )
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
-    const unkownPreRecallCourtCases = recallableCourtCases
+    const unknownPreRecallCourtCases = recallableCourtCases
       .map(it => {
         const filteredSentences = [...it.recallableSentences, ...it.nonRecallableSentences].filter(sentence => {
           return isPossible.sentenceIds.includes(sentence.sentenceUuid)
@@ -38,7 +38,6 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       })
       .filter(it => !!it)
 
-    const backLink = RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId)
     const cancelLink = RecallJourneyUrls.confirmCancel(
       nomsId,
       journeyId,
@@ -46,14 +45,17 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       recallId,
       RecallJourneyUrls.manualJourneyStart.name,
     )
-    const continueLink = `${config.urls.remandAndSentencing}/person/${nomsId}`
+
+    const params = new URLSearchParams()
+    isPossible.sentenceIds.forEach(uuid => params.append('sentenceUuids', uuid))
+
+    const continueLink = `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?${params.toString()}`
+
     return res.render('pages/recall/unknown-pre-recall-type', {
       prisoner,
-      pageCaption: 'Record a recall',
-      backLink,
       continueLink,
       cancelLink,
-      unkownPreRecallCourtCases,
+      unknownPreRecallCourtCases,
     })
   }
 }

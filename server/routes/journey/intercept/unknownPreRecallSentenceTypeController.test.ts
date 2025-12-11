@@ -9,6 +9,7 @@ import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import TestData from '../../../testutils/testData'
+import config from '../../../config'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -59,7 +60,7 @@ afterEach(() => {
 })
 
 describe('GET', () => {
-  it('should unknown recall type', async () => {
+  it('should populate unknown-pre-recall-type page with correct details', async () => {
     // Given
     recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
     recallService.isRecallPossible.mockResolvedValue({
@@ -81,6 +82,12 @@ describe('GET', () => {
     expect(text).toContain('Count 1 of court case REF-1')
     expect(text).toContain('Count 2 of court case REF-1')
     expect(text).toContain('Continue')
+
+    const href = $('[data-qa="continue-unknown-pre-recall"]').attr('href')
+
+    expect(href).toBe(
+      `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0&sentenceUuids=0ef67702-99cd-4821-9235-46ce42c9f39e`,
+    )
   })
 
   it('should return to start of journey if not found in session', async () => {
@@ -88,5 +95,22 @@ describe('GET', () => {
       .get(`/person/${nomsId}/recall/create/${uuidv4()}/unknown-pre-recall-sentence-type`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+
+  it('should set the RAS URL correctly - limit to only where recall is possible', async () => {
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    recallService.isRecallPossible.mockResolvedValue({
+      isRecallPossible: 'UNKNOWN_PRE_RECALL_MAPPING',
+      sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
+    })
+
+    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`)
+
+    const $ = cheerio.load(res.text)
+
+    const href = $('[data-qa="continue-unknown-pre-recall"]').attr('href')
+    expect(href).toBe(
+      `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0`,
+    )
   })
 })
