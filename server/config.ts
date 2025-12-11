@@ -183,4 +183,5 @@ export default {
   featureToggles: {
     ftr56: get('FTR_56_ENABLED', 'false'),
   },
+  appInsightsConnectionString: get('APPLICATIONINSIGHTS_CONNECTION_STRING', '', requiredInProduction),
 }

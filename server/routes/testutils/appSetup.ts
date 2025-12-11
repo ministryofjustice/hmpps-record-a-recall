@@ -11,6 +11,7 @@ import { HmppsUser } from '../../interfaces/hmppsUser'
 import setUpWebSession from '../../middleware/setUpWebSession'
 import populateValidationErrors from '../../middleware/populateValidationErrors'
 import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
+import { ApplicationInfo } from '../../applicationInfo'
 
 jest.mock('../../services/auditService')
 
@@ -35,6 +36,15 @@ export const user: HmppsUser = {
   hasAdjustmentsAccess: false,
 }
 
+const testAppInfo: ApplicationInfo = {
+  applicationName: 'hmpps-record-a-recall',
+  buildNumber: '1',
+  gitRef: 'long ref',
+  gitShortHash: 'short ref',
+  branchName: 'main',
+  productId: 'id',
+}
+
 export const flashProvider = jest.fn()
 
 function appSetup(
@@ -47,7 +57,7 @@ function appSetup(
 
   app.set('view engine', 'njk')
   flashProvider.mockImplementation(_ => [])
-  nunjucksSetup(app)
+  nunjucksSetup(app, testAppInfo)
   app.use(setUpWebSession())
   app.use((req, res, next) => {
     req.user = userSupplier() as Express.User
