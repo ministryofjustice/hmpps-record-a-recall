@@ -3,8 +3,8 @@ import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
-import config from '../../../config'
 import RecallService from '../../../services/recallService'
+import OtherServiceUrls from '../../otherServiceUrls'
 
 export default class UnknownPreRecallSentenceTypeController implements Controller {
   PAGE_NAME: Page = Page.UNKNOWN_PRE_RECALL_SENTENCE_TYPE_INTERCEPT
@@ -49,11 +49,9 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
     const params = new URLSearchParams()
     isPossible.sentenceIds.forEach(uuid => params.append('sentenceUuids', uuid))
 
-    const continueLink = `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?${params.toString()}`
-
     return res.render('pages/recall/unknown-pre-recall-type', {
       prisoner,
-      continueLink,
+      continueLink: OtherServiceUrls.rasUnknownSentenceTypes(nomsId, params.toString()),
       cancelLink,
       unknownPreRecallCourtCases,
     })

@@ -7,6 +7,7 @@ import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { RecordARecallValidationResult } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import AuditService from '../../../services/auditService'
+import RecallService from '../../../services/recallService'
 
 let app: Express
 let session: Partial<SessionData>
@@ -19,15 +20,18 @@ const successfulCrdsValidationResult = {
 } as RecordARecallValidationResult
 jest.mock('../../../services/calculateReleaseDatesService')
 jest.mock('../../../services/auditService')
+jest.mock('../../../services/recallService')
 
 const calculateReleaseDatesService = new CalculateReleaseDatesService(null) as jest.Mocked<CalculateReleaseDatesService>
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
+const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
   app = appWithAllRoutes({
     services: {
       calculateReleaseDatesService,
       auditService,
+      recallService,
     },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
@@ -50,6 +54,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
   it('should create the journey and redirect to revocation date page', async () => {
     // Given
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+    recallService.prisonerHasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -60,6 +65,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(journeys).toHaveLength(1)
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
   })
+
   it('should create the journey and redirect to validation intercept if critical errors exist', async () => {
     // Given
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
@@ -69,6 +75,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         },
       ],
     } as RecordARecallValidationResult)
+    recallService.prisonerHasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -100,6 +107,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         crdsValidationResult: successfulCrdsValidationResult,
       },
     ]
+    recallService.prisonerHasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -155,6 +163,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         crdsValidationResult: successfulCrdsValidationResult,
       },
     ]
+    recallService.prisonerHasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -167,5 +176,18 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(Object.keys(session.recallJourneys!).sort()).toStrictEqual(
       [newId, 'old', 'middle-aged', 'young', 'youngest'].sort(),
     )
+  })
+
+  it('should redirect to no-sentences intercept if prisoner has no sentences', async () => {
+    // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+    recallService.prisonerHasSentences.mockResolvedValue(false)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/no-sentences`)
   })
 })
