@@ -35,5 +35,6 @@ describe('GET', () => {
     expect($('[data-qa=court-cases-link]').attr('href')).toStrictEqual(
       `${config.urls.remandAndSentencing}/person/A1234BC`,
     )
+    expect($('[data-qa=back-link]').attr('href')).toStrictEqual(`/person/${nomsId}`)
   })
 })
