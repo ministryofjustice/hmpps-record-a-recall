@@ -50,7 +50,7 @@ export default class ReviewSentencesController implements Controller {
     )
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
-      pageCaption: 'Record a recall',
+      isEdit: createOrEdit === 'edit',
       courtCases: this.matchRasSentencesAndCrdsSentences(recallableCourtCases, decision.automatedCalculationData),
       sled: maxOf(
         decision.automatedCalculationData.recallableSentences,
