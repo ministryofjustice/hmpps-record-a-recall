@@ -726,4 +726,29 @@ describe('Recall service', () => {
       expect(result).toEqual(new Date('2024-03-10'))
     })
   })
+
+  describe('prisonerHasSentences', () => {
+    it('should return true if prisoner has any recallable cases', async () => {
+      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({
+        cases: [
+          {
+            courtCaseUuid: 'cc-1',
+            courtCode: 'INNRCC',
+          } as RecallableCourtCase,
+        ],
+      })
+
+      const result = await service.prisonerHasSentences('A1234BC', 'user1')
+
+      expect(result).toEqual(true)
+    })
+
+    it('should return false if prisoner has no recallable cases', async () => {
+      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({ cases: [] })
+
+      const result = await service.prisonerHasSentences('A1234BC', 'user1')
+
+      expect(result).toEqual(false)
+    })
+  })
 })
