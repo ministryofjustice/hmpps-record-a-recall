@@ -71,6 +71,16 @@ export default class SelectCasesController implements Controller {
     journey.courtCaseIdsSelectedForRecall ??= []
     journey.courtCaseIdsExcludedFromRecall ??= []
 
+    const wasSelected = journey.courtCaseIdsSelectedForRecall.includes(currentCaseUuid)
+    const wasExcluded = journey.courtCaseIdsExcludedFromRecall.includes(currentCaseUuid)
+    const isNowSelected = activeSentenceChoice === 'YES'
+
+    const answerChanged = (isNowSelected && wasExcluded) || (!isNowSelected && wasSelected)
+
+    if (answerChanged) {
+      journey.isCheckingAnswers = false
+    }
+
     if (activeSentenceChoice === 'YES') {
       journey.courtCaseIdsSelectedForRecall = addUnique(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
       journey.courtCaseIdsExcludedFromRecall = removeItem(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
@@ -89,7 +99,15 @@ export default class SelectCasesController implements Controller {
       return res.redirect(RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId))
     }
 
-    return res.redirect(RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId))
+    if (journey.isCheckingAnswers) {
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
+
+    if (createOrEdit === 'create') {
+      return res.redirect(RecallJourneyUrls.manualCheckSentences(nomsId, journeyId, createOrEdit, recallId))
+    }
+
+    return res.redirect(RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId))
   }
 
   private getBackLink(
