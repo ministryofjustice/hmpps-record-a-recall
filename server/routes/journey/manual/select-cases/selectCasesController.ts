@@ -71,12 +71,20 @@ export default class SelectCasesController implements Controller {
     journey.courtCaseIdsSelectedForRecall ??= []
     journey.courtCaseIdsExcludedFromRecall ??= []
 
+    let hasChanged = false
+
     if (activeSentenceChoice === 'YES') {
+      if (!journey.courtCaseIdsSelectedForRecall.includes(currentCaseUuid)) hasChanged = true
       journey.courtCaseIdsSelectedForRecall = addUnique(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
       journey.courtCaseIdsExcludedFromRecall = removeItem(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     } else {
+      if (journey.courtCaseIdsSelectedForRecall.includes(currentCaseUuid)) hasChanged = true
       journey.courtCaseIdsSelectedForRecall = removeItem(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
       journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
+    }
+
+    if (hasChanged && createOrEdit === 'edit') {
+      journey.isCheckingAnswers = false
     }
 
     // Move to next case if available
