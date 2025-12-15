@@ -260,5 +260,55 @@ describe('selectCasesController Tests', () => {
       expect(res.header.location).toBe(selectCasesUrl(2, 'edit'))
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
     })
+    it('When editing the last case and the answer is changed, redirects to select recall type', async () => {
+      existingJourney.isCheckingAnswers = true
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+      ] as DecoratedCourtCase[]
+
+      // user had previously selected both cases
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
+      existingJourney.courtCaseIdsExcludedFromRecall = []
+
+      const res = await request(app).post(selectCasesUrl(1, 'edit')).send({ activeSentenceChoice: 'NO' }).expect(302)
+
+      expect(res.header.location).toBe(RecallJourneyUrls.recallType(nomsId, journeyId, 'edit', null))
+      expect(existingJourney.isCheckingAnswers).toBe(false)
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-2'])
+    })
+
+    it('When editing and a non-final case answer is changed, final submission redirects to select recall type', async () => {
+      existingJourney.isCheckingAnswers = true
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+      ] as DecoratedCourtCase[]
+
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2']
+      existingJourney.courtCaseIdsExcludedFromRecall = []
+
+      // Change first case
+      await request(app).post(selectCasesUrl(0, 'edit')).send({ activeSentenceChoice: 'NO' }).expect(302)
+
+      const res = await request(app).post(selectCasesUrl(1, 'edit')).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      expect(res.header.location).toBe(RecallJourneyUrls.recallType(nomsId, journeyId, 'edit', null))
+    })
+
+    it('When editing the last case and the answer is unchanged, redirects back to check answers', async () => {
+      existingJourney.isCheckingAnswers = true
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as DecoratedCourtCase[]
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1']
+      existingJourney.courtCaseIdsExcludedFromRecall = []
+
+      const res = await request(app).post(selectCasesUrl(0, 'edit')).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      expect(res.header.location).toBe(RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'edit', null))
+      expect(existingJourney.isCheckingAnswers).toBe(true)
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual([])
+    })
   })
 })
