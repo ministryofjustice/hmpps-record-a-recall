@@ -5,17 +5,26 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { RecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { Page } from '../../../services/auditService'
+import RecallService from '../../../services/recallService'
 
 export default class StartCreateRecallJourneyController implements Controller {
   public PAGE_NAME = Page.START_CREATE_RECALL
 
-  constructor(private readonly calculateReleaseDatesService: CalculateReleaseDatesService) {}
+  constructor(
+    private readonly calculateReleaseDatesService: CalculateReleaseDatesService,
+    private readonly recallService: RecallService,
+  ) {}
 
   private MAX_JOURNEYS = 5
 
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
     const { username } = req.user
     const { nomsId } = req.params
+    const prisonerHasSentences = await this.recallService.prisonerHasSentences(nomsId, username)
+    if (!prisonerHasSentences) {
+      return res.redirect(RecallJourneyUrls.noSentencesFoundIntercept(nomsId))
+    }
+
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const journey: RecallJourney = {
       id: uuidv4(),
@@ -37,9 +46,8 @@ export default class StartCreateRecallJourneyController implements Controller {
         .forEach(journeyToRemove => delete req.session.recallJourneys![journeyToRemove.id])
     }
     if (crdsValidationResult.criticalValidationMessages.length) {
-      res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'create', null))
-    } else {
-      res.redirect(RecallJourneyUrls.revocationDate(nomsId, journey.id, 'create', null))
+      return res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'create', null))
     }
+    return res.redirect(RecallJourneyUrls.revocationDate(nomsId, journey.id, 'create', null))
   }
 }

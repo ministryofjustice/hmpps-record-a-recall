@@ -157,6 +157,8 @@ export default class RecallJourneyUrls {
   ) => {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/check-sentences`
   }
+
+  static noSentencesFoundIntercept = (nomsId: string) => `/person/${nomsId}/recall/create/no-sentences`
 }
 
 export const urlMapByName = {

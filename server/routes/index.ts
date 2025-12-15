@@ -36,6 +36,7 @@ import NoCasesSelectedController from './journey/manual/no-cases/noCasesSelected
 import UnexpectedRecallTypeController from './journey/intercept/unexpectedRecallTypeController'
 import UnsupportedRecallTypeController from './journey/intercept/unsupportedRecallTypeController'
 import UnknownPreRecallSentenceTypeController from './journey/intercept/unknownPreRecallSentenceTypeController'
+import NoSentencesController from './journey/intercept/noSentencesController'
 
 export default function routes({
   prisonerService,
@@ -85,7 +86,7 @@ export default function routes({
   // create recall
   route({
     path: '/person/:nomsId/recall/create/start',
-    controller: new StartCreateRecallJourneyController(calculateReleaseDatesService),
+    controller: new StartCreateRecallJourneyController(calculateReleaseDatesService, recallService),
   })
   // edit recall
   route({
@@ -169,6 +170,11 @@ export default function routes({
     path: `${journeyPath}/unknown-pre-recall-sentence-type`,
     controller: new UnknownPreRecallSentenceTypeController(recallService),
     additionalMiddleware: [ensureInRecallJourney],
+  })
+
+  route({
+    path: `/person/:nomsId/recall/create/no-sentences`,
+    controller: new NoSentencesController(),
   })
 
   // manual journey

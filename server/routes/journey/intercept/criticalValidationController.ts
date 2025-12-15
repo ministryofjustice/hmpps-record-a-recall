@@ -3,8 +3,8 @@ import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
-import config from '../../../config'
 import GlobalRecallUrls from '../../globalRecallUrls'
+import OtherServiceUrls from '../../otherServiceUrls'
 
 export default class CriticalValidationController implements Controller {
   PAGE_NAME: Page = Page.CRITICAL_VALIDATION_INTERCEPT
@@ -21,9 +21,8 @@ export default class CriticalValidationController implements Controller {
     const backLink = GlobalRecallUrls.home(nomsId)
     return res.render('pages/recall/critical-validation-errors', {
       prisoner,
-      pageCaption: 'Record a recall',
       messages: journey.crdsValidationResult.criticalValidationMessages.map(it => it.message),
-      rasDashboardUrl: `${config.urls.remandAndSentencing}/person/${nomsId}`,
+      rasDashboardUrl: OtherServiceUrls.rasDashboard(nomsId),
       backLink,
     })
   }
