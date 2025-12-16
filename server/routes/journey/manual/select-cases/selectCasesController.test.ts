@@ -286,5 +286,14 @@ describe('selectCasesController Tests', () => {
       expect(res.header.location).toBe(`/person/${nomsId}/recall/edit/${journeyId}/manual/check-sentences`)
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
     })
+
+    it('Changing a case in edit within create journey functions the same as in edit journey and keeps isCheckingAnswers false', async () => {
+      existingJourney.isCheckingAnswers = false
+      existingJourney.recallableCourtCases = [{ courtCaseUuid: 'uuid-1' }] as DecoratedCourtCase[]
+
+      await request(app).post(selectCasesUrl(0, 'create')).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      expect(existingJourney.isCheckingAnswers).toBe(false)
+    })
   })
 })

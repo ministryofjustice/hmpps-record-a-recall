@@ -83,7 +83,7 @@ export default class SelectCasesController implements Controller {
       journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     }
 
-    if (hasChanged && createOrEdit === 'edit') {
+    if (hasChanged) {
       journey.isCheckingAnswers = false
     }
 
