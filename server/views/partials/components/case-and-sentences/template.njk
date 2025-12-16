@@ -5,7 +5,7 @@
   {% if courtCase.reference %}
     {{ courtCase.reference }} at
   {% endif %}
-  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.appearanceDate | formatDate | default("N/A") }}
+  {{ courtCase.courtName | default("N/A") }} on {{ courtCase.appearanceDate | formatDate('DD/MM/YYYY') | default("N/A") }}
 
 </h2>
 
