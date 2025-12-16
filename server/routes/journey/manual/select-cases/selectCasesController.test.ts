@@ -262,39 +262,7 @@ describe('selectCasesController Tests', () => {
     })
 
     it.each([['edit'], ['create']])(
-      'When %s journey and a preselected case is changed, goes through cases and redirects to check sentences',
-      async (createOrEdit: 'edit' | 'create') => {
-        // Given
-        existingJourney.isCheckingAnswers = true
-        existingJourney.recallableCourtCases = [
-          { courtCaseUuid: 'uuid-1' },
-          { courtCaseUuid: 'uuid-2' },
-        ] as DecoratedCourtCase[]
-        existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1']
-
-        // When — first case changed from YES → NO
-        let res = await request(app)
-          .post(selectCasesUrl(0, createOrEdit))
-          .send({ activeSentenceChoice: 'NO' })
-          .expect(302)
-
-        // Then — move to next case and reset check answers
-        expect(res.header.location).toBe(selectCasesUrl(1, createOrEdit))
-        expect(existingJourney.isCheckingAnswers).toBe(false)
-        expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
-        expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-1'])
-
-        // When — second (last) case selected
-        res = await request(app).post(selectCasesUrl(1, createOrEdit)).send({ activeSentenceChoice: 'YES' }).expect(302)
-
-        // Then — redirected to check sentences
-        expect(res.header.location).toBe(`/person/${nomsId}/recall/${createOrEdit}/${journeyId}/manual/check-sentences`)
-        expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
-      },
-    )
-
-    it.each([['edit'], ['create']])(
-      'When in edit or edit within create journey, and a preselected case is changed, it goes through cases and redirects to check sentences',
+      'When in %s journey, and a preselected case is changed, it goes through cases and redirects to check sentences',
       async (createOrEdit: 'edit' | 'create') => {
         // Given
         existingJourney.isCheckingAnswers = true
