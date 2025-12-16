@@ -260,5 +260,31 @@ describe('selectCasesController Tests', () => {
       expect(res.header.location).toBe(selectCasesUrl(2, 'edit'))
       expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
     })
+
+    it('When editing and a preselected case is changed, goes through cases and redirects to check sentences', async () => {
+      // Given
+      existingJourney.isCheckingAnswers = true
+      existingJourney.recallableCourtCases = [
+        { courtCaseUuid: 'uuid-1' },
+        { courtCaseUuid: 'uuid-2' },
+      ] as DecoratedCourtCase[]
+      existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1']
+
+      // When
+      let res = await request(app).post(selectCasesUrl(0, 'edit')).send({ activeSentenceChoice: 'NO' }).expect(302)
+
+      // Then
+      expect(res.header.location).toBe(selectCasesUrl(1, 'edit'))
+      expect(existingJourney.isCheckingAnswers).toBe(false)
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
+      expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-1'])
+
+      // When
+      res = await request(app).post(selectCasesUrl(1, 'edit')).send({ activeSentenceChoice: 'YES' }).expect(302)
+
+      // Then
+      expect(res.header.location).toBe(`/person/${nomsId}/recall/edit/${journeyId}/manual/check-sentences`)
+      expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
+    })
   })
 })
