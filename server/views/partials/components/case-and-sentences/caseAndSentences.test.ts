@@ -35,8 +35,8 @@ const baseCase = {
 
 describe('Tests for case-and-sentences component', () => {
   it.each([
-    [{ ...baseCase }, 'CASE123 at Bradford Crown Court on 01 Jan 2024'],
-    [{ ...baseCase, reference: undefined }, 'Bradford Crown Court on 01 Jan 2024'],
+    [{ ...baseCase }, 'CASE123 at Bradford Crown Court on 01/01/2024'],
+    [{ ...baseCase, reference: undefined }, 'Bradford Crown Court on 01/01/2024'],
   ])('renders the heading correctly (%j)', (courtCase, expectedText) => {
     const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
       courtCase,
