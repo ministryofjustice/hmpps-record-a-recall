@@ -9,7 +9,7 @@
 {% else %}
     {% set title = "Recorded on " + (recallBeingEdited.createdAtTimestamp | formatDate) %}
 {% endif %}
-{% set pageTitle = applicationName + " - " + title %}
+{% set pageTitle = applicationName + " - Check your answers" %}
 
 {% block beforePageContent %}
   {% set caption = isEdit and "Edit a recall" or "Record a recall" %}
@@ -41,7 +41,7 @@
                     text: 'Arrest date'
                 },
                 value: {
-                    text: 'In custody at revocation' if recall.inPrisonOnRevocationDate else (recall.returnToCustodyDate | formatDate('DD/MM/YYYY')) 
+                    text: 'In custody at revocation' if recall.inPrisonOnRevocationDate else (recall.returnToCustodyDate | formatDate('DD/MM/YYYY'))
                 },
                 actions: {
                     items: [{
@@ -55,7 +55,7 @@
 
 {% if courtCasesCount != 0 %}
         {% set checkAnswersRows = (checkAnswersRows.push({
-    
+
                 key: {
                     text: 'Cases'
                 },
@@ -69,7 +69,7 @@
                     }]
                 }
             }), checkAnswersRows)
-            
+
         %}
 
 {% endif %}
@@ -103,7 +103,7 @@
                         text: 'Edit'
                     }]
                 }
-            }), checkAnswersRows)            
+            }), checkAnswersRows)
         %}
     {{ govukSummaryList({
         attributes: { id: "check-answers" },
