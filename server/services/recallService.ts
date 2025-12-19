@@ -220,4 +220,8 @@ export default class RecallService {
     const recallableCourtCases = await this.getRecallableCourtCases(prisonerId, username)
     return recallableCourtCases.length > 0
   }
+
+  async hasSentences(prisonerId: string, username: string): Promise<boolean> {
+    return this.remandAndSentencingApiClient.hasSentences(prisonerId, username)
+  }
 }
