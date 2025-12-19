@@ -127,4 +127,13 @@ export default class RemandAndSentencingApiClient extends RestClient {
       asSystem(username),
     ) as Promise<IsRecallPossibleResponse>
   }
+
+  async hasSentences(prisonerId: string, username: string): Promise<boolean> {
+    return this.get<boolean>(
+      {
+        path: `/sentence/has-sentences/${prisonerId}`,
+      },
+      asSystem(username),
+    )
+  }
 }

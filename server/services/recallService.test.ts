@@ -727,27 +727,19 @@ describe('Recall service', () => {
     })
   })
 
-  describe('prisonerHasSentences', () => {
+  describe('hasSentences', () => {
     it('should return true if prisoner has any sentences', async () => {
-      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({
-        cases: [
-          {
-            courtCaseUuid: 'cc-1',
-            courtCode: 'INNRCC',
-            sentences: [{ offenceCode: 'A1' }],
-          } as RecallableCourtCase,
-        ],
-      })
+      remandAndSentencingApiClient.hasSentences.mockResolvedValue(true)
 
-      const result = await service.prisonerHasSentences('A1234BC', 'user1')
+      const result = await service.hasSentences('A1234BC', 'user1')
 
       expect(result).toEqual(true)
     })
 
     it('should return false if prisoner has no sentences', async () => {
-      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({ cases: [] })
+      remandAndSentencingApiClient.hasSentences.mockResolvedValue(false)
 
-      const result = await service.prisonerHasSentences('A1234BC', 'user1')
+      const result = await service.hasSentences('A1234BC', 'user1')
 
       expect(result).toEqual(false)
     })

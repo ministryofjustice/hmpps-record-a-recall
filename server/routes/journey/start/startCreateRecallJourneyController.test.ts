@@ -54,7 +54,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
   it('should create the journey and redirect to revocation date page', async () => {
     // Given
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
-    recallService.prisonerHasSentences.mockResolvedValue(true)
+    recallService.hasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -75,7 +75,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         },
       ],
     } as RecordARecallValidationResult)
-    recallService.prisonerHasSentences.mockResolvedValue(true)
+    recallService.hasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -107,7 +107,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         crdsValidationResult: successfulCrdsValidationResult,
       },
     ]
-    recallService.prisonerHasSentences.mockResolvedValue(true)
+    recallService.hasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -163,7 +163,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
         crdsValidationResult: successfulCrdsValidationResult,
       },
     ]
-    recallService.prisonerHasSentences.mockResolvedValue(true)
+    recallService.hasSentences.mockResolvedValue(true)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
@@ -181,7 +181,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
   it('should redirect to no-sentences intercept if prisoner has no sentences', async () => {
     // Given
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
-    recallService.prisonerHasSentences.mockResolvedValue(false)
+    recallService.hasSentences.mockResolvedValue(false)
 
     // When
     const response = await request(app).get(`/person/${nomsId}/recall/create/start`)

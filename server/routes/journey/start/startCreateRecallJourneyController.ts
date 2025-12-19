@@ -20,7 +20,7 @@ export default class StartCreateRecallJourneyController implements Controller {
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
     const { username } = req.user
     const { nomsId } = req.params
-    const prisonerHasSentences = await this.recallService.prisonerHasSentences(nomsId, username)
+    const prisonerHasSentences = await this.recallService.hasSentences(nomsId, username)
     if (!prisonerHasSentences) {
       return res.redirect(RecallJourneyUrls.noSentencesFoundIntercept(nomsId))
     }
