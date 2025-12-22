@@ -1,10 +1,7 @@
-
 {% extends "./prisonerBannerBackLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
-
-
 
 {% block content %}
       {% call interruptionCard({
@@ -27,7 +24,5 @@
         <h2 class="govuk-heading-m moj-interruption-card__heading">What to do next</h2>
         <p>1. Check that the revocation date you’ve entered is correct.</p>
         <p>2. Cancel this recall, then check that the sentence information has been recorded correctly.</p>
-
-
       {%- endcall %}
 {% endblock %}
