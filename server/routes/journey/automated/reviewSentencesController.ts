@@ -73,7 +73,14 @@ export default class ReviewSentencesController implements Controller {
       },
       username,
     )
-    journey.sentenceIds = decision.automatedCalculationData.recallableSentences.map(it => it.uuid)
+
+    // The make-decision call to the CRD-API can return DUPLICATED sentences, they need omitting.
+    // Doing that in the same way the GET currently works; i.e. by only including sentences that exist from the RAS-API get-recallable-court-cases call
+    const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
+    journey.sentenceIds = recallableCourtCases
+      .flatMap(courtCase => [...courtCase.recallableSentences, ...courtCase.nonRecallableSentences])
+      .map(sentence => sentence.sentenceUuid)
+      .filter(uuid => decision.automatedCalculationData.recallableSentences.some(sentence => sentence.uuid === uuid))
     journey.calculationRequestId = decision.automatedCalculationData.calculationRequestId
     journey.automatedCalculationData = decision.automatedCalculationData
 
