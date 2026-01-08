@@ -148,4 +148,32 @@ describe('POST', () => {
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
+
+  it('should filter out CRD recallable sentence UUIDs that are not present in recallable-court-cases', async () => {
+    // Given
+    const recallableCourtCase = TestData.recallableCourtCase()
+    const validUuid = recallableCourtCase.recallableSentences[0].sentenceUuid
+    const invalidUuid = uuidv4()
+
+    const decision = TestData.automatedRecallDecision()
+
+    // CRD to returns 2 recallable sentences: 1 valid + 1 invalid (not in recallable-court-cases)
+    decision.automatedCalculationData.recallableSentences = [
+      { ...decision.automatedCalculationData.recallableSentences[0], uuid: validUuid },
+      { ...decision.automatedCalculationData.recallableSentences[0], uuid: invalidUuid },
+    ]
+
+    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(decision)
+    recallService.getRecallableCourtCases.mockResolvedValue([recallableCourtCase])
+
+    // When
+    await request(app)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/recall-type`)
+
+    // Then
+    expect(existingJourney.sentenceIds).toEqual([validUuid])
+    expect(existingJourney.sentenceIds).not.toContain(invalidUuid)
+  })
 })
