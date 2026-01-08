@@ -127,6 +127,7 @@ describe('POST', () => {
   it('should redirect to check your answers', async () => {
     // Given
     calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
 
     // When
     await request(app)
