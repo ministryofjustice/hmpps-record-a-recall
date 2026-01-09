@@ -369,6 +369,8 @@ export default {
       source: 'CRDS',
       reason: 'Transfer',
       establishment: 'Kirkham (HMP)',
+      calculatedByUsername: 'system',
+      calculatedByDisplayName: 'System',
       dates: [
         { date: '2018-11-05', type: 'SLED', description: 'Sentence and licence expiry date', hints: [] },
         {

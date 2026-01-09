@@ -2,7 +2,8 @@ import { addDays, differenceInCalendarDays, parse, isEqual, subDays, formatISO }
 import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { DateParts } from '../@types/journeys'
+import { DateParts, RecallJourney } from '../@types/journeys'
+import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -127,4 +128,17 @@ export const sentenceTypeValueOrLegacy = (sentenceTypeValue: string, legacyData:
 export const capitaliseFirstLetter = (str: string): string => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
+
+export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: string): RecordARecallRequest => {
+  const recallRequest: RecordARecallRequest = {
+    revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
+    recallId,
+  }
+
+  if (!journey.inCustodyAtRecall) {
+    recallRequest.returnToCustodyDate = dateToIsoString(datePartsToDate(journey.returnToCustodyDate))
+  }
+
+  return recallRequest
 }

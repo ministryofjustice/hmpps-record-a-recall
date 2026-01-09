@@ -3,7 +3,7 @@ import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
-import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
+import { buildRecordARecallRequest, datePartsToDate } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import AdjustmentsService from '../../../services/adjustmentsService'
 
@@ -27,10 +27,7 @@ export default class ConflictingAdjustmentsController implements Controller {
 
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
-      {
-        revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
-        recallId,
-      },
+      buildRecordARecallRequest(journey, recallId),
       username,
     )
 
