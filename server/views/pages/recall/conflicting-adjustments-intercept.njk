@@ -28,7 +28,7 @@
 
 
     <p>These dates overlap with:</p>
-    <ul class="govuk-list govuk-list--bullet">
+    <ul class="govuk-list">
       {% for adjustment in adjustments %}
         <li>
           {{ adjustment.adjustmentType | lower | replace("_", " ") | capitalize }}
