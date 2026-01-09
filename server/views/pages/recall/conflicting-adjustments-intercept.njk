@@ -4,52 +4,50 @@
 {%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
 
 {% block content %}
-    {% call interruptionCard({
-      heading: "The revocation date and arrest date overlap with existing adjustments",
-      primaryAction: {
-        text: "Update the recall dates",
-        href: revocationDateLink,
-        preventDoubleClick: true,
-        type: "submit"
-      },
-      secondaryAction: {
-        text: "Cancel recall",
-        href: cancelLink,
-        preventDoubleClick: true,
-        type: "reset",
-        style: "button"
-      }
-    }) %}
+  {% call interruptionCard({
+    heading: "The revocation date and arrest date overlap with existing adjustments",
+    primaryAction: {
+      text: "Update the recall dates",
+      href: revocationDateLink,
+      preventDoubleClick: true,
+      type: "submit"
+    },
+    secondaryAction: {
+      text: "Cancel recall",
+      href: cancelLink,
+      preventDoubleClick: true,
+      type: "reset",
+      style: "button"
+    }
+  }) %}
     <p>You have entered:</p>
-    <p>A revocation date of <b>{{ revocationDate | formatDate }}</b></p>
+    <p>A revocation date of <b>{{ revocationDate | formatDate('DD MMMM YYYY') }}</b></p>
     {% if returnToCustodyDate %}
-      <p>An arrest date of <b>{{ returnToCustodyDate | formatDate }}</b></p>
+      <p>An arrest date of <b>{{ returnToCustodyDate | formatDate('DD MMMM YYYY') }}</b></p>
     {% endif %}
 
-      {% if adjustments.length > 1 %}
-        <p>There are multiple overlapping periods of recall UAL already recorded</p>
-      {% endif %}
-      <p>These dates overlap with:</p>
-      <ul class="govuk-list govuk-list--bullet">
-        {% for adjustment in adjustments %}
-          <li>
-            {{ adjustment.adjustmentType | lower | replace("_", " ") | capitalize }}
-            {% if adjustment.unlawfullyAtLarge.type %}
-              ({{ adjustment.unlawfullyAtLarge.type | lower | replace("_", " ") | capitalize }})
-            {% endif %}
-            {% if adjustment.fromDate == adjustment.toDate %}
-              on {{ adjustment.fromDate | formatDate }} 
-            {% else %} 
-              from {{ adjustment.fromDate | formatDate }} to {{ adjustment.toDate | formatDate }}
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-        
-      <h2 class='govuk-heading-m moj-interruption-card__heading'>What you need to do</h2>
-      <p>If the revocation date or arrest date are incorrect, go back and update these recall dates.</p>
-      <p>If the adjustment dates are incorrect, cancel this recall and update the relevant adjustments.</p>
-      {% endcall %}
+
+    <p>These dates overlap with:</p>
+    <ul class="govuk-list">
+      {% for adjustment in adjustments %}
+        <li>
+          {{ adjustment.adjustmentType | lower | replace("_", " ") | capitalize }}
+          {% if adjustment.unlawfullyAtLarge.type %}
+            ({{ adjustment.unlawfullyAtLarge.type | lower | replace("_", " ") | capitalize }})
+          {% endif %}
+          {% if adjustment.fromDate == adjustment.toDate %}
+            on {{ adjustment.fromDate | formatDate('DD MMMM YYYY') }}
+          {% else %}
+            from {{ adjustment.fromDate | formatDate('DD MMMM YYYY') }} to {{ adjustment.toDate | formatDate('DD MMMM YYYY') }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <h2 class='govuk-heading-m moj-interruption-card__heading'>What you need to do</h2>
+    <p>If the revocation date or arrest date are incorrect, go back and update these recall dates.</p>
+    <p>If the adjustment dates are incorrect, cancel this recall and update the relevant adjustments.</p>
+  {% endcall %}
 {% endblock %}
 
 

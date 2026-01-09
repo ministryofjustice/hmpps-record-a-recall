@@ -80,11 +80,11 @@ describe('GET', () => {
 
     const text = $('#main-content').text()
     expect(text).toContain('The revocation date and arrest date overlap with existing adjustments')
-    expect(text).toContain('A revocation date of 01 Oct 2025')
-    expect(text).toContain('An arrest date of 05 Oct 2025')
+    expect(text).toContain('A revocation date of 01 October 2025')
+    expect(text).toContain('An arrest date of 05 October 2025')
     expect(text).toContain('Unlawfully at large')
     expect(text).toContain('(Recall)')
-    expect(text).toContain('from 02 Oct 2025 to 04 Oct 2025')
+    expect(text).toContain('from 02 October 2025 to 04 October 2025')
   })
 
   it('should return to start of journey if not found in session', async () => {

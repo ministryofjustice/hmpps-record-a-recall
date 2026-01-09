@@ -4,7 +4,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
-import { datePartsToDate, dateToIsoString, maxOf } from '../../../utils/utils'
+import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
 import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -25,10 +25,7 @@ export default class ReviewSentencesController implements Controller {
 
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
-      {
-        revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
-        recallId,
-      },
+      buildRecordARecallRequest(journey, recallId),
       username,
     )
 
@@ -67,10 +64,7 @@ export default class ReviewSentencesController implements Controller {
     const journey = req.session.recallJourneys[journeyId]!
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
-      {
-        revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
-        recallId,
-      },
+      buildRecordARecallRequest(journey, recallId),
       username,
     )
 

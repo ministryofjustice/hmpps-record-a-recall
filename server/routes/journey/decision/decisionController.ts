@@ -3,7 +3,7 @@ import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
-import { datePartsToDate, dateToIsoString } from '../../../utils/utils'
+import { buildRecordARecallRequest } from '../../../utils/utils'
 import { Page } from '../../../services/auditService'
 
 export default class DecisionController implements Controller {
@@ -22,10 +22,7 @@ export default class DecisionController implements Controller {
 
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
-      {
-        revocationDate: dateToIsoString(datePartsToDate(journey.revocationDate)),
-        recallId,
-      },
+      buildRecordARecallRequest(journey, recallId),
       username,
     )
 
