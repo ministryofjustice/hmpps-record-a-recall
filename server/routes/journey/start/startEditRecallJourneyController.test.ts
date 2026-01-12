@@ -240,7 +240,7 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
   it('should not call getRecallableCourtCases on automated journey and should leave manual-only fields undefined', async () => {
     // Given: automated journey (has calculationRequestId)
     const existingRecall = TestData.existingRecall()
-    existingRecall.calculationRequestId = 123 // ensure automated
+    existingRecall.calculationRequestId = 123
     preExistingJourneysToAddToSession = []
 
     recallService.getRecall.mockResolvedValue(existingRecall)
