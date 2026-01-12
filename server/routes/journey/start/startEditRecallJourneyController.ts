@@ -26,9 +26,9 @@ export default class StartEditRecallJourneyController implements Controller {
 
     const isManualJourney = !recall.calculationRequestId
 
-    let courtCaseIdsSelectedForRecall: string[] = []
-    let courtCaseIdsExcludedFromRecall: string[] = []
-    let recallableCourtCases: DecoratedCourtCase[] = []
+    let courtCaseIdsSelectedForRecall: string[]
+    let courtCaseIdsExcludedFromRecall: string[]
+    let recallableCourtCases: DecoratedCourtCase[]
 
     if (isManualJourney) {
       courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseUuid)
