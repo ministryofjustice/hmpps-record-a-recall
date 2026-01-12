@@ -84,7 +84,7 @@ describe('selectCasesController Tests', () => {
       const $ = cheerio.load(res.text)
 
       expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, 'user1')
-      expect(res.text).toContain('Select all cases that had an active sentence')
+      expect(res.text).toContain('Select all cases that have an outstanding SLED or LED')
       expect(res.text).toContain('Court case 1 of 2')
       expect(res.text).toContain('View offences which are not eligible for recall (1)')
 
