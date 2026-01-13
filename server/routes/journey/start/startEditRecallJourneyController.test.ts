@@ -236,4 +236,31 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
     expect(newJourney.courtCaseIdsExcludedFromRecall).toEqual([])
     expect(response.headers.location).toContain('/check-answers')
   })
+
+  it('should not call getRecallableCourtCases on automated journey and should leave manual-only fields undefined', async () => {
+    // Given: automated journey (has calculationRequestId)
+    const existingRecall = TestData.existingRecall()
+    existingRecall.calculationRequestId = 123
+    preExistingJourneysToAddToSession = []
+
+    recallService.getRecall.mockResolvedValue(existingRecall)
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/edit/${recallId}/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(recallService.getRecallableCourtCases).not.toHaveBeenCalled()
+
+    const journeys = Object.values(session.recallJourneys!)
+    expect(journeys).toHaveLength(1)
+    const newJourney = journeys[0]
+
+    expect(newJourney.courtCaseIdsSelectedForRecall).toBeUndefined()
+    expect(newJourney.courtCaseIdsExcludedFromRecall).toBeUndefined()
+    expect(newJourney.recallableCourtCases).toBeUndefined()
+
+    expect(response.headers.location).toContain('/check-answers')
+  })
 })
