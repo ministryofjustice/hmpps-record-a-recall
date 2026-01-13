@@ -25,10 +25,10 @@ describe('Calculate release dates service', () => {
         ],
       } as LatestCalculation)
 
-      const result = await service.getLedFromLatestCalc('A1234BC')
+      const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
 
       expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
-      expect(result).toBe('2025-01-02')
+      expect(result).toStrictEqual({ areDifferent: false, led: '2025-01-03', sed: undefined })
     })
 
     it('returns LED date when present and no SLED', async () => {
@@ -36,17 +36,17 @@ describe('Calculate release dates service', () => {
         dates: [{ type: 'LED', date: '2025-01-03' }],
       } as LatestCalculation)
 
-      const result = await service.getLedFromLatestCalc('A1234BC')
+      const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
 
       expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
-      expect(result).toBe('2025-01-03')
+      expect(result).toStrictEqual({ areDifferent: false, led: '2025-01-03', sed: undefined })
     })
 
     it('returns undefined when API returns 404', async () => {
       const error = { responseStatus: 404 }
       calculateReleaseDatesApiClient.getLatestCalculation.mockRejectedValue(error)
 
-      const result = await service.getLedFromLatestCalc('A1234BC')
+      const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
 
       expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
       expect(result).toBeUndefined()
