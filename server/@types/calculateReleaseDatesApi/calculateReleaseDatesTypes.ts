@@ -13,6 +13,7 @@ export type AutomatedCalculationData = components['schemas']['AutomatedCalculati
 export type RecallSentenceCalculation = components['schemas']['RecallSentenceCalculation']
 
 export type LicenceDates = {
+  sled? : string
   sed?: string
   led?: string
   areDifferent: boolean

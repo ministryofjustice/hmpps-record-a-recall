@@ -22,28 +22,42 @@ export default class CalculateReleaseDatesService {
   }
 
   async getLicenceDatesFromLatestCalc(nomsId: string): Promise<LicenceDates | undefined> {
-    let latestCalc
+  let latestCalc;
 
-    try {
-      latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
-    } catch (error) {
-      if (error?.responseStatus === 404) {
-        return undefined
-      }
-      throw error
-    }
+  try {
+    latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId);
+  } catch (error: any) {
+    if (error?.responseStatus === 404) return undefined;
+    throw error;
+  }
 
-    if (!latestCalc?.dates) return undefined
+  if (!latestCalc?.dates) return undefined;
 
-    const sed = latestCalc.dates.find(it => it.type === 'SED')?.date
-    const led = latestCalc.dates.find(it => it.type === 'LED')?.date
+  const sled = latestCalc.dates.find(it => it.type === 'SLED')?.date;
+  const sed = latestCalc.dates.find(it => it.type === 'SED')?.date;
+  const led = latestCalc.dates.find(it => it.type === 'LED')?.date;
 
-    if (!sed && !led) return undefined
+  if (!sled && !sed && !led) return undefined;
 
-    return {
-      sed,
-      led,
-      areDifferent: Boolean(sed && led && sed !== led),
+  // calculate areDifferent only if no sled
+  let areDifferent = false;
+  if (!sled) {
+    if (sed && led) {
+      // convert to Date objects to compare
+      const sedDate = new Date(sed).getTime();
+      const ledDate = new Date(led).getTime();
+      areDifferent = sedDate !== ledDate;
     }
   }
+
+  console.log('***************SERVICE*************', 'sled', sled, 'sed', sed, 'led', led, 'areDiff', areDifferent)
+
+  return {
+    sled,
+    sed,
+    led,
+    areDifferent,
+  };
+}
+
 }
