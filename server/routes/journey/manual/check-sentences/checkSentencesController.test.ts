@@ -93,7 +93,7 @@ describe('checkSentencesController Tests', () => {
 
       const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
       expect(ledLine).toBe(
-        "The latest SLED (Sentence and licence expiry date) is 03 Feb 2024. This is the SLED on this person's licence.",
+        "The latest SLED (Sentence and licence expiry date) is Saturday, 3 February 2024. This is the SLED on this person's licence.",
       )
 
       const headings = $('h2[data-qa="court-case-main-heading"]')
