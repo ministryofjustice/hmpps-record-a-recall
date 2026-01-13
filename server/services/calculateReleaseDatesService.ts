@@ -26,6 +26,7 @@ export default class CalculateReleaseDatesService {
 
   try {
     latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId);
+    console.log('latestCalc in service inside fn')
   } catch (error: any) {
     if (error?.responseStatus === 404) return undefined;
     throw error;
