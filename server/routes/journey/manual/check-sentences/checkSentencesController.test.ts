@@ -79,10 +79,10 @@ describe('checkSentencesController Tests', () => {
     it('renders the first recallable court case (index defaults to 0) and shows recallable/non-recallable sections', async () => {
       // Given
       calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
-  sed: '2024-02-03',
-  led: '2024-02-03',
-  areDifferent: false,
-})
+        sed: '2024-02-03',
+        led: '2024-02-03',
+        areDifferent: false,
+      })
       courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
 
       // When
