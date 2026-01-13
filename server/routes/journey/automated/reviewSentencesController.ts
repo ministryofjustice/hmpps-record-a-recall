@@ -4,7 +4,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
-import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
+import { buildRecordARecallRequest} from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
 import {

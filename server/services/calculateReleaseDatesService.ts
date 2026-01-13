@@ -26,8 +26,8 @@ export default class CalculateReleaseDatesService {
 
     try {
       latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
-      console.log('latestCalc in service inside fn')
-    } catch (error: any) {
+
+    } catch (error) {
       if (error?.responseStatus === 404) return undefined
       throw error
     }
@@ -51,6 +51,7 @@ export default class CalculateReleaseDatesService {
       }
     }
 
+    // @ts-ignore
     console.log('***************SERVICE*************', 'sled', sled, 'sed', sed, 'led', led, 'areDiff', areDifferent)
 
     return {
