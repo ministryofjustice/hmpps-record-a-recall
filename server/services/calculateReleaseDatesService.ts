@@ -26,7 +26,6 @@ export default class CalculateReleaseDatesService {
 
     try {
       latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
-
     } catch (error) {
       if (error?.responseStatus === 404) return undefined
       throw error
