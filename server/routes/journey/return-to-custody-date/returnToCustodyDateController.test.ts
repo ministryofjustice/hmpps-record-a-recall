@@ -148,28 +148,78 @@ describe('GET', () => {
 
 describe('POST', () => {
   it.each([
-    [true, `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
-    [false, `/person/${nomsId}/recall/create/${journeyId}/recall-decision`],
+    [
+      'is checking answers and nothing changed',
+      true,
+      { day: 10, month: 10, year: 2025 },
+      false,
+      { day: '10', month: '10', year: '2025', inCustodyAtRecall: false },
+      `/person/${nomsId}/recall/create/${journeyId}/check-answers`,
+      false,
+    ],
+    [
+      'is checking answers and date changed',
+      true,
+      { day: 1, month: 2, year: 2012 },
+      false,
+      { day: '10', month: '10', year: '2025', inCustodyAtRecall: false },
+      `/person/${nomsId}/recall/create/${journeyId}/recall-decision`,
+      true,
+    ],
+    [
+      'is checking answers and inCustodyAtRecall changed',
+      true,
+      { day: 10, month: 10, year: 2025 },
+      true,
+      { day: '10', month: '10', year: '2025', inCustodyAtRecall: false },
+      `/person/${nomsId}/recall/create/${journeyId}/recall-decision`,
+      true,
+    ],
+    [
+      'is not checking answers',
+      false,
+      undefined,
+      undefined,
+      { day: '10', month: '10', year: '2025', inCustodyAtRecall: false },
+      `/person/${nomsId}/recall/create/${journeyId}/recall-decision`,
+      true,
+    ],
   ])(
-    'should set the return to custody date on the session and pass to return to custody if valid and pass to next page (%s, %s)',
-    async (isCheckingAnswers: boolean, expectedNextUrl: string) => {
+    'should handle post and redirect correctly - %s',
+    async (
+      _scenario: string,
+      isCheckingAnswers: boolean,
+      existingReturnToCustodyDate: { day: number; month: number; year: number } | undefined,
+      existingInCustodyAtRecall: boolean | undefined,
+      form: { day: string; month: string; year: string; inCustodyAtRecall: boolean },
+      expectedNextUrl: string,
+      shouldUpdateSession: boolean,
+    ) => {
       // Given
       existingJourney.isCheckingAnswers = isCheckingAnswers
+      if (existingReturnToCustodyDate) existingJourney.returnToCustodyDate = existingReturnToCustodyDate
+      if (existingInCustodyAtRecall !== undefined) existingJourney.inCustodyAtRecall = existingInCustodyAtRecall
 
       // When
       await request(app)
         .post(`/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`)
         .type('form')
-        .send({ day: '10', month: '10', year: '2025', inCustodyAtRecall: false })
+        .send(form)
         .expect(302)
         .expect('Location', expectedNextUrl)
 
       // Then
-      expect(existingJourney.returnToCustodyDate).toStrictEqual({
-        day: 10,
-        month: 10,
-        year: 2025,
-      })
+      if (shouldUpdateSession) {
+        expect(existingJourney.returnToCustodyDate).toStrictEqual({
+          day: 10,
+          month: 10,
+          year: 2025,
+        })
+        expect(existingJourney.inCustodyAtRecall).toBe(false)
+      } else {
+        expect(existingJourney.returnToCustodyDate).toStrictEqual(existingReturnToCustodyDate)
+        expect(existingJourney.inCustodyAtRecall).toBe(existingInCustodyAtRecall)
+      }
     },
   )
 

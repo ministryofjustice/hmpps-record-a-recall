@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import isEqual from 'lodash/isEqual'
 import { Controller } from '../../controller'
 import { RecallJourney, PersonJourneyParams } from '../../../@types/journeys'
 import RecallJourneyUrls from '../recallJourneyUrls'
@@ -44,11 +45,21 @@ export default class ReturnToCustodyDateController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year, inCustodyAtRecall } = req.body
-    journey.inCustodyAtRecall = inCustodyAtRecall
-    journey.returnToCustodyDate = { day, month, year }
-    if (journey.isCheckingAnswers) {
+
+    const newReturnToCustodyDate = day == null && month == null && year == null ? null : { day, month, year }
+
+    if (
+      journey.isCheckingAnswers &&
+      isEqual(newReturnToCustodyDate, journey.returnToCustodyDate) &&
+      inCustodyAtRecall === journey.inCustodyAtRecall
+    ) {
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
+
+    journey.isCheckingAnswers = false
+    journey.inCustodyAtRecall = inCustodyAtRecall
+    journey.returnToCustodyDate = { day, month, year }
+
     return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
   }
 
