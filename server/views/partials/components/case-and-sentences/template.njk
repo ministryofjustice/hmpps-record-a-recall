@@ -20,7 +20,7 @@
     {% endfor %}
   {% endset %}
   {{ govukDetails({
-    summaryText: "View sentences with an expired SLED (" + expiredSentences.length + ")",
+    summaryText: "View sentences with an expired SLED or LED (" + expiredSentences.length + ")",
     html: expiredHtml
   }) }}
 {% endif %}

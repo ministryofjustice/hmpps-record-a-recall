@@ -95,7 +95,7 @@ describe('Tests for case-and-sentences component', () => {
 
     expect($.text()).toContain('Robbery')
 
-    expect($.text()).toContain('View sentences with an expired SLED (1)')
+    expect($.text()).toContain('View sentences with an expired SLED or LED (1)')
     expect($.text()).toContain('Violence')
 
     expect($.text()).toContain('View sentences that are ineligible for recall (1)')
