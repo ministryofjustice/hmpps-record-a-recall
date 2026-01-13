@@ -45,17 +45,31 @@ export default class ReturnToCustodyDateController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year, inCustodyAtRecall } = req.body
+
     const newReturnToCustodyDate = { day, month, year }
+
+    console.log('[RTC POST] isCheckingAnswers:', journey.isCheckingAnswers)
+    console.log('[RTC POST] newReturnToCustodyDate:', newReturnToCustodyDate)
+    console.log('[RTC POST] existing returnToCustodyDate:', journey.returnToCustodyDate)
+    console.log('[RTC POST] isEqual(date):', isEqual(newReturnToCustodyDate, journey.returnToCustodyDate))
+    console.log('[RTC POST] new inCustodyAtRecall:', inCustodyAtRecall, typeof inCustodyAtRecall)
+    console.log('[RTC POST] existing inCustodyAtRecall:', journey.inCustodyAtRecall, typeof journey.inCustodyAtRecall)
+    console.log('[RTC POST] inCustodyAtRecall equal:', inCustodyAtRecall === journey.inCustodyAtRecall)
 
     if (
       journey.isCheckingAnswers &&
       isEqual(newReturnToCustodyDate, journey.returnToCustodyDate) &&
       inCustodyAtRecall === journey.inCustodyAtRecall
     ) {
+      console.log('[RTC POST] Redirecting to CHECK ANSWERS')
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
+
+    console.log('[RTC POST] Updating session + redirecting to DECISION')
+
     journey.inCustodyAtRecall = inCustodyAtRecall
     journey.returnToCustodyDate = { day, month, year }
+
     return res.redirect(RecallJourneyUrls.decisionEndpoint(nomsId, journeyId, createOrEdit, recallId))
   }
 
