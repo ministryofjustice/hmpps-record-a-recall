@@ -46,7 +46,7 @@ export default class ReturnToCustodyDateController implements Controller {
     const journey = req.session.recallJourneys[journeyId]!
     const { day, month, year, inCustodyAtRecall } = req.body
 
-    const newReturnToCustodyDate = { day, month, year }
+    const newReturnToCustodyDate = day == null && month == null && year == null ? null : { day, month, year }
 
     console.log('[RTC POST] isCheckingAnswers:', journey.isCheckingAnswers)
     console.log('[RTC POST] newReturnToCustodyDate:', newReturnToCustodyDate)
