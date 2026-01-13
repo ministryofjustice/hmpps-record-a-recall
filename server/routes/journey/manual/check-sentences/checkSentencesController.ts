@@ -23,14 +23,14 @@ export default class CheckSentencesController implements Controller {
 
     const journey = req.session.recallJourneys[journeyId]
 
-    const licenceExpiryDate = await this.calculateReleaseDatesService.getLedFromLatestCalc(nomsId)
+    const licenceDates = await this.calculateReleaseDatesService.getLicenceDatesFromLatestCalc(nomsId)
     const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey)
 
     return res.render('pages/recall/manual/check-sentences', {
       prisoner,
       isEdit: createOrEdit === 'edit',
       casesSelectedForRecall,
-      licenceExpiryDate,
+      licenceDates,
       cancelUrl: RecallJourneyUrls.confirmCancel(
         nomsId,
         journeyId,

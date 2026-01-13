@@ -22,14 +22,23 @@
     {{ title }}
   </h1>
 
-  <p data-qa="led-line">
-    {#    TODO this SLED content may need changing (it's in discussion), because it's not necessarily a SLED , it is a LED though if set #}
-    {% if licenceExpiryDate %}
-      The latest SLED (Sentence and licence expiry date) is <b>{{ licenceExpiryDate | formatDate }}</b>. This is the SLED on this person's licence.
+<p data-qa="led-line">
+  {% if licenceDates %}
+    {% if licenceDates.areDifferent %}
+      The latest SED (Sentence expiry date) is
+      <b>{{ licenceDates.sed | formatDate }}</b>.
+      The latest LED (Licence expiry date) is
+      <b>{{ licenceDates.led | formatDate }}</b>.
     {% else %}
-      The SLED (Sentence and licence expiry date) is not available.
+      The latest SLED (Sentence and licence expiry date) is
+      <b>{{ (licenceDates.sed or licenceDates.led) | formatDate }}</b>.
+      This is the SLED on this person's licence.
     {% endif %}
-  </p>
+  {% else %}
+    The SLED (Sentence and licence expiry date) is not available.
+  {% endif %}
+</p>
+
 
   <h2 class="govuk-heading-l">
     Court cases with sentences selected for recall ({{ casesSelectedForRecall.length }})

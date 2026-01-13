@@ -11,3 +11,9 @@ export type RecordARecallDecisionResult = components['schemas']['RecordARecallDe
 export type RecallableSentence = components['schemas']['RecallableSentence']
 export type AutomatedCalculationData = components['schemas']['AutomatedCalculationData']
 export type RecallSentenceCalculation = components['schemas']['RecallSentenceCalculation']
+
+export type LicenceDates = {
+  sed?: string
+  led?: string
+  areDifferent: boolean
+}

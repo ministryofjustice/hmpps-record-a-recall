@@ -39,9 +39,19 @@ export default class CalculateReleaseDatesApiClient extends RestClient {
     ) as Promise<RecordARecallDecisionResult>
   }
 
+  // async getLatestCalculation(nomsId: string): Promise<LatestCalculation> {
+  //   return this.get({ path: `/calculation/${nomsId}/latest` }, asSystem()) as Promise<LatestCalculation>
+  // }
   async getLatestCalculation(nomsId: string): Promise<LatestCalculation> {
-    return this.get({ path: `/calculation/${nomsId}/latest` }, asSystem()) as Promise<LatestCalculation>
-  }
+  const latestCalculation = (await this.get(
+    { path: `/calculation/${nomsId}/latest` },
+    asSystem(),
+  )) as LatestCalculation
+
+  console.log('getLatestCalculation response:', JSON.stringify(latestCalculation, null, 2))
+
+  return latestCalculation
+}
 
   async getCalculationBreakdown(calculationRequestId: number): Promise<CalculationBreakdown> {
     return this.get(

@@ -1,4 +1,5 @@
 import {
+  LicenceDates,
   RecordARecallDecisionResult,
   RecordARecallRequest,
   RecordARecallValidationResult,
@@ -20,26 +21,31 @@ export default class CalculateReleaseDatesService {
     return this.calculateReleaseDatesApiClient.makeDecisionForRecordARecall(nomsId, recordARecallRequest, username)
   }
 
-  async getLedFromLatestCalc(nomsId: string): Promise<string | undefined> {
-    let latestCalc
 
-    try {
-      latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
-    } catch (error) {
-      if (error?.responseStatus === 404) {
-        return undefined
-      }
-      throw error
+async getLicenceDatesFromLatestCalc(nomsId: string): Promise<LicenceDates | undefined> {
+  let latestCalc
+
+  try {
+    latestCalc = await this.calculateReleaseDatesApiClient.getLatestCalculation(nomsId)
+  } catch (error) {
+    if (error?.responseStatus === 404) {
+      return undefined
     }
-
-    if (!latestCalc?.dates) return undefined
-
-    const sled = latestCalc.dates.find(it => it.type === 'SLED')?.date
-    if (sled) return sled
-
-    const led = latestCalc.dates.find(it => it.type === 'LED')?.date
-    if (led) return led
-
-    return undefined
+    throw error
   }
+
+  if (!latestCalc?.dates) return undefined
+
+  const sed = latestCalc.dates.find(it => it.type === 'SED')?.date
+  const led = latestCalc.dates.find(it => it.type === 'LED')?.date
+
+  if (!sed && !led) return undefined
+
+  return {
+    sed,
+    led,
+    areDifferent: Boolean(sed && led && sed !== led),
+  }
+}
+
 }
