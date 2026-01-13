@@ -67,6 +67,7 @@ export default class ReturnToCustodyDateController implements Controller {
 
     console.log('[RTC POST] Updating session + redirecting to DECISION')
 
+    journey.isCheckingAnswers = false
     journey.inCustodyAtRecall = inCustodyAtRecall
     journey.returnToCustodyDate = { day, month, year }
 
