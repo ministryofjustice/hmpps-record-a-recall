@@ -16,5 +16,5 @@ export type LicenceDates = {
   sled?: string
   sed?: string
   led?: string
-  areDifferent: boolean
+  sledExists: boolean
 }

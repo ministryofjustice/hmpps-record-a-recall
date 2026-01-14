@@ -39,22 +39,14 @@ export default class CalculateReleaseDatesService {
 
     if (!sled && !sed && !led) return undefined
 
-    // calculate areDifferent only if no sled
-    let areDifferent = false
-    if (!sled) {
-      if (sed && led) {
-        // convert to Date objects to compare
-        const sedDate = new Date(sed).getTime()
-        const ledDate = new Date(led).getTime()
-        areDifferent = sedDate !== ledDate
-      }
+    if (sled) {
+      return { sledExists: true, sled }
     }
 
     return {
-      ...(sled && { sled }),
-      ...(sed && { sed }),
-      ...(led && { led }),
-      areDifferent,
+      led,
+      sed,
+      sledExists: false,
     }
   }
 }
