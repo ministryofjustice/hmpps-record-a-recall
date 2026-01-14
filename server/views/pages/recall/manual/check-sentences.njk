@@ -31,13 +31,10 @@
       This is the SLED on this person's licence.
 
     {% else %}
-      {# No SLED, show separate dates or single date if only one exists #}
-      {% if licenceDates.sed and licenceDates.led and licenceDates.sed != licenceDates.led %}
         The latest SED (Sentence expiry date) is
         <b>{{ licenceDates.sed | formatDate('dddd, D MMMM YYYY') }}</b>.
         The latest LED (Licence expiry date) is
         <b>{{ licenceDates.led | formatDate('dddd, D MMMM YYYY') }}</b>.
-      {% endif %}
 
     {% endif %}
 
