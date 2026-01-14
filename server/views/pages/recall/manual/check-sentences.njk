@@ -24,20 +24,26 @@
 
 <p data-qa="led-line">
   {% if licenceDates %}
+
     {% if licenceDates.areDifferent %}
       The latest SED (Sentence expiry date) is
       <b>{{ licenceDates.sed | formatDate('dddd, D MMMM YYYY') }}</b>.
       The latest LED (Licence expiry date) is
       <b>{{ licenceDates.led | formatDate('dddd, D MMMM YYYY') }}</b>.
+
     {% else %}
       The latest SLED (Sentence and licence expiry date) is
-      <b>{{ (licenceDates.sed or licenceDates.led) | formatDate('dddd, D MMMM YYYY') }}</b>.
+      <b>{{ (licenceDates.sled or licenceDates.sed or licenceDates.led)
+        | formatDate('dddd, D MMMM YYYY') }}</b>.
       This is the SLED on this person's licence.
+
     {% endif %}
+
   {% else %}
     The SLED (Sentence and licence expiry date) is not available.
   {% endif %}
 </p>
+
 
 
   <h2 class="govuk-heading-l">

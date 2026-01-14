@@ -128,6 +128,62 @@ describe('checkSentencesController Tests', () => {
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('Offence 3')
     })
 
+    it('shows SLED when SLED is present', async () => {
+      calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
+        sled: '2025-01-10',
+        areDifferent: false,
+      })
+
+      courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
+
+      const res = await request(app).get(baseUrl).expect(200)
+
+      const $ = cheerio.load(res.text)
+      const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
+
+      expect(ledLine).toBe(
+        "The latest SLED (Sentence and licence expiry date) is Friday, 10 January 2025. This is the SLED on this person's licence.",
+      )
+    })
+
+    it('shows separate SED and LED when no SLED and dates are different', async () => {
+      calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
+        sed: '2025-01-01',
+        led: '2025-02-01',
+        areDifferent: true,
+      })
+
+      courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
+
+      const res = await request(app).get(baseUrl).expect(200)
+
+      const $ = cheerio.load(res.text)
+      const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
+
+      expect(ledLine).toBe(
+        'The latest SED (Sentence expiry date) is Wednesday, 1 January 2025. The latest LED (Licence expiry date) is Saturday, 1 February 2025.',
+      )
+    })
+
+    it('shows SLED text when no SLED but SED and LED are the same date', async () => {
+      calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
+        sed: '2025-01-01',
+        led: '2025-01-01',
+        areDifferent: false,
+      })
+
+      courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
+
+      const res = await request(app).get(baseUrl).expect(200)
+
+      const $ = cheerio.load(res.text)
+      const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
+
+      expect(ledLine).toBe(
+        "The latest SLED (Sentence and licence expiry date) is Wednesday, 1 January 2025. This is the SLED on this person's licence.",
+      )
+    })
+
     describe('backlink tests', () => {
       it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
         recallService.getCasesSelectedForRecall.mockReturnValue([courtCase1, courtCase2])
