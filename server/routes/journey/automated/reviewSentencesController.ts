@@ -4,13 +4,10 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
-import { buildRecordARecallRequest } from '../../../utils/utils'
+import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
-import {
-  AutomatedCalculationData,
-  LicenceDates,
-} from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
 export default class ReviewSentencesController implements Controller {
   PAGE_NAME: Page = Page.REVIEW_SENTENCES_AUTOMATED
@@ -48,33 +45,14 @@ export default class ReviewSentencesController implements Controller {
       recallId,
       RecallJourneyUrls.reviewSentencesAutomatedJourney.name,
     )
-
-    function getLicenceDatesFromAutomatedData(data: AutomatedCalculationData): LicenceDates | undefined {
-      if (!data || !data.recallableSentences?.length) return undefined
-
-      // Extract dates from sentences
-      const sled = data.recallableSentences.find(s => s.sentenceCalculation.licenseExpiry)?.sentenceCalculation
-        .licenseExpiry
-
-      const sed = data.recallableSentences.find(s => s.sentenceCalculation.conditionalReleaseDate)?.sentenceCalculation
-        .conditionalReleaseDate
-      const led = data.recallableSentences.find(s => s.sentenceCalculation.actualReleaseDate)?.sentenceCalculation
-        .actualReleaseDate
-
-      if (!sled && !sed && !led) return undefined
-
-      // areDifferent = true only if SED and LED exist and are different, otherwise false
-      const areDifferent = sled ? false : sed !== undefined && led !== undefined && sed !== led
-
-      return { sled, sed, led, areDifferent }
-    }
-    const licenceDates = getLicenceDatesFromAutomatedData(decision.automatedCalculationData)
-
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
       isEdit: createOrEdit === 'edit',
       courtCases: this.matchRasSentencesAndCrdsSentences(recallableCourtCases, decision.automatedCalculationData),
-      licenceDates,
+      sled: maxOf(
+        decision.automatedCalculationData.recallableSentences,
+        it => new Date(it.sentenceCalculation.licenseExpiry),
+      ),
       backLink,
       cancelUrl,
     })
