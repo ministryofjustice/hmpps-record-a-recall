@@ -50,8 +50,6 @@ export default class CalculateReleaseDatesService {
       }
     }
 
-    // console.log('***************SERVICE*************', 'sled', sled, 'sed', sed, 'led', led, 'areDiff', areDifferent)
-
     return {
       ...(sled && { sled }),
       ...(sed && { sed }),

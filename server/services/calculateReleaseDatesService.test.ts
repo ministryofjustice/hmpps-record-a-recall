@@ -58,5 +58,61 @@ describe('Calculate release dates service', () => {
       expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
       expect(result).toBeUndefined()
     })
+
+    it('returns SLED and sets areDifferent to false when SLED is present even if SED and LED differ', async () => {
+      calculateReleaseDatesApiClient.getLatestCalculation.mockResolvedValue({
+        dates: [
+          { type: 'SLED', date: '2025-01-10' },
+          { type: 'SED', date: '2025-01-01' },
+          { type: 'LED', date: '2025-02-01' },
+        ],
+      } as LatestCalculation)
+
+      const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
+
+      expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
+      expect(result).toStrictEqual({
+        sled: '2025-01-10',
+        sed: '2025-01-01',
+        led: '2025-02-01',
+        areDifferent: false,
+      })
+    })
+
+    it('returns SED and LED and sets areDifferent to true when no SLED and SED and LED differ', async () => {
+      calculateReleaseDatesApiClient.getLatestCalculation.mockResolvedValue({
+        dates: [
+          { type: 'SED', date: '2025-01-01' },
+          { type: 'LED', date: '2025-02-01' },
+        ],
+      } as LatestCalculation)
+
+      const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
+
+      expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
+      expect(result).toStrictEqual({
+        sed: '2025-01-01',
+        led: '2025-02-01',
+        areDifferent: true,
+      })
+    })
+
+    it('returns SED and LED and sets areDifferent to false when no SLED and SED and LED are the same date', async () => {
+      calculateReleaseDatesApiClient.getLatestCalculation.mockResolvedValue({
+        dates: [
+          { type: 'SED', date: '2025-01-01' },
+          { type: 'LED', date: '2025-01-01' },
+        ],
+      } as LatestCalculation)
+
+      const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
+
+      expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
+      expect(result).toStrictEqual({
+        sed: '2025-01-01',
+        led: '2025-01-01',
+        areDifferent: false,
+      })
+    })
   })
 })
