@@ -28,7 +28,11 @@ describe('Calculate release dates service', () => {
       const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
 
       expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
-      expect(result).toStrictEqual({ areDifferent: false, led: '2025-01-03', sed: undefined })
+      expect(result).toStrictEqual({
+        sled: '2025-01-02',
+        led: '2025-01-03',
+        areDifferent: false,
+      })
     })
 
     it('returns LED date when present and no SLED', async () => {
@@ -39,7 +43,10 @@ describe('Calculate release dates service', () => {
       const result = await service.getLicenceDatesFromLatestCalc('A1234BC')
 
       expect(calculateReleaseDatesApiClient.getLatestCalculation).toHaveBeenCalledWith('A1234BC')
-      expect(result).toStrictEqual({ areDifferent: false, led: '2025-01-03', sed: undefined })
+      expect(result).toStrictEqual({
+        led: '2025-01-03',
+        areDifferent: false,
+      })
     })
 
     it('returns undefined when API returns 404', async () => {

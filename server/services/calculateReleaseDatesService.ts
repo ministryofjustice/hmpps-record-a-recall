@@ -50,13 +50,12 @@ export default class CalculateReleaseDatesService {
       }
     }
 
-    // @ts-ignore
-    console.log('***************SERVICE*************', 'sled', sled, 'sed', sed, 'led', led, 'areDiff', areDifferent)
+    // console.log('***************SERVICE*************', 'sled', sled, 'sed', sed, 'led', led, 'areDiff', areDifferent)
 
     return {
-      sled,
-      sed,
-      led,
+      ...(sled && { sled }),
+      ...(sed && { sed }),
+      ...(led && { led }),
       areDifferent,
     }
   }
