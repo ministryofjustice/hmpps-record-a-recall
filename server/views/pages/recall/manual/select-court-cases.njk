@@ -3,7 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "partials/components/case-and-sentences/macro.njk" import caseAndSentences %}
 
-{% set title = "Select all cases that had an active sentence" %}
+{% set title = "Select all cases that have an outstanding SLED or LED" %}
 {% set pageTitle = applicationName + " - " + title %}
 
 {% block beforePageContent %}
@@ -16,7 +16,7 @@
     {{ title }}
   </h1>
 
-  <p class="govuk-body">The sentence must have been active when the person's licence was revoked. Any missing sentence types can be added later.</p>
+  <p class="govuk-body">The sentence must have been active when the person's licence was revoked.</p>
   <p class="govuk-body-m govuk-!-font-weight-bold govuk-!-margin-bottom-5">Court case {{ courtCaseIndex + 1 }} of {{ totalCases }}</p>
 
   {# Recallable Offences Section #}
@@ -51,7 +51,7 @@
       name: "activeSentenceChoice",
       fieldset: {
         legend: {
-          text: "Did this case have an active sentence?",
+          text: "Was there an outstanding SLED or LED when the licence was revoked?",
           isPageHeading: false,
           classes: "govuk-fieldset__legend--m"
         }
@@ -59,13 +59,13 @@
       items: [
         {
           value: "YES",
-          text: "Yes",
+          text: "Yes, there was an outstanding SLED or LED",
           checked: selectedRadio == 'YES',
           attributes: { 'data-qa': 'yes-radio' }
         },
         {
           value: "NO",
-          text: "No",
+          text: "No, there was not an outstanding SLED or LED",
           checked: selectedRadio == 'NO',
           attributes: { 'data-qa': 'no-radio' }
         }

@@ -54,7 +54,7 @@ describe('GET /manual/start', () => {
     const $ = cheerio.load(res.text)
 
     // Then
-    expect($('h1').text().trim()).toBe('Select all the cases that are relevant to this recall')
+    expect($('h1').text().trim()).toBe('Select all sentences that had an outstanding SLED or LED')
 
     const continueButton = $('[data-qa=continue-manual-action]')
     expect(continueButton.text().trim()).toBe('Continue')

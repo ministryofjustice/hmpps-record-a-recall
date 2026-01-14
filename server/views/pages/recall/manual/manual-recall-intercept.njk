@@ -3,7 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {%- from "moj/components/interruption-card/macro.njk" import interruptionCard -%}
 
-{% set title = "Select all the cases that are relevant to this recall" %}
+{% set title = "Select all sentences that had an outstanding SLED or LED" %}
 {% set pageTitle = applicationName + " - " + title %}
 {% set contentColumnWidth = "full" %}
 
@@ -37,8 +37,8 @@
       <p class="govuk-body">This service cannot determine which sentences are eligible for recall.</p>
       <p class="govuk-heading-m">What you need to do</p>
       <p class="govuk-body">
-        You must make sure the recall is recorded correctly, as per the original warrant.
-        To do this, you must select all cases that include sentences that were active when the person's licence was revoked.
+        You must select the sentences that had an outstanding SLED or 
+        LED when the person's licence was revoked.
       </p>
     {%- endcall %}
   </form>

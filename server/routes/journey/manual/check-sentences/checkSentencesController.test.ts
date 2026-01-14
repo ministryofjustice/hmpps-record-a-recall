@@ -78,7 +78,10 @@ describe('checkSentencesController Tests', () => {
   describe('GET', () => {
     it('renders the first recallable court case (index defaults to 0) and shows recallable/non-recallable sections', async () => {
       // Given
-      calculateReleaseDatesService.getLedFromLatestCalc.mockResolvedValue('2024-02-03')
+      calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
+        sled: '2024-02-03',
+        sledExists: true,
+      })
       courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
 
       // When
@@ -89,7 +92,7 @@ describe('checkSentencesController Tests', () => {
 
       const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
       expect(ledLine).toBe(
-        "The latest SLED (Sentence and licence expiry date) is 03 Feb 2024. This is the SLED on this person's licence.",
+        "The latest SLED (Sentence and licence expiry date) is Saturday, 3 February 2024. This is the SLED on this person's licence.",
       )
 
       const headings = $('h2[data-qa="court-case-main-heading"]')
@@ -122,6 +125,43 @@ describe('checkSentencesController Tests', () => {
       const onlyCard = secondCaseCards.eq(0)
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('OFF3')
       expect(onlyCard.find('h4.govuk-heading-s').text()).toContain('Offence 3')
+    })
+
+    it('shows SLED when SLED is present', async () => {
+      calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
+        sled: '2025-01-10',
+        sledExists: true,
+      })
+
+      courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
+
+      const res = await request(app).get(baseUrl).expect(200)
+
+      const $ = cheerio.load(res.text)
+      const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
+
+      expect(ledLine).toBe(
+        "The latest SLED (Sentence and licence expiry date) is Friday, 10 January 2025. This is the SLED on this person's licence.",
+      )
+    })
+
+    it('shows separate SED and LED when no SLED and dates are different', async () => {
+      calculateReleaseDatesService.getLicenceDatesFromLatestCalc.mockResolvedValue({
+        sed: '2025-01-01',
+        led: '2025-02-01',
+        sledExists: false,
+      })
+
+      courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
+
+      const res = await request(app).get(baseUrl).expect(200)
+
+      const $ = cheerio.load(res.text)
+      const ledLine = $('[data-qa="led-line"]').text().replace(/\s+/g, ' ').trim()
+
+      expect(ledLine).toBe(
+        'The latest SED (Sentence expiry date) is Wednesday, 1 January 2025. The latest LED (Licence expiry date) is Saturday, 1 February 2025.',
+      )
     })
 
     describe('backlink tests', () => {
