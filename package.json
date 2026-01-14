@@ -53,7 +53,7 @@
     "@aws-sdk/client-sqs": "^3.911.0",
     "@microsoft/applicationinsights-clickanalytics-js": "^3.3.5",
     "@microsoft/applicationinsights-web": "^3.3.5",
-    "@ministryofjustice/frontend": "^6.0.0",
+    "@ministryofjustice/frontend": "^8.0.0",
     "@ministryofjustice/hmpps-auth-clients": "^0.0.3",
     "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.15.2",
     "@ministryofjustice/hmpps-monitoring": "^0.0.2",
