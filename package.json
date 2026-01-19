@@ -89,7 +89,7 @@
     "@jgoz/esbuild-plugin-typecheck": "^4.0.3",
     "@ministryofjustice/eslint-config-hmpps": "^0.0.5",
     "@ministryofjustice/hmpps-npm-script-allowlist": "0.0.3",
-    "@ministryofjustice/hmpps-precommit-hooks": "^0.0.4",
+    "@ministryofjustice/hmpps-precommit-hooks": "^1.0.2",
     "@testing-library/cypress": "^10.1.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/bunyan": "^1.8.11",
