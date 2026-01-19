@@ -49,9 +49,7 @@ describe('GET', () => {
     )
 
     expect(links.eq(2).text()).toContain('prisoner profile')
-    expect(links.eq(2).attr('href')).toContain(
-      'https://court-cases-release-dates-dev.hmpps.service.justice.gov.uk/prisoner/A1234BC/overview',
-    )
+    expect(links.eq(2).attr('href')).toContain('http://127.0.0.1:3000/dps/prisoner/A1234BC')
   })
 
   it('should render confirmation edit page', async () => {

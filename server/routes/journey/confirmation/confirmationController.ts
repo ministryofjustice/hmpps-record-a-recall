@@ -16,6 +16,7 @@ export default class ConfirmationController implements Controller {
       adjustments: `${config.urls.adjustments}/${nomsId}`,
       crds: `${config.urls.crds}?prisonId=${nomsId}`,
       ccrd: `${config.urls.courtCasesReleaseDates}/prisoner/${nomsId}/overview`,
+      dpspp: `${config.urls.digitalPrisonServices}/prisoner/${nomsId}`,
     }
 
     return res.render('pages/recall/recall-confirmation', {
