@@ -21,7 +21,6 @@ export default class HomeController implements Controller {
       .then(it =>
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
-
     return res.render('pages/person/home', {
       recalls,
       prisoner,
