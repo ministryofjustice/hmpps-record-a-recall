@@ -42,7 +42,17 @@
       </div>
 
       <div class="govuk-grid-column-one-half">
-        {{ cardInfo('Arrest date', model.returnToCustodyDate | formatDate if model.returnToCustodyDate else 'In prison at recall') }}
+        {% set arrestDateDisplay %}
+          {% if model.inPrisonOnRevocationDate === true %}
+            In prison at recall
+          {% elseif model.returnToCustodyDate %}
+            {{ model.returnToCustodyDate | formatDate }}
+          {% else %}
+            Not entered
+          {% endif %}
+        {% endset %}
+
+        {{ cardInfo('Arrest date', arrestDateDisplay) }}
         {% set ual = 'None' %}
         {% if isNomisRecall %}
           {% set ual %}

@@ -157,11 +157,33 @@ describe('Tests for recall card component', () => {
     const model: ExistingRecall = {
       ...aRecall,
       source: 'DPS',
+      inPrisonOnRevocationDate: true,
       returnToCustodyDate: undefined,
     }
     const content = nunjucks.render('test.njk', { model, serviceDefinitions })
     const $ = cheerio.load(content)
     expect($('h3:contains("Arrest date")').next().text().trim()).toStrictEqual('In prison at recall')
+  })
+
+  it('Should show Not Entered no return-to-custody date and no in-prison-on-revocation-date', () => {
+    const model: ExistingRecall = {
+      ...aRecall,
+      source: 'NOMIS',
+    }
+    const content = nunjucks.render('test.njk', { model, serviceDefinitions })
+    const $ = cheerio.load(content)
+    expect($('h3:contains("Arrest date")').next().text().trim()).toStrictEqual('Not entered')
+  })
+
+  it('Should show Not Entered no return-to-custody date and no in-prison-on-revocation-date', () => {
+    const model: ExistingRecall = {
+      ...aRecall,
+      source: 'NOMIS',
+      returnToCustodyDate: '2030-04-21',
+    }
+    const content = nunjucks.render('test.njk', { model, serviceDefinitions })
+    const $ = cheerio.load(content)
+    expect($('h3:contains("Arrest date")').next().text().trim()).toStrictEqual('21 Apr 2030')
   })
 
   it.each([
