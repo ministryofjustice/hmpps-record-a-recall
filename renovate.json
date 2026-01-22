@@ -31,9 +31,13 @@
     },
     {
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["node"],
+      "matchPackageNames": ["node", "hmpps-node"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "fileMatch": ["^\\.github/workflows/.*\\.yml$"]
     }
   ],
   "vulnerabilityAlerts": {

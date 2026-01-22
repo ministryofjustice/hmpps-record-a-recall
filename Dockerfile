@@ -1,5 +1,4 @@
 # Stage: base image
-FROM node:22.22-bookworm-slim as base
 
 ARG BUILD_NUMBER
 ARG GIT_REF
@@ -31,7 +30,7 @@ RUN apt-get update && \
         rm -rf /var/lib/apt/lists/*
 
 # Stage: build assets
-FROM base as build
+FROM base AS build
 
 ARG BUILD_NUMBER
 ARG GIT_REF
