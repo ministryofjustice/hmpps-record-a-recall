@@ -14,7 +14,7 @@ import adjustmentsApi from '../mockApis/adjustmentsApi'
 import ccardApi from '../mockApis/ccardApi'
 import frontEndComponentsApi from '../mockApis/frontEndComponentsApi'
 
-test.describe('Health @serial', () => {
+test.describe('Health', () => {
   test.afterEach(async () => {
     await resetStubs()
   })
