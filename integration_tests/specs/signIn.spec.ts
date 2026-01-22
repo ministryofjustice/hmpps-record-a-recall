@@ -7,7 +7,7 @@ import frontEndComponentsApi from '../mockApis/frontEndComponentsApi'
 
 test.describe('SignIn', () => {
   test.beforeEach(async () => {
-    frontEndComponentsApi.stubComponents()
+    await frontEndComponentsApi.stubComponents()
   })
 
   test.afterEach(async () => {

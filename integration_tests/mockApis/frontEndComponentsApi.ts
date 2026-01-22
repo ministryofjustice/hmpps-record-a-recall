@@ -18,11 +18,17 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/frontend-components/component?component=header s',
+        urlPath: '/frontend-components/components',
+        queryParameters: {
+          component: { equalTo: 'header' },
+        },
       },
       response: {
         status: httpStatus,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          header: { html: '' },
+        },
       },
     }),
 }
