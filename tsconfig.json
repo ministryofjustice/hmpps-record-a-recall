@@ -11,6 +11,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "noUncheckedIndexedAccess": false,
     "typeRoots": ["./server/@types", "./node_modules/@types"]
   },
   "exclude": [

@@ -6,7 +6,7 @@ import FullPageError from '../model/FullPageError'
 
 export default function populateCurrentPrisoner(prisonerSearchService: PrisonerSearchService): RequestHandler {
   return async (req, res, next) => {
-    const { nomsId } = req.params
+    const { nomsId } = req.params as { nomsId: string }
     const { username, caseLoads } = res.locals.user as PrisonUser
 
     if (username && nomsId) {
