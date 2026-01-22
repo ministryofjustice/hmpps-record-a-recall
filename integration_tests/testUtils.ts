@@ -2,10 +2,11 @@ import { Page } from '@playwright/test'
 import tokenVerification from './mockApis/tokenVerification'
 import hmppsAuth, { type UserToken } from './mockApis/hmppsAuth'
 import { resetStubs } from './mockApis/wiremock'
+import prisonApi from './mockApis/prisonApi'
 
 export { resetStubs }
 
-const DEFAULT_ROLES = ['ROLE_SOME_REQUIRED_ROLE']
+const DEFAULT_ROLES = ['ROLE_RECALL_MAINTAINER']
 
 export const attemptHmppsAuthLogin = async (page: Page) => {
   await page.goto('/')
@@ -24,6 +25,7 @@ export const login = async (
     hmppsAuth.stubSignOutPage(),
     hmppsAuth.token({ name, roles, authSource }),
     tokenVerification.stubVerifyToken(active),
+    prisonApi.stubGetUserCaseloads(),
   ])
   await attemptHmppsAuthLogin(page)
 }

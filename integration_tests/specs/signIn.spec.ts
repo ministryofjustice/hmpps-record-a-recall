@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test'
-import hmppsAuth from '../mockApis/hmppsAuth'
-import exampleApi from '../mockApis/exampleApi'
 
 import { login, resetStubs } from '../testUtils'
 import HomePage from '../pages/homePage'
+import hmppsAuth from '../mockApis/hmppsAuth'
+import frontEndComponentsApi from '../mockApis/frontEndComponentsApi'
 
 test.describe('SignIn', () => {
   test.beforeEach(async () => {
-    await exampleApi.stubExampleTime()
+    frontEndComponentsApi.stubComponents()
   })
 
   test.afterEach(async () => {

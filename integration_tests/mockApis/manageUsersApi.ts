@@ -1,4 +1,18 @@
+import { SuperAgentRequest } from 'superagent'
 import { stubFor } from './wiremock'
+
+const stubPing = (httpStatus = 200): SuperAgentRequest =>
+  stubFor({
+    request: {
+      method: 'GET',
+      urlPattern: '/manage-users-api/health/ping',
+    },
+    response: {
+      status: httpStatus,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
+    },
+  })
 
 const stubManageUsers = (name: string = 'john smith') =>
   stubFor({
@@ -99,4 +113,5 @@ export default {
   stubManageUsersMe,
   stubManageUsersMeCaseloads,
   stubManageUsersMeRoles,
+  stubPing,
 }
