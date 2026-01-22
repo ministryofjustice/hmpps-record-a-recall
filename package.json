@@ -68,7 +68,6 @@
     "express": "^5.2.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.18",
-    "express": "^5.1.0",
     "express-session": "^1.18.2",
     "govuk-frontend": "^5.14.0",
     "helmet": "^8.1.0",
