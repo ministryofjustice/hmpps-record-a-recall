@@ -21,44 +21,63 @@ More information about the template project including features can be found [her
 When deploying to a new namespace, you may wish to use this template typescript project namespace as the basis for your new namespace:
 
 <https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live.cloud-platform.service.justice.gov.uk/hmpps-record-a-recall>
+## Oauth2 Credentials
 
 This template namespace includes an AWS elasticache setup - which is required by this template project.
+The template project is set up to run with two sets of credentials, each one support a different oauth2 flows.
+These need to be requested from the auth team by filling in
+this [template](https://dsdmoj.atlassian.net/browse/HAAR-140) and raising on their slack channel.
 
 Copy this folder, update all the existing namespace references, and submit a PR to the Cloud Platform team. Further instructions from the Cloud Platform team can be found here: <https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide>
+### Auth Code flow
 
-## Renaming from HMPPS Template Typescript - github Actions
+These are used to allow authenticated users to access the application. After the user is redirected from auth back to
+the application, the typescript app will use the returned auth code to request a JWT token for that user containing the
+user's roles. The JWT token will be verified and then stored in the user's session.
 
-Once the new repository is deployed. Navigate to the repository in github, and select the `Actions` tab.
-Click the link to `Enable Actions on this repository`.
+These credentials are configured using the following env variables:
 
-Find the Action workflow named: `rename-project-create-pr` and click `Run workflow`.  This workflow will
-execute the `rename-project.bash` and create Pull Request for you to review.  Review the PR and merge.
+- AUTH_CODE_CLIENT_ID
+- AUTH_CODE_CLIENT_SECRET
 
-Note: ideally this workflow would run automatically however due to a recent change github Actions are not
-enabled by default on newly created repos. There is no way to enable Actions other then to click the button in the UI.
-If this situation changes we will update this project so that the workflow is triggered during the bootstrap project.
-Further reading: <https://github.community/t/workflow-isnt-enabled-in-repos-generated-from-template/136421>
+### Client Credentials flow
 
-## Generating types from RaS api Backend:
+These are used by the application to request tokens to make calls to APIs. These are system accounts that will have
+their own sets of roles.
 
-Run `npm run generate-remand-and-sentencing-api-types` in the route of the project
+Most API calls that occur as part of the request/response cycle will be on behalf of a user.
+To make a call on behalf of a user, a username should be passed when requesting a system token. The username will then
+become part of the JWT and can be used downstream for auditing purposes.
 
-## Manually branding from template app
-Run the `rename-project.bash` and create a PR.
+These tokens are cached until expiration.
 
-The rename-project.bash script takes a single argument - the name of the project and calculates from it the project description
-It then performs a search and replace and directory renames so the project is ready to be used.
+These credentials are configured using the following env variables:
 
-## Ensuring slack notifications are raised correctly
+- CLIENT_CREDS_CLIENT_ID
+- CLIENT_CREDS_CLIENT_SECRET
 
-To ensure notifications are routed to the correct slack channels, update the `alerts-slack-channel` and `releases-slack-channel` parameters in `.circle/config.yml` to an appropriate channel.
+### Dependencies
 
-## Filling in the `productId`
+### HMPPS Auth
 
-To allow easy identification of an application, the product Id of the overall product should be set in `values.yaml`. The Service Catalogue contains a list of these IDs and is currently in development here https://developer-portal.hmpps.service.justice.gov.uk/products
+To allow authenticated users to access your application you need to point it to a running instance of `hmpps-auth`.
+By default the application is configured to run against an instance running in docker that can be started
+via `docker-compose`.
 
-## Running the app
-The easiest way to run the app is to use docker compose to create the service and all dependencies. 
+**NB:** It's common for developers to run against the instance of auth running in the development/T3 environment for
+local development.
+Most APIs don't have images with cached data that you can run with docker: setting up realistic stubbed data in sync
+across a variety of services is very difficult.
+
+### REDIS
+
+When deployed to an environment with multiple pods we run applications with an instance of REDIS/Elasticache to provide
+a distributed cache of sessions.
+The template app is, by default, configured not to use REDIS when running locally.
+
+## Running the app via docker-compose
+
+The easiest way to run the app is to use docker compose to create the service and all dependencies.
 
 `docker compose pull`
 
@@ -71,50 +90,87 @@ The app requires:
 
 ### Running the app for development
 
-To start the main services excluding the example typescript template app: 
+To start the main services excluding the example typescript template app:
 
 `docker compose up --scale=app=0`
 
-Install dependencies using `npm install`, ensuring you are using `node v18.x` and `npm v9.x`
+Create an environment file by copying `.env.example` -> `.env`
+Environment variables set in here will be available when running `start:dev`
 
-Note: Using `nvm` (or [fnm](https://github.com/Schniz/fnm)), run `nvm install --latest-npm` within the repository folder to use the correct version of node, and the latest version of npm. This matches the `engines` config in `package.json` and the CircleCI build config.
+Install dependencies using `npm install`, ensuring you are using `node v20`
 
-And then, to build the assets and start the app with nodemon:
+Note: Using `nvm` (or [fnm](https://github.com/Schniz/fnm)), run `nvm install --latest-npm` within the repository folder
+to use the correct version of node, and the latest version of npm. This matches the `engines` config in `package.json`
+and the github pipeline build config.
+
+And then, to build the assets and start the app with esbuild:
 
 `npm run start:dev`
 
+### Logging in with a test user
+
+Once the application is running you should then be able to login with:
+
+username: AUTH_USER
+password: password123456
+
+To request specific users and roles then raise a PR
+to [update the seed data](https://github.com/ministryofjustice/hmpps-auth/blob/main/src/main/resources/db/dev/data/auth/V900_3__users.sql)
+for the in-memory DB used by Auth
+
 ### Run linter
 
-`npm run lint`
+- `npm run lint` runs `eslint`.
+- `npm run typecheck` runs the TypeScript compiler `tsc`.
 
-### Run tests
+### Run unit tests
 
 `npm run test`
 
 ### Running integration tests
 
-For local running, start a test db and wiremock instance by:
+For local running, start a wiremock instance by:
 
 `docker compose -f docker-compose-test.yml up`
 
 Then run the server in test mode by:
 
-`npm run start-feature` (or `npm run start-feature:dev` to run with nodemon)
+`npm run start-feature` (or `npm run start-feature:dev` to run with auto-restart on changes)
+
+After first install ensure playwright is initialised: 
+
+`npm run int-test-init:ci`
 
 And then either, run tests in headless mode with:
 
 `npm run int-test`
- 
-Or run tests with the cypress UI:
+
+Or run tests with the UI:
 
 `npm run int-test-ui`
+
+## Keeping your app up-to-date
+
+While there are multiple ways to keep your project up-to-date this [method](https://mojdt.slack.com/archives/C69NWE339/p1694009011413449) doesn't require you to keep cherry picking the changes, however if that works for you there is no reason to stop.
+
+In your service, add the template as a remote:
+
+`git remote add template https://github.com/ministryofjustice/hmpps-template-typescript`
+
+Create a branch and switch to it, eg:
+
+`git checkout -b template-changes-2309`
+
+Fetch all remotes:
+
+`git fetch --all`
+
+Merge the changes from the template into your service source:
+
+`git merge template/main --allow-unrelated-histories`
+
+You'll need to manually handle the merge of the changes, but if you do it early, carefully, and regularly, it won't be too much of a hassle.
 
 ## Change log
 
 A changelog for the service is available [here](./CHANGELOG.md)
-
-
-## Dependency Checks
-
-The template project has implemented some scheduled checks to ensure that key dependencies are kept up to date.
-If these are not desired in the cloned project, remove references to `check_outdated` job from `.circleci/config.yml`

@@ -39,7 +39,7 @@ export default function createApp(services: Services): express.Application {
   app.use(setUpAuthentication())
   app.use(authorisationMiddleware(['RECALL_MAINTAINER', 'ROLE_RELEASE_DATES_CALCULATOR']))
   app.use(setUpCsrf())
-  app.use(setUpCurrentUser(services))
+  app.use(setUpCurrentUser(services.userService))
   app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
   app.use(populateValidationErrors())
   app.get('/{*splat}', getFrontendComponents(services))

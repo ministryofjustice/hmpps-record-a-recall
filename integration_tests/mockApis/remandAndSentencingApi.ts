@@ -2,6 +2,18 @@ import { SuperAgentRequest } from 'superagent'
 import { stubFor } from './wiremock'
 
 export default {
+  stubPing: (httpStatus = 200): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPattern: '/remand-and-sentencing-api/health/ping',
+      },
+      response: {
+        status: httpStatus,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
+      },
+    }),
   stubSearchCourtCases: ({ prisonerId = 'A1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {

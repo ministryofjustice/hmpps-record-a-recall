@@ -1,4 +1,4 @@
-import { SuperAgentRequest } from 'superagent'
+import type { SuperAgentRequest } from 'superagent'
 import { stubFor } from './wiremock'
 
 export default {
@@ -6,7 +6,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/adjustments-api/health/ping',
+        urlPattern: '/frontend-components/ping',
       },
       response: {
         status: httpStatus,
@@ -14,17 +14,21 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
-  getNoAdjustmentsForPrisoner: (): SuperAgentRequest => {
-    return stubFor({
+  stubComponents: (httpStatus = 200): SuperAgentRequest =>
+    stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/adjustments-api/adjustments?.*',
+        urlPath: '/frontend-components/components',
+        queryParameters: {
+          component: { equalTo: 'header' },
+        },
       },
       response: {
-        status: 200,
+        status: httpStatus,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: [],
+        jsonBody: {
+          header: { html: '' },
+        },
       },
-    })
-  },
+    }),
 }

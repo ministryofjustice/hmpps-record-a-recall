@@ -43,7 +43,7 @@ describe('validationMiddleware', () => {
         session: {},
       } as Request
 
-      await validate(schema)(req, res, next)
+      await validate(schema)(req as unknown as Request<Record<string, string>>, res, next)
 
       expect(next).toHaveBeenCalledTimes(1)
     })
@@ -61,7 +61,7 @@ describe('validationMiddleware', () => {
         originalUrl: '/url-being-validated',
       } as unknown as Request
 
-      await validate(schema)(req, res, next)
+      await validate(schema)(req as unknown as Request<Record<string, string>>, res, next)
 
       expect(req.flash).toHaveBeenCalledWith(
         'validationErrors',
@@ -82,7 +82,7 @@ describe('validationMiddleware', () => {
         originalUrl: '/url-being-validated',
       } as unknown as Request
 
-      await validate(schema)(req, res, next)
+      await validate(schema)(req as unknown as Request<Record<string, string>>, res, next)
 
       expect(res.redirect).toHaveBeenCalledWith('/url-being-validated#')
     })
@@ -100,7 +100,7 @@ describe('validationMiddleware', () => {
         originalUrl: '/url-being-validated',
       } as unknown as Request
 
-      await validate(schema)(req, res, next)
+      await validate(schema)(req as unknown as Request<Record<string, string>>, res, next)
 
       expect(req.flash).toHaveBeenCalledWith(
         'validationErrors',
@@ -122,7 +122,7 @@ describe('validationMiddleware', () => {
         originalUrl: '/url-being-validated',
       } as unknown as Request
 
-      await validate(schema)(req, res, next)
+      await validate(schema)(req as unknown as Request<Record<string, string>>, res, next)
 
       expect(req.flash).toHaveBeenCalledWith(
         'validationErrors',

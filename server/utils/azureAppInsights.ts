@@ -6,9 +6,9 @@ import {
   setup,
   type TelemetryClient,
 } from 'applicationinsights'
-import { RequestHandler } from 'express'
-import { EnvelopeTelemetry } from 'applicationinsights/out/Declarations/Contracts'
+import { Request, RequestHandler } from 'express'
 import { CorrelationContext } from 'applicationinsights/out/AutoCollection/CorrelationContextManager'
+import { EnvelopeTelemetry } from 'applicationinsights/out/Declarations/Contracts'
 import type { ApplicationInfo } from '../applicationInfo'
 
 const requestPrefixesToIgnore = ['GET /assets/', 'GET /health', 'GET /ping', 'GET /info']

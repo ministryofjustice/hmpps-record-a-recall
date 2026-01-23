@@ -7,7 +7,7 @@ import { datePartsToDate } from '../../../utils/utils'
 const MISSING_IN_CUSTODY_SELECTION = 'Select whether the person was in prison when the recall was made'
 
 export const returnToCustodyDateSchemaFactory = () => async (req: Request) => {
-  const { journeyId } = req.params
+  const { journeyId } = req.params as { journeyId: string }
   const journey = req.session.recallJourneys[journeyId]
   return createSchema({
     day: z.string().trim().optional(),

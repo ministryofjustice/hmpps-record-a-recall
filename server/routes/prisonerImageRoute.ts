@@ -7,7 +7,7 @@ export default class ApiRoutes {
   constructor(private readonly prisonerService: PrisonerService) {}
 
   public personImage: RequestHandler = async (req, res): Promise<void> => {
-    const { nomsId } = req.params
+    const { nomsId } = req.params as { nomsId: string }
     return this.prisonerService
       .getPrisonerImage(nomsId, res.locals.user.token)
       .then(data => {
