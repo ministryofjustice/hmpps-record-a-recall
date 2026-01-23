@@ -20,13 +20,19 @@ export default class RemandAndSentencingApiClient extends RestClient {
   }
 
   async createRecall(createRecall: CreateRecall, username: string): Promise<CreateRecallResponse> {
-    return this.post(
-      {
-        data: createRecall,
-        path: `/recall`,
-      },
-      asSystem(username),
-    ) as Promise<CreateRecallResponse>
+    console.log('Calling create >>>>')
+    console.log('Calling create >>>>')
+    console.log('Calling create >>>>')
+    console.log(JSON.stringify(createRecall))
+    return {} as CreateRecallResponse
+
+    // return this.post(
+    //   {
+    //     data: createRecall,
+    //     path: `/recall`,
+    //   },
+    //   asSystem(username),
+    // ) as Promise<CreateRecallResponse>
   }
 
   async editRecall(recallId: string, createRecall: CreateRecall, username: string): Promise<CreateRecallResponse> {
