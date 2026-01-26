@@ -21,7 +21,6 @@ export default class ConfirmationController implements Controller {
 
     return res.render('pages/recall/recall-confirmation', {
       prisoner,
-      pageCaption: 'Record a recall',
       createOrEdit,
       urls,
     })
