@@ -33,6 +33,8 @@ generic-service:
     ENVIRONMENT_NAME: DEV
     AUDIT_ENABLED: "false"
 
+  scheduledDowntime:
+    enabled: true
   # Switches off the allow list in the DEV env only.
   allowlist: null
 
