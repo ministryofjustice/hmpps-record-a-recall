@@ -23,7 +23,7 @@ export const RecallTypes = {
     description: '28-day fixed-term',
     fixedTerm: true,
   },
-  ...(config.featureToggles.ftr56
+  ...(config.featureToggles.ftr56 === 'true'
     ? {
         FIFTY_SIX_DAY_RECALL: {
           code: 'FTR_56',
