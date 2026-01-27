@@ -38,6 +38,8 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       })
       .filter(it => !!it)
 
+    const backLink = RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId)
+
     const cancelLink = RecallJourneyUrls.confirmCancel(
       nomsId,
       journeyId,
@@ -53,6 +55,7 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       prisoner,
       continueLink: OtherServiceUrls.rasUnknownSentenceTypes(nomsId, params.toString()),
       cancelLink,
+      backLink,
       unknownPreRecallCourtCases,
     })
   }
