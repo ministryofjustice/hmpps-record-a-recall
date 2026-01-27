@@ -42,6 +42,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.972.0",
+    "@microsoft/applicationinsights-clickanalytics-js": "3.3.11",
+    "@microsoft/applicationinsights-web": "3.3.11",
     "@ministryofjustice/frontend": "^8.0.0",
     "@ministryofjustice/hmpps-auth-clients": "^1.0.1",
     "@ministryofjustice/hmpps-court-cases-release-dates-design": "^4.15.2",
