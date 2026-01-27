@@ -28,8 +28,6 @@ generic-service:
     COURT_CASES_RELEASE_DATES_API_URL: "https://court-cases-release-dates-api-preprod.hmpps.service.justice.gov.uk"
     NOMIS_MAPPING_SERVICE_URL: "https://nomis-sync-prisoner-mapping-preprod.hmpps.service.justice.gov.uk"
     REMAND_AND_SENTENCING_URL: "https://remand-and-sentencing-preprod.hmpps.service.justice.gov.uk"
-    FTR_56_ENABLED: "true"
-    UNEXPECTED_RECALL_TYPE_CHECK_ENABLED: "true"
 
     ENVIRONMENT_NAME: PRE-PRODUCTION
     AUDIT_ENABLED: "false"
