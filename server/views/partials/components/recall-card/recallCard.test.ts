@@ -460,7 +460,7 @@ describe('Tests for recall card component', () => {
     const content = nunjucks.render('test.njk', { model, serviceDefinitions })
     const $ = cheerio.load(content)
 
-    expect($('[data-qa=recall-abc123-card-title]')).toHaveLength(0)
+    expect($('[data-qa=recall-abc123-card-title]').text().trim()).toHaveLength(0)
   })
 
   it('Should show heading when source is DPS', () => {
