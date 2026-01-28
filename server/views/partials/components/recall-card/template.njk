@@ -10,11 +10,11 @@
 
 <div class="govuk-summary-card govuk-!-margin-bottom-6">
   <div class="govuk-summary-card__title-wrapper recall-card">
-    {% if not isNomisRecall %}
-      <h2 class="govuk-summary-card__title" data-qa="recall-{{ model.recallUuid }}-card-title">
+    <h2 class="govuk-summary-card__title" data-qa="recall-{{ model.recallUuid }}-card-title">
+      {% if not isNomisRecall %}
         Recorded on {{ model.createdAtTimestamp | formatDate }}{% if model.createdAtLocationName %} at {{ model.createdAtLocationName }}{% endif %}
-      </h2>
-    {% endif %}
+      {% endif %}
+    </h2>
 
     <ul class="govuk-summary-card__actions">
       {% if isNomisRecall %}
