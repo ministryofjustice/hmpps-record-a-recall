@@ -448,7 +448,30 @@ describe('Tests for recall card component', () => {
     const $ = cheerio.load(content)
     const card = $(`[data-qa=recall-abc123-court-case-1-sentences-1]`).find('.offence-card-offence-details')
     expect(card).toHaveLength(1)
-    // first child is the offence code instead of nomis line number or count
     expect(card.children().eq(0).text().trim()).toStrictEqual('A1 Assault')
+  })
+
+  it('Should not show heading when source is NOMIS', () => {
+    const model: ExistingRecall = {
+      ...aRecall,
+      source: 'NOMIS',
+    }
+
+    const content = nunjucks.render('test.njk', { model, serviceDefinitions })
+    const $ = cheerio.load(content)
+
+    expect($('[data-qa=recall-abc123-card-title]').text().trim()).toHaveLength(0)
+  })
+
+  it('Should show heading when source is DPS', () => {
+    const model: ExistingRecall = {
+      ...aRecall,
+      source: 'DPS',
+    }
+
+    const content = nunjucks.render('test.njk', { model, serviceDefinitions })
+    const $ = cheerio.load(content)
+
+    expect($('[data-qa=recall-abc123-card-title]').text().trim()).toBe('Recorded on 03 Feb 2021 at HMP Brixton')
   })
 })

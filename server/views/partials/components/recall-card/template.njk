@@ -11,7 +11,9 @@
 <div class="govuk-summary-card govuk-!-margin-bottom-6">
   <div class="govuk-summary-card__title-wrapper recall-card">
     <h2 class="govuk-summary-card__title" data-qa="recall-{{ model.recallUuid }}-card-title">
-      Recorded on {{ model.createdAtTimestamp | formatDate }}{% if model.createdAtLocationName %} at {{ model.createdAtLocationName }}{% endif %}
+      {% if not isNomisRecall %}
+        Recorded on {{ model.createdAtTimestamp | formatDate }}{% if model.createdAtLocationName %} at {{ model.createdAtLocationName }}{% endif %}
+      {% endif %}
     </h2>
 
     <ul class="govuk-summary-card__actions">
