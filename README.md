@@ -21,11 +21,6 @@ More information about the template project including features can be found [her
 When deploying to a new namespace, you may wish to use this template typescript project namespace as the basis for your new namespace:
 
 <https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live.cloud-platform.service.justice.gov.uk/hmpps-record-a-recall>
-## Oauth2 Credentials
-
-The template project is set up to run with two sets of credentials, each one support a different oauth2 flows.
-These need to be requested from the auth team by filling in
-this [template](https://dsdmoj.atlassian.net/browse/HAAR-140) and raising on their slack channel.
 
 ### Auth Code flow
 
@@ -59,10 +54,8 @@ These credentials are configured using the following env variables:
 ### HMPPS Auth
 
 To allow authenticated users to access your application you need to point it to a running instance of `hmpps-auth`.
-By default the application is configured to run against an instance running in docker that can be started
-via `docker-compose`.
-
-**NB:** It's common for developers to run against the instance of auth running in the development/T3 environment for
+We use the dev instance of auth for this. 
+It's common for developers to run against the instance of auth running in the development/T3 environment for
 local development.
 Most APIs don't have images with cached data that you can run with docker: setting up realistic stubbed data in sync
 across a variety of services is very difficult.
