@@ -16,6 +16,11 @@ import calculateReleaseDatesApi from '../mockApis/calculateReleaseDatesApi'
 // Page objects
 import HomePage from '../pages/homePage'
 import RevocationDatePage from '../pages/revocationDatePage'
+import ReturnToCustodyDatePage from '../pages/returnToCustodayDatePage'
+import CheckSentencesPage from '../pages/checkSentencesPage'
+import SelectRecallTypePage from '../pages/selectRecallTypePage'
+import CheckYourAnswersPage from '../pages/checkYourAnswersPage'
+import ConfirmationPage from '../pages/ConfirmationPage'
 
 test('user can see the person home and click record a recall', async ({ page }) => {
   // Reset stubs
@@ -37,16 +42,35 @@ test('user can see the person home and click record a recall', async ({ page }) 
   // Login
   await login(page)
 
-  // Go to the person's home page
+  // Step 1: Home page
   await page.goto('/person/BA1234AB')
-
-  // Verify home page loaded
   const homePage = await HomePage.verifyOnPage(page)
-
   await homePage.createNewRecallButton.click()
 
-  // Verify revocation date page loads
+  // Step 2: Revocation Date page
   const revocationPage = await RevocationDatePage.verifyOnPage(page)
-  await revocationPage.enterRevocationDate('2018-04-02')
+  await revocationPage.enterRevocationDate('2025-10-25')
   await revocationPage.clickContinue()
+
+  // STep 3: Return to Custody Date page
+  const returnToCustodyDatePage = await ReturnToCustodyDatePage.verifyOnPage(page)
+  await returnToCustodyDatePage.selectYes() // or selectNo() + enterReturnToCustodyDate('2021-04-04')
+  await returnToCustodyDatePage.clickContinue()
+
+  // Step 4: Check sentences
+  const checkSentencesPage = await CheckSentencesPage.verifyOnPage(page)
+  await checkSentencesPage.confirmAndContinue()
+
+  // Step 5: Select recall type
+  const selectRecallTypePage = await SelectRecallTypePage.verifyOnPage(page)
+  await selectRecallTypePage.selectRecallType() // implement method in page object
+  await selectRecallTypePage.clickContinue()
+
+  // Step 6: Check your answers
+  const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
+  await checkYourAnswersPage.confirmRecall()
+
+  // Step 7: Confirmation
+  const confirmationPage = await ConfirmationPage.verifyOnPage(page)
+  await confirmationPage.verifySuccessMessage('Recall recorded')
 })
