@@ -14,6 +14,19 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
+  stubHasSentences: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPathPattern: `/remand-and-sentencing-api/sentence/has-sentences/${prisonerId}.*`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: { hasSentences: true },
+      },
+    }),
+
   stubSearchCourtCases: ({ prisonerId = 'A1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {

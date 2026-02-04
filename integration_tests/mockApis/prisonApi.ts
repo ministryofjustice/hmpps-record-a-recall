@@ -14,11 +14,25 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
+  stubGetPrisonerImage: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPathPattern: '/prison-api/api/bookings/offenderNo/BA1234AB/image/data',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'image/png' },
+        base64Body:
+          'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEW10NBjBBbqAAAAH0lEQVRoge3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAvg0hAAABmmDh1QAAAABJRU5ErkJggg==',
+      },
+    })
+  },
   stubGetPrisonerDetails: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/prison-api/api/offenders/A1234AB',
+        urlPattern: '/prison-api/api/offenders/BA1234AB',
       },
       response: {
         status: 200,

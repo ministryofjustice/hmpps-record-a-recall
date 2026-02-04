@@ -10,6 +10,8 @@ import prisonRegisterApi from '../mockApis/prisonRegisterApi'
 import ccardsApi from '../mockApis/ccardApi'
 import courtRegisterApi from '../mockApis/courtRegisterApi'
 import manageOffencesApi from '../mockApis/manageOffencesApi'
+import prisonApi from '../mockApis/prisonApi'
+import calculateReleaseDatesApi from '../mockApis/calculateReleaseDatesApi'
 
 // Page objects
 import HomePage from '../pages/homePage'
@@ -24,10 +26,13 @@ test('user can see the person home and click record a recall', async ({ page }) 
 
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubTest()
+  await remandAndSentencingApi.stubHasSentences()
   await ccardsApi.getServiceDefinitions()
   await prisonRegisterApi.getPrisonsByPrisonIds()
   await courtRegisterApi.stubGetCourtsByIds()
   await manageOffencesApi.getOffencesByCodes()
+  await prisonApi.stubGetPrisonerImage()
+  await calculateReleaseDatesApi.stubCalculateReleaseDatesValidate()
 
   // Login
   await login(page)
@@ -38,38 +43,10 @@ test('user can see the person home and click record a recall', async ({ page }) 
   // Verify home page loaded
   const homePage = await HomePage.verifyOnPage(page)
 
-  //   // Click "Record a recall"
-  //   await homePage.createNewRecallButton.click()
+  await homePage.createNewRecallButton.click()
 
-  //   // Verify revocation date page loads
-  //   const revocationPage = await RevocationDatePage.verifyOnPage(page)
-  //   await revocationPage.enterRevocationDate('2018-04-02')
-  //   await revocationPage.clickContinue()
+  // Verify revocation date page loads
+  const revocationPage = await RevocationDatePage.verifyOnPage(page)
+  await revocationPage.enterRevocationDate('2018-04-02')
+  await revocationPage.clickContinue()
 })
-
-// test.describe('Create recall happy path | AUTO', () => {
-//   test.beforeEach(async ({ page }) => {
-//     await resetStubs()
-
-//     await hmppsAuth.stubSignInPage()
-//     // Add other stubs here as needed (prisonerSearchApi, recallApi,)
-
-//     // Login user
-//     await login(page)
-//   })
-
-//   test('user can complete the first step of recall journey', async ({ page }) => {
-//     // Step 1: Land on homepage (already logged in)
-//     const homePage = await HomePage.verifyOnPage(page)
-
-//     await homePage.createNewRecallButton.click()
-
-//     // Step 2: Revocation date page
-//     const revocationPage = await RevocationDatePage.verifyOnPage(page)
-
-//     await revocationPage.enterRevocationDate('2018-04-02')
-
-//     await revocationPage.clickContinue()
-
-//   })
-// })
