@@ -6,7 +6,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/remand-and-sentencing-api/health/ping',
+        urlPath: '/remand-and-sentencing-api/health/ping',
       },
       response: {
         status: httpStatus,
@@ -14,20 +14,20 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
-  stubHasSentences: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest =>
-    stubFor({
-      request: {
-        method: 'GET',
-        urlPathPattern: `/remand-and-sentencing-api/sentence/has-sentences/${prisonerId}.*`,
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-        jsonBody: { hasSentences: true },
-      },
-    }),
+stubHasSentences: (): SuperAgentRequest =>
+  stubFor({
+    request: {
+      method: 'GET',
+      urlPathPattern: '/remand-and-sentencing-api/sentence/has-sentences/[A-Z0-9]+',
+    },
+    response: {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      jsonBody: { hasSentences: true },
+    },
+  }),
 
-  stubSearchCourtCases: ({ prisonerId = 'A1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
+  stubSearchCourtCases: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
@@ -277,7 +277,7 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
+        urlPath: '/remand-and-sentencing-api/recall/person/BA1234AB',
       },
       response: {
         status: 200,
@@ -290,7 +290,7 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPath: '/remand-and-sentencing-api/recall/person/A1234AB',
+        urlPath: '/remand-and-sentencing-api/recall/person/BA1234AB',
       },
       response: {
         status: 200,
@@ -299,7 +299,7 @@ export default {
         jsonBody: [
           {
             recallUuid: 'ABC',
-            prisonerId: 'A1234AB',
+            prisonerId: 'BA1234AB',
             revocationDate: '2018-03-03T00:00:00.000Z',
             returnToCustodyDate: null,
             recallType: 'LR',
@@ -322,7 +322,7 @@ export default {
 
         jsonBody: {
           recallUuid,
-          prisonerId: 'A1234AB',
+          prisonerId: 'BA1234AB',
           revocationDate: '2018-03-03T00:00:00.000Z',
           returnToCustodyDate: null,
           recallType: 'LR',
@@ -375,7 +375,7 @@ export default {
     })
   },
   stubSearchCourtCasesWithSingleUnknownSentence: ({
-    prisonerId = 'A1234AB',
+    prisonerId = 'BA1234AB',
   }: { prisonerId?: string } = {}): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -444,7 +444,7 @@ export default {
     })
   },
   stubSearchCourtCasesWithUpdatedSentence: ({
-    prisonerId = 'A1234AB',
+    prisonerId = 'BA1234AB',
     sentenceType = 'SDS (Standard Determinate Sentence)',
     classification = 'STANDARD',
   }: { prisonerId?: string; sentenceType?: string; classification?: string } = {}): SuperAgentRequest => {

@@ -8,14 +8,13 @@ export default class CheckSentencesPage extends AbstractPage {
   private constructor(page: Page) {
     super(page)
 
-    this.header = page.locator('h1.govuk-heading-xl >> :text-is("Check that the sentences and offences are correct")')
-
+    this.header = page.locator('[data-qa="check-sentences-heading"]')
     this.confirmAndContinueButton = page.locator('[data-qa=confirm-and-continue-btn]')
   }
 
   static async verifyOnPage(page: Page): Promise<CheckSentencesPage> {
     const p = new CheckSentencesPage(page)
-    await expect(p.header).toBeVisible({ timeout: 10000 }) // wait up to 10s
+    await expect(p.header).toBeVisible({ timeout: 10000 })
     return p
   }
 

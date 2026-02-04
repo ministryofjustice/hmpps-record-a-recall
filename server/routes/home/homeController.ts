@@ -15,15 +15,12 @@ export default class HomeController implements Controller {
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
     const { nomsId } = req.params
     const { prisoner, user } = res.locals
-    console.log('*********', '123444444')
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
     const recalls = await this.recallService
       .getRecallsForPrisoner(nomsId, user.username)
       .then(it =>
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
-    console.log('*********servicedef', serviceDefinitions)
-    console.log('*********recalls', recalls)
     return res.render('pages/person/home', {
       recalls,
       prisoner,

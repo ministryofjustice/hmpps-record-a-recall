@@ -5,7 +5,7 @@ const stubPing = (httpStatus = 200): SuperAgentRequest =>
   stubFor({
     request: {
       method: 'GET',
-      urlPattern: '/manage-users-api/health/ping',
+      urlPath: '/manage-users-api/health/ping',
     },
     response: {
       status: httpStatus,

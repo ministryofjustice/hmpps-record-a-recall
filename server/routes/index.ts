@@ -67,7 +67,6 @@ export default function routes({
     additionalMiddleware?: (RequestHandler<P> | RequestHandler)[]
   }) => {
     const auditPageView = auditPageViewMiddleware(controller.PAGE_NAME, auditService)
-    console.log('Routerrrrrr')
     router.get(path, auditPageView, ...additionalMiddleware, asyncMiddleware(controller.GET))
     if (controller.POST) {
       if (validateToSchema) {
