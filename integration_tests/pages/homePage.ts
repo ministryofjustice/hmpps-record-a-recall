@@ -21,7 +21,7 @@ export default class HomePage extends AbstractPage {
     this.headerPhaseBanner = page.getByTestId('header-phase-banner')
 
     // "Record a recall" button
-    this.createNewRecallButton = page.getByTestId('Record a recall')
+    this.createNewRecallButton = page.getByTestId('create-new-recall-btn')
   }
 
   /** Verify the page has loaded by checking the header */

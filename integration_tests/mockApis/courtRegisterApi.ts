@@ -18,7 +18,7 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPathPattern: '/courts/id/multiple.*',
+        urlPathPattern: '/courts/courts/id/multiple.*',
       },
       response: {
         status: 200,
