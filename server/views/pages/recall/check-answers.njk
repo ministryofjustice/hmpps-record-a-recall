@@ -5,11 +5,11 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% if createOrEdit == 'create' %}
-    {% set title = "Check your answers" %}
+    {% set title = "Check answers" %}
 {% else %}
     {% set title = "Recorded on " + (recallBeingEdited.createdAtTimestamp | formatDate) %}
 {% endif %}
-{% set pageTitle = applicationName + " - Check your answers" %}
+{% set pageTitle = applicationName + " - Check answers" %}
 
 {% block beforePageContent %}
   {% set caption = isEdit and "Edit a recall" or "Record a recall" %}
@@ -127,7 +127,7 @@
 
         <div class="govuk-button-group">
             {{ govukButton({
-                text: "Continue",
+                text: "Confirm and save",
                 preventDoubleClick: true,
                 attributes: { id: "submit" }
             }) }}
