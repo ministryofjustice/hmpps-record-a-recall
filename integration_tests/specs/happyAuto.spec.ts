@@ -83,9 +83,9 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // STep 3: Return to Custody Date page
   const returnToCustodyDatePage = await ReturnToCustodyDatePage.verifyOnPage(page)
-  // await returnToCustodyDatePage.selectYes() 
-  await returnToCustodyDatePage.selectNo()
-  await returnToCustodyDatePage.enterReturnToCustodyDate('2025-11-05')
+  await returnToCustodyDatePage.selectYes() 
+  // await returnToCustodyDatePage.selectNo()
+  // await returnToCustodyDatePage.enterReturnToCustodyDate('2025-11-05')
   await returnToCustodyDatePage.clickContinue()
 
   // Step 4: Check sentences
