@@ -22,7 +22,7 @@ import ReturnToCustodyDatePage from '../pages/returnToCustodayDatePage'
 import CheckSentencesPage from '../pages/checkSentencesPage'
 import SelectRecallTypePage from '../pages/selectRecallTypePage'
 import CheckYourAnswersPage from '../pages/checkYourAnswersPage'
-import ConfirmationPage from '../pages/ConfirmationPage'
+import ConfirmationPage from '../pages/confirmationPage'
 
 export const stubAllHealthChecks = async () => {
   await tokenVerification.stubPing()
@@ -50,6 +50,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubTest()
   await remandAndSentencingApi.stubHasSentences()
+  await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases() //
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
@@ -82,7 +83,9 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // STep 3: Return to Custody Date page
   const returnToCustodyDatePage = await ReturnToCustodyDatePage.verifyOnPage(page)
-  await returnToCustodyDatePage.selectYes() // or selectNo() + enterReturnToCustodyDate('2021-04-04')
+  // await returnToCustodyDatePage.selectYes() 
+  await returnToCustodyDatePage.selectNo()
+  await returnToCustodyDatePage.enterReturnToCustodyDate('2025-11-05')
   await returnToCustodyDatePage.clickContinue()
 
   // Step 4: Check sentences

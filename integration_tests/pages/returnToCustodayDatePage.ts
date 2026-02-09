@@ -37,10 +37,15 @@ export default class ReturnToCustodyDatePage extends AbstractPage {
     return this
   }
 
-  selectNo(): this {
-    this.noRadio.check()
-    return this
-  }
+async selectNo(): Promise<this> {
+  await this.noRadio.check()
+  // wait for the conditional inputs to appear
+  await expect(this.dayInput).toBeVisible()
+  await expect(this.monthInput).toBeVisible()
+  await expect(this.yearInput).toBeVisible()
+  return this
+}
+
 
   async enterReturnToCustodyDate(date: string): Promise<this> {
     const [year, month, day] = date.split('-')
