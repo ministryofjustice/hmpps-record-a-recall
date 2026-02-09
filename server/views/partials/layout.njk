@@ -55,7 +55,7 @@
   {% set envMapping = {
       'DEV': 'dev',
       'PRE-PRODUCTION': 'pre',
-      'PRODUCTION': 'prod',
+      'PROD': 'prod',
       'LOCAL': 'local'
     } %}
   {% set mappedEnv = envMapping[environmentName] | default('dev') %}
