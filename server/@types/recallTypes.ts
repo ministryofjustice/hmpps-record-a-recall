@@ -58,8 +58,20 @@ export const getRecallType = (code: string): RecallType => {
   return Object.values(RecallTypes).find(it => it.code === code)
 }
 
+export interface ConsecutiveToDetails {
+  countNumber?: string | null
+  offenceCode?: string | null
+  offenceDescription?: string | null
+  courtCaseReference?: string | null
+  courtName?: string | null
+  warrantDate?: string | null
+  offenceStartDate?: string | null
+  offenceEndDate?: string | null
+}
+
 export interface SentenceAndOffence extends RecallableCourtCaseSentence {
   offenceDescription?: string | null
+  consecutiveTo?: ConsecutiveToDetails | null
 }
 
 export type ExtraQueryParams = { caseIndex?: number }
