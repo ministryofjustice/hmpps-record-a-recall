@@ -435,4 +435,60 @@ export default {
         },
       },
     }),
+  stubRecordARecallDecision: (
+  { prisonerId = 'BA1234AB' }: { prisonerId?: string } = {},
+): SuperAgentRequest =>
+  stubFor({
+    request: {
+      method: 'POST',
+      urlPath: `/calculate-release-dates/record-a-recall/${prisonerId}/decision`,
+    },
+    response: {
+      status: 200,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      jsonBody: {
+        decision: 'AUTOMATED',
+        validationMessages: [],
+        conflictingAdjustments: [],
+        automatedCalculationData: {
+          calculationRequestId: 89503,
+          recallableSentences: [
+            {
+              sentenceSequence: 1,
+              bookingId: 1232537,
+              uuid: '34f9b045-5616-49cc-9275-7b6cbaea853d',
+              sentenceCalculation: {
+                conditionalReleaseDate: '2024-08-30',
+                actualReleaseDate: '2024-08-30',
+                licenseExpiry: '2028-02-29',
+              },
+            },
+          ],
+          expiredSentences: [],
+          ineligibleSentences: [],
+          sentencesBeforeInitialRelease: [
+            {
+              sentenceSequence: 2,
+              bookingId: 1232537,
+              uuid: '97fd996a-3721-4f75-972b-66cdbf9ef30e',
+              sentenceCalculation: {
+                conditionalReleaseDate: '2026-02-27',
+                actualReleaseDate: '2026-02-27',
+                licenseExpiry: '2026-10-04',
+              },
+            },
+          ],
+          unexpectedRecallTypes: [
+            'FTR_14',
+            'FTR_56',
+            'FTR_HDC_14',
+            'FTR_HDC_28',
+            'CUR_HDC',
+            'IN_HDC',
+          ],
+        },
+      },
+    },
+  }),
+
 }

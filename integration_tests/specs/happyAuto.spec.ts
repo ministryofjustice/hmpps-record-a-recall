@@ -50,8 +50,8 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubTest()
   await remandAndSentencingApi.stubHasSentences()
-  await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
-  await remandAndSentencingApi.stubSearchCourtCases() //
+  // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
+  await remandAndSentencingApi.stubSearchCourtCases() 
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
   await prisonRegisterApi.getPrisonsByPrisonIds()
@@ -64,7 +64,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 //   "returnToCustodyDate": "2026-02-04",
 //   "recallId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 // }
-  // await calculateReleaseDatesApi.stubRecordARecallDecision()
+  await calculateReleaseDatesApi.stubRecordARecallDecision()
   await prisonerSearchApi.stubPing()
   await adjustmentsApi.stubPing()
 
