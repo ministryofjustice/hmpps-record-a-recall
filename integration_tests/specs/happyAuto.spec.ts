@@ -50,7 +50,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubTest()
   await remandAndSentencingApi.stubHasSentences()
-  // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
+  await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases() 
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
