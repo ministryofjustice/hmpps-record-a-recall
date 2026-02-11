@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { login, resetStubs } from '../testUtils'
-import HomePage from '../pages/homePage'
+import landingPage from '../pages/landingPage'
 import hmppsAuth from '../mockApis/hmppsAuth'
 import frontEndComponentsApi from '../mockApis/frontEndComponentsApi'
 
@@ -31,7 +31,7 @@ test.describe('SignIn', () => {
   test('User name visible in header', async ({ page }) => {
     await login(page, { name: 'A TestUser' })
 
-    const homePage = await HomePage.verifyOnPage(page)
+    const homePage = await landingPage.verifyOnPage(page)
 
     await expect(homePage.usersName).toHaveText('A. Testuser')
   })
@@ -39,7 +39,7 @@ test.describe('SignIn', () => {
   test('Phase banner visible in header', async ({ page }) => {
     await login(page)
 
-    const homePage = await HomePage.verifyOnPage(page)
+    const homePage = await landingPage.verifyOnPage(page)
 
     await expect(homePage.phaseBanner).toHaveText('dev')
   })
@@ -47,7 +47,7 @@ test.describe('SignIn', () => {
   test('User can sign out', async ({ page }) => {
     await login(page)
 
-    const homePage = await HomePage.verifyOnPage(page)
+    const homePage = await landingPage.verifyOnPage(page)
     await homePage.signOut()
 
     await expect(page.getByRole('heading')).toHaveText('Sign in')
@@ -58,7 +58,7 @@ test.describe('SignIn', () => {
 
     await hmppsAuth.stubManageDetailsPage()
 
-    const homePage = await HomePage.verifyOnPage(page)
+    const homePage = await landingPage.verifyOnPage(page)
     await homePage.clickManageUserDetails()
 
     await expect(page.getByRole('heading')).toHaveText('Your account details')
@@ -77,7 +77,7 @@ test.describe('SignIn', () => {
 
     await login(page, { name: 'Some OtherTestUser', active: true })
 
-    const homePage = await HomePage.verifyOnPage(page)
+    const homePage = await landingPage.verifyOnPage(page)
     await expect(homePage.usersName).toHaveText('S. Othertestuser')
   })
 })

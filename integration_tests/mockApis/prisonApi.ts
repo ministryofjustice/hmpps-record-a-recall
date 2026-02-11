@@ -6,7 +6,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/prison-api/health/ping',
+        urlPath: '/prison-api/health/ping',
       },
       response: {
         status: httpStatus,
@@ -14,11 +14,25 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
+  stubGetPrisonerImage: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPathPattern: '/prison-api/api/bookings/offenderNo/A0164ED/image/data',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'image/png' },
+        base64Body:
+          'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEW10NBjBBbqAAAAH0lEQVRoge3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAvg0hAAABmmDh1QAAAABJRU5ErkJggg==',
+      },
+    })
+  },
   stubGetPrisonerDetails: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/prison-api/api/offenders/A1234AB',
+        urlPattern: '/prison-api/api/offenders/BA1234AB',
       },
       response: {
         status: 200,
@@ -29,7 +43,7 @@ export default {
           firstName: 'Marvin',
           lastName: 'Haggler',
           dateOfBirth: '1965-02-03',
-          agencyId: 'MDI',
+          agencyId: 'KMI',
           imprisonmentStatusDescription: 'Some Status',
           assignedLivingUnit: {
             agencyName: 'Foo Prison (HMP)',
@@ -55,7 +69,7 @@ export default {
           firstName: 'Mary',
           lastName: 'Jones',
           dateOfBirth: '1965-02-03',
-          agencyId: 'MDI',
+          agencyId: 'KMI',
           imprisonmentStatusDescription: 'Some Status',
           assignedLivingUnit: {
             agencyName: 'Foo Prison (HMP)',
@@ -152,7 +166,7 @@ export default {
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         jsonBody: [
           {
-            caseLoadId: 'MDI',
+            caseLoadId: 'KMI',
           },
         ],
       },

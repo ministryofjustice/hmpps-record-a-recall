@@ -23,6 +23,8 @@ export default class ReviewSentencesController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
 
+    console.log(recallId, '*****************RECALL ID')
+
     const decision = await this.calculateReleaseDatesService.makeDecisionForRecordARecall(
       nomsId,
       buildRecordARecallRequest(journey, recallId),
@@ -111,7 +113,7 @@ export default class ReviewSentencesController implements Controller {
             sentences.expired.push(sentence)
           }
         })
-
+        console.log('eligible sentence **********', sentences.eligible)
         return {
           ...courtCase,
           eligibleSentences: sentences.eligible,
