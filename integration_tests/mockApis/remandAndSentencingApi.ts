@@ -43,7 +43,7 @@ stubHasSentences: (): SuperAgentRequest =>
               courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',
               reference: '',
               courtCode: 'ABRYCT',
-              date: '2017-06-12',
+              date: '2024-06-12',
               status: 'ACTIVE',
               isSentenced: true,
               sentences: [
@@ -101,7 +101,7 @@ stubHasSentences: (): SuperAgentRequest =>
               courtCaseUuid: '4eb87827-f43e-48bf-80df-86c7205b581c',
               reference: '',
               courtCode: 'ABDRCT',
-              date: '2017-02-12',
+              date: '2024-02-12',
               status: 'ACTIVE',
               isSentenced: true,
               sentences: [
@@ -166,7 +166,7 @@ stubHasSentences: (): SuperAgentRequest =>
             courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',
             reference: '',
             courtCode: 'ABRYCT',
-            date: '2017-06-12',
+            date: '2024-06-12',
             status: 'ACTIVE',
             isSentenced: true,
             sentences: [
@@ -188,7 +188,7 @@ stubHasSentences: (): SuperAgentRequest =>
             courtCaseUuid: '4eb87827-f43e-48bf-80df-86c7205b581c',
             reference: '',
             courtCode: 'ABDRCT',
-            date: '2017-02-12',
+            date: '2024-02-12',
             status: 'ACTIVE',
             isSentenced: true,
             sentences: [

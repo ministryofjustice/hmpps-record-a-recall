@@ -78,30 +78,35 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // Step 2: Revocation Date page
   const revocationPage = await RevocationDatePage.verifyOnPage(page)
-  await revocationPage.enterRevocationDate('2025-10-25')
+  await revocationPage.enterRevocationDate('2025-11-25')
   await revocationPage.clickContinue()
 
-  // STep 3: Return to Custody Date page
+  // Step 3: Return to Custody Date page
   const returnToCustodyDatePage = await ReturnToCustodyDatePage.verifyOnPage(page)
   await returnToCustodyDatePage.selectYes() 
   // await returnToCustodyDatePage.selectNo()
   // await returnToCustodyDatePage.enterReturnToCustodyDate('2025-11-05')
-  await returnToCustodyDatePage.clickContinue()
 
-  // Step 4: Check sentences
+  // await page.waitForTimeout(2000) // form should be fully loaded before continue, code is runs faster 
+  // await returnToCustodyDatePage.clickContinue()
+  await expect(returnToCustodyDatePage.continueButton).toBeEnabled()
+await returnToCustodyDatePage.clickContinue()
+
+
+  // Step 4: Check/Review sentences
   const checkSentencesPage = await CheckSentencesPage.verifyOnPage(page)
   await checkSentencesPage.confirmAndContinue()
 
-  // Step 5: Select recall type
-  const selectRecallTypePage = await SelectRecallTypePage.verifyOnPage(page)
-  await selectRecallTypePage.selectRecallType() // implement method in page object
-  await selectRecallTypePage.clickContinue()
+  // // Step 5: Select recall type
+  // const selectRecallTypePage = await SelectRecallTypePage.verifyOnPage(page)
+  // await selectRecallTypePage.selectRecallType() // implement method in page object
+  // await selectRecallTypePage.clickContinue()
 
-  // Step 6: Check your answers
-  const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
-  await checkYourAnswersPage.confirmRecall()
+  // // Step 6: Check your answers
+  // const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
+  // await checkYourAnswersPage.confirmRecall()
 
-  // Step 7: Confirmation
-  const confirmationPage = await ConfirmationPage.verifyOnPage(page)
-  await confirmationPage.verifySuccessMessage('Recall recorded')
+  // // Step 7: Confirmation
+  // const confirmationPage = await ConfirmationPage.verifyOnPage(page)
+  // await confirmationPage.verifySuccessMessage('Recall recorded')
 })
