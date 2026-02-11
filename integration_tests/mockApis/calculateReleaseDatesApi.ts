@@ -451,7 +451,7 @@ export default {
         },
       },
     }),
-  stubRecordARecallDecision: (
+stubRecordARecallDecision: (
   { prisonerId = 'A0164ED' }: { prisonerId?: string } = {},
 ): SuperAgentRequest =>
   stubFor({
@@ -467,33 +467,22 @@ export default {
         validationMessages: [],
         conflictingAdjustments: [],
         automatedCalculationData: {
-          calculationRequestId: 89503,
+          calculationRequestId: 89568,
           recallableSentences: [
             {
               sentenceSequence: 1,
-              bookingId: 1232537,
-              uuid: '34f9b045-5616-49cc-9275-7b6cbaea853d',
+              bookingId: 1233536,
+              uuid: '52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a',
               sentenceCalculation: {
-                conditionalReleaseDate: '2024-08-30',
-                actualReleaseDate: '2024-08-30',
-                licenseExpiry: '2028-02-29',
+                conditionalReleaseDate: '2025-08-24',
+                actualReleaseDate: '2025-08-22',
+                licenseExpiry: '2026-03-31',
               },
             },
           ],
           expiredSentences: [],
           ineligibleSentences: [],
-          sentencesBeforeInitialRelease: [
-            {
-              sentenceSequence: 2,
-              bookingId: 1232537,
-              uuid: '97fd996a-3721-4f75-972b-66cdbf9ef30e',
-              sentenceCalculation: {
-                conditionalReleaseDate: '2026-02-27',
-                actualReleaseDate: '2026-02-27',
-                licenseExpiry: '2026-10-04',
-              },
-            },
-          ],
+          sentencesBeforeInitialRelease: [],
           unexpectedRecallTypes: [
             'FTR_14',
             'FTR_56',
@@ -506,5 +495,6 @@ export default {
       },
     },
   }),
+
 
 }
