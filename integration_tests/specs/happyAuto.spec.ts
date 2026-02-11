@@ -50,7 +50,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubTest()
   await remandAndSentencingApi.stubHasSentences()
-  
+
   // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases() 
   await ccardsApi.getServiceDefinitions()
@@ -68,6 +68,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await calculateReleaseDatesApi.stubRecordARecallDecision()
   await prisonerSearchApi.stubPing()
   await adjustmentsApi.stubPing()
+
 
   // Login
   await login(page)
@@ -98,16 +99,17 @@ await returnToCustodyDatePage.clickContinue()
   const checkSentencesPage = await CheckSentencesPage.verifyOnPage(page)
   await checkSentencesPage.confirmAndContinue()
 
-  // // Step 5: Select recall type
-  // const selectRecallTypePage = await SelectRecallTypePage.verifyOnPage(page)
+  // Step 5: Select recall type
+  const selectRecallTypePage = await SelectRecallTypePage.verifyOnPage(page)
   // await selectRecallTypePage.selectRecallType() // implement method in page object
-  // await selectRecallTypePage.clickContinue()
+  await selectRecallTypePage.selectStandardRecall()
+  await selectRecallTypePage.clickContinue()
 
-  // // Step 6: Check your answers
-  // const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
-  // await checkYourAnswersPage.confirmRecall()
+  // Step 6: Check your answers
+  const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
+  await checkYourAnswersPage.confirmRecall()
 
-  // // Step 7: Confirmation
-  // const confirmationPage = await ConfirmationPage.verifyOnPage(page)
-  // await confirmationPage.verifySuccessMessage('Recall recorded')
+  // Step 7: Confirmation
+  const confirmationPage = await ConfirmationPage.verifyOnPage(page)
+  await confirmationPage.verifySuccessMessage('Recall recorded')
 })
