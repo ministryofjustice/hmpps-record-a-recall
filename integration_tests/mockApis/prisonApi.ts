@@ -18,7 +18,7 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPathPattern: '/prison-api/api/bookings/offenderNo/BA1234AB/image/data',
+        urlPathPattern: '/prison-api/api/bookings/offenderNo/A0164ED/image/data',
       },
       response: {
         status: 200,
@@ -43,7 +43,7 @@ export default {
           firstName: 'Marvin',
           lastName: 'Haggler',
           dateOfBirth: '1965-02-03',
-          agencyId: 'MDI',
+          agencyId: 'KMI',
           imprisonmentStatusDescription: 'Some Status',
           assignedLivingUnit: {
             agencyName: 'Foo Prison (HMP)',
@@ -69,7 +69,7 @@ export default {
           firstName: 'Mary',
           lastName: 'Jones',
           dateOfBirth: '1965-02-03',
-          agencyId: 'MDI',
+          agencyId: 'KMI',
           imprisonmentStatusDescription: 'Some Status',
           assignedLivingUnit: {
             agencyName: 'Foo Prison (HMP)',
@@ -166,7 +166,7 @@ export default {
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         jsonBody: [
           {
-            caseLoadId: 'MDI',
+            caseLoadId: 'KMI',
           },
         ],
       },

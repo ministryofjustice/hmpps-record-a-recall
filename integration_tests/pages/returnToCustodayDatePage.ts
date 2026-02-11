@@ -32,10 +32,12 @@ export default class ReturnToCustodyDatePage extends AbstractPage {
     return p
   }
 
-  selectYes(): this {
-    this.yesRadio.check()
-    return this
-  }
+async selectYes(): Promise<this> {
+  await this.yesRadio.click()
+  return this
+}
+
+
 
 async selectNo(): Promise<this> {
   await this.noRadio.check()

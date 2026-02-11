@@ -98,7 +98,7 @@ export default {
             },
             calculationRequestId: 123456789,
             bookingId: 12345678,
-            prisonerId: 'BA1234AB',
+            prisonerId: 'A0164ED',
             calculationStatus: 'CONFIRMED',
             calculationFragments: null,
             effectiveSentenceLength: {
@@ -411,7 +411,31 @@ export default {
       },
     })
   },
-  stubCalculateReleaseDatesValidate: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest =>
+  // stubCalculateReleaseDatesValidate: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest =>
+  //   stubFor({
+  //     request: {
+  //       method: 'GET',
+  //       urlPath: `/calculate-release-dates/record-a-recall/${prisonerId}/validate`,
+  //     },
+  //     response: {
+  //       status: 200,
+  //       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+  //       jsonBody: {
+  //         criticalValidationMessages: [],
+  //         otherValidationMessages: [
+  //           {
+  //             code: 'UNSUPPORTED_ADJUSTMENT_LAWFULLY_AT_LARGE',
+  //             arguments: [],
+  //             message: 'A Lawfully at large (LAL) adjustment has been recorded.',
+  //             type: 'UNSUPPORTED_CALCULATION',
+  //             calculationUnsupported: true,
+  //           },
+  //         ],
+  //         earliestSentenceDate: '2023-08-14',
+  //       },
+  //     },
+  //   }),
+    stubCalculateReleaseDatesValidate: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest =>
     stubFor({
       request: {
         method: 'GET',
@@ -422,21 +446,13 @@ export default {
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         jsonBody: {
           criticalValidationMessages: [],
-          otherValidationMessages: [
-            {
-              code: 'UNSUPPORTED_ADJUSTMENT_LAWFULLY_AT_LARGE',
-              arguments: [],
-              message: 'A Lawfully at large (LAL) adjustment has been recorded.',
-              type: 'UNSUPPORTED_CALCULATION',
-              calculationUnsupported: true,
-            },
-          ],
-          earliestSentenceDate: '2023-08-14',
+          otherValidationMessages: [],
+          earliestSentenceDate: '2025-04-01',
         },
       },
     }),
   stubRecordARecallDecision: (
-  { prisonerId = 'BA1234AB' }: { prisonerId?: string } = {},
+  { prisonerId = 'A0164ED' }: { prisonerId?: string } = {},
 ): SuperAgentRequest =>
   stubFor({
     request: {

@@ -111,7 +111,7 @@ export default class ReviewSentencesController implements Controller {
             sentences.expired.push(sentence)
           }
         })
-
+        console.log('eligible sentence **********', sentences.eligible)
         return {
           ...courtCase,
           eligibleSentences: sentences.eligible,

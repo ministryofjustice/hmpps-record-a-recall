@@ -50,7 +50,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubTest()
   await remandAndSentencingApi.stubHasSentences()
-  await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
+  // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases() 
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
@@ -72,13 +72,13 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await login(page)
 
   // Step 1: Home page
-  await page.goto('/person/BA1234AB')
+  await page.goto('/person/A0164ED')
   const homePage = await HomePage.verifyOnPage(page)
   await homePage.createNewRecallButton.click()
 
   // Step 2: Revocation Date page
   const revocationPage = await RevocationDatePage.verifyOnPage(page)
-  await revocationPage.enterRevocationDate('2025-11-25')
+  await revocationPage.enterRevocationDate('2026-02-01')
   await revocationPage.clickContinue()
 
   // Step 3: Return to Custody Date page
