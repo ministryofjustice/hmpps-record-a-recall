@@ -651,6 +651,55 @@ stubHasSentences: (): SuperAgentRequest =>
       },
     })
   },
+//   stubIsRecallPossible: ({
+//   recallType = 'LR',
+//   sentenceIds = ['52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a'],
+//   response = 'YES',
+// }: {
+//   recallType?: string
+//   sentenceIds?: string[]
+//   response?: 'YES' | 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE' | 'UNKNOWN_PRE_RECALL_MAPPING'
+// } = {}): SuperAgentRequest => {
+//   return stubFor({
+//     request: {
+//       method: 'POST',
+//       urlPath: '/remand-and-sentencing-api/recall/is-possible',
+//       bodyPatterns: [
+//         {
+//           equalToJson: JSON.stringify({
+//             recallType,
+//             sentenceIds,
+//           }),
+//           ignoreExtraElements: true,
+//         },
+//       ],
+//     },
+//     response: {
+//       status: 200,
+//       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+//       jsonBody: {
+//         isRecallPossible: response,
+//       },
+//     },
+//   })
+// },
+stubIsRecallPossible: (): SuperAgentRequest => {
+  return stubFor({
+    request: {
+      method: 'POST',
+      urlPath: '/remand-and-sentencing-api/recall/is-possible',
+    },
+    response: {
+      status: 200,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      jsonBody: {
+        isRecallPossible: 'YES',
+      },
+    },
+  })
+},
+
+
   stubTest: (): SuperAgentRequest => {
     return stubFor({
       request: {

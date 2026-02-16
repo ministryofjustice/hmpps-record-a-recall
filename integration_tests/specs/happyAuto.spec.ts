@@ -53,6 +53,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases() 
+  await remandAndSentencingApi.stubIsRecallPossible()
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
   await prisonRegisterApi.getPrisonsByPrisonIds()

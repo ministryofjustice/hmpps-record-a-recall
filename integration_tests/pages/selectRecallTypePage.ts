@@ -1,39 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import AbstractPage from './abstractPage'
 
-// export default class SelectRecallTypePage extends AbstractPage {
-//   readonly header: Locator
-//   readonly firstRecallTypeOption: Locator
-//   readonly continueButton: Locator
-
-//   private constructor(page: Page) {
-//     super(page)
-
-//     // this.header = page.locator('h1', { hasText: 'Select the type of recall' })
-//      this.header = page.locator('[data-qa="select-recall-type"]')
-
-//     this.firstRecallTypeOption = page.locator('[name=recallType]').first()
-
-//     this.continueButton = page.locator('[id=submit]')
-//   }
-
-//   static async verifyOnPage(page: Page): Promise<SelectRecallTypePage> {
-//     const p = new SelectRecallTypePage(page)
-//     await expect(p.header).toBeVisible()
-//     return p
-//   }
-
-//   async selectRecallType(): Promise<this> {
-//     await this.firstRecallTypeOption.check()
-//     return this
-//   }
-
-//   async clickContinue(): Promise<this> {
-//     await this.continueButton.click()
-//     return this
-//   }
-// }
-
 export default class SelectRecallTypePage extends AbstractPage {
   readonly header: Locator
   readonly standardRecallOption: Locator
@@ -42,20 +9,27 @@ export default class SelectRecallTypePage extends AbstractPage {
   private constructor(page: Page) {
     super(page)
 
-    // Use the unique data-qa attribute for the header
-    this.header = page.locator('[data-qa="select-recall-type"]')
+    // Target only the main page heading (not the fieldset legend)
+    this.header = page.locator('h1.govuk-heading-l', {
+      hasText: 'Select the type of recall',
+    })
 
-    // Select the "Standard Recall" radio explicitly
-    this.standardRecallOption = page.getByRole('radio', { name: 'Standard Recall' })
+    this.standardRecallOption = page.getByRole('radio', {
+      name: /standard/i,
+    })
 
-    // Continue button
-    this.continueButton = page.locator('#submit')
+    this.continueButton = page.getByRole('button', {
+      name: /continue/i,
+    })
   }
 
   static async verifyOnPage(page: Page): Promise<SelectRecallTypePage> {
     const p = new SelectRecallTypePage(page)
-    await p.header.waitFor({ state: 'visible', timeout: 5000 })
-    await expect(p.header).toBeVisible()
+
+    await page.waitForLoadState('networkidle')
+
+    await expect(p.header).toBeVisible({ timeout: 10000 })
+
     return p
   }
 
@@ -69,3 +43,4 @@ export default class SelectRecallTypePage extends AbstractPage {
     return this
   }
 }
+
