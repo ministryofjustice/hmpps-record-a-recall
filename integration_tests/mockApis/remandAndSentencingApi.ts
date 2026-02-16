@@ -858,4 +858,21 @@ export default {
       },
     })
   },
+  stubCreateRecall: (): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'POST',
+        urlPath: '/remand-and-sentencing-api/recall',
+        bodyPatterns: [
+          { matchesJsonPath: '$[?(@.prisonerId)]' },
+          { matchesJsonPath: '$[?(@.recallTypeCode=="LR")]' },
+          { matchesJsonPath: '$[?(@.revocationDate=="2026-02-01")]' },
+        ],
+      },
+      response: {
+        status: 201,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: { recallUuid: 'f114f2c8-b32f-47f1-b4ab-7056e2243fdf' },
+      },
+    }),
 }

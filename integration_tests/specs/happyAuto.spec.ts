@@ -54,6 +54,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases()
   await remandAndSentencingApi.stubIsRecallPossible()
+  await remandAndSentencingApi.stubCreateRecall()
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
   await prisonRegisterApi.getPrisonsByPrisonIds()
@@ -106,11 +107,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // Step 6: Check your answers
   const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
-
-  await Promise.all([
-    page.waitForURL(/recall\/.*\/confirmation$/, { waitUntil: 'networkidle' }),
-    checkYourAnswersPage.confirmRecall(), // Click "Confirm and save"
-  ])
+  await Promise.all([page.waitForURL(/recall\/.*\/confirmed$/), checkYourAnswersPage.confirmRecall()])
 
   // Step 7: Confirmation page
   const confirmationPage = await ConfirmationPage.verifyOnPage(page)
