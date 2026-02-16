@@ -3,7 +3,6 @@ import { login, resetStubs } from '../testUtils'
 
 // Mock API stubs
 import frontendComponentsApi from '../mockApis/frontEndComponentsApi'
-import hmppsAuth from '../mockApis/hmppsAuth'
 import prisonerSearchApi from '../mockApis/prisonerSearchApi'
 import remandAndSentencingApi from '../mockApis/remandAndSentencingApi'
 import prisonRegisterApi from '../mockApis/prisonRegisterApi'
@@ -12,7 +11,6 @@ import courtRegisterApi from '../mockApis/courtRegisterApi'
 import manageOffencesApi from '../mockApis/manageOffencesApi'
 import prisonApi from '../mockApis/prisonApi'
 import calculateReleaseDatesApi from '../mockApis/calculateReleaseDatesApi'
-import adjustmentsApi from '../mockApis/adjustmentsApi'
 
 // Page objects
 import HomePage from '../pages/homePage'
