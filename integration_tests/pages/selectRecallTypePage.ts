@@ -11,7 +11,6 @@ export default class SelectRecallTypePage extends AbstractPage {
   private constructor(page: Page) {
     super(page)
 
-    // Target only the main page heading (not the fieldset legend)
     this.header = page.locator('h1.govuk-heading-l', {
       hasText: 'Select the type of recall',
     })

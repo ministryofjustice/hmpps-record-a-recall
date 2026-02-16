@@ -570,7 +570,7 @@ export default {
     })
   },
 
-  stubTest: (): SuperAgentRequest => {
+  stubAllRecallsForPrisoner: (): SuperAgentRequest => {
     return stubFor({
       request: {
         method: 'GET',

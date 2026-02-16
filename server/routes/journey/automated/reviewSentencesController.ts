@@ -111,8 +111,7 @@ export default class ReviewSentencesController implements Controller {
             sentences.expired.push(sentence)
           }
         })
-        // eslint-disable-next-line no-console
-        console.log('eligible sentence **********', sentences.eligible)
+
         return {
           ...courtCase,
           eligibleSentences: sentences.eligible,

@@ -48,7 +48,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await prisonerSearchApi.stubPrisonerSearchNonManual()
 
   // Use the correct stub for recalls
-  await remandAndSentencingApi.stubTest()
+  await remandAndSentencingApi.stubAllRecallsForPrisoner()
   await remandAndSentencingApi.stubHasSentences()
 
   // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
@@ -62,11 +62,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await manageOffencesApi.getOffencesByCodes()
   await prisonApi.stubGetPrisonerImage()
   await calculateReleaseDatesApi.stubCalculateReleaseDatesValidate()
-  await calculateReleaseDatesApi.stubRecordARecallCRDSNonManual() // do we need to pass in {
-  //   "revocationDate": "2026-02-04",
-  //   "returnToCustodyDate": "2026-02-04",
-  //   "recallId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-  // }
+  await calculateReleaseDatesApi.stubRecordARecallCRDSNonManual()
   await calculateReleaseDatesApi.stubRecordARecallDecision()
   await prisonerSearchApi.stubPing()
   await adjustmentsApi.stubPing()
@@ -87,11 +83,6 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Step 3: Return to Custody Date page
   const returnToCustodyDatePage = await ReturnToCustodyDatePage.verifyOnPage(page)
   await returnToCustodyDatePage.selectYes()
-  // await returnToCustodyDatePage.selectNo()
-  // await returnToCustodyDatePage.enterReturnToCustodyDate('2025-11-05')
-
-  // await page.waitForTimeout(2000) // form should be fully loaded before continue, code is runs faster
-  // await returnToCustodyDatePage.clickContinue()
   await expect(returnToCustodyDatePage.continueButton).toBeEnabled()
   await returnToCustodyDatePage.clickContinue()
 

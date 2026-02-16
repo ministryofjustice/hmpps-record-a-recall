@@ -19,12 +19,11 @@ export default class ReturnToCustodyDatePage extends AbstractPage {
   private constructor(page: Page) {
     super(page)
 
-    this.header = page.locator('h1', { hasText: 'Was' }) // partial match for page heading
+    this.header = page.locator('h1', { hasText: 'Was' })
 
     this.yesRadio = page.locator('input#inCustodyAtRecall-true')
     this.noRadio = page.locator('input#inCustodyAtRecall-false')
 
-    // Return to custody date inputs (conditional on No)
     this.dayInput = page.locator('[name=returnToCustodyDate-day]')
     this.monthInput = page.locator('[name=returnToCustodyDate-month]')
     this.yearInput = page.locator('[name=returnToCustodyDate-year]')
