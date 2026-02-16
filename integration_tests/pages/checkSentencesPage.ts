@@ -14,13 +14,12 @@ export default class CheckSentencesPage extends AbstractPage {
   }
 
   static async verifyOnPage(page: Page): Promise<CheckSentencesPage> {
-    const p = new CheckSentencesPage(page)
-    await expect(p.header).toBeVisible({ timeout: 10000 })
-    return p
+    const checkSentencesPage = new CheckSentencesPage(page)
+    await expect(checkSentencesPage.header).toBeVisible()
+    return checkSentencesPage
   }
 
-  async confirmAndContinue(): Promise<this> {
+  async confirmAndContinue() {
     await this.confirmAndContinueButton.click()
-    return this
   }
 }

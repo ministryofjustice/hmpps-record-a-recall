@@ -32,35 +32,16 @@ export default class ReturnToCustodyDatePage extends AbstractPage {
   }
 
   static async verifyOnPage(page: Page): Promise<ReturnToCustodyDatePage> {
-    const p = new ReturnToCustodyDatePage(page)
-    await expect(p.header).toBeVisible()
-    return p
+    const returnToCustodyDatePage = new ReturnToCustodyDatePage(page)
+    await expect(returnToCustodyDatePage.header).toBeVisible()
+    return returnToCustodyDatePage
   }
 
-  async selectYes(): Promise<this> {
+  async selectYes() {
     await this.yesRadio.click()
-    return this
   }
 
-  async selectNo(): Promise<this> {
-    await this.noRadio.check()
-    // wait for the conditional inputs to appear
-    await expect(this.dayInput).toBeVisible()
-    await expect(this.monthInput).toBeVisible()
-    await expect(this.yearInput).toBeVisible()
-    return this
-  }
-
-  async enterReturnToCustodyDate(date: string): Promise<this> {
-    const [year, month, day] = date.split('-')
-    await this.dayInput.fill(day)
-    await this.monthInput.fill(month)
-    await this.yearInput.fill(year)
-    return this
-  }
-
-  async clickContinue(): Promise<this> {
+  async clickContinue() {
     await this.continueButton.click()
-    return this
   }
 }

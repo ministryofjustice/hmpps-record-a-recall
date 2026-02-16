@@ -25,22 +25,20 @@ export default class SelectRecallTypePage extends AbstractPage {
   }
 
   static async verifyOnPage(page: Page): Promise<SelectRecallTypePage> {
-    const p = new SelectRecallTypePage(page)
+    const selectRecallTypePage = new SelectRecallTypePage(page)
 
     await page.waitForLoadState('networkidle')
 
-    await expect(p.header).toBeVisible({ timeout: 10000 })
+    await expect(selectRecallTypePage.header).toBeVisible()
 
-    return p
+    return selectRecallTypePage
   }
 
-  async selectStandardRecall(): Promise<this> {
+  async selectStandardRecall() {
     await this.standardRecallOption.check()
-    return this
   }
 
-  async clickContinue(): Promise<this> {
+  async clickContinue() {
     await this.continueButton.click()
-    return this
   }
 }

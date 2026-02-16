@@ -32,17 +32,13 @@ export default class RevocationDatePage extends AbstractPage {
     return revocationPage
   }
 
-  async enterRevocationDate(date: string): Promise<this> {
-    const [year, month, day] = date.split('-')
-
+  async enterRevocationDate(year: string, month: string, day: string) {
     await this.dayInput.fill(day)
     await this.monthInput.fill(month)
     await this.yearInput.fill(year)
-
-    return this
   }
 
-  async clickContinue(): Promise<void> {
+  async clickContinue() {
     await this.continueButton.click()
   }
 }

@@ -15,13 +15,12 @@ export default class CheckYourAnswersPage extends AbstractPage {
   }
 
   static async verifyOnPage(page: Page): Promise<CheckYourAnswersPage> {
-    const p = new CheckYourAnswersPage(page)
-    await expect(p.header).toBeVisible()
-    return p
+    const checkYourAnswersPage = new CheckYourAnswersPage(page)
+    await expect(checkYourAnswersPage.header).toBeVisible()
+    return checkYourAnswersPage
   }
 
-  async confirmRecall(): Promise<this> {
+  async confirmRecall() {
     await this.continueButton.click()
-    return this
   }
 }

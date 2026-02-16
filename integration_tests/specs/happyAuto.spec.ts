@@ -1,14 +1,13 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { login, resetStubs } from '../testUtils'
 
 // Mock API stubs
 import frontendComponentsApi from '../mockApis/frontEndComponentsApi'
 import hmppsAuth from '../mockApis/hmppsAuth'
-import tokenVerification from '../mockApis/tokenVerification'
 import prisonerSearchApi from '../mockApis/prisonerSearchApi'
 import remandAndSentencingApi from '../mockApis/remandAndSentencingApi'
 import prisonRegisterApi from '../mockApis/prisonRegisterApi'
-import ccardsApi from '../mockApis/ccardApi'
+import ccardApi from '../mockApis/ccardApi'
 import courtRegisterApi from '../mockApis/courtRegisterApi'
 import manageOffencesApi from '../mockApis/manageOffencesApi'
 import prisonApi from '../mockApis/prisonApi'
@@ -24,48 +23,25 @@ import SelectRecallTypePage from '../pages/selectRecallTypePage'
 import CheckYourAnswersPage from '../pages/checkYourAnswersPage'
 import ConfirmationPage from '../pages/confirmationPage'
 
-export default async function stubAllHealthChecks() {
-  await tokenVerification.stubPing()
-  await tokenVerification.stubVerifyToken()
-  await prisonApi.stubPing()
-  await prisonerSearchApi.stubPing()
-  await calculateReleaseDatesApi.stubPing()
-  await remandAndSentencingApi.stubPing()
-  await manageOffencesApi.stubPing()
-  await prisonRegisterApi.stubPing()
-  await adjustmentsApi.stubPing()
-  await ccardsApi.stubPing()
-  await frontendComponentsApi.stubPing()
-  await courtRegisterApi.stubPing()
-}
-
 test('Happy path Auto journey to record a recall', async ({ page }) => {
   // Reset stubs
   await resetStubs()
-  await stubAllHealthChecks()
-  await hmppsAuth.stubSignInPage()
+  await prisonerSearchApi.stubPrisonerSearch()
   await frontendComponentsApi.stubComponents()
-  await prisonerSearchApi.stubPrisonerSearchNonManual()
 
   // Use the correct stub for recalls
   await remandAndSentencingApi.stubAllRecallsForPrisoner()
   await remandAndSentencingApi.stubHasSentences()
-
-  // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
   await remandAndSentencingApi.stubSearchCourtCases()
   await remandAndSentencingApi.stubIsRecallPossible()
   await remandAndSentencingApi.stubCreateRecall()
-  await ccardsApi.getServiceDefinitions()
-  await ccardsApi.stubPing()
+  await ccardApi.getServiceDefinitions()
   await prisonRegisterApi.getPrisonsByPrisonIds()
   await courtRegisterApi.stubGetCourtsByIds()
   await manageOffencesApi.getOffencesByCodes()
   await prisonApi.stubGetPrisonerImage()
-  await calculateReleaseDatesApi.stubCalculateReleaseDatesValidate()
-  await calculateReleaseDatesApi.stubRecordARecallCRDSNonManual()
+  await calculateReleaseDatesApi.stubValidate()
   await calculateReleaseDatesApi.stubRecordARecallDecision()
-  await prisonerSearchApi.stubPing()
-  await adjustmentsApi.stubPing()
 
   // Login
   await login(page)
@@ -77,7 +53,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // Step 2: Revocation Date page
   const revocationPage = await RevocationDatePage.verifyOnPage(page)
-  await revocationPage.enterRevocationDate('2026-02-01')
+  await revocationPage.enterRevocationDate('2026', '02', '01')
   await revocationPage.clickContinue()
 
   // Step 3: Return to Custody Date page
@@ -92,7 +68,6 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // Step 5: Select recall type
   const selectRecallTypePage = await SelectRecallTypePage.verifyOnPage(page)
-  // await selectRecallTypePage.selectRecallType() // implement method in page object
   await selectRecallTypePage.selectStandardRecall()
   await selectRecallTypePage.clickContinue()
 
@@ -102,7 +77,6 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // Step 7: Confirmation page
   const confirmationPage = await ConfirmationPage.verifyOnPage(page)
-
-  await expect(confirmationPage.successMessage).toBeVisible({ timeout: 10000 })
+  await expect(confirmationPage.successMessage).toBeVisible()
   await confirmationPage.verifySuccessMessage('Recall recorded')
 })

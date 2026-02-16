@@ -11,13 +11,12 @@ export default class ConfirmationPage extends AbstractPage {
   }
 
   static async verifyOnPage(page: Page): Promise<ConfirmationPage> {
-    const p = new ConfirmationPage(page)
-    await expect(p.successMessage).toBeVisible()
-    return p
+    const confirmationPage = new ConfirmationPage(page)
+    await expect(confirmationPage.successMessage).toBeVisible()
+    return confirmationPage
   }
 
-  async verifySuccessMessage(message: string): Promise<this> {
+  async verifySuccessMessage(message: string) {
     await expect(this.successMessage).toHaveText(message)
-    return this
   }
 }
