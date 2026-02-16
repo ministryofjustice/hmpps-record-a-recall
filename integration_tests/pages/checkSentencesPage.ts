@@ -3,6 +3,7 @@ import AbstractPage from './abstractPage'
 
 export default class CheckSentencesPage extends AbstractPage {
   readonly header: Locator
+
   readonly confirmAndContinueButton: Locator
 
   private constructor(page: Page) {

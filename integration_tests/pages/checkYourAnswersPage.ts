@@ -3,6 +3,7 @@ import AbstractPage from './abstractPage'
 
 export default class CheckYourAnswersPage extends AbstractPage {
   readonly header: Locator
+
   readonly continueButton: Locator
 
   private constructor(page: Page) {

@@ -411,7 +411,6 @@ export default {
       },
     })
   },
-  // stubCalculateReleaseDatesValidate: ({ prisonerId = 'BA1234AB' }: { prisonerId?: string } = {}): SuperAgentRequest =>
   //   stubFor({
   //     request: {
   //       method: 'GET',
@@ -435,7 +434,7 @@ export default {
   //       },
   //     },
   //   }),
-    stubCalculateReleaseDatesValidate: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest =>
+  stubCalculateReleaseDatesValidate: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest =>
     stubFor({
       request: {
         method: 'GET',
@@ -451,50 +450,39 @@ export default {
         },
       },
     }),
-stubRecordARecallDecision: (
-  { prisonerId = 'A0164ED' }: { prisonerId?: string } = {},
-): SuperAgentRequest =>
-  stubFor({
-    request: {
-      method: 'POST',
-      urlPath: `/calculate-release-dates/record-a-recall/${prisonerId}/decision`,
-    },
-    response: {
-      status: 200,
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-      jsonBody: {
-        decision: 'AUTOMATED',
-        validationMessages: [],
-        conflictingAdjustments: [],
-        automatedCalculationData: {
-          calculationRequestId: 89568,
-          recallableSentences: [
-            {
-              sentenceSequence: 1,
-              bookingId: 1233536,
-              uuid: '52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a',
-              sentenceCalculation: {
-                conditionalReleaseDate: '2025-08-24',
-                actualReleaseDate: '2025-08-22',
-                licenseExpiry: '2026-03-31',
+  stubRecordARecallDecision: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'POST',
+        urlPath: `/calculate-release-dates/record-a-recall/${prisonerId}/decision`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          decision: 'AUTOMATED',
+          validationMessages: [],
+          conflictingAdjustments: [],
+          automatedCalculationData: {
+            calculationRequestId: 89568,
+            recallableSentences: [
+              {
+                sentenceSequence: 1,
+                bookingId: 1233536,
+                uuid: '52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a',
+                sentenceCalculation: {
+                  conditionalReleaseDate: '2025-08-24',
+                  actualReleaseDate: '2025-08-22',
+                  licenseExpiry: '2026-03-31',
+                },
               },
-            },
-          ],
-          expiredSentences: [],
-          ineligibleSentences: [],
-          sentencesBeforeInitialRelease: [],
-          unexpectedRecallTypes: [
-            'FTR_14',
-            'FTR_56',
-            'FTR_HDC_14',
-            'FTR_HDC_28',
-            'CUR_HDC',
-            'IN_HDC',
-          ],
+            ],
+            expiredSentences: [],
+            ineligibleSentences: [],
+            sentencesBeforeInitialRelease: [],
+            unexpectedRecallTypes: ['FTR_14', 'FTR_56', 'FTR_HDC_14', 'FTR_HDC_28', 'CUR_HDC', 'IN_HDC'],
+          },
         },
       },
-    },
-  }),
-
-
+    }),
 }

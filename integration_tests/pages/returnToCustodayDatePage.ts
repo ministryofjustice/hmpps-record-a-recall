@@ -3,11 +3,17 @@ import AbstractPage from './abstractPage'
 
 export default class ReturnToCustodyDatePage extends AbstractPage {
   readonly yesRadio: Locator
+
   readonly noRadio: Locator
+
   readonly dayInput: Locator
+
   readonly monthInput: Locator
+
   readonly yearInput: Locator
+
   readonly continueButton: Locator
+
   readonly header: Locator
 
   private constructor(page: Page) {
@@ -32,22 +38,19 @@ export default class ReturnToCustodyDatePage extends AbstractPage {
     return p
   }
 
-async selectYes(): Promise<this> {
-  await this.yesRadio.click()
-  return this
-}
+  async selectYes(): Promise<this> {
+    await this.yesRadio.click()
+    return this
+  }
 
-
-
-async selectNo(): Promise<this> {
-  await this.noRadio.check()
-  // wait for the conditional inputs to appear
-  await expect(this.dayInput).toBeVisible()
-  await expect(this.monthInput).toBeVisible()
-  await expect(this.yearInput).toBeVisible()
-  return this
-}
-
+  async selectNo(): Promise<this> {
+    await this.noRadio.check()
+    // wait for the conditional inputs to appear
+    await expect(this.dayInput).toBeVisible()
+    await expect(this.monthInput).toBeVisible()
+    await expect(this.yearInput).toBeVisible()
+    return this
+  }
 
   async enterReturnToCustodyDate(date: string): Promise<this> {
     const [year, month, day] = date.split('-')

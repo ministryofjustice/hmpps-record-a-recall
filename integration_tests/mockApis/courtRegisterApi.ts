@@ -102,17 +102,16 @@ export default {
             buildings: [],
           },
           {
-  courtId: 'BNGRMC',
-  courtName: 'Bangor Magistrates Court',
-  courtDescription: 'Bangor Magistrates Court',
-  type: {
-    courtType: 'MAG',
-    courtName: 'Magistrates',
-  },
-  active: true,
-  buildings: [],
-},
-
+            courtId: 'BNGRMC',
+            courtName: 'Bangor Magistrates Court',
+            courtDescription: 'Bangor Magistrates Court',
+            type: {
+              courtType: 'MAG',
+              courtName: 'Magistrates',
+            },
+            active: true,
+            buildings: [],
+          },
         ],
       },
     })

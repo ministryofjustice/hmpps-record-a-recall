@@ -3,7 +3,9 @@ import AbstractPage from './abstractPage'
 
 export default class SelectRecallTypePage extends AbstractPage {
   readonly header: Locator
+
   readonly standardRecallOption: Locator
+
   readonly continueButton: Locator
 
   private constructor(page: Page) {
@@ -43,4 +45,3 @@ export default class SelectRecallTypePage extends AbstractPage {
     return this
   }
 }
-

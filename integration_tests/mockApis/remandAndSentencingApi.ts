@@ -14,318 +14,221 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
-stubHasSentences: (): SuperAgentRequest =>
-  stubFor({
-    request: {
-      method: 'GET',
-      urlPathPattern: '/remand-and-sentencing-api/sentence/has-sentences/[A-Z0-9]+',
-    },
-    response: {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-      jsonBody: { hasSentences: true },
-    },
-  }),
-
-  // stubSearchCourtCases: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest => {
-  //   return stubFor({
-  //     request: {
-  //       method: 'GET',
-  //       urlPath: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases`,
-  //     },
-  //     response: {
-  //       status: 200,
-  //       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-  //       jsonBody: {
-  //         totalCases: 2,
-  //         cases: [
-  //           {
-  //             courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',
-  //             reference: '',
-  //             courtCode: 'ABRYCT',
-  //             date: '2024-06-12',
-  //             status: 'ACTIVE',
-  //             isSentenced: true,
-  //             sentences: [
-  //               {
-  //                 sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
-  //                 offenceCode: 'HA04005',
-  //                 sentenceType: 'EDS (Extended Determinate Sentence)',
-  //                 classification: 'EXTENDED',
-  //                 systemOfRecord: 'RAS',
-  //                 periodLengths: [
-  //                   {
-  //                     years: 1,
-  //                     months: null,
-  //                     weeks: null,
-  //                     days: null,
-  //                     periodOrder: 'years,months,weeks,days',
-  //                     periodLengthType: 'CUSTODIAL_TERM',
-  //                     legacyData: null,
-  //                     periodLengthUuid: 'fc003e29-ede9-4302-b970-27ab3b6a11e4',
-  //                   },
-  //                   {
-  //                     years: 5,
-  //                     months: null,
-  //                     weeks: null,
-  //                     days: null,
-  //                     periodOrder: 'years,months,weeks,days',
-  //                     periodLengthType: 'LICENCE_PERIOD',
-  //                     legacyData: null,
-  //                     periodLengthUuid: '8c5ac995-db1e-4cdf-9acd-56aa6abc99f6',
-  //                   },
-  //                 ],
-  //                 convictionDate: null,
-  //                 chargeLegacyData: {
-  //                   postedDate: '2025-06-12',
-  //                   nomisOutcomeCode: null,
-  //                   outcomeDescription: null,
-  //                   outcomeDispositionCode: null,
-  //                   outcomeConvictionFlag: true,
-  //                 },
-  //                 countNumber: null,
-  //                 sentenceServeType: 'CONCURRENT',
-  //                 sentenceLegacyData: {
-  //                   sentenceCalcType: null,
-  //                   sentenceCategory: null,
-  //                   sentenceTypeDesc: null,
-  //                   postedDate: '2025-06-12T10:59:45.378275',
-  //                   active: true,
-  //                   nomisLineReference: '2',
-  //                 },
-  //                 isRecallable: true,
-  //               },
-  //             ],
-  //           },
-  //           {
-  //             courtCaseUuid: '4eb87827-f43e-48bf-80df-86c7205b581c',
-  //             reference: '',
-  //             courtCode: 'ABDRCT',
-  //             date: '2024-02-12',
-  //             status: 'ACTIVE',
-  //             isSentenced: true,
-  //             sentences: [
-  //               {
-  //                 sentenceUuid: 'b1515f6d-b685-46be-b8a7-3f1f87cca976',
-  //                 offenceCode: 'COML017B',
-  //                 sentenceType: 'SDS (Standard Determinate Sentence)',
-  //                 classification: 'STANDARD',
-  //                 systemOfRecord: 'RAS',
-  //                 periodLengths: [
-  //                   {
-  //                     years: 2,
-  //                     months: 11,
-  //                     weeks: null,
-  //                     days: null,
-  //                     periodOrder: 'years,months,weeks,days',
-  //                     periodLengthType: 'SENTENCE_LENGTH',
-  //                     legacyData: null,
-  //                     periodLengthUuid: 'e7b188ef-066e-40be-b59a-d71f2e109ff9',
-  //                   },
-  //                 ],
-  //                 convictionDate: null,
-  //                 chargeLegacyData: {
-  //                   postedDate: '2025-06-12',
-  //                   nomisOutcomeCode: null,
-  //                   outcomeDescription: null,
-  //                   outcomeDispositionCode: null,
-  //                   outcomeConvictionFlag: true,
-  //                 },
-  //                 countNumber: null,
-  //                 sentenceServeType: 'CONCURRENT',
-  //                 sentenceLegacyData: {
-  //                   sentenceCalcType: null,
-  //                   sentenceCategory: null,
-  //                   sentenceTypeDesc: null,
-  //                   postedDate: '2025-06-12T10:56:09.045967',
-  //                   active: true,
-  //                   nomisLineReference: '1',
-  //                 },
-  //                 isRecallable: true,
-  //               },
-  //             ],
-  //           },
-  //         ],
-  //       },
-  //     },
-  //   })
-  // },
- stubSearchCourtCases: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest => {
-  return stubFor({
-    request: {
-      method: 'GET',
-      urlPath: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases`,
-    },
-    response: {
-      status: 200,
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-      jsonBody: {
-        totalCases: 1,
-        cases: [
-          {
-            courtCaseUuid: "7dab3958-8a3d-45f4-ab69-492f4b620235",
-            reference: "AB28935235",
-            courtCode: "BNGRMC",
-            status: "ACTIVE",
-            isSentenced: true,
-            appearanceDate: "2025-04-01",
-            firstDayInCustody: "2025-04-01",
-            courtName: "Bangor Mc",
-            sentences: [
-              {
-                sentenceUuid: "52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a",
-                offenceCode: "PU86003",
-                offenceStartDate: "2020-01-01",
-                offenceEndDate: null,
-                outcome: "Imprisonment",
-                sentenceType: "ORA SDS (Offender rehabilitation act standard determinate sentence)",
-                classification: "STANDARD",
-                systemOfRecord: "RAS",
-                fineAmount: null,
-                periodLengths: [
-                  {
-                    years: 1,
-                    months: null,
-                    weeks: null,
-                    days: null,
-                    periodOrder: "years,months,weeks,days",
-                    periodLengthType: "SENTENCE_LENGTH",
-                    legacyData: null,
-                    periodLengthUuid: "12d1f1c0-9dea-49a5-9094-6bcfe84c1a7f",
-                  },
-                ],
-                convictionDate: "2025-04-01",
-                chargeLegacyData: null,
-                countNumber: "1",
-                lineNumber: "1",
-                sentenceServeType: "FORTHWITH",
-                sentenceLegacyData: {
-                  sentenceCalcType: null,
-                  sentenceCategory: null,
-                  sentenceTypeDesc: null,
-                  postedDate: "2026-02-11T12:11:37.504014",
-                  active: null,
-                  nomisLineReference: "1",
-                  bookingId: 1233536,
-                },
-                outcomeDescription: "Imprisonment",
-                isRecallable: true,
-                sentenceTypeUuid: "e138374d-810f-4718-a81a-1c9d4745031e",
-                sentenceDate: "2025-04-01",
-              },
-            ],
-            recallableSentences: [
-              {
-                sentenceUuid: "52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a",
-                offenceCode: "PU86003",
-                offenceStartDate: "2020-01-01",
-                offenceEndDate: null,
-                outcome: "Imprisonment",
-                sentenceType: "ORA SDS (Offender rehabilitation act standard determinate sentence)",
-                classification: "STANDARD",
-                systemOfRecord: "RAS",
-                fineAmount: null,
-                periodLengths: [
-                  {
-                    years: 1,
-                    months: null,
-                    weeks: null,
-                    days: null,
-                    periodOrder: "years,months,weeks,days",
-                    periodLengthType: "SENTENCE_LENGTH",
-                    legacyData: null,
-                    periodLengthUuid: "12d1f1c0-9dea-49a5-9094-6bcfe84c1a7f",
-                  },
-                ],
-                convictionDate: "2025-04-01",
-                chargeLegacyData: null,
-                countNumber: "1",
-                lineNumber: "1",
-                sentenceServeType: "FORTHWITH",
-                sentenceLegacyData: {
-                  sentenceCalcType: null,
-                  sentenceCategory: null,
-                  sentenceTypeDesc: null,
-                  postedDate: "2026-02-11T12:11:37.504014",
-                  active: null,
-                  nomisLineReference: "1",
-                  bookingId: 1233536,
-                },
-                outcomeDescription: "Imprisonment",
-                isRecallable: true,
-                sentenceTypeUuid: "e138374d-810f-4718-a81a-1c9d4745031e",
-                sentenceDate: "2025-04-01",
-                offenceDescription: "Affray",
-              },
-            ],
-            nonRecallableSentences: [],
-          },
-        ],
+  stubHasSentences: (): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPathPattern: '/remand-and-sentencing-api/sentence/has-sentences/[A-Z0-9]+',
       },
-    },
-  })
-},
-
- stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest => {
-  return stubFor({
-    request: {
-      method: 'GET',
-      urlPathPattern: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases.*`,
-    },
-    response: {
-      status: 200,
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-      jsonBody: {
-        totalCases: 2,
-        cases: [
-          {
-            courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',
-            reference: '',
-            courtCode: 'ABRYCT',
-            date: '2024-06-12',
-            status: 'ACTIVE',
-            isSentenced: true,
-            sentences: [
-              {
-                sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
-                offenceCode: 'HA04005',
-                sentenceType: 'SDS (Standard Determinate Sentence)',
-                classification: 'STANDARD',
-                systemOfRecord: 'RAS',
-                periodLengths: [
-                  { years: 1, months: null, weeks: null, days: null, periodOrder: 'years,months,weeks,days', periodLengthType: 'CUSTODIAL_TERM', legacyData: null, periodLengthUuid: 'fc003e29-ede9-4302-b970-27ab3b6a11e4' },
-                  { years: 5, months: null, weeks: null, days: null, periodOrder: 'years,months,weeks,days', periodLengthType: 'LICENCE_PERIOD', legacyData: null, periodLengthUuid: '8c5ac995-db1e-4cdf-9acd-56aa6abc99f6' },
-                ],
-                isRecallable: true,
-              },
-            ],
-          },
-          {
-            courtCaseUuid: '4eb87827-f43e-48bf-80df-86c7205b581c',
-            reference: '',
-            courtCode: 'ABDRCT',
-            date: '2024-02-12',
-            status: 'ACTIVE',
-            isSentenced: true,
-            sentences: [
-              {
-                sentenceUuid: 'b1515f6d-b685-46be-b8a7-3f1f87cca976',
-                offenceCode: 'COML017B',
-                sentenceType: 'SDS (Standard Determinate Sentence)',
-                classification: 'STANDARD',
-                systemOfRecord: 'RAS',
-                periodLengths: [
-                  { years: 2, months: 11, weeks: null, days: null, periodOrder: 'years,months,weeks,days', periodLengthType: 'SENTENCE_LENGTH', legacyData: null, periodLengthUuid: 'e7b188ef-066e-40be-b59a-d71f2e109ff9' },
-                ],
-                isRecallable: true,
-              },
-            ],
-          },
-        ],
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: { hasSentences: true },
       },
-    },
-  })
- },
+    }),
+  stubSearchCourtCases: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          totalCases: 1,
+          cases: [
+            {
+              courtCaseUuid: '7dab3958-8a3d-45f4-ab69-492f4b620235',
+              reference: 'AB28935235',
+              courtCode: 'BNGRMC',
+              status: 'ACTIVE',
+              isSentenced: true,
+              appearanceDate: '2025-04-01',
+              firstDayInCustody: '2025-04-01',
+              courtName: 'Bangor Mc',
+              sentences: [
+                {
+                  sentenceUuid: '52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a',
+                  offenceCode: 'PU86003',
+                  offenceStartDate: '2020-01-01',
+                  offenceEndDate: null,
+                  outcome: 'Imprisonment',
+                  sentenceType: 'ORA SDS (Offender rehabilitation act standard determinate sentence)',
+                  classification: 'STANDARD',
+                  systemOfRecord: 'RAS',
+                  fineAmount: null,
+                  periodLengths: [
+                    {
+                      years: 1,
+                      months: null,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'SENTENCE_LENGTH',
+                      legacyData: null,
+                      periodLengthUuid: '12d1f1c0-9dea-49a5-9094-6bcfe84c1a7f',
+                    },
+                  ],
+                  convictionDate: '2025-04-01',
+                  chargeLegacyData: null,
+                  countNumber: '1',
+                  lineNumber: '1',
+                  sentenceServeType: 'FORTHWITH',
+                  sentenceLegacyData: {
+                    sentenceCalcType: null,
+                    sentenceCategory: null,
+                    sentenceTypeDesc: null,
+                    postedDate: '2026-02-11T12:11:37.504014',
+                    active: null,
+                    nomisLineReference: '1',
+                    bookingId: 1233536,
+                  },
+                  outcomeDescription: 'Imprisonment',
+                  isRecallable: true,
+                  sentenceTypeUuid: 'e138374d-810f-4718-a81a-1c9d4745031e',
+                  sentenceDate: '2025-04-01',
+                },
+              ],
+              recallableSentences: [
+                {
+                  sentenceUuid: '52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a',
+                  offenceCode: 'PU86003',
+                  offenceStartDate: '2020-01-01',
+                  offenceEndDate: null,
+                  outcome: 'Imprisonment',
+                  sentenceType: 'ORA SDS (Offender rehabilitation act standard determinate sentence)',
+                  classification: 'STANDARD',
+                  systemOfRecord: 'RAS',
+                  fineAmount: null,
+                  periodLengths: [
+                    {
+                      years: 1,
+                      months: null,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'SENTENCE_LENGTH',
+                      legacyData: null,
+                      periodLengthUuid: '12d1f1c0-9dea-49a5-9094-6bcfe84c1a7f',
+                    },
+                  ],
+                  convictionDate: '2025-04-01',
+                  chargeLegacyData: null,
+                  countNumber: '1',
+                  lineNumber: '1',
+                  sentenceServeType: 'FORTHWITH',
+                  sentenceLegacyData: {
+                    sentenceCalcType: null,
+                    sentenceCategory: null,
+                    sentenceTypeDesc: null,
+                    postedDate: '2026-02-11T12:11:37.504014',
+                    active: null,
+                    nomisLineReference: '1',
+                    bookingId: 1233536,
+                  },
+                  outcomeDescription: 'Imprisonment',
+                  isRecallable: true,
+                  sentenceTypeUuid: 'e138374d-810f-4718-a81a-1c9d4745031e',
+                  sentenceDate: '2025-04-01',
+                  offenceDescription: 'Affray',
+                },
+              ],
+              nonRecallableSentences: [],
+            },
+          ],
+        },
+      },
+    })
+  },
+
+  stubSearchCourtCasesWithBothSDS: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPathPattern: `/remand-and-sentencing-api/court-case/${prisonerId}/recallable-court-cases.*`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          totalCases: 2,
+          cases: [
+            {
+              courtCaseUuid: 'bbb25c4f-81d7-4e18-ad84-0646a54c8a3a',
+              reference: '',
+              courtCode: 'ABRYCT',
+              date: '2024-06-12',
+              status: 'ACTIVE',
+              isSentenced: true,
+              sentences: [
+                {
+                  sentenceUuid: 'a669b3a0-1ddc-4f4d-80b8-468b4ea529f8',
+                  offenceCode: 'HA04005',
+                  sentenceType: 'SDS (Standard Determinate Sentence)',
+                  classification: 'STANDARD',
+                  systemOfRecord: 'RAS',
+                  periodLengths: [
+                    {
+                      years: 1,
+                      months: null,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'CUSTODIAL_TERM',
+                      legacyData: null,
+                      periodLengthUuid: 'fc003e29-ede9-4302-b970-27ab3b6a11e4',
+                    },
+                    {
+                      years: 5,
+                      months: null,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'LICENCE_PERIOD',
+                      legacyData: null,
+                      periodLengthUuid: '8c5ac995-db1e-4cdf-9acd-56aa6abc99f6',
+                    },
+                  ],
+                  isRecallable: true,
+                },
+              ],
+            },
+            {
+              courtCaseUuid: '4eb87827-f43e-48bf-80df-86c7205b581c',
+              reference: '',
+              courtCode: 'ABDRCT',
+              date: '2024-02-12',
+              status: 'ACTIVE',
+              isSentenced: true,
+              sentences: [
+                {
+                  sentenceUuid: 'b1515f6d-b685-46be-b8a7-3f1f87cca976',
+                  offenceCode: 'COML017B',
+                  sentenceType: 'SDS (Standard Determinate Sentence)',
+                  classification: 'STANDARD',
+                  systemOfRecord: 'RAS',
+                  periodLengths: [
+                    {
+                      years: 2,
+                      months: 11,
+                      weeks: null,
+                      days: null,
+                      periodOrder: 'years,months,weeks,days',
+                      periodLengthType: 'SENTENCE_LENGTH',
+                      legacyData: null,
+                      periodLengthUuid: 'e7b188ef-066e-40be-b59a-d71f2e109ff9',
+                    },
+                  ],
+                  isRecallable: true,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    })
+  },
   stubRecallPerson: (): SuperAgentRequest => {
     return stubFor({
       request: {
@@ -651,54 +554,21 @@ stubHasSentences: (): SuperAgentRequest =>
       },
     })
   },
-//   stubIsRecallPossible: ({
-//   recallType = 'LR',
-//   sentenceIds = ['52ba27a7-f37b-4d1f-b3d8-af9e27a4ec6a'],
-//   response = 'YES',
-// }: {
-//   recallType?: string
-//   sentenceIds?: string[]
-//   response?: 'YES' | 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE' | 'UNKNOWN_PRE_RECALL_MAPPING'
-// } = {}): SuperAgentRequest => {
-//   return stubFor({
-//     request: {
-//       method: 'POST',
-//       urlPath: '/remand-and-sentencing-api/recall/is-possible',
-//       bodyPatterns: [
-//         {
-//           equalToJson: JSON.stringify({
-//             recallType,
-//             sentenceIds,
-//           }),
-//           ignoreExtraElements: true,
-//         },
-//       ],
-//     },
-//     response: {
-//       status: 200,
-//       headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-//       jsonBody: {
-//         isRecallPossible: response,
-//       },
-//     },
-//   })
-// },
-stubIsRecallPossible: (): SuperAgentRequest => {
-  return stubFor({
-    request: {
-      method: 'POST',
-      urlPath: '/remand-and-sentencing-api/recall/is-possible',
-    },
-    response: {
-      status: 200,
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-      jsonBody: {
-        isRecallPossible: 'YES',
+  stubIsRecallPossible: (): SuperAgentRequest => {
+    return stubFor({
+      request: {
+        method: 'POST',
+        urlPath: '/remand-and-sentencing-api/recall/is-possible',
       },
-    },
-  })
-},
-
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          isRecallPossible: 'YES',
+        },
+      },
+    })
+  },
 
   stubTest: (): SuperAgentRequest => {
     return stubFor({

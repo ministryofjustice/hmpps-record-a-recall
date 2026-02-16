@@ -24,7 +24,7 @@ import SelectRecallTypePage from '../pages/selectRecallTypePage'
 import CheckYourAnswersPage from '../pages/checkYourAnswersPage'
 import ConfirmationPage from '../pages/confirmationPage'
 
-export const stubAllHealthChecks = async () => {
+export default async function stubAllHealthChecks() {
   await tokenVerification.stubPing()
   await tokenVerification.stubVerifyToken()
   await prisonApi.stubPing()
@@ -52,7 +52,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await remandAndSentencingApi.stubHasSentences()
 
   // await remandAndSentencingApi.stubSearchCourtCasesWithBothSDS()
-  await remandAndSentencingApi.stubSearchCourtCases() 
+  await remandAndSentencingApi.stubSearchCourtCases()
   await remandAndSentencingApi.stubIsRecallPossible()
   await ccardsApi.getServiceDefinitions()
   await ccardsApi.stubPing()
@@ -62,14 +62,13 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await prisonApi.stubGetPrisonerImage()
   await calculateReleaseDatesApi.stubCalculateReleaseDatesValidate()
   await calculateReleaseDatesApi.stubRecordARecallCRDSNonManual() // do we need to pass in {
-//   "revocationDate": "2026-02-04",
-//   "returnToCustodyDate": "2026-02-04",
-//   "recallId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-// }
+  //   "revocationDate": "2026-02-04",
+  //   "returnToCustodyDate": "2026-02-04",
+  //   "recallId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  // }
   await calculateReleaseDatesApi.stubRecordARecallDecision()
   await prisonerSearchApi.stubPing()
   await adjustmentsApi.stubPing()
-
 
   // Login
   await login(page)
@@ -86,15 +85,14 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
 
   // Step 3: Return to Custody Date page
   const returnToCustodyDatePage = await ReturnToCustodyDatePage.verifyOnPage(page)
-  await returnToCustodyDatePage.selectYes() 
+  await returnToCustodyDatePage.selectYes()
   // await returnToCustodyDatePage.selectNo()
   // await returnToCustodyDatePage.enterReturnToCustodyDate('2025-11-05')
 
-  // await page.waitForTimeout(2000) // form should be fully loaded before continue, code is runs faster 
+  // await page.waitForTimeout(2000) // form should be fully loaded before continue, code is runs faster
   // await returnToCustodyDatePage.clickContinue()
   await expect(returnToCustodyDatePage.continueButton).toBeEnabled()
-await returnToCustodyDatePage.clickContinue()
-
+  await returnToCustodyDatePage.clickContinue()
 
   // Step 4: Check/Review sentences
   const checkSentencesPage = await CheckSentencesPage.verifyOnPage(page)
@@ -108,9 +106,15 @@ await returnToCustodyDatePage.clickContinue()
 
   // Step 6: Check your answers
   const checkYourAnswersPage = await CheckYourAnswersPage.verifyOnPage(page)
-  await checkYourAnswersPage.confirmRecall()
 
-  // Step 7: Confirmation
+  await Promise.all([
+    page.waitForURL(/recall\/.*\/confirmation$/, { waitUntil: 'networkidle' }),
+    checkYourAnswersPage.confirmRecall(), // Click "Confirm and save"
+  ])
+
+  // Step 7: Confirmation page
   const confirmationPage = await ConfirmationPage.verifyOnPage(page)
+
+  await expect(confirmationPage.successMessage).toBeVisible({ timeout: 10000 })
   await confirmationPage.verifySuccessMessage('Recall recorded')
 })
