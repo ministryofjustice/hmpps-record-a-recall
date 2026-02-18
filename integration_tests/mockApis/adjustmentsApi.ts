@@ -6,7 +6,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/adjustments-api/health/ping',
+        urlPath: '/adjustments-api/health/ping',
       },
       response: {
         status: httpStatus,
@@ -14,17 +14,4 @@ export default {
         jsonBody: { status: httpStatus === 200 ? 'UP' : 'DOWN' },
       },
     }),
-  getNoAdjustmentsForPrisoner: (): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'GET',
-        urlPattern: '/adjustments-api/adjustments?.*',
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: [],
-      },
-    })
-  },
 }
