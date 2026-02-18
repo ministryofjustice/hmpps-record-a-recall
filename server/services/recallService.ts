@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import {
   ApiRecall,
@@ -8,7 +9,7 @@ import {
   RecallableCourtCaseSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
-import { getRecallType, SentenceAndOffence } from '../@types/recallTypes'
+import { ConsecutiveToDetails, getRecallType, SentenceAndOffence } from '../@types/recallTypes'
 import { ExistingRecall } from '../model/ExistingRecall'
 import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
 import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
@@ -44,20 +45,81 @@ export default class RecallService {
     const offences = await this.manageOffencesApiClient.getOffencesByCodes(offenceCodes)
     const offenceMap = new Map(offences.map(o => [o.code, o.description]))
 
-    const withDescription = (s: RecallableCourtCaseSentence): SentenceAndOffence => ({
-      ...s,
-      offenceDescription: s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null,
-    })
+    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
+      response.cases,
+      offenceMap,
+      courtDetailsList,
+      username,
+    )
+
+    const withDescriptionAndConsecutiveTo = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
+      const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
+
+      const consecutiveTo =
+        s.consecutiveToSentenceUuid && consecutiveToDetailsBySentenceUuid[s.consecutiveToSentenceUuid]
+
+      return {
+        ...s,
+        offenceDescription,
+        consecutiveTo,
+      }
+    }
 
     return response.cases.map(courtCase => {
       const sentences = courtCase.sentences ?? []
+
       return {
         ...courtCase,
-        recallableSentences: sentences.filter(s => s.isRecallable).map(withDescription),
-        nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescription),
-        courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode).courtName,
+        recallableSentences: sentences.filter(s => s.isRecallable).map(withDescriptionAndConsecutiveTo),
+        nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescriptionAndConsecutiveTo),
+        courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
       }
     })
+  }
+
+  private async buildConsecutiveToDetailsMap(
+    cases: { sentences?: RecallableCourtCaseSentence[] }[],
+    offenceMap: Map<string, string>,
+    courtDetailsList: { courtId: string; courtName: string }[],
+    username: string,
+  ): Promise<Map<string, ConsecutiveToDetails>> {
+    const consecutiveToSentenceUuids = [
+      ...new Set(
+        cases
+          .flatMap(c => c.sentences ?? [])
+          .map(s => s.consecutiveToSentenceUuid)
+          .filter((uuid): uuid is string => !!uuid && uuid !== ''),
+      ),
+    ]
+
+    if (!consecutiveToSentenceUuids.length) {
+      return new Map()
+    }
+
+    const response = await this.remandAndSentencingApiClient.getConsecutiveToDetails(
+      consecutiveToSentenceUuids,
+      username,
+    )
+
+    return new Map(
+      response.sentences.map(consecutiveSentence => [
+        consecutiveSentence.sentenceUuid,
+        {
+          countNumber: consecutiveSentence.countNumber,
+          offenceCode: consecutiveSentence.offenceCode,
+          offenceDescription: offenceMap.get(consecutiveSentence.offenceCode) ?? null,
+          courtCaseReference: consecutiveSentence.courtCaseReference ?? null,
+          courtName: courtDetailsList.find(c => c.courtId === consecutiveSentence.courtCode)?.courtName ?? null,
+          warrantDate: dayjs(consecutiveSentence.appearanceDate).format('DD/MM/YYYY'),
+          offenceStartDate: consecutiveSentence.offenceStartDate
+            ? dayjs(consecutiveSentence.offenceStartDate).format('DD/MM/YYYY')
+            : null,
+          offenceEndDate: consecutiveSentence.offenceEndDate
+            ? dayjs(consecutiveSentence.offenceEndDate).format('DD/MM/YYYY')
+            : null,
+        } satisfies ConsecutiveToDetails,
+      ]),
+    )
   }
 
   public async getLatestRevocationDate(

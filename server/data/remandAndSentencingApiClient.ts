@@ -10,6 +10,7 @@ import {
   RecallableCourtCasesResponseAugmented,
   IsRecallPossibleRequest,
   IsRecallPossibleResponse,
+  SentenceConsecutiveToDetailsResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
@@ -135,5 +136,20 @@ export default class RemandAndSentencingApiClient extends RestClient {
       },
       asSystem(username),
     )
+  }
+
+  async getConsecutiveToDetails(
+    sentenceUuids: string[],
+    username: string,
+  ): Promise<SentenceConsecutiveToDetailsResponse> {
+    return (await this.get(
+      {
+        path: '/sentence/consecutive-to-details',
+        query: {
+          sentenceUuids: sentenceUuids.join(','),
+        },
+      },
+      asSystem(username),
+    )) as unknown as Promise<SentenceConsecutiveToDetailsResponse>
   }
 }
