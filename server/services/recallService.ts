@@ -45,7 +45,7 @@ export default class RecallService {
     const offences = await this.manageOffencesApiClient.getOffencesByCodes(offenceCodes)
     const offenceMap = new Map(offences.map(o => [o.code, o.description]))
 
-    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
+    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMapY(
       response.cases,
       offenceMap,
       courtDetailsList,
@@ -56,7 +56,7 @@ export default class RecallService {
       const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
 
       const consecutiveTo =
-        s.consecutiveToSentenceUuid && consecutiveToDetailsBySentenceUuid[s.consecutiveToSentenceUuid]
+        s.consecutiveToSentenceUuid && consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid)
 
       return {
         ...s,
@@ -77,8 +77,8 @@ export default class RecallService {
     })
   }
 
-  private async buildConsecutiveToDetailsMap(
-    cases: { sentences?: RecallableCourtCaseSentence[] }[],
+  private async buildConsecutiveToDetailsMapY<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
+    cases: { sentences?: TSentence[] }[],
     offenceMap: Map<string, string>,
     courtDetailsList: { courtId: string; courtName: string }[],
     username: string,
@@ -185,7 +185,24 @@ export default class RecallService {
       requiredOffences.length ? this.manageOffencesApiClient.getOffencesByCodes(requiredOffences) : Promise.resolve([]),
     ])
 
-    return recalls.map(recall => this.toExistingRecall(recall, prisons, courts, offences, isEditableAndDeletable))
+    const offenceMap = new Map(offences.map(o => [o.code, o.description]))
+    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMapY(
+      recalls.flatMap(r => r.courtCases ?? []),
+      offenceMap,
+      courts,
+      username,
+    )
+
+    return recalls.map(recall =>
+      this.toExistingRecall(
+        recall,
+        prisons,
+        courts,
+        offences,
+        isEditableAndDeletable,
+        consecutiveToDetailsBySentenceUuid,
+      ),
+    )
   }
 
   private toExistingRecall(
@@ -194,6 +211,7 @@ export default class RecallService {
     courts: Court[],
     offences: Offence[],
     isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
+    consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),
   ): ExistingRecall {
     const isLatestAndDPSRecall = isEditableAndDeletable(recall)
     const sentenceIds: string[] = []
@@ -233,6 +251,9 @@ export default class RecallService {
             periodLengths: sentence.periodLengths,
             sentenceServeType: sentence.sentenceServeType,
             sentenceTypeDescription: sentence.sentenceTypeDescription,
+            consecutiveTo:
+              sentence.consecutiveToSentenceUuid &&
+              consecutiveToDetailsBySentenceUuid.get(sentence.consecutiveToSentenceUuid),
           }
         }),
       })),
