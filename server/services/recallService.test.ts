@@ -128,6 +128,60 @@ describe('Recall service', () => {
         offenceEndDate: null,
       })
     })
+
+    it('redacts consecutiveTo details when the target sentence is in the same case', async () => {
+      // Given
+      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({
+        cases: [
+          {
+            courtCaseUuid: 'cc-1',
+            courtCode: 'INNRCC',
+            sentences: [
+              { sentenceUuid: 's1', offenceCode: 'A1', isRecallable: true },
+              {
+                sentenceUuid: 's2',
+                offenceCode: 'B2',
+                isRecallable: true,
+                consecutiveToSentenceUuid: 's1',
+              },
+            ],
+          } as RecallableCourtCase,
+        ],
+      })
+
+      remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
+        sentences: [
+          {
+            sentenceUuid: 's1',
+            countNumber: '3',
+            offenceCode: 'A1',
+            courtCaseReference: 'REF-1',
+            courtCode: 'INNRCC',
+            appearanceDate: '2023-05-10',
+            offenceStartDate: '2023-01-01',
+            offenceEndDate: null,
+          },
+        ],
+      })
+
+      // When
+      const result = await service.getRecallableCourtCases('A1234BC', 'username1')
+
+      // Then
+      const { consecutiveTo } = result[0].recallableSentences[1]
+
+      expect(consecutiveTo).toEqual({
+        countNumber: '3',
+        offenceCode: 'A1',
+        offenceDescription: 'Assault',
+        offenceStartDate: '01/01/2023',
+        offenceEndDate: null,
+      })
+
+      expect(consecutiveTo).not.toHaveProperty('courtName')
+      expect(consecutiveTo).not.toHaveProperty('courtCaseReference')
+      expect(consecutiveTo).not.toHaveProperty('warrantDate')
+    })
   })
 
   describe('getRecallsForPrisoner', () => {
@@ -539,25 +593,53 @@ describe('Recall service', () => {
       })
     })
 
-    it('redacts consecutiveTo details when the target sentence is in the same case', async () => {
-      // Given: two sentences in the SAME case, one consecutive to the other
-      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({
-        cases: [
+    it('redacts consecutiveTo when consecutive target exists in the same court case', async () => {
+      // Given:
+      const sentence1 = {
+        sentenceUuid: 's1',
+        offenceCode: 'A1',
+        offenceStartDate: undefined,
+        offenceEndDate: undefined,
+        sentenceDate: undefined,
+        lineNumber: undefined,
+        countNumber: '1',
+        periodLengths: [],
+        sentenceServeType: 'CONCURRENT',
+        sentenceTypeDescription: undefined,
+      }
+
+      const sentence2 = {
+        sentenceUuid: 's2',
+        offenceCode: 'B2',
+        offenceStartDate: undefined,
+        offenceEndDate: undefined,
+        sentenceDate: undefined,
+        lineNumber: undefined,
+        countNumber: '2',
+        periodLengths: [],
+        sentenceServeType: 'CONSECUTIVE',
+        sentenceTypeDescription: undefined,
+        consecutiveToSentenceUuid: 's1',
+      }
+
+      const recall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        createdAt: '2021-03-19T13:40:56Z',
+        source: 'DPS',
+        inPrisonOnRevocationDate: false,
+        createdByPrison: undefined,
+        courtCases: [
           {
-            courtCaseUuid: 'cc-1',
             courtCode: 'INNRCC',
-            sentences: [
-              { sentenceUuid: 's1', offenceCode: 'A1', isRecallable: true },
-              {
-                sentenceUuid: 's2',
-                offenceCode: 'B2',
-                isRecallable: true,
-                consecutiveToSentenceUuid: 's1',
-              },
-            ],
-          } as RecallableCourtCase,
+            courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
+            sentencingAppearanceDate: undefined,
+            sentences: [sentence1, sentence2],
+          },
         ],
       })
+
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
 
       remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
         sentences: [
@@ -575,10 +657,10 @@ describe('Recall service', () => {
       })
 
       // When
-      const result = await service.getRecallableCourtCases('A1234BC', 'username1')
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
-      // Then: consecutiveTo exists but is REDACTED (same-case version)
-      const { consecutiveTo } = result[0].recallableSentences[1]
+      // Then
+      const { consecutiveTo } = result[0].courtCases[0].sentences[1]
 
       expect(consecutiveTo).toEqual({
         countNumber: '3',
@@ -588,7 +670,6 @@ describe('Recall service', () => {
         offenceEndDate: null,
       })
 
-      // Ensure court fields are NOT present
       expect(consecutiveTo).not.toHaveProperty('courtName')
       expect(consecutiveTo).not.toHaveProperty('courtCaseReference')
       expect(consecutiveTo).not.toHaveProperty('warrantDate')

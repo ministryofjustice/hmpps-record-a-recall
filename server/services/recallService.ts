@@ -52,30 +52,6 @@ export default class RecallService {
       username,
     )
 
-    const withDescriptionAndConsecutiveTo = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
-      const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
-
-      const consecutiveTo =
-        s.consecutiveToSentenceUuid && consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid)
-
-      return {
-        ...s,
-        offenceDescription,
-        consecutiveTo,
-      }
-    }
-    //
-    // return response.cases.map(courtCase => {
-    //   const sentences = courtCase.sentences ?? []
-    //
-    //   return {
-    //     ...courtCase,
-    //     recallableSentences: sentences.filter(s => s.isRecallable).map(withDescriptionAndConsecutiveTo),
-    //     nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescriptionAndConsecutiveTo),
-    //     courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
-    //   }
-    // })
-
     return response.cases.map(courtCase => {
       const sentences = courtCase.sentences ?? []
       const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
@@ -267,33 +243,53 @@ export default class RecallService {
       returnToCustodyDate: recall.returnToCustodyDate,
       calculationRequestId: recall.calculationRequestId,
       ualAdjustmentTotalDays: recall.ual?.days,
-      courtCases: (recall.courtCases ?? []).map(courtCase => ({
-        courtCaseReference: courtCase.courtCaseReference,
-        courtCaseUuid: courtCase.courtCaseUuid,
-        courtName: courtCase.courtCode
-          ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
-          : undefined,
-        courtCaseDate: courtCase.sentencingAppearanceDate,
-        sentences: courtCase.sentences.map(sentence => {
-          sentenceIds.push(sentence.sentenceUuid)
-          return {
-            sentenceUuid: sentence.sentenceUuid,
-            offenceCode: sentence.offenceCode,
-            offenceDescription: offences.find(offence => offence.code === sentence.offenceCode)?.description,
-            offenceStartDate: sentence.offenceStartDate,
-            offenceEndDate: sentence.offenceEndDate,
-            sentenceDate: sentence.sentenceDate,
-            lineNumber: sentence.lineNumber,
-            countNumber: sentence.countNumber,
-            periodLengths: sentence.periodLengths,
-            sentenceServeType: sentence.sentenceServeType,
-            sentenceTypeDescription: sentence.sentenceTypeDescription,
-            consecutiveTo:
+      courtCases: (recall.courtCases ?? []).map(courtCase => {
+        const sentenceUuidsInThisCase = new Set(courtCase.sentences.map(s => s.sentenceUuid))
+
+        return {
+          courtCaseReference: courtCase.courtCaseReference,
+          courtCaseUuid: courtCase.courtCaseUuid,
+          courtName: courtCase.courtCode
+            ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
+            : undefined,
+          courtCaseDate: courtCase.sentencingAppearanceDate,
+          sentences: courtCase.sentences.map(sentence => {
+            sentenceIds.push(sentence.sentenceUuid)
+
+            const fullConsecutiveTo =
               sentence.consecutiveToSentenceUuid &&
-              consecutiveToDetailsBySentenceUuid.get(sentence.consecutiveToSentenceUuid),
-          }
-        }),
-      })),
+              consecutiveToDetailsBySentenceUuid.get(sentence.consecutiveToSentenceUuid)
+
+            const consecutiveTo =
+              fullConsecutiveTo &&
+              sentence.consecutiveToSentenceUuid &&
+              sentenceUuidsInThisCase.has(sentence.consecutiveToSentenceUuid)
+                ? {
+                    countNumber: fullConsecutiveTo.countNumber,
+                    offenceCode: fullConsecutiveTo.offenceCode,
+                    offenceDescription: fullConsecutiveTo.offenceDescription,
+                    offenceStartDate: fullConsecutiveTo.offenceStartDate,
+                    offenceEndDate: fullConsecutiveTo.offenceEndDate,
+                  }
+                : fullConsecutiveTo
+
+            return {
+              sentenceUuid: sentence.sentenceUuid,
+              offenceCode: sentence.offenceCode,
+              offenceDescription: offences.find(offence => offence.code === sentence.offenceCode)?.description,
+              offenceStartDate: sentence.offenceStartDate,
+              offenceEndDate: sentence.offenceEndDate,
+              sentenceDate: sentence.sentenceDate,
+              lineNumber: sentence.lineNumber,
+              countNumber: sentence.countNumber,
+              periodLengths: sentence.periodLengths,
+              sentenceServeType: sentence.sentenceServeType,
+              sentenceTypeDescription: sentence.sentenceTypeDescription,
+              consecutiveTo,
+            }
+          }),
+        }
+      }),
     }
     return { ...existingRecall, sentenceIds }
   }
