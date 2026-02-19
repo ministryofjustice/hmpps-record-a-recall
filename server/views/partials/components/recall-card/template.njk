@@ -125,7 +125,8 @@
                         sentenceType: sentence.sentenceTypeDescription | default('Not entered'),
                         sentenceDate: sentenceDate,
                         isSentenced: true,
-                        detailsClasses: 'govuk-!-padding-4 offence-card-for-sentence-' + sentence.sentenceUiid
+                        detailsClasses: 'govuk-!-padding-4 offence-card-for-sentence-' + sentence.sentenceUiid,
+                        consecutiveTo: sentence.consecutiveTo
                       }) }}
                     </div>
                 {% endfor %}

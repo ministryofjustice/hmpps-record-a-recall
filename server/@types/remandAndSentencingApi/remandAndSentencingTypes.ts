@@ -31,3 +31,5 @@ export type PeriodLength = components['schemas']['PeriodLength']
 
 export type IsRecallPossibleRequest = components['schemas']['IsRecallPossibleRequest']
 export type IsRecallPossibleResponse = components['schemas']['IsRecallPossibleResponse']
+
+export type SentenceConsecutiveToDetailsResponse = components['schemas']['SentenceConsecutiveToDetailsResponse']
