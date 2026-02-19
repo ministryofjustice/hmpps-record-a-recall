@@ -128,7 +128,6 @@ describe('Recall service', () => {
         offenceEndDate: null,
       })
     })
-
   })
 
   describe('getRecallsForPrisoner', () => {
@@ -540,6 +539,60 @@ describe('Recall service', () => {
       })
     })
 
+    it('redacts consecutiveTo details when the target sentence is in the same case', async () => {
+      // Given: two sentences in the SAME case, one consecutive to the other
+      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({
+        cases: [
+          {
+            courtCaseUuid: 'cc-1',
+            courtCode: 'INNRCC',
+            sentences: [
+              { sentenceUuid: 's1', offenceCode: 'A1', isRecallable: true },
+              {
+                sentenceUuid: 's2',
+                offenceCode: 'B2',
+                isRecallable: true,
+                consecutiveToSentenceUuid: 's1',
+              },
+            ],
+          } as RecallableCourtCase,
+        ],
+      })
+
+      remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
+        sentences: [
+          {
+            sentenceUuid: 's1',
+            countNumber: '3',
+            offenceCode: 'A1',
+            courtCaseReference: 'REF-1',
+            courtCode: 'INNRCC',
+            appearanceDate: '2023-05-10',
+            offenceStartDate: '2023-01-01',
+            offenceEndDate: null,
+          },
+        ],
+      })
+
+      // When
+      const result = await service.getRecallableCourtCases('A1234BC', 'username1')
+
+      // Then: consecutiveTo exists but is REDACTED (same-case version)
+      const { consecutiveTo } = result[0].recallableSentences[1]
+
+      expect(consecutiveTo).toEqual({
+        countNumber: '3',
+        offenceCode: 'A1',
+        offenceDescription: 'Assault',
+        offenceStartDate: '01/01/2023',
+        offenceEndDate: null,
+      })
+
+      // Ensure court fields are NOT present
+      expect(consecutiveTo).not.toHaveProperty('courtName')
+      expect(consecutiveTo).not.toHaveProperty('courtCaseReference')
+      expect(consecutiveTo).not.toHaveProperty('warrantDate')
+    })
   })
 
   describe('getRecallByUuid', () => {

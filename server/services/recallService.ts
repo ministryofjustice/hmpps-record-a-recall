@@ -45,7 +45,7 @@ export default class RecallService {
     const offences = await this.manageOffencesApiClient.getOffencesByCodes(offenceCodes)
     const offenceMap = new Map(offences.map(o => [o.code, o.description]))
 
-    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMapY(
+    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
       response.cases,
       offenceMap,
       courtDetailsList,
@@ -64,20 +64,57 @@ export default class RecallService {
         consecutiveTo,
       }
     }
+    //
+    // return response.cases.map(courtCase => {
+    //   const sentences = courtCase.sentences ?? []
+    //
+    //   return {
+    //     ...courtCase,
+    //     recallableSentences: sentences.filter(s => s.isRecallable).map(withDescriptionAndConsecutiveTo),
+    //     nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescriptionAndConsecutiveTo),
+    //     courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
+    //   }
+    // })
 
     return response.cases.map(courtCase => {
       const sentences = courtCase.sentences ?? []
+      const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
+
+      const decorate = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
+        const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
+
+        const fullConsecutiveTo = s.consecutiveToSentenceUuid
+          ? (consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid) ?? null)
+          : null
+
+        const consecutiveTo =
+          fullConsecutiveTo && s.consecutiveToSentenceUuid && sentenceUuidsInThisCase.has(s.consecutiveToSentenceUuid)
+            ? {
+                countNumber: fullConsecutiveTo.countNumber,
+                offenceCode: fullConsecutiveTo.offenceCode,
+                offenceDescription: fullConsecutiveTo.offenceDescription,
+                offenceStartDate: fullConsecutiveTo.offenceStartDate,
+                offenceEndDate: fullConsecutiveTo.offenceEndDate,
+              }
+            : fullConsecutiveTo
+
+        return {
+          ...s,
+          offenceDescription,
+          consecutiveTo,
+        }
+      }
 
       return {
         ...courtCase,
-        recallableSentences: sentences.filter(s => s.isRecallable).map(withDescriptionAndConsecutiveTo),
-        nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(withDescriptionAndConsecutiveTo),
+        recallableSentences: sentences.filter(s => s.isRecallable).map(decorate),
+        nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(decorate),
         courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
       }
     })
   }
 
-  private async buildConsecutiveToDetailsMapY<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
+  private async buildConsecutiveToDetailsMap<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
     cases: { sentences?: TSentence[] }[],
     offenceMap: Map<string, string>,
     courtDetailsList: { courtId: string; courtName: string }[],
@@ -186,7 +223,7 @@ export default class RecallService {
     ])
 
     const offenceMap = new Map(offences.map(o => [o.code, o.description]))
-    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMapY(
+    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
       recalls.flatMap(r => r.courtCases ?? []),
       offenceMap,
       courts,
