@@ -7,6 +7,7 @@ import {
   IsRecallPossibleRequest,
   IsRecallPossibleResponse,
   RecallableCourtCaseSentence,
+  SentenceConsecutiveToDetailsResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
 import { ConsecutiveToDetails, getRecallType, SentenceAndOffence } from '../@types/recallTypes'
@@ -30,14 +31,18 @@ export default class RecallService {
   public async getRecallableCourtCases(prisonerId: string, username: string): Promise<DecoratedCourtCase[]> {
     const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
 
-    const courtIds = response.cases.map(c => c.courtCode)
+    const consecutiveToDetails = await this.getConsecutiveToDetails(response.cases, username)
 
+    const courtIds = [
+      ...new Set(response.cases.map(c => c.courtCode).concat(consecutiveToDetails.sentences.map(s => s.courtCode))),
+    ]
     const courtDetailsList = await this.courtRegisterApiClient.getCourtDetails(courtIds, username)
 
     const offenceCodes = [
       ...new Set(
         response.cases
           .flatMap(c => (c.sentences ?? []).map(s => s.offenceCode))
+          .concat(consecutiveToDetails.sentences.map(s => s.offenceCode))
           .filter((code): code is string => !!code && code !== ''),
       ),
     ]
@@ -46,10 +51,9 @@ export default class RecallService {
     const offenceMap = new Map(offences.map(o => [o.code, o.description]))
 
     const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
-      response.cases,
       offenceMap,
       courtDetailsList,
-      username,
+      consecutiveToDetails,
     )
 
     return response.cases.map(courtCase => {
@@ -90,12 +94,10 @@ export default class RecallService {
     })
   }
 
-  private async buildConsecutiveToDetailsMap<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
+  private async getConsecutiveToDetails<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
     cases: { sentences?: TSentence[] }[],
-    offenceMap: Map<string, string>,
-    courtDetailsList: { courtId: string; courtName: string }[],
     username: string,
-  ): Promise<Map<string, ConsecutiveToDetails>> {
+  ): Promise<SentenceConsecutiveToDetailsResponse> {
     const consecutiveToSentenceUuids = [
       ...new Set(
         cases
@@ -106,16 +108,19 @@ export default class RecallService {
     ]
 
     if (!consecutiveToSentenceUuids.length) {
-      return new Map()
+      return { sentences: [] }
     }
 
-    const response = await this.remandAndSentencingApiClient.getConsecutiveToDetails(
-      consecutiveToSentenceUuids,
-      username,
-    )
+    return this.remandAndSentencingApiClient.getConsecutiveToDetails(consecutiveToSentenceUuids, username)
+  }
 
+  private async buildConsecutiveToDetailsMap(
+    offenceMap: Map<string, string>,
+    courtDetailsList: { courtId: string; courtName: string }[],
+    consecutiveToDetails: SentenceConsecutiveToDetailsResponse,
+  ): Promise<Map<string, ConsecutiveToDetails>> {
     return new Map(
-      response.sentences.map(consecutiveSentence => [
+      consecutiveToDetails.sentences.map(consecutiveSentence => [
         consecutiveSentence.sentenceUuid,
         {
           countNumber: consecutiveSentence.countNumber,
@@ -172,19 +177,27 @@ export default class RecallService {
     username: string,
     isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
   ): Promise<ExistingRecall[]> {
+    const consecutiveToDetails = await this.getConsecutiveToDetails(
+      recalls.flatMap(r => r.courtCases ?? []),
+      username,
+    )
     const requiredPrisons = recalls.map(recall => recall.createdByPrison).filter(it => it)
+
     const requiredCourts = [
       ...new Set(
         recalls
           .flatMap(recall => (recall.courtCases ?? []).map(courtCase => courtCase.courtCode))
+          .concat(consecutiveToDetails.sentences.map(s => s.courtCode))
           .filter((code): code is string => !!code && code !== ''),
       ),
     ]
+
     const requiredOffences = [
       ...new Set(
         recalls
           .flatMap(recall => recall.courtCases ?? [])
           .flatMap(courtCase => (courtCase.sentences ?? []).map(s => s.offenceCode))
+          .concat(consecutiveToDetails.sentences.map(s => s.offenceCode))
           .filter((code): code is string => !!code && code !== ''),
       ),
     ]
@@ -200,10 +213,9 @@ export default class RecallService {
 
     const offenceMap = new Map(offences.map(o => [o.code, o.description]))
     const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
-      recalls.flatMap(r => r.courtCases ?? []),
       offenceMap,
       courts,
-      username,
+      consecutiveToDetails,
     )
 
     return recalls.map(recall =>

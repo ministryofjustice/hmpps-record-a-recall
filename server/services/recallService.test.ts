@@ -182,6 +182,80 @@ describe('Recall service', () => {
       expect(consecutiveTo).not.toHaveProperty('courtCaseReference')
       expect(consecutiveTo).not.toHaveProperty('warrantDate')
     })
+
+    it('includes court + offence codes from consecutiveToDetails even when not present on original case', async () => {
+      // Given: original case only has INNRCC + A1
+      remandAndSentencingApiClient.getRecallableCourtCases.mockResolvedValue({
+        cases: [
+          {
+            courtCaseUuid: 'cc-1',
+            courtCode: 'INNRCC',
+            sentences: [{ offenceCode: 'A1', isRecallable: true, consecutiveToSentenceUuid: 'sentence-2' }],
+          } as RecallableCourtCase,
+        ],
+      })
+
+      // consecutive-to points to a different court + offence not in original
+      remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
+        sentences: [
+          {
+            sentenceUuid: 'sentence-2',
+            countNumber: '3',
+            offenceCode: 'C3',
+            courtCaseReference: 'REF-1',
+            courtCode: 'NEWCT',
+            appearanceDate: '2023-05-10',
+            offenceStartDate: '2023-01-01',
+            offenceEndDate: null,
+          },
+        ],
+      })
+
+      manageOffencesApiClient.getOffencesByCodes.mockResolvedValue([
+        { code: 'A1', description: 'Assault' } as Offence,
+        { code: 'C3', description: 'Consecutive offence' } as Offence,
+      ])
+
+      courtRegisterApiClient.getCourtDetails.mockResolvedValue([
+        {
+          courtId: 'INNRCC',
+          courtName: 'Inner London Sessions House Crown Court',
+          courtDescription: 'Inner London Sessions House Crown Court',
+          type: { courtType: 'CC', courtName: 'Crown Court' },
+          active: true,
+          buildings: [],
+        },
+        {
+          courtId: 'NEWCT',
+          courtName: 'New Court Name',
+          courtDescription: 'New Court Name',
+          type: { courtType: 'CC', courtName: 'Crown Court' },
+          active: true,
+          buildings: [],
+        },
+      ])
+
+      // When
+      const result = await service.getRecallableCourtCases('A1234BC', 'username1')
+
+      // Then: service includes NEWCT + C3 in lookup calls
+      expect(courtRegisterApiClient.getCourtDetails).toHaveBeenCalledWith(
+        expect.arrayContaining(['INNRCC', 'NEWCT']),
+        'username1',
+      )
+      expect(manageOffencesApiClient.getOffencesByCodes).toHaveBeenCalledWith(expect.arrayContaining(['A1', 'C3']))
+
+      expect(result[0].recallableSentences[0].consecutiveTo).toEqual({
+        countNumber: '3',
+        offenceCode: 'C3',
+        offenceDescription: 'Consecutive offence',
+        courtCaseReference: 'REF-1',
+        courtName: 'New Court Name',
+        warrantDate: '10/05/2023',
+        offenceStartDate: '01/01/2023',
+        offenceEndDate: null,
+      })
+    })
   })
 
   describe('getRecallsForPrisoner', () => {
@@ -673,6 +747,113 @@ describe('Recall service', () => {
       expect(consecutiveTo).not.toHaveProperty('courtName')
       expect(consecutiveTo).not.toHaveProperty('courtCaseReference')
       expect(consecutiveTo).not.toHaveProperty('warrantDate')
+    })
+
+    it('enrichRecalls includes court + offence codes from consecutiveToDetails even when not present on original recall', async () => {
+      // Given: recall contains INNRCC + A1 only
+      const sentence: ApiRecalledSentence = {
+        sentenceUuid: 'sentence-1',
+        offenceCode: 'A1',
+        offenceStartDate: undefined,
+        offenceEndDate: undefined,
+        sentenceDate: undefined,
+        lineNumber: undefined,
+        countNumber: '1',
+        periodLengths: [
+          {
+            years: undefined,
+            months: undefined,
+            weeks: undefined,
+            days: undefined,
+            periodOrder: 'years',
+            periodLengthType: 'SENTENCE_LENGTH',
+            legacyData: undefined,
+            periodLengthUuid: uuidv4(),
+          },
+        ],
+        sentenceServeType: 'CONSECUTIVE',
+        sentenceTypeDescription: undefined,
+        consecutiveToSentenceUuid: 'sentence-2',
+      }
+
+      const recall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        createdAt: '2021-03-19T13:40:56Z',
+        source: 'DPS',
+        inPrisonOnRevocationDate: false,
+        createdByPrison: undefined,
+        courtCases: [
+          {
+            courtCode: 'INNRCC',
+            courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
+            sentencingAppearanceDate: undefined,
+            sentences: [sentence],
+          },
+        ],
+      })
+
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+
+      remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
+        sentences: [
+          {
+            sentenceUuid: 'sentence-2',
+            countNumber: '3',
+            offenceCode: 'C3',
+            courtCaseReference: 'REF-1',
+            courtCode: 'NEWCT',
+            appearanceDate: '2023-05-10',
+            offenceStartDate: '2023-01-01',
+            offenceEndDate: null,
+          },
+        ],
+      })
+
+      manageOffencesApiClient.getOffencesByCodes.mockResolvedValue([
+        { code: 'A1', description: 'Assault' } as Offence,
+        { code: 'C3', description: 'Consecutive offence' } as Offence,
+      ])
+
+      courtRegisterApiClient.getCourtDetails.mockResolvedValue([
+        {
+          courtId: 'INNRCC',
+          courtName: 'Inner London Sessions House Crown Court',
+          courtDescription: 'Inner London Sessions House Crown Court',
+          type: { courtType: 'CC', courtName: 'Crown Court' },
+          active: true,
+          buildings: [],
+        },
+        {
+          courtId: 'NEWCT',
+          courtName: 'New Court Name',
+          courtDescription: 'New Court Name',
+          type: { courtType: 'CC', courtName: 'Crown Court' },
+          active: true,
+          buildings: [],
+        },
+      ])
+
+      // When
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+
+      // Then: enrichRecalls included NEWCT + C3 in lookup calls
+      expect(courtRegisterApiClient.getCourtDetails).toHaveBeenCalledWith(
+        expect.arrayContaining(['INNRCC', 'NEWCT']),
+        'user1',
+      )
+      expect(manageOffencesApiClient.getOffencesByCodes).toHaveBeenCalledWith(expect.arrayContaining(['A1', 'C3']))
+
+      expect(result[0].courtCases[0].sentences[0].consecutiveTo).toEqual({
+        countNumber: '3',
+        offenceCode: 'C3',
+        offenceDescription: 'Consecutive offence',
+        courtCaseReference: 'REF-1',
+        courtName: 'New Court Name',
+        warrantDate: '10/05/2023',
+        offenceStartDate: '01/01/2023',
+        offenceEndDate: null,
+      })
     })
   })
 

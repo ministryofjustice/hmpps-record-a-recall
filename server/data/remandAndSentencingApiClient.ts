@@ -142,7 +142,7 @@ export default class RemandAndSentencingApiClient extends RestClient {
     sentenceUuids: string[],
     username: string,
   ): Promise<SentenceConsecutiveToDetailsResponse> {
-    return (await this.get(
+    return this.get(
       {
         path: '/sentence/consecutive-to-details',
         query: {
@@ -150,6 +150,6 @@ export default class RemandAndSentencingApiClient extends RestClient {
         },
       },
       asSystem(username),
-    )) as unknown as Promise<SentenceConsecutiveToDetailsResponse>
+    )
   }
 }
