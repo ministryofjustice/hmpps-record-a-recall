@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import { asSystem } from '@ministryofjustice/hmpps-rest-client'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import {
   ApiRecall,
@@ -18,7 +17,7 @@ import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
-import { RecallJourney, DecoratedCourtCase } from '../@types/journeys'
+import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString } from '../utils/utils'
 
 export default class RecallService {
