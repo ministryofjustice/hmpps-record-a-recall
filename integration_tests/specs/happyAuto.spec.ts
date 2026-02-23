@@ -40,6 +40,7 @@ test('Happy path Auto journey to record a recall', async ({ page }) => {
   await prisonApi.stubGetPrisonerImage()
   await calculateReleaseDatesApi.stubValidate()
   await calculateReleaseDatesApi.stubRecordARecallDecision()
+  await remandAndSentencingApi.stubFixManyCharges()
 
   // Login
   await login(page)

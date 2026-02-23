@@ -152,4 +152,13 @@ export default class RemandAndSentencingApiClient extends RestClient {
       asSystem(username),
     )
   }
+
+  async fixManyCharges(prisonerId: string, username: string): Promise<void> {
+    return this.put(
+      {
+        path: `/person/${prisonerId}/fix-many-charges-to-sentence`,
+      },
+      asSystem(username),
+    )
+  }
 }

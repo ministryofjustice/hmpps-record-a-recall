@@ -462,4 +462,14 @@ export default {
         jsonBody: { recallUuid: 'f114f2c8-b32f-47f1-b4ab-7056e2243fdf' },
       },
     }),
+  stubFixManyCharges: (prisonerId = 'A0164ED'): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'PUT',
+        urlPath: `/remand-and-sentencing-api/person/${prisonerId}/fix-many-charges-to-sentence`,
+      },
+      response: {
+        status: 204,
+      },
+    }),
 }
