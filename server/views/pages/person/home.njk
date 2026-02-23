@@ -3,7 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
-{% from "partials/components/recall-card/macro.njk" import recallCard %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
@@ -19,24 +19,176 @@
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">Recalls</h1>
     {{ thingsToDo(serviceDefinitions, 'recalls') }}
-      {% if not hasRecalls %}
-        <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
-      {% endif %}
+    {% if not hasRecalls %}
+      <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
+    {% endif %}
 
-      {{ govukButton({
-        classes: "govuk-button--secondary",
-        text: "Record a recall",
-        preventDoubleClick: true,
-        href: '/person/' + nomsId + '/recall/create/start',
-        attributes: { 'data-qa': 'create-new-recall-btn' }
-      }) }}
+    {{ govukButton({
+      classes: "govuk-button--secondary",
+      text: "Record a recall",
+      preventDoubleClick: true,
+      href: '/person/' + nomsId + '/recall/create/start',
+      attributes: { 'data-qa': 'create-new-recall-btn' }
+    }) }}
   </div>
 </div>
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
-      {% for recall in recalls %}
-        {{ recallCard(recall, serviceDefinitions) }}
-      {% endfor %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
+    {% for recall in recalls %}
+      {{ recallCardMacro(recall, serviceDefinitions) }}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% macro recallCardMacro(model, serviceDefinitions) %}
+  {% set isNomisRecall = model.source === 'NOMIS' %}
+
+  <div class="govuk-summary-card govuk-!-margin-bottom-6">
+    <div class="govuk-summary-card__title-wrapper recall-card">
+<h2 class="govuk-summary-card__title" data-qa="recall-{{ model.recallUuid }}-card-title">
+  {% if not isNomisRecall %}
+    Recorded on {{ model.createdAtTimestamp | formatDate }}{% if model.createdAtLocationName %} at {{ model.createdAtLocationName }}{% endif %}
+  {% endif %}
+</h2>
+
+      <ul class="govuk-summary-card__actions">
+        {% if isNomisRecall %}
+          <li class="govuk-summary-card__action">
+            <span class="moj-badge moj-badge--grey govuk-!-margin-bottom-1 govuk-!-margin-left-1"
+                  data-qa="recall-{{ model.recallUuid }}-nomis-badge">NOMIS</span>
+          </li>
+        {% else %}
+          {% if model.canEdit %}
+            <li class="govuk-summary-card__action">
+              <a class="govuk-link"
+                 data-qa="recall-{{ model.recallUuid }}-edit-link"
+                 href="/person/{{ model.prisonerId }}/recall/edit/{{ model.recallUuid }}/start">
+                Edit<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span>
+              </a>
+            </li>
+          {% endif %}
+          {% if model.canDelete %}
+            <li class="govuk-summary-card__action">
+              <a class="govuk-link govuk-link--destructive"
+                 data-qa="recall-{{ model.recallUuid }}-delete-link"
+                 href="/person/{{ model.prisonerId }}/recall/{{ model.recallUuid }}/delete">
+               Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span>
+              </a>
+            </li>
+          {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+
+    <div class="govuk-summary-card__content govuk-!-margin-bottom-0">
+      {% set arrestDateDisplay %}
+        {% if model.inPrisonOnRevocationDate === true %}
+          In prison at recall
+        {% elseif model.returnToCustodyDate %}
+          {{ model.returnToCustodyDate | formatDate }}
+        {% else %}
+          Not entered
+        {% endif %}
+      {% endset %}
+
+      {% set ual %}
+        {% if isNomisRecall %}
+          <a class="govuk-link" href="{{ serviceDefinitions.services.adjustments.href }}" target="_blank" rel="noopener noreferrer">View UAL details</a>
+        {% elseif model.ualAdjustmentTotalDays %}
+          {{ model.ualAdjustmentTotalDays }} {{ 'day' if model.ualAdjustmentTotalDays == 1 else 'days' }}
+        {% else %}
+          None
+        {% endif %}
+      {% endset %}
+
+      <div class="govuk-grid-row govuk-!-margin-bottom-2">
+        <div class="govuk-grid-column-one-half">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Recall type</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ model.recallTypeDescription }}</p>
+
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Revocation date</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ 'Not entered' if isNomisRecall else model.revocationDate | formatDate }}</p>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Arrest date</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ arrestDateDisplay }}</p>
+
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">UAL (unlawfully at large)</h3>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ ual | safe }}</p>
+        </div>
+      </div>
+
+      {% if model.courtCases and model.courtCases.length %}
+        {{ courtCasesMacro(model.courtCases, model.recallUuid) }}
+      {% endif %}
     </div>
   </div>
-{% endblock %}
+{% endmacro %}
+
+{% macro courtCasesMacro(courtCases, recallUuid) %}
+  <div class="govuk-!-margin-top-4">
+    <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Court cases</h3>
+    <details class="govuk-details" data-module="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text" data-qa="recall-{{ recallUuid }}-court-case-details">
+          Court cases ({{ courtCases.length }})
+        </span>
+      </summary>
+
+      <div class="govuk-details__text govuk-!-margin-top-0" style="width: 100%; max-width: none;">
+        {% for courtCase in courtCases %}
+          {% set courtCaseIndex = loop.index %}
+          {% if courtCase.courtCaseReference or courtCase.courtName or courtCase.courtCaseDate %}
+            <h3 class="govuk-heading-m govuk-!-margin-top-6 govuk-!-margin-bottom-3" data-qa="recall-{{ recallUuid }}-court-case-heading-{{ courtCaseIndex }}">
+              {% if courtCase.courtCaseReference %}
+                {{ courtCase.courtCaseReference }}{% if courtCase.courtName %} at {{ courtCase.courtName }}{% endif %}{% if courtCase.courtCaseDate %} on {{ courtCase.courtCaseDate | formatDate('DD/MM/YYYY') }}{% endif %}
+              {% elseif courtCase.courtName %}
+                Case held at {{ courtCase.courtName }}{% if courtCase.courtCaseDate %} on {{ courtCase.courtCaseDate | formatDate('DD/MM/YYYY') }}{% endif %}
+              {% elseif courtCase.courtCaseDate %}
+                Case on {{ courtCase.courtCaseDate | formatDate('DD/MM/YYYY') }}
+              {% endif %}
+            </h3>
+          {% endif %}
+
+          {% for sentence in courtCase.sentences %}
+            {% set offenceStartDate = sentence.offenceStartDate | formatDate('DD/MM/YYYY') if sentence.offenceStartDate else 'Not entered' %}
+            {% set offenceEndDate = sentence.offenceEndDate | formatDate('DD/MM/YYYY') if sentence.offenceEndDate else null %}
+            {% set sentenceDate = sentence.sentenceDate | formatDate('DD/MM/YYYY') if sentence.sentenceDate else 'Not entered' %}
+
+            {% if sentence.countNumber and sentence.countNumber != '-1' %}
+              {% set countNumberWithText = sentence.countNumber %}
+              {% set lineNumberWithText = null %}
+            {% elseif not sentence.countNumber %}
+              {% set countNumberWithText = null %}
+              {% set lineNumberWithText = sentence.lineNumber %}
+            {% else %}
+              {% set countNumberWithText = null %}
+              {% set lineNumberWithText = null %}
+            {% endif %}
+
+            <div class="govuk-!-margin-top-2 govuk-!-margin-bottom-4" data-qa="recall-{{ recallUuid }}-court-case-{{ courtCaseIndex }}-sentences-{{ loop.index }}">
+              {{ offenceCard({
+                countNumber: countNumberWithText,
+                lineNumber: lineNumberWithText,
+                offenceCode: sentence.offenceCode | default('Not entered'),
+                offenceName: sentence.offenceDescription | default('Offence description not available'),
+                offenceStartDate: offenceStartDate,
+                offenceEndDate: offenceEndDate,
+                hideOutcome: true,
+                periodLengths: (sentence.periodLengths | default([])) | periodLengthsToSentenceLengths,
+                sentenceServeType: sentence.sentenceServeType | default(null),
+                sentenceType: sentence.sentenceTypeDescription | default('Not entered'),
+                sentenceDate: sentenceDate,
+                isSentenced: true,
+                detailsClasses: 'govuk-!-padding-4 offence-card-for-sentence-' + sentence.sentenceUiid,
+                consecutiveTo: sentence.consecutiveTo
+              }) }}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </details>
+  </div>
+{% endmacro %}
