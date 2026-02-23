@@ -1,4 +1,4 @@
-{% from "partials/components/sentence/macro.njk" import sentenceCard %}
+{% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
 <h2 data-qa="court-case-main-heading" class="govuk-heading-m govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
@@ -10,13 +10,45 @@
 </h2>
 
 {% for sentence in sentences %}
-  {{sentenceCard(sentence)}}
+  {{ offenceCard({
+    countNumber: sentence.countNumber,
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription,
+    offenceStartDate: sentence.offenceStartDate | formatDate('DD/MM/YYYY'),
+    offenceEndDate: sentence.offenceEndDate | formatDate('DD/MM/YYYY'),
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
+    terrorRelated: sentence.terrorRelated,
+    isSentenced: true,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
+    sentenceDate: sentence.sentenceDate | formatDate('DD/MM/YYYY'),
+    fineAmount: sentence.fineAmount,
+    detailsClasses: 'govuk-!-padding-4',
+    consecutiveTo: sentence.consecutiveTo
+}) }}
 {% endfor %}
 
 {% if expiredSentences.length %}
   {% set expiredHtml %}
     {% for sentence in expiredSentences %}
-      {{sentenceCard(sentence)}}
+        {{ offenceCard({
+    countNumber: sentence.countNumber,
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription,
+    offenceStartDate: sentence.offenceStartDate | formatDate('DD/MM/YYYY'),
+    offenceEndDate: sentence.offenceEndDate | formatDate('DD/MM/YYYY'),
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
+    terrorRelated: sentence.terrorRelated,
+    isSentenced: true,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
+    sentenceDate: sentence.sentenceDate | formatDate('DD/MM/YYYY'),
+    fineAmount: sentence.fineAmount,
+    detailsClasses: 'govuk-!-padding-4',
+    consecutiveTo: sentence.consecutiveTo
+}) }}
     {% endfor %}
   {% endset %}
   {{ govukDetails({
@@ -28,7 +60,23 @@
 {% if ineligibleSentences.length %}
   {% set ineligibleHtml %}
     {% for sentence in ineligibleSentences %}
-      {{sentenceCard(sentence)}}
+        {{ offenceCard({
+    countNumber: sentence.countNumber,
+    offenceCode: sentence.offenceCode,
+    offenceName: sentence.offenceDescription,
+    offenceStartDate: sentence.offenceStartDate | formatDate('DD/MM/YYYY'),
+    offenceEndDate: sentence.offenceEndDate | formatDate('DD/MM/YYYY'),
+    lineNumber: sentence.lineNumber if sentence.sentenceLegacyData,
+    terrorRelated: sentence.terrorRelated,
+    isSentenced: true,
+    periodLengths: sentence.periodLengths | periodLengthsToSentenceLengths,
+    sentenceServeType: sentence.sentenceServeType,
+    sentenceType: sentence.sentenceType | sentenceTypeValueOrLegacy(sentence.sentenceLegacyData),
+    sentenceDate: sentence.sentenceDate | formatDate('DD/MM/YYYY'),
+    fineAmount: sentence.fineAmount,
+    detailsClasses: 'govuk-!-padding-4',
+    consecutiveTo: sentence.consecutiveTo
+}) }}
     {% endfor %}
   {% endset %}
   {{ govukDetails({
