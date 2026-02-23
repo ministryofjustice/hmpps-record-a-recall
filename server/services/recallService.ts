@@ -17,7 +17,7 @@ import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
-import { RecallJourney, DecoratedCourtCase } from '../@types/journeys'
+import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString } from '../utils/utils'
 
 export default class RecallService {
@@ -346,5 +346,9 @@ export default class RecallService {
 
   async hasSentences(prisonerId: string, username: string): Promise<boolean> {
     return this.remandAndSentencingApiClient.hasSentences(prisonerId, username)
+  }
+
+  async fixManyCharges(prisonerId: string, username: string): Promise<void> {
+    return this.remandAndSentencingApiClient.fixManyCharges(prisonerId, username)
   }
 }

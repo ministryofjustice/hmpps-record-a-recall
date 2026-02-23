@@ -25,6 +25,9 @@ export default class StartCreateRecallJourneyController implements Controller {
       return res.redirect(RecallJourneyUrls.noSentencesFoundIntercept(nomsId))
     }
 
+    // Fix the 'many charges' NOMIS data issue on the start of the create journey, this fixes for all court cases related to the prisoner
+    await this.recallService.fixManyCharges(nomsId, username)
+
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const journey: RecallJourney = {
       id: uuidv4(),
