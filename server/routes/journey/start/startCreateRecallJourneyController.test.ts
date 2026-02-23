@@ -64,6 +64,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     const journeys = Object.values(session.recallJourneys!)
     expect(journeys).toHaveLength(1)
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
+    expect(recallService.fixManyCharges).toHaveBeenCalledWith(nomsId, 'user1')
   })
 
   it('should create the journey and redirect to validation intercept if critical errors exist', async () => {
@@ -87,6 +88,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(response.headers.location).toStrictEqual(
       `/person/${nomsId}/recall/create/${journeys[0].id}/validation-intercept`,
     )
+    expect(recallService.fixManyCharges).toHaveBeenCalledWith(nomsId, 'user1')
   })
 
   it('should not remove any existing add journeys in the session', async () => {
@@ -189,5 +191,6 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     // Then
     expect(response.status).toEqual(302)
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/no-sentences`)
+    expect(recallService.fixManyCharges).not.toHaveBeenCalled()
   })
 })

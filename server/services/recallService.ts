@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { asSystem } from '@ministryofjustice/hmpps-rest-client'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import {
   ApiRecall,
@@ -346,5 +347,9 @@ export default class RecallService {
 
   async hasSentences(prisonerId: string, username: string): Promise<boolean> {
     return this.remandAndSentencingApiClient.hasSentences(prisonerId, username)
+  }
+
+  async fixManyCharges(prisonerId: string, username: string): Promise<void> {
+    return this.remandAndSentencingApiClient.fixManyCharges(prisonerId, username)
   }
 }
