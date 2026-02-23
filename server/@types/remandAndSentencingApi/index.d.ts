@@ -80,6 +80,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/person/{prisonerId}/fix-many-charges-to-sentence': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Ensure many-charges-to-sentence fix is applied for a prisoner
+     * @description Applies the many-charges-to-sentence fix and emits domain events if changes occur.
+     */
+    put: operations['fixManyChargesToSentence']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/legacy/sentence/{lifetimeUuid}': {
     parameters: {
       query?: never
@@ -1894,7 +1914,7 @@ export interface components {
       outcomeDescription?: string
       /** Format: date-time */
       nextEventDateTime?: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime?: string
       outcomeDispositionCode?: string
       outcomeConvictionFlag?: boolean
@@ -2028,7 +2048,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime?: string
       courtCode: string
       /** Format: uuid */
@@ -2928,7 +2948,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime?: string
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -3209,7 +3229,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime: string
       nomisOutcomeCode?: string
       legacyData?: components['schemas']['CourtAppearanceLegacyData']
@@ -3231,7 +3251,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime?: string
       courtId: string
     }
@@ -3286,7 +3306,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance']
@@ -3296,7 +3316,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime?: string
       courtId: string
     }
@@ -3417,12 +3437,12 @@ export interface components {
       content?: components['schemas']['PagedCourtCase'][]
       /** Format: int32 */
       number?: number
-      sort?: components['schemas']['SortObject']
       first?: boolean
       last?: boolean
+      sort?: components['schemas']['SortObject']
+      pageable?: components['schemas']['PageableObject']
       /** Format: int32 */
       numberOfElements?: number
-      pageable?: components['schemas']['PageableObject']
       empty?: boolean
     }
     PageableObject: {
@@ -3431,9 +3451,9 @@ export interface components {
       sort?: components['schemas']['SortObject']
       /** Format: int32 */
       pageSize?: number
+      paged?: boolean
       /** Format: int32 */
       pageNumber?: number
-      paged?: boolean
       unpaged?: boolean
     }
     PagedAppearancePeriodLength: {
@@ -3533,7 +3553,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 06:23:45.370042759 */
+      /** @example 12:23:32.004701585 */
       appearanceTime?: string
       courtCode?: string
       appearanceTypeDescription: string
@@ -3813,6 +3833,40 @@ export interface operations {
         content: {
           '*/*': components['schemas']['PurgeQueueResult']
         }
+      }
+    }
+  }
+  fixManyChargesToSentence: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        prisonerId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Fix applied */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Unauthorised */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
       }
     }
   }
