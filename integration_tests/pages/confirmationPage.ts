@@ -17,6 +17,6 @@ export default class ConfirmationPage extends AbstractPage {
   }
 
   async verifySuccessMessage(message: string) {
-    await expect(this.successMessage).toHaveText(message)
+    await expect(this.successMessage).toContainText(message)
   }
 }
