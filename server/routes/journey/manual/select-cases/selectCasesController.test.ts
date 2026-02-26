@@ -316,7 +316,10 @@ describe('selectCasesController Tests', () => {
         existingJourney.courtCaseIdsSelectedForRecall = ['uuid-2', 'uuid-3']
         existingJourney.courtCaseIdsExcludedFromRecall = []
 
-        const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+        const res = await request(app)
+          .post(selectCasesUrl(1))
+          .send({ activeSentenceChoice: 'NO_AND_FINISHED' })
+          .expect(302)
 
         expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/no-cases-selected`)
         expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
@@ -330,7 +333,10 @@ describe('selectCasesController Tests', () => {
           { courtCaseUuid: 'uuid-3' },
         ] as DecoratedCourtCase[]
 
-        const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+        const res = await request(app)
+          .post(selectCasesUrl(1))
+          .send({ activeSentenceChoice: 'NO_AND_FINISHED' })
+          .expect(302)
 
         expect(res.header.location).not.toBe(selectCasesUrl(2))
       })
@@ -356,7 +362,10 @@ describe('selectCasesController Tests', () => {
         existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2', 'uuid-3']
         existingJourney.courtCaseIdsExcludedFromRecall = []
 
-        const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+        const res = await request(app)
+          .post(selectCasesUrl(1))
+          .send({ activeSentenceChoice: 'NO_AND_FINISHED' })
+          .expect(302)
 
         expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
         expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
