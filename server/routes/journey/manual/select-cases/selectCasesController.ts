@@ -71,28 +71,35 @@ export default class SelectCasesController implements Controller {
     journey.courtCaseIdsSelectedForRecall ??= []
     journey.courtCaseIdsExcludedFromRecall ??= []
 
-    let hasChanged = false
+    const wasPreviouslySelected = journey.courtCaseIdsSelectedForRecall.includes(currentCaseUuid)
+    const isSelectingYes = activeSentenceChoice === 'YES'
+    const isNoAndFinished = activeSentenceChoice === 'NO_AND_FINISHED'
 
-    if (activeSentenceChoice === 'YES') {
-      if (!journey.courtCaseIdsSelectedForRecall.includes(currentCaseUuid)) hasChanged = true
+    if (isSelectingYes) {
       journey.courtCaseIdsSelectedForRecall = addUnique(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
       journey.courtCaseIdsExcludedFromRecall = removeItem(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     } else {
-      if (journey.courtCaseIdsSelectedForRecall.includes(currentCaseUuid)) hasChanged = true
       journey.courtCaseIdsSelectedForRecall = removeItem(journey.courtCaseIdsSelectedForRecall, currentCaseUuid)
       journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, currentCaseUuid)
     }
 
-    if (hasChanged) {
+    if (isNoAndFinished) {
+      // apply NO to all remaining cases
+      const remainingCaseUuids = cases.slice(currentCaseIndex + 1).map(it => it.courtCaseUuid)
+      remainingCaseUuids.forEach(uuid => {
+        journey.courtCaseIdsSelectedForRecall = removeItem(journey.courtCaseIdsSelectedForRecall, uuid)
+        journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, uuid)
+      })
+
+      journey.isCheckingAnswers = false
+    } else if (wasPreviouslySelected !== isSelectingYes) {
       journey.isCheckingAnswers = false
     }
 
-    // Move to next case if available
-    if (hasNextCase) {
+    if (hasNextCase && !isNoAndFinished) {
       return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, nextCaseIndex))
     }
 
-    // last case — decide final route
     if (journey.courtCaseIdsSelectedForRecall.length === 0) {
       return res.redirect(RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId))
     }

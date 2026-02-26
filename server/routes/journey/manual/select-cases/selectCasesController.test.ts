@@ -98,6 +98,19 @@ describe('selectCasesController Tests', () => {
       expect($('#cancel-button').attr('href')).toStrictEqual(
         `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=manualSelectCases&caseIndex=0`,
       )
+      expect($('[data-qa="no-and-finished-radio"]').length).toBe(0)
+    })
+
+    it('shows third radio option when index > 0', async () => {
+      recallService.getRecallableCourtCases.mockResolvedValue([
+        TestData.recallableCourtCase(),
+        TestData.recallableCourtCase(),
+      ])
+
+      const res = await request(app).get(`${baseUrl}/1`).expect(200)
+
+      const $ = cheerio.load(res.text)
+      expect($('[data-qa="no-and-finished-radio"]').length).toBe(1)
     })
 
     describe('backlink tests', () => {
@@ -292,5 +305,63 @@ describe('selectCasesController Tests', () => {
         expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-2'])
       },
     )
+
+    describe('POST - NO_AND_FINISHED', () => {
+      it('sets current case to NO and applies NO to all remaining cases, then goes to no-cases-selected when none selected', async () => {
+        existingJourney.recallableCourtCases = [
+          { courtCaseUuid: 'uuid-1' },
+          { courtCaseUuid: 'uuid-2' },
+          { courtCaseUuid: 'uuid-3' },
+        ] as DecoratedCourtCase[]
+        existingJourney.courtCaseIdsSelectedForRecall = ['uuid-2', 'uuid-3']
+        existingJourney.courtCaseIdsExcludedFromRecall = []
+
+        const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+
+        expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/no-cases-selected`)
+        expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual([])
+        expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-2', 'uuid-3'])
+      })
+
+      it('does not redirect to the next case even when there is a next case', async () => {
+        existingJourney.recallableCourtCases = [
+          { courtCaseUuid: 'uuid-1' },
+          { courtCaseUuid: 'uuid-2' },
+          { courtCaseUuid: 'uuid-3' },
+        ] as DecoratedCourtCase[]
+
+        const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+
+        expect(res.header.location).not.toBe(selectCasesUrl(2))
+      })
+
+      it('forces isCheckingAnswers to false', async () => {
+        existingJourney.isCheckingAnswers = true
+        existingJourney.recallableCourtCases = [
+          { courtCaseUuid: 'uuid-1' },
+          { courtCaseUuid: 'uuid-2' },
+        ] as DecoratedCourtCase[]
+
+        await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+
+        expect(existingJourney.isCheckingAnswers).toBe(false)
+      })
+
+      it('goes to check-sentences when at least one earlier case remains selected', async () => {
+        existingJourney.recallableCourtCases = [
+          { courtCaseUuid: 'uuid-1' },
+          { courtCaseUuid: 'uuid-2' },
+          { courtCaseUuid: 'uuid-3' },
+        ] as DecoratedCourtCase[]
+        existingJourney.courtCaseIdsSelectedForRecall = ['uuid-1', 'uuid-2', 'uuid-3']
+        existingJourney.courtCaseIdsExcludedFromRecall = []
+
+        const res = await request(app).post(selectCasesUrl(1)).send({ activeSentenceChoice: 'NO_AND_FINISHED' }).expect(302)
+
+        expect(res.header.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/check-sentences`)
+        expect(existingJourney.courtCaseIdsSelectedForRecall).toEqual(['uuid-1'])
+        expect(existingJourney.courtCaseIdsExcludedFromRecall).toEqual(['uuid-2', 'uuid-3'])
+      })
+    })
   })
 })
