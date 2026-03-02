@@ -3,6 +3,7 @@ import { Controller } from '../controller'
 import { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
+import { sortCourtCasesByDateDesc } from '../../utils/utils'
 
 export default class HomeController implements Controller {
   constructor(
@@ -24,12 +25,7 @@ export default class HomeController implements Controller {
       .sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime())
       .map(recall => ({
         ...recall,
-        courtCases: (recall.courtCases || []).sort((a, b) => {
-          const dateA = a.courtCaseDate ? new Date(a.courtCaseDate).getTime() : 0
-          const dateB = b.courtCaseDate ? new Date(b.courtCaseDate).getTime() : 0
-
-          return dateB - dateA
-        }),
+        courtCases: sortCourtCasesByDateDesc(recall.courtCases || []),
       }))
 
     return res.render('pages/person/home', {
