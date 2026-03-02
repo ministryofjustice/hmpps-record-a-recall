@@ -15,7 +15,17 @@ export default class ConfirmDeleteRecallController implements Controller {
     const { nomsId, recallUuid } = req.params
     const { username } = res.locals.user
     const backLink = GlobalRecallUrls.home(nomsId)
+
     const recall = await this.recallService.getRecall(recallUuid, username)
+
+    if (recall?.courtCases) {
+      recall.courtCases = recall.courtCases.sort((a, b) => {
+        const dateA = a.courtCaseDate ? new Date(a.courtCaseDate).getTime() : 0
+        const dateB = b.courtCaseDate ? new Date(b.courtCaseDate).getTime() : 0
+
+        return dateB - dateA
+      })
+    }
 
     return res.render('pages/recall/delete-confirmation', {
       prisoner,
@@ -38,9 +48,11 @@ export default class ConfirmDeleteRecallController implements Controller {
     const { nomsId, recallUuid } = req.params
     const { username } = res.locals.user
     const { confirmDeleteRecall } = req.body
+
     if (confirmDeleteRecall === 'YES') {
       await this.recallService.deleteRecall(recallUuid, username)
     }
+
     return res.redirect(GlobalRecallUrls.home(nomsId))
   }
 }

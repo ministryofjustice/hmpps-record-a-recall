@@ -55,6 +55,27 @@ describe('GET', () => {
     expect($('[aria-current=page]').text().trim()).toStrictEqual('Recalls')
   })
 
+  it('should sort court cases by most recent date first', async () => {
+    const recall = TestData.existingRecall({
+      courtCases: [
+        { courtCaseDate: '2020-01-01', sentences: [] },
+        { courtCaseDate: '2022-01-01', sentences: [] },
+        { courtCaseDate: '2021-01-01', sentences: [] },
+      ],
+    })
+
+    recallService.getRecallsForPrisoner.mockResolvedValue([recall])
+
+    const response = await request(app).get(`/person/${nomsId}`)
+    const $ = cheerio.load(response.text)
+
+    const headings = $('[data-qa^="recall-"][data-qa*="court-case-heading"]')
+
+    expect(headings.eq(0).text()).toContain('2022')
+    expect(headings.eq(1).text()).toContain('2021')
+    expect(headings.eq(2).text()).toContain('2020')
+  })
+
   it('should show no recalls hint if there are no recalls', async () => {
     // Given
     recallService.getRecallsForPrisoner.mockResolvedValue([])

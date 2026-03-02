@@ -19,12 +19,20 @@ export default class CheckSentencesController implements Controller {
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner, user } = res.locals
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
+
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
 
     const journey = req.session.recallJourneys[journeyId]
 
     const licenceDates = await this.calculateReleaseDatesService.getLicenceDatesFromLatestCalc(nomsId)
-    const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey)
+
+    // Get selected cases
+    const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey).sort((a, b) => {
+      const dateA = a.appearanceDate ? new Date(a.appearanceDate).getTime() : 0
+      const dateB = b.appearanceDate ? new Date(b.appearanceDate).getTime() : 0
+
+      return dateB - dateA
+    })
 
     return res.render('pages/recall/manual/check-sentences', {
       prisoner,
