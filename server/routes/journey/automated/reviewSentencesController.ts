@@ -86,11 +86,14 @@ export default class ReviewSentencesController implements Controller {
     automatedCalculationData: AutomatedCalculationData,
   ): DecoratedCourtCaseWithCrdsResults[] {
     const recallableIds = automatedCalculationData.recallableSentences.map(it => it.uuid)
+
     const ineligibleIds = [
       ...automatedCalculationData.ineligibleSentences.map(it => it.uuid),
-      automatedCalculationData.sentencesBeforeInitialRelease.map(it => it.uuid),
+      ...automatedCalculationData.sentencesBeforeInitialRelease.map(it => it.uuid),
     ]
+
     const expiredIds = automatedCalculationData.expiredSentences.map(it => it.uuid)
+
     return recallableCourtCases
       .map(courtCase => {
         const sentences = {
@@ -100,6 +103,7 @@ export default class ReviewSentencesController implements Controller {
         }
 
         const allSentences = [...courtCase.recallableSentences, ...courtCase.nonRecallableSentences]
+
         allSentences.forEach(sentence => {
           if (recallableIds.includes(sentence.sentenceUuid)) {
             sentences.eligible.push(sentence)
@@ -120,6 +124,12 @@ export default class ReviewSentencesController implements Controller {
         } as DecoratedCourtCaseWithCrdsResults
       })
       .filter(courtCase => courtCase.eligibleSentences.length)
+      .sort((a, b) => {
+        const dateA = a.appearanceDate ? new Date(a.appearanceDate).getTime() : 0
+        const dateB = b.appearanceDate ? new Date(b.appearanceDate).getTime() : 0
+
+        return dateB - dateA
+      })
   }
 }
 
