@@ -932,8 +932,8 @@ describe('Recall service', () => {
         courtCases: [
           {
             courtCode: 'INNRCC',
-            courtCaseReference: '',
-            courtCaseUuid: '',
+            courtCaseReference: undefined,
+            courtCaseUuid: undefined,
             sentencingAppearanceDate: '1970-01-01',
             sentences: [],
           },
@@ -974,8 +974,8 @@ describe('Recall service', () => {
           },
           {
             courtName: 'Inner London Sessions House Crown Court',
-            courtCaseReference: '',
-            courtCaseUuid: '',
+            courtCaseReference: undefined,
+            courtCaseUuid: undefined,
             courtCaseDate: '1970-01-01',
             sentences: [],
           },
