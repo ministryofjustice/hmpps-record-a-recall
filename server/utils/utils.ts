@@ -143,8 +143,10 @@ export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: str
   return recallRequest
 }
 
-export const sortByDateDesc = <T>(items: T[] = [], getDate: (item: T) => string | undefined): T[] => {
+export const sortByDateDesc = <T>(items: T[], getDate: (item: T) => string | undefined): T[] => {
   const getTimeSafe = (dateStr?: string) => (dateStr ? new Date(dateStr).getTime() : 0)
+
+  if (!items) return []
 
   return [...items].sort((a, b) => getTimeSafe(getDate(b)) - getTimeSafe(getDate(a)))
 }
