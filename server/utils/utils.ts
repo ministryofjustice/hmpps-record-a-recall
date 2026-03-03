@@ -2,7 +2,7 @@ import { addDays, differenceInCalendarDays, parse, isEqual, subDays, formatISO }
 import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { DateParts, RecallJourney } from '../@types/journeys'
+import { DateParts, DecoratedCourtCase, RecallJourney } from '../@types/journeys'
 import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { ExistingRecallCourtCase } from '../model/ExistingRecall'
 
@@ -149,6 +149,16 @@ export const sortCourtCasesByDateDesc = (courtCases: ExistingRecallCourtCase[] =
     const dateA = a.courtCaseDate ? new Date(a.courtCaseDate).getTime() : 0
     const dateB = b.courtCaseDate ? new Date(b.courtCaseDate).getTime() : 0
 
+    return dateB - dateA
+  })
+}
+
+export const sortDecoratedCourtCasesByAppearanceDateDesc = <T extends { appearanceDate?: string }>(
+  courtCases: T[] = [],
+): T[] => {
+  return courtCases.sort((a, b) => {
+    const dateA = a.appearanceDate ? new Date(a.appearanceDate).getTime() : 0
+    const dateB = b.appearanceDate ? new Date(b.appearanceDate).getTime() : 0
     return dateB - dateA
   })
 }

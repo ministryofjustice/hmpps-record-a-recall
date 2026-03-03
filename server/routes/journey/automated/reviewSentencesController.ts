@@ -4,7 +4,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
-import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
+import { buildRecordARecallRequest, maxOf, sortDecoratedCourtCasesByAppearanceDateDesc } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
 import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -68,8 +68,6 @@ export default class ReviewSentencesController implements Controller {
       username,
     )
 
-    // The make-decision call to the CRD-API can return DUPLICATED sentences, they need omitting.
-    // Doing that in the same way the GET currently works; i.e. by only including sentences that exist from the RAS-API get-recallable-court-cases call
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
     journey.sentenceIds = recallableCourtCases
       .flatMap(courtCase => [...courtCase.recallableSentences, ...courtCase.nonRecallableSentences])
@@ -94,7 +92,7 @@ export default class ReviewSentencesController implements Controller {
 
     const expiredIds = automatedCalculationData.expiredSentences.map(it => it.uuid)
 
-    return recallableCourtCases
+    const matchedCases = recallableCourtCases
       .map(courtCase => {
         const sentences = {
           eligible: [] as SentenceAndOffence[],
@@ -105,15 +103,9 @@ export default class ReviewSentencesController implements Controller {
         const allSentences = [...courtCase.recallableSentences, ...courtCase.nonRecallableSentences]
 
         allSentences.forEach(sentence => {
-          if (recallableIds.includes(sentence.sentenceUuid)) {
-            sentences.eligible.push(sentence)
-          }
-          if (ineligibleIds.includes(sentence.sentenceUuid)) {
-            sentences.ineligible.push(sentence)
-          }
-          if (expiredIds.includes(sentence.sentenceUuid)) {
-            sentences.expired.push(sentence)
-          }
+          if (recallableIds.includes(sentence.sentenceUuid)) sentences.eligible.push(sentence)
+          if (ineligibleIds.includes(sentence.sentenceUuid)) sentences.ineligible.push(sentence)
+          if (expiredIds.includes(sentence.sentenceUuid)) sentences.expired.push(sentence)
         })
 
         return {
@@ -124,12 +116,8 @@ export default class ReviewSentencesController implements Controller {
         } as DecoratedCourtCaseWithCrdsResults
       })
       .filter(courtCase => courtCase.eligibleSentences.length)
-      .sort((a, b) => {
-        const dateA = a.appearanceDate ? new Date(a.appearanceDate).getTime() : 0
-        const dateB = b.appearanceDate ? new Date(b.appearanceDate).getTime() : 0
 
-        return dateB - dateA
-      })
+    return sortDecoratedCourtCasesByAppearanceDateDesc(matchedCases)
   }
 }
 

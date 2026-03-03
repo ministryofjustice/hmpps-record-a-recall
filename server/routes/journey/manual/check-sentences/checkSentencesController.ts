@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
-import { RecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
+import { RecallJourney, PersonJourneyParams, DecoratedCourtCase } from '../../../../@types/journeys'
 import RecallJourneyUrls from '../../recallJourneyUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
@@ -26,13 +26,7 @@ export default class CheckSentencesController implements Controller {
 
     const licenceDates = await this.calculateReleaseDatesService.getLicenceDatesFromLatestCalc(nomsId)
 
-    // Get selected cases
-    const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey).sort((a, b) => {
-      const dateA = a.appearanceDate ? new Date(a.appearanceDate).getTime() : 0
-      const dateB = b.appearanceDate ? new Date(b.appearanceDate).getTime() : 0
-
-      return dateB - dateA
-    })
+    const casesSelectedForRecall = sortDecoratedCourtCasesByAppearanceDateDesc(this.recallService.getCasesSelectedForRecall(journey))
 
     return res.render('pages/recall/manual/check-sentences', {
       prisoner,
@@ -80,4 +74,8 @@ export default class CheckSentencesController implements Controller {
 
     return RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, lastCaseIndex)
   }
+}
+
+function sortDecoratedCourtCasesByAppearanceDateDesc(arg0: DecoratedCourtCase[]) {
+  throw new Error('Function not implemented.')
 }
