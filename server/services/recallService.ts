@@ -18,12 +18,7 @@ import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
-import {
-  datePartsToDate,
-  dateToIsoString,
-  sortCourtCasesByDateDesc,
-  sortDecoratedCourtCasesByAppearanceDateDesc,
-} from '../utils/utils'
+import { datePartsToDate, dateToIsoString, sortByDateDesc } from '../utils/utils'
 
 export default class RecallService {
   constructor(
@@ -98,7 +93,7 @@ export default class RecallService {
       }
     })
 
-    return sortDecoratedCourtCasesByAppearanceDateDesc(decoratedCases)
+    return sortByDateDesc(decoratedCases, c => c.appearanceDate)
   }
 
   private async getConsecutiveToDetails<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
@@ -263,7 +258,7 @@ export default class RecallService {
       returnToCustodyDate: recall.returnToCustodyDate,
       calculationRequestId: recall.calculationRequestId,
       ualAdjustmentTotalDays: recall.ual?.days,
-      courtCases: sortCourtCasesByDateDesc(
+      courtCases: sortByDateDesc(
         (recall.courtCases ?? []).map(courtCase => {
           const sentenceUuidsInThisCase = new Set(courtCase.sentences.map(s => s.sentenceUuid))
 
@@ -311,6 +306,7 @@ export default class RecallService {
             }),
           }
         }),
+        courtCase => courtCase.courtCaseDate,
       ),
     }
 
@@ -349,8 +345,9 @@ export default class RecallService {
     const { courtCaseIdsSelectedForRecall = [] } = journey
     const cases = journey.recallableCourtCases ?? []
 
-    return sortDecoratedCourtCasesByAppearanceDateDesc(
+    return sortByDateDesc(
       cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid)),
+      courtCase => courtCase.appearanceDate,
     )
   }
 

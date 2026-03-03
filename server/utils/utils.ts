@@ -4,7 +4,6 @@ import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dat
 import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { DateParts, RecallJourney } from '../@types/journeys'
 import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { ExistingRecallCourtCase } from '../model/ExistingRecall'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0].toUpperCase() + word.toLowerCase().slice(1) : word
@@ -144,21 +143,8 @@ export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: str
   return recallRequest
 }
 
-export const sortCourtCasesByDateDesc = (courtCases: ExistingRecallCourtCase[] = []) => {
-  return courtCases.sort((a, b) => {
-    const dateA = a.courtCaseDate ? new Date(a.courtCaseDate).getTime() : 0
-    const dateB = b.courtCaseDate ? new Date(b.courtCaseDate).getTime() : 0
+export const sortByDateDesc = <T>(items: T[] = [], getDate: (item: T) => string | undefined): T[] => {
+  const getTimeSafe = (dateStr?: string) => (dateStr ? new Date(dateStr).getTime() : 0)
 
-    return dateB - dateA
-  })
-}
-
-export const sortDecoratedCourtCasesByAppearanceDateDesc = <T extends { appearanceDate?: string }>(
-  courtCases: T[] = [],
-): T[] => {
-  return courtCases.sort((a, b) => {
-    const dateA = a.appearanceDate ? new Date(a.appearanceDate).getTime() : 0
-    const dateB = b.appearanceDate ? new Date(b.appearanceDate).getTime() : 0
-    return dateB - dateA
-  })
+  return [...items].sort((a, b) => getTimeSafe(getDate(b)) - getTimeSafe(getDate(a)))
 }
