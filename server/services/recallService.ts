@@ -18,7 +18,7 @@ import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
-import { datePartsToDate, dateToIsoString } from '../utils/utils'
+import { datePartsToDate, dateToIsoString, sortByDateDesc } from '../utils/utils'
 
 export default class RecallService {
   constructor(
@@ -56,7 +56,7 @@ export default class RecallService {
       consecutiveToDetails,
     )
 
-    return response.cases.map(courtCase => {
+    const decoratedCases = response.cases.map(courtCase => {
       const sentences = courtCase.sentences ?? []
       const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
 
@@ -92,6 +92,8 @@ export default class RecallService {
         courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
       }
     })
+
+    return sortByDateDesc(decoratedCases, c => c.appearanceDate)
   }
 
   private async getConsecutiveToDetails<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
@@ -240,6 +242,7 @@ export default class RecallService {
   ): ExistingRecall {
     const isLatestAndDPSRecall = isEditableAndDeletable(recall)
     const sentenceIds: string[] = []
+
     const existingRecall = {
       recallUuid: recall.recallUuid,
       prisonerId: recall.prisonerId,
@@ -255,54 +258,58 @@ export default class RecallService {
       returnToCustodyDate: recall.returnToCustodyDate,
       calculationRequestId: recall.calculationRequestId,
       ualAdjustmentTotalDays: recall.ual?.days,
-      courtCases: (recall.courtCases ?? []).map(courtCase => {
-        const sentenceUuidsInThisCase = new Set(courtCase.sentences.map(s => s.sentenceUuid))
+      courtCases: sortByDateDesc(
+        (recall.courtCases ?? []).map(courtCase => {
+          const sentenceUuidsInThisCase = new Set(courtCase.sentences.map(s => s.sentenceUuid))
 
-        return {
-          courtCaseReference: courtCase.courtCaseReference,
-          courtCaseUuid: courtCase.courtCaseUuid,
-          courtName: courtCase.courtCode
-            ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
-            : undefined,
-          courtCaseDate: courtCase.sentencingAppearanceDate,
-          sentences: courtCase.sentences.map(sentence => {
-            sentenceIds.push(sentence.sentenceUuid)
+          return {
+            courtCaseReference: courtCase.courtCaseReference,
+            courtCaseUuid: courtCase.courtCaseUuid,
+            courtName: courtCase.courtCode
+              ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
+              : undefined,
+            courtCaseDate: courtCase.sentencingAppearanceDate,
+            sentences: courtCase.sentences.map(sentence => {
+              sentenceIds.push(sentence.sentenceUuid)
 
-            const fullConsecutiveTo =
-              sentence.consecutiveToSentenceUuid &&
-              consecutiveToDetailsBySentenceUuid.get(sentence.consecutiveToSentenceUuid)
+              const fullConsecutiveTo =
+                sentence.consecutiveToSentenceUuid &&
+                consecutiveToDetailsBySentenceUuid.get(sentence.consecutiveToSentenceUuid)
 
-            const consecutiveTo =
-              fullConsecutiveTo &&
-              sentence.consecutiveToSentenceUuid &&
-              sentenceUuidsInThisCase.has(sentence.consecutiveToSentenceUuid)
-                ? {
-                    countNumber: fullConsecutiveTo.countNumber,
-                    offenceCode: fullConsecutiveTo.offenceCode,
-                    offenceDescription: fullConsecutiveTo.offenceDescription,
-                    offenceStartDate: fullConsecutiveTo.offenceStartDate,
-                    offenceEndDate: fullConsecutiveTo.offenceEndDate,
-                  }
-                : fullConsecutiveTo
+              const consecutiveTo =
+                fullConsecutiveTo &&
+                sentence.consecutiveToSentenceUuid &&
+                sentenceUuidsInThisCase.has(sentence.consecutiveToSentenceUuid)
+                  ? {
+                      countNumber: fullConsecutiveTo.countNumber,
+                      offenceCode: fullConsecutiveTo.offenceCode,
+                      offenceDescription: fullConsecutiveTo.offenceDescription,
+                      offenceStartDate: fullConsecutiveTo.offenceStartDate,
+                      offenceEndDate: fullConsecutiveTo.offenceEndDate,
+                    }
+                  : fullConsecutiveTo
 
-            return {
-              sentenceUuid: sentence.sentenceUuid,
-              offenceCode: sentence.offenceCode,
-              offenceDescription: offences.find(offence => offence.code === sentence.offenceCode)?.description,
-              offenceStartDate: sentence.offenceStartDate,
-              offenceEndDate: sentence.offenceEndDate,
-              sentenceDate: sentence.sentenceDate,
-              lineNumber: sentence.lineNumber,
-              countNumber: sentence.countNumber,
-              periodLengths: sentence.periodLengths,
-              sentenceServeType: sentence.sentenceServeType,
-              sentenceTypeDescription: sentence.sentenceTypeDescription,
-              consecutiveTo,
-            }
-          }),
-        }
-      }),
+              return {
+                sentenceUuid: sentence.sentenceUuid,
+                offenceCode: sentence.offenceCode,
+                offenceDescription: offences.find(offence => offence.code === sentence.offenceCode)?.description,
+                offenceStartDate: sentence.offenceStartDate,
+                offenceEndDate: sentence.offenceEndDate,
+                sentenceDate: sentence.sentenceDate,
+                lineNumber: sentence.lineNumber,
+                countNumber: sentence.countNumber,
+                periodLengths: sentence.periodLengths,
+                sentenceServeType: sentence.sentenceServeType,
+                sentenceTypeDescription: sentence.sentenceTypeDescription,
+                consecutiveTo,
+              }
+            }),
+          }
+        }),
+        courtCase => courtCase.courtCaseDate,
+      ),
     }
+
     return { ...existingRecall, sentenceIds }
   }
 
@@ -337,7 +344,11 @@ export default class RecallService {
   public getCasesSelectedForRecall(journey: RecallJourney) {
     const { courtCaseIdsSelectedForRecall = [] } = journey
     const cases = journey.recallableCourtCases ?? []
-    return cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid))
+
+    return sortByDateDesc(
+      cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid)),
+      courtCase => courtCase.appearanceDate,
+    )
   }
 
   async isRecallPossible(request: IsRecallPossibleRequest, username: string): Promise<IsRecallPossibleResponse> {
