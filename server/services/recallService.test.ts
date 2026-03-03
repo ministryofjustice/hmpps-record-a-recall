@@ -938,7 +938,7 @@ describe('Recall service', () => {
             sentences: [],
           },
           {
-            courtCode: '',
+            courtCode: undefined,
             courtCaseReference: 'CC1',
             courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: '2024-04-19',
