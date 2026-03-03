@@ -316,72 +316,72 @@ describe('Recall service', () => {
       ])
     })
 
-   it('should load recalls for prisoner and enrich with court names', async () => {
-  const recall = TestData.apiRecall({
-    prisonerId: 'A1234BC',
-    returnToCustodyDate: '2025-07-04',
-    revocationDate: '2025-11-12',
-    createdAt: '2021-03-19T13:40:56Z',
-    source: 'DPS',
-    courtCases: [
-      {
-        courtCode: 'INNRCC',
-        courtCaseReference: undefined,
-        courtCaseUuid: undefined,
-        sentencingAppearanceDate: '1900-01-01', // 👈 was undefined
-        sentences: [],
-      },
-      {
-        courtCode: undefined,
-        courtCaseReference: 'CC1',
-        courtCaseUuid: 'cc1-uuid',
-        sentencingAppearanceDate: '2024-04-19',
-        sentences: [],
-      },
-    ],
-  })
+    it('should load recalls for prisoner and enrich with court names', async () => {
+      const recall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        returnToCustodyDate: '2025-07-04',
+        revocationDate: '2025-11-12',
+        createdAt: '2021-03-19T13:40:56Z',
+        source: 'DPS',
+        courtCases: [
+          {
+            courtCode: 'INNRCC',
+            courtCaseReference: undefined,
+            courtCaseUuid: undefined,
+            sentencingAppearanceDate: '1900-01-01',
+            sentences: [],
+          },
+          {
+            courtCode: undefined,
+            courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
+            sentencingAppearanceDate: '2024-04-19',
+            sentences: [],
+          },
+        ],
+      })
 
-  remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
 
-  const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
-  expect(result).toStrictEqual([
-    {
-      calculationRequestId: 1,
-      inPrisonOnRevocationDate: false,
-      recallTypeCode: 'FTR_28',
-      sentenceIds: [],
-      recallUuid: recall.recallUuid,
-      prisonerId: 'A1234BC',
-      revocationDate: '2025-11-12',
-      returnToCustodyDate: '2025-07-04',
-      recallTypeDescription: '28-day fixed-term',
-      source: 'DPS',
-      ualAdjustmentTotalDays: undefined,
-      createdAtLocationName: undefined,
-      createdAtTimestamp: '2021-03-19T13:40:56Z',
-      courtCases: [
-        // latest date first (sorted desc)
+      expect(result).toStrictEqual([
         {
-          courtName: undefined,
-          courtCaseReference: 'CC1',
-          courtCaseUuid: 'cc1-uuid',
-          courtCaseDate: '2024-04-19',
-          sentences: [],
+          calculationRequestId: 1,
+          inPrisonOnRevocationDate: false,
+          recallTypeCode: 'FTR_28',
+          sentenceIds: [],
+          recallUuid: recall.recallUuid,
+          prisonerId: 'A1234BC',
+          revocationDate: '2025-11-12',
+          returnToCustodyDate: '2025-07-04',
+          recallTypeDescription: '28-day fixed-term',
+          source: 'DPS',
+          ualAdjustmentTotalDays: undefined,
+          createdAtLocationName: undefined,
+          createdAtTimestamp: '2021-03-19T13:40:56Z',
+          courtCases: [
+            // latest date first (sorted desc)
+            {
+              courtName: undefined,
+              courtCaseReference: 'CC1',
+              courtCaseUuid: 'cc1-uuid',
+              courtCaseDate: '2024-04-19',
+              sentences: [],
+            },
+            {
+              courtName: 'Inner London Sessions House Crown Court',
+              courtCaseReference: undefined,
+              courtCaseUuid: undefined,
+              courtCaseDate: '1900-01-01', // 👈 matches input
+              sentences: [],
+            },
+          ],
+          canDelete: true,
+          canEdit: true,
         },
-        {
-          courtName: 'Inner London Sessions House Crown Court',
-          courtCaseReference: undefined,
-          courtCaseUuid: undefined,
-          courtCaseDate: '1900-01-01', // 👈 matches input
-          sentences: [],
-        },
-      ],
-      canDelete: true,
-      canEdit: true,
-    },
-  ])
-})
+      ])
+    })
 
     it('should map sentences with offence description', async () => {
       const sentenceWithMaximum: ApiRecalledSentence = {
