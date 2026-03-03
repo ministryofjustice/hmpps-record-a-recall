@@ -333,8 +333,8 @@ describe('Recall service', () => {
           },
           {
             courtCode: undefined,
-            courtCaseReference: 'CC1',
-            courtCaseUuid: 'cc1-uuid',
+            courtCaseReference: undefined,
+            courtCaseUuid: undefined,
             sentencingAppearanceDate: '2024-04-19',
             sentences: [],
           },
@@ -361,11 +361,10 @@ describe('Recall service', () => {
           createdAtLocationName: undefined,
           createdAtTimestamp: '2021-03-19T13:40:56Z',
           courtCases: [
-            // latest date first (sorted desc)
             {
               courtName: undefined,
-              courtCaseReference: 'CC1',
-              courtCaseUuid: 'cc1-uuid',
+              courtCaseReference: undefined,
+              courtCaseUuid: undefined,
               courtCaseDate: '2024-04-19',
               sentences: [],
             },
@@ -373,7 +372,7 @@ describe('Recall service', () => {
               courtName: 'Inner London Sessions House Crown Court',
               courtCaseReference: undefined,
               courtCaseUuid: undefined,
-              courtCaseDate: '1900-01-01', // 👈 matches input
+              courtCaseDate: '1900-01-01',
               sentences: [],
             },
           ],
