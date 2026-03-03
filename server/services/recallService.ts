@@ -18,7 +18,7 @@ import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
-import { datePartsToDate, dateToIsoString } from '../utils/utils'
+import { datePartsToDate, dateToIsoString, sortCourtCasesByDateDesc, sortDecoratedCourtCasesByAppearanceDateDesc } from '../utils/utils'
 
 export default class RecallService {
   constructor(
@@ -29,70 +29,72 @@ export default class RecallService {
   ) {}
 
   public async getRecallableCourtCases(prisonerId: string, username: string): Promise<DecoratedCourtCase[]> {
-    const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
+  const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
 
-    const consecutiveToDetails = await this.getConsecutiveToDetails(response.cases, username)
+  const consecutiveToDetails = await this.getConsecutiveToDetails(response.cases, username)
 
-    const courtIds = [
-      ...new Set(response.cases.map(c => c.courtCode).concat(consecutiveToDetails.sentences.map(s => s.courtCode))),
-    ]
-    const courtDetailsList = await this.courtRegisterApiClient.getCourtDetails(courtIds, username)
+  const courtIds = [
+    ...new Set(response.cases.map(c => c.courtCode).concat(consecutiveToDetails.sentences.map(s => s.courtCode))),
+  ]
+  const courtDetailsList = await this.courtRegisterApiClient.getCourtDetails(courtIds, username)
 
-    const offenceCodes = [
-      ...new Set(
-        response.cases
-          .flatMap(c => (c.sentences ?? []).map(s => s.offenceCode))
-          .concat(consecutiveToDetails.sentences.map(s => s.offenceCode))
-          .filter((code): code is string => !!code && code !== ''),
-      ),
-    ]
+  const offenceCodes = [
+    ...new Set(
+      response.cases
+        .flatMap(c => (c.sentences ?? []).map(s => s.offenceCode))
+        .concat(consecutiveToDetails.sentences.map(s => s.offenceCode))
+        .filter((code): code is string => !!code && code !== ''),
+    ),
+  ]
 
-    const offences = await this.manageOffencesApiClient.getOffencesByCodes(offenceCodes)
-    const offenceMap = new Map(offences.map(o => [o.code, o.description]))
+  const offences = await this.manageOffencesApiClient.getOffencesByCodes(offenceCodes)
+  const offenceMap = new Map(offences.map(o => [o.code, o.description]))
 
-    const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
-      offenceMap,
-      courtDetailsList,
-      consecutiveToDetails,
-    )
+  const consecutiveToDetailsBySentenceUuid = await this.buildConsecutiveToDetailsMap(
+    offenceMap,
+    courtDetailsList,
+    consecutiveToDetails,
+  )
 
-    return response.cases.map(courtCase => {
-      const sentences = courtCase.sentences ?? []
-      const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
+  const decoratedCases = response.cases.map(courtCase => {
+    const sentences = courtCase.sentences ?? []
+    const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
 
-      const decorate = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
-        const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
+    const decorate = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
+      const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
 
-        const fullConsecutiveTo = s.consecutiveToSentenceUuid
-          ? (consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid) ?? null)
-          : null
+      const fullConsecutiveTo = s.consecutiveToSentenceUuid
+        ? (consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid) ?? null)
+        : null
 
-        const consecutiveTo =
-          fullConsecutiveTo && s.consecutiveToSentenceUuid && sentenceUuidsInThisCase.has(s.consecutiveToSentenceUuid)
-            ? {
-                countNumber: fullConsecutiveTo.countNumber,
-                offenceCode: fullConsecutiveTo.offenceCode,
-                offenceDescription: fullConsecutiveTo.offenceDescription,
-                offenceStartDate: fullConsecutiveTo.offenceStartDate,
-                offenceEndDate: fullConsecutiveTo.offenceEndDate,
-              }
-            : fullConsecutiveTo
-
-        return {
-          ...s,
-          offenceDescription,
-          consecutiveTo,
-        }
-      }
+      const consecutiveTo =
+        fullConsecutiveTo && s.consecutiveToSentenceUuid && sentenceUuidsInThisCase.has(s.consecutiveToSentenceUuid)
+          ? {
+              countNumber: fullConsecutiveTo.countNumber,
+              offenceCode: fullConsecutiveTo.offenceCode,
+              offenceDescription: fullConsecutiveTo.offenceDescription,
+              offenceStartDate: fullConsecutiveTo.offenceStartDate,
+              offenceEndDate: fullConsecutiveTo.offenceEndDate,
+            }
+          : fullConsecutiveTo
 
       return {
-        ...courtCase,
-        recallableSentences: sentences.filter(s => s.isRecallable).map(decorate),
-        nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(decorate),
-        courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
+        ...s,
+        offenceDescription,
+        consecutiveTo,
       }
-    })
-  }
+    }
+
+    return {
+      ...courtCase,
+      recallableSentences: sentences.filter(s => s.isRecallable).map(decorate),
+      nonRecallableSentences: sentences.filter(s => !s.isRecallable).map(decorate),
+      courtName: courtDetailsList.find(c => c.courtId === courtCase.courtCode)?.courtName ?? '',
+    }
+  })
+
+  return sortDecoratedCourtCasesByAppearanceDateDesc(decoratedCases)
+}
 
   private async getConsecutiveToDetails<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
     cases: { sentences?: TSentence[] }[],
@@ -230,32 +232,34 @@ export default class RecallService {
     )
   }
 
-  private toExistingRecall(
-    recall: ApiRecall,
-    prisons: Prison[],
-    courts: Court[],
-    offences: Offence[],
-    isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
-    consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),
-  ): ExistingRecall {
-    const isLatestAndDPSRecall = isEditableAndDeletable(recall)
-    const sentenceIds: string[] = []
-    const existingRecall = {
-      recallUuid: recall.recallUuid,
-      prisonerId: recall.prisonerId,
-      source: recall.source,
-      createdAtTimestamp: recall.createdAt,
-      createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
-      canEdit: isLatestAndDPSRecall,
-      canDelete: isLatestAndDPSRecall,
-      recallTypeCode: recall.recallType,
-      recallTypeDescription: getRecallType(recall.recallType).description,
-      revocationDate: recall.revocationDate,
-      inPrisonOnRevocationDate: recall.inPrisonOnRevocationDate,
-      returnToCustodyDate: recall.returnToCustodyDate,
-      calculationRequestId: recall.calculationRequestId,
-      ualAdjustmentTotalDays: recall.ual?.days,
-      courtCases: (recall.courtCases ?? []).map(courtCase => {
+ private toExistingRecall(
+  recall: ApiRecall,
+  prisons: Prison[],
+  courts: Court[],
+  offences: Offence[],
+  isEditableAndDeletable: (recall: ApiRecall) => boolean = () => false,
+  consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),
+): ExistingRecall {
+  const isLatestAndDPSRecall = isEditableAndDeletable(recall)
+  const sentenceIds: string[] = []
+
+  const existingRecall = {
+    recallUuid: recall.recallUuid,
+    prisonerId: recall.prisonerId,
+    source: recall.source,
+    createdAtTimestamp: recall.createdAt,
+    createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
+    canEdit: isLatestAndDPSRecall,
+    canDelete: isLatestAndDPSRecall,
+    recallTypeCode: recall.recallType,
+    recallTypeDescription: getRecallType(recall.recallType).description,
+    revocationDate: recall.revocationDate,
+    inPrisonOnRevocationDate: recall.inPrisonOnRevocationDate,
+    returnToCustodyDate: recall.returnToCustodyDate,
+    calculationRequestId: recall.calculationRequestId,
+    ualAdjustmentTotalDays: recall.ual?.days,
+    courtCases: sortCourtCasesByDateDesc(
+      (recall.courtCases ?? []).map(courtCase => {
         const sentenceUuidsInThisCase = new Set(courtCase.sentences.map(s => s.sentenceUuid))
 
         return {
@@ -302,9 +306,11 @@ export default class RecallService {
           }),
         }
       }),
-    }
-    return { ...existingRecall, sentenceIds }
+    ),
   }
+
+  return { ...existingRecall, sentenceIds }
+}
 
   public getApiRecallFromJourney(journey: RecallJourney, username: string, prison: string): CreateRecall {
     return {
@@ -334,11 +340,14 @@ export default class RecallService {
     return this.remandAndSentencingApiClient.deleteRecall(recallUuid, username)
   }
 
-  public getCasesSelectedForRecall(journey: RecallJourney) {
-    const { courtCaseIdsSelectedForRecall = [] } = journey
-    const cases = journey.recallableCourtCases ?? []
-    return cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid))
-  }
+public getCasesSelectedForRecall(journey: RecallJourney) {
+  const { courtCaseIdsSelectedForRecall = [] } = journey
+  const cases = journey.recallableCourtCases ?? []
+
+  return sortDecoratedCourtCasesByAppearanceDateDesc(
+    cases.filter(courtCase => courtCaseIdsSelectedForRecall.includes(courtCase.courtCaseUuid)),
+  )
+}
 
   async isRecallPossible(request: IsRecallPossibleRequest, username: string): Promise<IsRecallPossibleResponse> {
     return this.remandAndSentencingApiClient.isRecallPossible(request, username)
