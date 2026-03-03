@@ -326,13 +326,13 @@ describe('Recall service', () => {
         courtCases: [
           {
             courtCode: 'INNRCC',
-            courtCaseReference: undefined,
-            courtCaseUuid: undefined,
-            sentencingAppearanceDate: undefined,
+            courtCaseReference: '',
+            courtCaseUuid: '',
+            sentencingAppearanceDate: '1970-01-01',
             sentences: [],
           },
           {
-            courtCode: undefined,
+            courtCode: '',
             courtCaseReference: 'CC1',
             courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: '2024-04-19',
@@ -340,6 +340,7 @@ describe('Recall service', () => {
           },
         ],
       })
+
       remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
 
       const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
@@ -369,9 +370,9 @@ describe('Recall service', () => {
             },
             {
               courtName: 'Inner London Sessions House Crown Court',
-              courtCaseReference: undefined,
-              courtCaseUuid: undefined,
-              courtCaseDate: undefined,
+              courtCaseReference: '',
+              courtCaseUuid: '',
+              courtCaseDate: '1970-01-01',
               sentences: [],
             },
           ],
@@ -931,13 +932,13 @@ describe('Recall service', () => {
         courtCases: [
           {
             courtCode: 'INNRCC',
-            courtCaseReference: undefined,
-            courtCaseUuid: undefined,
-            sentencingAppearanceDate: undefined,
+            courtCaseReference: '',
+            courtCaseUuid: '',
+            sentencingAppearanceDate: '1970-01-01',
             sentences: [],
           },
           {
-            courtCode: undefined,
+            courtCode: '',
             courtCaseReference: 'CC1',
             courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: '2024-04-19',
@@ -973,9 +974,9 @@ describe('Recall service', () => {
           },
           {
             courtName: 'Inner London Sessions House Crown Court',
-            courtCaseReference: undefined,
-            courtCaseUuid: undefined,
-            courtCaseDate: undefined,
+            courtCaseReference: '',
+            courtCaseUuid: '',
+            courtCaseDate: '1970-01-01',
             sentences: [],
           },
         ],

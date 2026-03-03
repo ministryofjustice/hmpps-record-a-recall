@@ -98,10 +98,10 @@ describe('sortByDateDesc', () => {
 
     const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
 
-    expect(sorted.map(c => c.courtCaseUuid)).toEqual(['2', '3', '1',])
+    expect(sorted.map(c => c.courtCaseUuid)).toEqual(['2', '3', '1'])
   })
 
-   it('returns empty array when given empty input', () => {
+  it('returns empty array when given empty input', () => {
     const courtCases = []
 
     const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
