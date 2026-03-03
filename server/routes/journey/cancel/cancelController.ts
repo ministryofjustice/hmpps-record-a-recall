@@ -19,8 +19,11 @@ export default class CancelController implements Controller {
     const extraParams = { caseIndex: caseIndex !== undefined ? Number(caseIndex) : undefined }
     const returnUrl = buildReturnUrlFromKey(returnKey, nomsId, journeyId, createOrEdit, recallId, extraParams)
 
+    const isEdit = createOrEdit === 'edit'
+
     return res.render('pages/recall/confirm-cancel', {
       prisoner,
+      isEdit,
       backLink: returnUrl,
     })
   }

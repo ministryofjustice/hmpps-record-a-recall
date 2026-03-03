@@ -3,9 +3,14 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
-{% set title = "Are you sure you want to cancel recording a recall?" %}
+{% if isEdit %}
+  {% set title = "Are you sure you want to cancel editing a recall?" %}
+  {% set pageCaption = "Edit a recall" %}
+{% else %}
+  {% set title = "Are you sure you want to cancel recording a recall?" %}
+  {% set pageCaption = "Record a recall" %}
+{% endif %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
 
 {% block pageContent %}
   <h1 data-qa='main-heading' class="govuk-heading-l">{{ title }}</h1>
