@@ -333,14 +333,13 @@ describe('Recall service', () => {
           },
           {
             courtCode: undefined,
-            courtCaseReference: undefined,
-            courtCaseUuid: undefined,
+            courtCaseReference: 'CC1',
+            courtCaseUuid: 'cc1-uuid',
             sentencingAppearanceDate: '2024-04-19',
             sentences: [],
           },
         ],
       })
-
       remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
 
       const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
@@ -363,8 +362,8 @@ describe('Recall service', () => {
           courtCases: [
             {
               courtName: undefined,
-              courtCaseReference: undefined,
-              courtCaseUuid: undefined,
+              courtCaseReference: 'CC1',
+              courtCaseUuid: 'cc1-uuid',
               courtCaseDate: '2024-04-19',
               sentences: [],
             },
