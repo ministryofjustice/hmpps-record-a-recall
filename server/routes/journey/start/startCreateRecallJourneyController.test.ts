@@ -14,8 +14,10 @@ let session: Partial<SessionData>
 let preExistingJourneysToAddToSession: Array<RecallJourney>
 const nomsId = 'A1234BC'
 const successfulCrdsValidationResult = {
-  criticalValidationMessages: [],
-  otherValidationMessages: [],
+  latestCriticalMessages: [],
+  latestOtherMessages: [],
+  penultimateCriticalMessages: [],
+  penultimateOtherMessages: [],
   earliestSentenceDate: '2025-01-01',
 } as RecordARecallValidationResult
 jest.mock('../../../services/calculateReleaseDatesService')
@@ -70,7 +72,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
   it('should create the journey and redirect to validation intercept if critical errors exist', async () => {
     // Given
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
-      criticalValidationMessages: [
+      latestCriticalMessages: [
         {
           code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
         },

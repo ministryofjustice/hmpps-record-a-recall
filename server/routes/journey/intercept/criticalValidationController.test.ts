@@ -24,15 +24,18 @@ beforeEach(() => {
     isCheckingAnswers: false,
     inCustodyAtRecall: true,
     crdsValidationResult: {
-      criticalValidationMessages: [
+      latestCriticalMessages: [
         {
           code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
           message: 'Court case 1 NOMIS line reference 1 must have a licence term of at least one year.',
           arguments: [],
           type: 'VALIDATION',
+          calculationUnsupported: true,
         },
       ],
-      otherValidationMessages: [],
+      latestOtherMessages: [],
+      penultimateCriticalMessages: [],
+      penultimateOtherMessages: [],
       earliestSentenceDate: '2025-01-01',
     },
   }

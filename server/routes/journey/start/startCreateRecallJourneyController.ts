@@ -48,7 +48,10 @@ export default class StartCreateRecallJourneyController implements Controller {
         .slice(this.MAX_JOURNEYS)
         .forEach(journeyToRemove => delete req.session.recallJourneys![journeyToRemove.id])
     }
-    if (crdsValidationResult.criticalValidationMessages.length) {
+    if (crdsValidationResult.latestCriticalMessages.length) {
+      return res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'create', null))
+    }
+    if (crdsValidationResult.penultimateCriticalMessages.length) {
       return res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'create', null))
     }
     return res.redirect(RecallJourneyUrls.revocationDate(nomsId, journey.id, 'create', null))
