@@ -37,8 +37,10 @@ beforeEach(() => {
     },
     inCustodyAtRecall: true,
     crdsValidationResult: {
-      criticalValidationMessages: [],
-      otherValidationMessages: [],
+      latestCriticalMessages: [],
+      latestOtherMessages: [],
+      penultimateCriticalMessages: [],
+      penultimateOtherMessages: [],
       earliestSentenceDate: '2025-01-01',
     },
     calculationRequestId: 1,

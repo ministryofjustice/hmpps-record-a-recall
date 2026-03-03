@@ -24,8 +24,58 @@ export default {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         jsonBody: {
-          criticalValidationMessages: [],
-          otherValidationMessages: [],
+          latestCriticalMessages: [],
+          latestOtherMessages: [],
+          penultimateCriticalMessages: [],
+          penultimateOtherMessages: [],
+          earliestSentenceDate: '2025-04-01',
+        },
+      },
+    }),
+  stubValidateLatestCriticalErrors: ({ prisonerId = 'A0164ED' }: { prisonerId?: string } = {}): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/calculate-release-dates/record-a-recall/${prisonerId}/validate`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          latestCriticalMessages: [
+            {
+              code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
+              message: 'Critical error one',
+            },
+          ],
+          latestOtherMessages: [],
+          penultimateCriticalMessages: [],
+          penultimateOtherMessages: [],
+          earliestSentenceDate: '2025-04-01',
+        },
+      },
+    }),
+  stubValidatePenultimateCriticalErrors: ({
+    prisonerId = 'A0164ED',
+  }: { prisonerId?: string } = {}): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/calculate-release-dates/record-a-recall/${prisonerId}/validate`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: {
+          penultimateCriticalMessages: [
+            {
+              code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
+              message: 'Penultimate critical error one',
+            },
+          ],
+          latestOtherMessages: [],
+          latestCriticalMessages: [],
+          penultimateOtherMessages: [],
           earliestSentenceDate: '2025-04-01',
         },
       },

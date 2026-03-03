@@ -43,7 +43,7 @@ export default class CriticalValidationController implements Controller {
         recallId,
         RecallJourneyUrls.criticalValidationIntercept.name,
       ),
-      continueUrl: RecallJourneyUrls.start(nomsId, createOrEdit, recallId),
+      continueUrl: RecallJourneyUrls.revocationDate(nomsId, journeyId, createOrEdit, recallId),
     })
   }
 }

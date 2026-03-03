@@ -78,4 +78,72 @@ describe('GET', () => {
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
+
+  it('should return to start of journey if there are no latest or penultimate critical messages', async () => {
+    existingJourney.crdsValidationResult.latestCriticalMessages = []
+    existingJourney.crdsValidationResult.penultimateCriticalMessages = []
+
+    await request(app)
+      .get(`/person/${nomsId}/recall/create/${journeyId}/validation-intercept`)
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+
+  it('should render penultimate critical errors page when only penultimateCriticalMessages exist', async () => {
+    // Given
+    existingJourney.crdsValidationResult.latestCriticalMessages = []
+    existingJourney.crdsValidationResult.penultimateCriticalMessages = [
+      {
+        code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        message: 'Penultimate critical error message.',
+        arguments: [],
+        type: 'VALIDATION',
+        calculationUnsupported: true,
+      },
+    ]
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/validation-intercept`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    expect($('h1').text()).toContain('You can record a recall, but some of the information might be wrong')
+    expect($('[data-qa=validation-message]').text()).toContain('penultimate critical error message')
+    expect($('[data-qa=continue-btn]').attr('href')).toContain('/revocation-date')
+  })
+
+  it('should render multiple penultimate critical messages as a bullet list', async () => {
+    // Given
+    existingJourney.crdsValidationResult.latestCriticalMessages = []
+    existingJourney.crdsValidationResult.penultimateCriticalMessages = [
+      {
+        code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        message: 'First penultimate error.',
+        arguments: [],
+        type: 'VALIDATION',
+        calculationUnsupported: true,
+      },
+      {
+        code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        message: 'Second penultimate error.',
+        arguments: [],
+        type: 'VALIDATION',
+        calculationUnsupported: true,
+      },
+    ]
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/validation-intercept`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    const listItems = $('.govuk-list--bullet li')
+    expect(listItems.length).toBe(2)
+    expect(listItems.eq(0).text()).toContain('First penultimate error')
+    expect(listItems.eq(1).text()).toContain('Second penultimate error')
+  })
 })

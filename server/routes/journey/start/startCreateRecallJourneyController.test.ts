@@ -195,4 +195,24 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/no-sentences`)
     expect(recallService.fixManyCharges).not.toHaveBeenCalled()
   })
+
+  it('should redirect to validation intercept if penultimate critical errors exist', async () => {
+    // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
+      latestCriticalMessages: [],
+      penultimateCriticalMessages: [
+        {
+          code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        },
+      ],
+    } as RecordARecallValidationResult)
+    recallService.hasSentences.mockResolvedValue(true)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(response.headers.location).toMatch(new RegExp(`^/person/${nomsId}/recall/create/.+/validation-intercept$`))
+  })
 })
