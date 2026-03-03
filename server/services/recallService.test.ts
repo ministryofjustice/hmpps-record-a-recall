@@ -361,17 +361,17 @@ describe('Recall service', () => {
           createdAtTimestamp: '2021-03-19T13:40:56Z',
           courtCases: [
             {
-              courtName: 'Inner London Sessions House Crown Court',
-              courtCaseReference: undefined,
-              courtCaseUuid: undefined,
-              courtCaseDate: undefined,
-              sentences: [],
-            },
-            {
               courtName: undefined,
               courtCaseReference: 'CC1',
               courtCaseUuid: 'cc1-uuid',
               courtCaseDate: '2024-04-19',
+              sentences: [],
+            },
+            {
+              courtName: 'Inner London Sessions House Crown Court',
+              courtCaseReference: undefined,
+              courtCaseUuid: undefined,
+              courtCaseDate: undefined,
               sentences: [],
             },
           ],
@@ -965,17 +965,17 @@ describe('Recall service', () => {
         createdAtTimestamp: '2021-03-19T13:40:56Z',
         courtCases: [
           {
-            courtName: 'Inner London Sessions House Crown Court',
-            courtCaseReference: undefined,
-            courtCaseUuid: undefined,
-            courtCaseDate: undefined,
-            sentences: [],
-          },
-          {
             courtName: undefined,
             courtCaseReference: 'CC1',
             courtCaseUuid: 'cc1-uuid',
             courtCaseDate: '2024-04-19',
+            sentences: [],
+          },
+          {
+            courtName: 'Inner London Sessions House Crown Court',
+            courtCaseReference: undefined,
+            courtCaseUuid: undefined,
+            courtCaseDate: undefined,
             sentences: [],
           },
         ],

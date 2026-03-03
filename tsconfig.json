@@ -12,7 +12,8 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noUncheckedIndexedAccess": false,
-    "typeRoots": ["./server/@types", "./node_modules/@types"]
+    "typeRoots": ["./server/@types", "./node_modules/@types"],
+    "types": ["node", "jest"]
   },
   "exclude": ["node_modules", "assets/**/*.js", "integration_tests", "dist", "esbuild", "eslint.config.mjs"],
   "include": ["**/*.js", "**/*.ts"]
