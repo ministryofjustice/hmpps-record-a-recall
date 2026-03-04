@@ -94,11 +94,12 @@ describe('sortByDateDesc', () => {
       { courtCaseUuid: '1', courtCaseDate: '2020-01-01' },
       { courtCaseUuid: '2', courtCaseDate: '2022-06-15' },
       { courtCaseUuid: '3', courtCaseDate: '2021-12-31' },
+      { courtCaseUuid: '4', courtCaseDate: undefined },
     ]
 
     const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
 
-    expect(sorted.map(c => c.courtCaseUuid)).toEqual(['2', '3', '1'])
+    expect(sorted.map(c => c.courtCaseUuid)).toEqual(['2', '3', '1', '4'])
   })
 
   it('returns empty array when given empty input', () => {
@@ -107,6 +108,17 @@ describe('sortByDateDesc', () => {
     const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
 
     expect(sorted.map(c => c.courtCaseUuid)).toEqual([])
+  })
+
+  it('handles undefined or missing dates', () => {
+    const items = [
+      { name: 'first', date: undefined },
+      { name: 'second', date: '2022-01-01' },
+      { name: 'third', date: '2021-01-01' },
+    ]
+    const sorted = sortByDateDesc(items, item => item.date)
+
+    expect(sorted.map(i => i.name)).toEqual(['second', 'third', 'first'])
   })
 
   it('does not mutate the original array', () => {
