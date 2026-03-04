@@ -1,4 +1,11 @@
-import { addUnique, buildRecordARecallRequest, convertToTitleCase, initialiseName, removeItem } from './utils'
+import {
+  addUnique,
+  buildRecordARecallRequest,
+  convertToTitleCase,
+  initialiseName,
+  removeItem,
+  sortByDateDesc,
+} from './utils'
 import { RecallJourney } from '../@types/journeys'
 
 describe('convert to title case', () => {
@@ -78,5 +85,37 @@ describe('buildRecordARecallRequest', () => {
       revocationDate: '2026-01-01',
       recallId: 'recall-id',
     })
+  })
+})
+
+describe('sortByDateDesc', () => {
+  it('sorts items from newest to oldest based on a date string', () => {
+    const courtCases = [
+      { courtCaseUuid: '1', courtCaseDate: '2020-01-01' },
+      { courtCaseUuid: '2', courtCaseDate: '2022-06-15' },
+      { courtCaseUuid: '3', courtCaseDate: '2021-12-31' },
+    ]
+
+    const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
+
+    expect(sorted.map(c => c.courtCaseUuid)).toEqual(['2', '3', '1'])
+  })
+
+  it('returns empty array when given empty input', () => {
+    const courtCases = []
+
+    const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
+
+    expect(sorted.map(c => c.courtCaseUuid)).toEqual([])
+  })
+
+  it('does not mutate the original array', () => {
+    const items = [
+      { name: 'first', date: '2020-01-01' },
+      { name: 'second', date: '2022-01-01' },
+    ]
+    const copy = [...items]
+    sortByDateDesc(items, item => item.date)
+    expect(items).toEqual(copy)
   })
 })

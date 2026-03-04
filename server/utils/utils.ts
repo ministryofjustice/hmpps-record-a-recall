@@ -142,3 +142,6 @@ export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: str
 
   return recallRequest
 }
+
+export const sortByDateDesc = <T>(items: T[], getDate: (item: T) => string): T[] =>
+  [...items].sort((a, b) => new Date(getDate(b)).getTime() - new Date(getDate(a)).getTime())
