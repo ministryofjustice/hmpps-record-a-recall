@@ -29,7 +29,6 @@ export default class NoRecallableSentencesController implements Controller {
     return res.render('pages/recall/no-recallable-sentences', {
       prisoner,
       pageCaption: 'Record a recall',
-      messages: journey.crdsValidationResult.criticalValidationMessages.map(it => it.message),
       backLink,
       cancelLink,
       revocationDateLink,

@@ -70,7 +70,7 @@ export default class StartEditRecallJourneyController implements Controller {
         .slice(this.MAX_JOURNEYS)
         .forEach(journeyToRemove => delete req.session.recallJourneys![journeyToRemove.id])
     }
-    if (crdsValidationResult.criticalValidationMessages.length) {
+    if (crdsValidationResult.latestCriticalMessages.length || crdsValidationResult.penultimateCriticalMessages.length) {
       res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journey.id, 'edit', recallId))
     } else {
       res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journey.id, 'edit', recallId))

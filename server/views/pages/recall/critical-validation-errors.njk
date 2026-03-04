@@ -7,7 +7,7 @@
 {% set showCancelLink = false %}
 
 {% block pageContent %}
-    <h1 class="govuk-heading-xl" id="not-possible-heading">You cannot record a recall</h1>
+    <h1 class="govuk-heading-xl" id="not-possible-heading" data-qa="critical-intercept-heading">You cannot record a recall</h1>
      <p class="govuk-body" data-qa="validation-message">
         {% if messages.length == 1 %}This is because {{ messages | first | lowercaseFirstLetter}}</p>
         {% else %}This is because:

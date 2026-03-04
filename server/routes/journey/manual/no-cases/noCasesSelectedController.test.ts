@@ -31,8 +31,10 @@ beforeEach(() => {
         revocationDate: { day: 11, month: 11, year: 2025 },
         isCheckingAnswers: false,
         crdsValidationResult: {
-          criticalValidationMessages: [],
-          otherValidationMessages: [],
+          latestCriticalMessages: [],
+          latestOtherMessages: [],
+          penultimateCriticalMessages: [],
+          penultimateOtherMessages: [],
           earliestSentenceDate: '2025-01-01',
         },
       }

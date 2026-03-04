@@ -30,8 +30,10 @@ beforeEach(() => {
     nomsId,
     isCheckingAnswers: false,
     crdsValidationResult: {
-      criticalValidationMessages: [],
-      otherValidationMessages: [],
+      latestCriticalMessages: [],
+      latestOtherMessages: [],
+      penultimateCriticalMessages: [],
+      penultimateOtherMessages: [],
       earliestSentenceDate: '2025-01-01',
     },
   }
