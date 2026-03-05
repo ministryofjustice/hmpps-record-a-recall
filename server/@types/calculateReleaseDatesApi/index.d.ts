@@ -1925,7 +1925,7 @@ export interface components {
       penultimateCriticalMessages: components['schemas']['ValidationMessage'][]
       penultimateOtherMessages: components['schemas']['ValidationMessage'][]
       /** Format: date */
-      earliestSentenceDate: string
+      earliestSentenceDate?: string
     }
     DlqMessage: {
       body: {
