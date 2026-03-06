@@ -6,7 +6,7 @@ import prisonApi from './mockApis/prisonApi'
 
 export { resetStubs }
 
-const DEFAULT_ROLES = ['ROLE_RECALL_MAINTAINER']
+const DEFAULT_ROLES = ['ROLE_RECALL_MAINTAINER', 'ROLE_RELEASE_DATES_CALCULATOR']
 
 export const attemptHmppsAuthLogin = async (page: Page) => {
   await page.goto('/')
