@@ -34,9 +34,11 @@ describe('journeyMiddleware', () => {
         nomsId,
         isCheckingAnswers: false,
         crdsValidationResult: {
-          criticalValidationMessages: [],
-          otherValidationMessages: [],
-          earliestSentenceDate: '2019-01-01',
+          latestCriticalMessages: [],
+          latestOtherMessages: [],
+          penultimateCriticalMessages: [],
+          penultimateOtherMessages: [],
+          earliestSentenceDate: '2025-01-01',
         },
       }
       ensureInRecallJourney(req, res, next)

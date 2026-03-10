@@ -1,4 +1,5 @@
 import { ApiRecallType, PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { ConsecutiveToDetails } from '../@types/recallTypes'
 
 export interface ExistingRecall {
   recallUuid: string
@@ -39,4 +40,5 @@ export interface ExistingRecallSentence {
   periodLengths: PeriodLength[]
   sentenceServeType: string
   sentenceTypeDescription?: string
+  consecutiveTo?: ConsecutiveToDetails | null
 }

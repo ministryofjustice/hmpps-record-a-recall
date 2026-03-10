@@ -40,16 +40,11 @@ describe('GET', () => {
     expect(mainContent.text()).toContain('Recall recorded')
 
     const links = mainContent.find('a')
-    expect(links.eq(0).text()).toContain('Check the adjustments information')
+    expect(links.eq(0).text()).toContain('Review the adjustments')
     expect(links.eq(0).attr('href')).toContain('https://adjustments-dev.hmpps.service.justice.gov.uk/A1234BC')
 
-    expect(links.eq(1).text()).toContain('Calculate release dates')
-    expect(links.eq(1).attr('href')).toContain(
-      'https://calculate-release-dates-dev.hmpps.service.justice.gov.uk?prisonId=A1234BC',
-    )
-
-    expect(links.eq(2).text()).toContain('prisoner profile')
-    expect(links.eq(2).attr('href')).toContain('http://127.0.0.1:3000/dps/prisoner/A1234BC')
+    expect(links.eq(1).text()).toContain('prisoner profile')
+    expect(links.eq(1).attr('href')).toContain('http://127.0.0.1:3000/dps/prisoner/A1234BC')
   })
 
   it('should render confirmation edit page', async () => {

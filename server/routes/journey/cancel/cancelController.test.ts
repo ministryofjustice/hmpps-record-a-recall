@@ -32,8 +32,10 @@ beforeEach(() => {
     },
     inCustodyAtRecall: true,
     crdsValidationResult: {
-      criticalValidationMessages: [],
-      otherValidationMessages: [],
+      latestCriticalMessages: [],
+      latestOtherMessages: [],
+      penultimateCriticalMessages: [],
+      penultimateOtherMessages: [],
       earliestSentenceDate: '2025-01-01',
     },
   }
@@ -66,6 +68,25 @@ describe('GET', () => {
 
     const backLink = $('[data-qa="back-link"]')
     expect(backLink.attr('href')).toBe(RecallJourneyUrls.revocationDate(nomsId, journeyId, 'create', null))
+  })
+
+  it('should show "recording" text for a create journey', async () => {
+    const response = await request(app).get(baseUrl)
+    const $ = cheerio.load(response.text)
+
+    expect($('h1').text()).toContain('Are you sure you want to cancel recording a recall?')
+    expect($('[data-qa="confirm-cancel-yes"]').parent().text()).toContain('Yes, cancel the recall')
+    expect($('[data-qa="confirm-cancel-no"]').parent().text()).toContain('No, go back to the recall')
+  })
+
+  it('should show "editing" text for an edit journey', async () => {
+    const editUrl = `/person/${nomsId}/recall/edit/${journeyId}/confirm-cancel?returnKey=revocationDate`
+    const response = await request(app).get(editUrl)
+    const $ = cheerio.load(response.text)
+
+    expect($('h1').text()).toContain('Are you sure you want to cancel editing the recall?')
+    expect($('[data-qa="confirm-cancel-yes"]').parent().text()).toContain('Yes, cancel editing the recall')
+    expect($('[data-qa="confirm-cancel-no"]').parent().text()).toContain('No, go back to the recall')
   })
 })
 

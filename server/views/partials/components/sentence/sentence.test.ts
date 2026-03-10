@@ -4,6 +4,7 @@ import * as cheerio from 'cheerio'
 import {
   formatCountNumber,
   groupAndSortPeriodLengths,
+  consecutiveToDetailsToDescription,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { formatDate, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy } from '../../../../utils/utils'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -21,6 +22,7 @@ njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLength
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
+njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
 
 function valueInOffenceCard(key: string, $: cheerio.CheerioAPI) {
   const summaryList = $('[data-qa="offenceSummaryList"]')
@@ -64,5 +66,35 @@ describe('Tests for sentence component', () => {
     expect(valueInOffenceCard('Sentence type', $)).toBe('ORA SDS')
     expect(valueInOffenceCard('Consecutive or concurrent', $)).toBe('Concurrent')
     expect(valueInOffenceCard('Sentencing warrant date', $)).toBe('01/07/2023')
+  })
+
+  it('renders an offence card with all expected fields when consecutive to is populated', () => {
+    const sentence = {
+      offenceCode: '123AB',
+      offenceDescription: 'Robbery',
+      offenceStartDate: '2023-06-01',
+      offenceEndDate: '2023-06-02',
+      sentenceDate: '2023-07-01',
+      countNumber: '1',
+      sentenceLegacyData: null,
+      terrorRelated: false,
+      periodLengths: [],
+      sentenceServeType: 'CONSECUTIVE',
+      consecutiveTo: {
+        countNumber: '3',
+        offenceCode: 'OFF1',
+        offenceDescription: 'Offence Description',
+      },
+      sentenceType: 'ORA SDS',
+    } as unknown as RecallableCourtCaseSentence
+
+    const html = njkEnv.render('test.njk', { sentence })
+    const $ = cheerio.load(html)
+
+    const summaryList = $('[data-qa="offenceSummaryList"]')
+    expect(summaryList.length).toBe(1)
+    const card = summaryList.closest('.offence-card')
+    expect(card.length).toBe(1)
+    expect(valueInOffenceCard('Consecutive or concurrent', $)).toBe('Consecutive to count 3')
   })
 })

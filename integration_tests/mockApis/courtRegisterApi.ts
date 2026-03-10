@@ -6,7 +6,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/courts/health/ping',
+        urlPath: '/courts/health/ping',
       },
       response: {
         status: httpStatus,
@@ -18,7 +18,7 @@ export default {
     return stubFor({
       request: {
         method: 'GET',
-        urlPathPattern: '/courts/id/multiple.*',
+        urlPathPattern: '/courts/courts/id/multiple.*',
       },
       response: {
         status: 200,
@@ -97,6 +97,17 @@ export default {
             type: {
               courtType: 'CRW',
               courtName: 'Crown',
+            },
+            active: true,
+            buildings: [],
+          },
+          {
+            courtId: 'BNGRMC',
+            courtName: 'Bangor Magistrates Court',
+            courtDescription: 'Bangor Magistrates Court',
+            type: {
+              courtType: 'MAG',
+              courtName: 'Magistrates',
             },
             active: true,
             buildings: [],

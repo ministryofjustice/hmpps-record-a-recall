@@ -52,7 +52,6 @@ export default class ConflictingAdjustmentsController implements Controller {
     return res.render('pages/recall/conflicting-adjustments-intercept', {
       prisoner,
       pageCaption: 'Record a recall',
-      messages: journey.crdsValidationResult.criticalValidationMessages.map(it => it.message),
       backLink,
       cancelLink,
       revocationDateLink,

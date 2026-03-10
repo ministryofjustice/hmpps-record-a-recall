@@ -16,8 +16,10 @@ let session: Partial<SessionData>
 let preExistingJourneysToAddToSession: Array<RecallJourney>
 const nomsId = 'A1234BC'
 const successfulCrdsValidationResult = {
-  criticalValidationMessages: [],
-  otherValidationMessages: [],
+  latestCriticalMessages: [],
+  latestOtherMessages: [],
+  penultimateCriticalMessages: [],
+  penultimateOtherMessages: [],
   earliestSentenceDate: '2025-01-01',
 } as RecordARecallValidationResult
 const recallId = uuidv4()
@@ -76,7 +78,7 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
     // Given
     recallService.getRecall.mockResolvedValue(TestData.existingRecall())
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
-      criticalValidationMessages: [
+      latestCriticalMessages: [
         {
           code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
         },
@@ -262,5 +264,27 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
     expect(newJourney.recallableCourtCases).toBeUndefined()
 
     expect(response.headers.location).toContain('/check-answers')
+  })
+
+  it('should redirect to validation intercept if penultimate critical errors exist', async () => {
+    // Given
+    recallService.getRecall.mockResolvedValue(TestData.existingRecall())
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
+      latestCriticalMessages: [],
+      penultimateCriticalMessages: [
+        {
+          code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        },
+      ],
+    } as RecordARecallValidationResult)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/edit/${recallId}/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(response.headers.location).toMatch(
+      new RegExp(`^/person/${nomsId}/recall/edit/${recallId}/.+/validation-intercept$`),
+    )
   })
 })

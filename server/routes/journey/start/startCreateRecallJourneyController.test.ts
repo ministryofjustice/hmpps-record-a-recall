@@ -14,8 +14,10 @@ let session: Partial<SessionData>
 let preExistingJourneysToAddToSession: Array<RecallJourney>
 const nomsId = 'A1234BC'
 const successfulCrdsValidationResult = {
-  criticalValidationMessages: [],
-  otherValidationMessages: [],
+  latestCriticalMessages: [],
+  latestOtherMessages: [],
+  penultimateCriticalMessages: [],
+  penultimateOtherMessages: [],
   earliestSentenceDate: '2025-01-01',
 } as RecordARecallValidationResult
 jest.mock('../../../services/calculateReleaseDatesService')
@@ -64,12 +66,13 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     const journeys = Object.values(session.recallJourneys!)
     expect(journeys).toHaveLength(1)
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/${journeys[0].id}/revocation-date`)
+    expect(recallService.fixManyCharges).toHaveBeenCalledWith(nomsId, 'user1')
   })
 
   it('should create the journey and redirect to validation intercept if critical errors exist', async () => {
     // Given
     calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
-      criticalValidationMessages: [
+      latestCriticalMessages: [
         {
           code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
         },
@@ -87,6 +90,7 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(response.headers.location).toStrictEqual(
       `/person/${nomsId}/recall/create/${journeys[0].id}/validation-intercept`,
     )
+    expect(recallService.fixManyCharges).toHaveBeenCalledWith(nomsId, 'user1')
   })
 
   it('should not remove any existing add journeys in the session', async () => {
@@ -189,5 +193,26 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     // Then
     expect(response.status).toEqual(302)
     expect(response.headers.location).toStrictEqual(`/person/${nomsId}/recall/create/no-sentences`)
+    expect(recallService.fixManyCharges).not.toHaveBeenCalled()
+  })
+
+  it('should redirect to validation intercept if penultimate critical errors exist', async () => {
+    // Given
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue({
+      latestCriticalMessages: [],
+      penultimateCriticalMessages: [
+        {
+          code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        },
+      ],
+    } as RecordARecallValidationResult)
+    recallService.hasSentences.mockResolvedValue(true)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    // Then
+    expect(response.status).toEqual(302)
+    expect(response.headers.location).toMatch(new RegExp(`^/person/${nomsId}/recall/create/.+/validation-intercept$`))
   })
 })

@@ -46,6 +46,32 @@
     <input type="hidden" name="_csrf" value="{{ csrfToken }}"/>
 
     {% set fieldError = validationErrors | findError('activeSentenceChoice') %}
+    {% set items = [
+      {
+        value: "YES",
+        text: "Yes, there was an outstanding SLED or LED",
+        checked: selectedRadio == 'YES',
+        attributes: { 'data-qa': 'yes-radio' }
+      },
+      {
+        value: "NO",
+        text: "No, there was not an outstanding SLED or LED",
+        checked: selectedRadio == 'NO',
+        attributes: { 'data-qa': 'no-radio' }
+      }
+    ] %}
+
+    {% if courtCaseIndex > 0 %}
+      {% set items = items.concat([
+        { divider: "or" },
+        {
+          value: "NO_AND_FINISHED",
+          text: "No, there was not an outstanding SLED or LED and I have finished selecting court cases",
+          checked: selectedRadio == 'NO_AND_FINISHED',
+          attributes: { 'data-qa': 'no-and-finished-radio' }
+        }
+      ]) %}
+    {% endif %}
 
     {{ govukRadios({
       name: "activeSentenceChoice",
@@ -56,20 +82,7 @@
           classes: "govuk-fieldset__legend--m"
         }
       },
-      items: [
-        {
-          value: "YES",
-          text: "Yes, there was an outstanding SLED or LED",
-          checked: selectedRadio == 'YES',
-          attributes: { 'data-qa': 'yes-radio' }
-        },
-        {
-          value: "NO",
-          text: "No, there was not an outstanding SLED or LED",
-          checked: selectedRadio == 'NO',
-          attributes: { 'data-qa': 'no-radio' }
-        }
-      ],
+      items: items,
       errorMessage: fieldError
     }) }}
 

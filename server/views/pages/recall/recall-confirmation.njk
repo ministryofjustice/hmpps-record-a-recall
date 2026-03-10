@@ -16,19 +16,25 @@
   {% endif %}
   {{ govukPanel({
     titleText: messageTitle,
+    html: '<span class="govuk-!-font-size-19 govuk-!-color-white">The recall will be included in your next release date calculation.</span>',
     attributes: {
       "data-qa": "success-message"
     }
   }) }}
 
   <div class="govuk-!-margin-top-6">
-    <h2 class="govuk-heading-l">What you can do next</h2>
+    <h2 class="govuk-heading-l">What you must do next</h2>
+    <p class="govuk-body">Make sure all the adjustment information is up to date. This includes:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>reviewing the remand and tagged bail</li>
+        <li>adding any UAL from previous recalls that have not yet been included</li>
+      </ul>
+    <p>Once all adjustments have been made, continue to calculate release dates.</p>
 
-    <p><a href="{{ urls.adjustments }}">Check the adjustments information</a></p>
+    <p><a href="{{ urls.adjustments }}">Review the adjustments</a></p>
 
     <h2 class="govuk-heading-m">Other things you can do</h2>
     <ul class="govuk-list govuk-list--spaced govuk-!-margin-top-2">
-      <li><a href="{{ urls.crds }}">Calculate release dates</a></li>
       <li>Go back to the <a href="{{ urls.dpspp }}">prisoner profile</a></li>
     </ul>
   </div>

@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block pageContent %}
-    <h1 class="govuk-heading-l">{{ title }}</h1>
+    <h1 class="govuk-heading-l" data-qa="select-recall-type">{{ title }}</h1>
 
     <form method="post">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">

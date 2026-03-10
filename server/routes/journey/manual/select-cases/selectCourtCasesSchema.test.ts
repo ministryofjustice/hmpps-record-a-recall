@@ -34,6 +34,11 @@ describe('selectCourtCasesSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('passes when "NO_AND_FINISHED" is selected', async () => {
+    const result = doValidate({ activeSentenceChoice: 'NO_AND_FINISHED' })
+    expect(result.success).toBe(true)
+  })
+
   const doValidate = (form: Form) => {
     return selectCourtCasesSchema.safeParse(form)
   }

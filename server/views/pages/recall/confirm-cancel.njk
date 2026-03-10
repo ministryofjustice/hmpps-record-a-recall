@@ -3,9 +3,16 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
-{% set title = "Are you sure you want to cancel recording a recall?" %}
+{% if isEdit %}
+  {% set title = "Are you sure you want to cancel editing the recall?" %}
+  {% set pageCaption = "Edit a recall" %}
+  {% set yesOptionText = "Yes, cancel editing the recall" %}
+{% else %}
+  {% set title = "Are you sure you want to cancel recording a recall?" %}
+  {% set pageCaption = "Record a recall" %}
+  {% set yesOptionText = "Yes, cancel the recall" %}
+{% endif %}
 {% set pageTitle = applicationName + " - " + title %}
-{% set pageCaption = "Record a recall" %}
 
 {% block pageContent %}
   <h1 data-qa='main-heading' class="govuk-heading-l">{{ title }}</h1>
@@ -20,11 +27,13 @@
       items: [
         {
           value: "YES",
-          text: "Yes, cancel the recall"
+          text: yesOptionText,
+          attributes: { "data-qa": "confirm-cancel-yes"}
         },
         {
           value: "NO",
-          text: "No, go back to the recall"
+          text: "No, go back to the recall",
+          attributes: { "data-qa": "confirm-cancel-no"}
         }
       ]
     }) }}

@@ -18,6 +18,12 @@ describe('revocationDateSchema', () => {
     session: { recallJourneys: { abc: { crdsValidationResult: { earliestSentenceDate: '2024-01-01' } } } },
   } as unknown as Request
 
+  const requestWithoutEarliestSentenceDate = {
+    params: { nomsId: 'xyz123', journeyId: 'abc' },
+    user: { username: 'username' },
+    session: { recallJourneys: { abc: { crdsValidationResult: { earliestSentenceDate: undefined } } } },
+  } as unknown as Request
+
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -88,6 +94,16 @@ describe('revocationDateSchema', () => {
       month: [''],
       year: [''],
     })
+  })
+
+  it('Should not error if earliest sentence date is not set', async () => {
+    recallService.getLatestRevocationDate.mockResolvedValue(new Date('2025-01-01'))
+    const form = { day: '1', month: '02', year: '2025' }
+
+    const schema = await revocationDateSchemaFactory(recallService)(requestWithoutEarliestSentenceDate)
+    const result = schema.safeParse(form)
+
+    expect(result.success).toStrictEqual(true)
   })
 
   const doValidate = async (form: Form) => {

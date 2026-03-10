@@ -10,6 +10,7 @@ import {
   RecallableCourtCasesResponseAugmented,
   IsRecallPossibleRequest,
   IsRecallPossibleResponse,
+  SentenceConsecutiveToDetailsResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
@@ -76,13 +77,17 @@ export default class RemandAndSentencingApiClient extends RestClient {
     )
   }
 
-  async getRecallableCourtCases(prisonerId: string): Promise<RecallableCourtCasesResponseAugmented> {
+  async getRecallableCourtCases(
+    prisonerId: string,
+    mergeDuplicateCourtCases = false,
+  ): Promise<RecallableCourtCasesResponseAugmented> {
     return this.get(
       {
         path: `/court-case/${prisonerId}/recallable-court-cases`,
+        query: { mergeDuplicateCourtCases },
       },
       asSystem(),
-    ) as Promise<RecallableCourtCasesResponseAugmented>
+    )
   }
 
   async updateSentenceTypes(
@@ -132,6 +137,30 @@ export default class RemandAndSentencingApiClient extends RestClient {
     return this.get<boolean>(
       {
         path: `/sentence/has-sentences/${prisonerId}`,
+      },
+      asSystem(username),
+    )
+  }
+
+  async getConsecutiveToDetails(
+    sentenceUuids: string[],
+    username: string,
+  ): Promise<SentenceConsecutiveToDetailsResponse> {
+    return this.get(
+      {
+        path: '/sentence/consecutive-to-details',
+        query: {
+          sentenceUuids: sentenceUuids.join(','),
+        },
+      },
+      asSystem(username),
+    )
+  }
+
+  async fixManyCharges(prisonerId: string, username: string): Promise<void> {
+    return this.put(
+      {
+        path: `/person/${prisonerId}/fix-many-charges-to-sentence`,
       },
       asSystem(username),
     )

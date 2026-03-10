@@ -6,7 +6,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPattern: '/frontend-components/ping',
+        urlPath: '/frontend-components/ping',
       },
       response: {
         status: httpStatus,

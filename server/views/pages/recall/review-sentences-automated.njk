@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block pageContent %}
-    <h1 class="govuk-heading-l">{{ title }}</h1>
+    <h1 class="govuk-heading-l" data-qa="check-sentences-heading">{{ title }}</h1>
 
 
     <p data-qa="latest-sled">The latest SLED (Sentence and licence expiry date) is <b>{{ sled | formatDate }}</b>. This is the SLED on this person's licence.</p>
@@ -41,7 +41,10 @@
             {{ govukButton({
                 text: "Continue",
                 preventDoubleClick: true,
-                attributes: { id: "submit" }
+                attributes: {
+                    "data-qa": "confirm-and-continue-btn",
+                    id: "confirm-and-continue"
+                }
             }) }}
             {{ govukButton({
                 text: "Cancel",
