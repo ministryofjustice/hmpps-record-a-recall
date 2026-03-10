@@ -80,4 +80,9 @@ test.describe('SignIn', () => {
     const homePage = await landingPage.verifyOnPage(page)
     await expect(homePage.usersName).toHaveText('S. Othertestuser')
   })
+
+  test('User with only release dates calculator role has no access', async ({ page }) => {
+    await login(page, { roles: ['ROLE_RELEASE_DATES_CALCULATOR'] })
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Authorisation Error')
+  })
 })
