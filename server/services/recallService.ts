@@ -28,8 +28,15 @@ export default class RecallService {
     private readonly courtRegisterApiClient: CourtRegisterApiClient,
   ) {}
 
-  public async getRecallableCourtCases(prisonerId: string, username: string): Promise<DecoratedCourtCase[]> {
-    const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(prisonerId)
+  public async getRecallableCourtCases(
+    prisonerId: string,
+    username: string,
+    mergeDuplicateCourtCases = false,
+  ): Promise<DecoratedCourtCase[]> {
+    const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(
+      prisonerId,
+      mergeDuplicateCourtCases,
+    )
 
     const consecutiveToDetails = await this.getConsecutiveToDetails(response.cases, username)
 
