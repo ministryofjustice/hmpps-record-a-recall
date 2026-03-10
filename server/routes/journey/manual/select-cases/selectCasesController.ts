@@ -19,7 +19,7 @@ export default class SelectCasesController implements Controller {
     const journey = req.session.recallJourneys[journeyId]
 
     if (!journey.recallableCourtCases) {
-      journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
+      journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username, true)
     }
 
     const cases = journey.recallableCourtCases
