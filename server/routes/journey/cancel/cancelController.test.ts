@@ -75,6 +75,8 @@ describe('GET', () => {
     const $ = cheerio.load(response.text)
 
     expect($('h1').text()).toContain('Are you sure you want to cancel recording a recall?')
+    expect($('[data-qa="confirm-cancel-yes"]').parent().text()).toContain('Yes, cancel the recall')
+    expect($('[data-qa="confirm-cancel-no"]').parent().text()).toContain('No, go back to the recall')
   })
 
   it('should show "editing" text for an edit journey', async () => {
@@ -82,7 +84,9 @@ describe('GET', () => {
     const response = await request(app).get(editUrl)
     const $ = cheerio.load(response.text)
 
-    expect($('h1').text()).toContain('Are you sure you want to cancel editing a recall?')
+    expect($('h1').text()).toContain('Are you sure you want to cancel editing the recall?')
+    expect($('[data-qa="confirm-cancel-yes"]').parent().text()).toContain('Yes, cancel editing the recall')
+    expect($('[data-qa="confirm-cancel-no"]').parent().text()).toContain('No, go back to the recall')
   })
 })
 
