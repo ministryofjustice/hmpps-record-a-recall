@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { logger } from 'bs-logger'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
@@ -25,6 +26,14 @@ export default class DecisionController implements Controller {
       buildRecordARecallRequest(journey, recallId),
       username,
     )
+
+    // Log validation messages returned from CRDS, could relax this logging after the service becomes more stable
+    logger.info(
+      `CRDS decision: ${decision.decision}, nomsId: ${nomsId}, ${decision.validationMessages.length} messages`,
+    )
+    decision.validationMessages.forEach(v => {
+      logger.info(`CRDS validation: ${v.code} for ${nomsId}: ${v.message}`)
+    })
 
     if (decision.decision === 'CRITICAL_ERRORS') {
       return res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journeyId, createOrEdit, recallId))
