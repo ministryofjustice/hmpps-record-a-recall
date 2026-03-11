@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { logger } from 'bs-logger'
+import logger from '../../../../logger'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
