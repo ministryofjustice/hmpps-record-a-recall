@@ -5,6 +5,7 @@ import {
   RecordARecallValidationResult,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import CalculateReleaseDatesApiClient from '../data/calculateReleaseDatesApiClient'
+import logger from '../../logger'
 
 export default class CalculateReleaseDatesService {
   constructor(private readonly calculateReleaseDatesApiClient: CalculateReleaseDatesApiClient) {}
@@ -18,7 +19,21 @@ export default class CalculateReleaseDatesService {
     recordARecallRequest: RecordARecallRequest,
     username: string,
   ): Promise<RecordARecallDecisionResult> {
-    return this.calculateReleaseDatesApiClient.makeDecisionForRecordARecall(nomsId, recordARecallRequest, username)
+    const decision = await this.calculateReleaseDatesApiClient.makeDecisionForRecordARecall(
+      nomsId,
+      recordARecallRequest,
+      username,
+    )
+
+    // Log validation messages returned from CRDS, could relax this logging after the service becomes more stable
+    logger.info(
+      `CRDS decision: ${decision.decision}, nomsId: ${nomsId}, ${decision.validationMessages.length} messages`,
+    )
+    decision.validationMessages.forEach(v => {
+      logger.info(`CRDS validation: ${v.code} for ${nomsId}: ${v.message}`)
+    })
+
+    return decision
   }
 
   async getLicenceDatesFromLatestCalc(nomsId: string): Promise<LicenceDates | undefined> {
