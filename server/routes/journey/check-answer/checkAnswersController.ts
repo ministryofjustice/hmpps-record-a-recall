@@ -8,6 +8,7 @@ import { calculateUal } from '../../../utils/utils'
 import { RecallTypes } from '../../../@types/recallTypes'
 import GlobalRecallUrls from '../../globalRecallUrls'
 import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import logger from '../../../../logger'
 
 export default class CheckAnswersController implements Controller {
   PAGE_NAME: Page = Page.CHECK_ANSWERS
@@ -26,6 +27,9 @@ export default class CheckAnswersController implements Controller {
       !journey.recallType ||
       !journey.sentenceIds?.length
     ) {
+      logger.info(
+        `Redirecting to start for ${nomsId} because journey state incomplete: revocationDate=${journey.revocationDate}, inCustodyAtRecall=${journey.inCustodyAtRecall}, recallType=${journey.recallType}, sentenceIds=${journey.sentenceIds?.length}`,
+      )
       return res.redirect(RecallJourneyUrls.start(nomsId, createOrEdit, recallId))
     }
 
