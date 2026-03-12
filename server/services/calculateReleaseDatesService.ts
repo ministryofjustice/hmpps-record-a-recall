@@ -5,12 +5,32 @@ import {
   RecordARecallValidationResult,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import CalculateReleaseDatesApiClient from '../data/calculateReleaseDatesApiClient'
+import logger from '../../logger'
 
 export default class CalculateReleaseDatesService {
   constructor(private readonly calculateReleaseDatesApiClient: CalculateReleaseDatesApiClient) {}
 
   async validateForRecordARecall(nomsId: string, username: string): Promise<RecordARecallValidationResult> {
-    return this.calculateReleaseDatesApiClient.validateForRecordARecall(nomsId, username)
+    const result = await this.calculateReleaseDatesApiClient.validateForRecordARecall(nomsId, username)
+
+    // Log validation messages returned from CRDS, could relax this logging after the service becomes more stable
+    logger.info(
+      `CRDS validation for ${nomsId}: ` +
+        `${result.latestCriticalMessages.length} latestCritical, ` +
+        `${result.latestOtherMessages.length} latestOther, ` +
+        `${result.penultimateCriticalMessages.length} penultimateCritical, ` +
+        `${result.penultimateOtherMessages.length} penultimateOther`,
+    )
+
+    result.latestOtherMessages.forEach(v => {
+      logger.info(`CRDS validation latestOther: ${v.code} for ${nomsId}: ${v.message}`)
+    })
+
+    result.penultimateOtherMessages.forEach(v => {
+      logger.info(`CRDS validation penultimateOther: ${v.code} for ${nomsId}: ${v.message}`)
+    })
+
+    return result
   }
 
   async makeDecisionForRecordARecall(
@@ -18,7 +38,21 @@ export default class CalculateReleaseDatesService {
     recordARecallRequest: RecordARecallRequest,
     username: string,
   ): Promise<RecordARecallDecisionResult> {
-    return this.calculateReleaseDatesApiClient.makeDecisionForRecordARecall(nomsId, recordARecallRequest, username)
+    const decision = await this.calculateReleaseDatesApiClient.makeDecisionForRecordARecall(
+      nomsId,
+      recordARecallRequest,
+      username,
+    )
+
+    // Log validation messages returned from CRDS, could relax this logging after the service becomes more stable
+    logger.info(
+      `CRDS decision: ${decision.decision}, nomsId: ${nomsId}, ${decision.validationMessages.length} messages`,
+    )
+    decision.validationMessages.forEach(v => {
+      logger.info(`CRDS validation: ${v.code} for ${nomsId}: ${v.message}`)
+    })
+
+    return decision
   }
 
   async getLicenceDatesFromLatestCalc(nomsId: string): Promise<LicenceDates | undefined> {
