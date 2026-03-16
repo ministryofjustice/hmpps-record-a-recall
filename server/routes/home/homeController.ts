@@ -3,6 +3,7 @@ import { Controller } from '../controller'
 import { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
+import config from "../../config";
 
 export default class HomeController implements Controller {
   constructor(
@@ -26,6 +27,7 @@ export default class HomeController implements Controller {
       prisoner,
       nomsId,
       serviceDefinitions,
+      allowDeleteOnAllRecalls: config.featureToggles.allowDeleteOnAllRecalls,
     })
   }
 }

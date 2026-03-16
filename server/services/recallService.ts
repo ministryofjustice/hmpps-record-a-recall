@@ -19,7 +19,6 @@ import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString, sortByDateDesc } from '../utils/utils'
-import config from '../config'
 
 export default class RecallService {
   constructor(
@@ -258,7 +257,7 @@ export default class RecallService {
       createdAtTimestamp: recall.createdAt,
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: isLatestAndDPSRecall,
-      canDelete: isLatestAndDPSRecall || config.featureToggles.allowDeleteOnAllRecalls,
+      canDelete: isLatestAndDPSRecall,
       recallTypeCode: recall.recallType,
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,
