@@ -35,6 +35,7 @@ generic-service:
     AUDIT_SERVICE_NAME: "UNASSIGNED" # Your audit service name
     COMPONENT_API_URL: "https://frontend-components-dev.hmpps.service.justice.gov.uk"
     FTR_56_ENABLED: "true"
+    ALLOW_DELETE_ON_ALL_RECALLS: "false"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
