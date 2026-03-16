@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { isValid, parse } from 'date-fns'
 
-const DATE_IS_REQUIRED_MESSAGE = `Enter the date`
+const DATE_IS_REQUIRED_MESSAGE = `Enter the date they were arrested`
 const SINGLE_FIELD_MISSING_ERROR = (field: string) => `The date must include a ${field}`
 const TWO_FIELDS_MISSING_ERROR = (fieldOne: string, fieldTwo: string) =>
   `The date must include a ${fieldOne} and a ${fieldTwo}`
