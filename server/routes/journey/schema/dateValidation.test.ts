@@ -19,7 +19,7 @@ describe('dateValidationTest', () => {
     expect(result.success).toStrictEqual(false)
     const deduplicatedFieldErrors = deduplicateFieldErrors(result.error!)
     expect(deduplicatedFieldErrors).toStrictEqual({
-      day: ['Enter the date'],
+      day: ['Enter the date they were arrested'],
       month: [''],
       year: [''],
     })
