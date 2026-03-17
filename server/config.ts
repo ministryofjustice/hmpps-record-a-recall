@@ -182,6 +182,7 @@ export default {
   },
   featureToggles: {
     ftr56: get('FTR_56_ENABLED', 'false'),
+    allowDeleteOnAllRecalls: get('ALLOW_DELETE_ON_ALL_RECALLS', 'false') === 'true',
   },
   appInsightsConnectionString: get('APPLICATIONINSIGHTS_CONNECTION_STRING', '', requiredInProduction),
 }
