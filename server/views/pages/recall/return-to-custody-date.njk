@@ -32,6 +32,11 @@
       }) }}
     {% endset %}
 
+    {% set inCustodyError = null %}
+    {% if validationErrors.inCustodyAtRecall %}
+      {% set inCustodyError = { text: validationErrors.inCustodyAtRecall[0] } %}
+    {% endif %}
+
     {{ govukRadios({
       idPrefix: "inCustodyAtRecall",
       name: "inCustodyAtRecall",
@@ -42,7 +47,7 @@
           classes: "govuk-fieldset__legend--l"
         }
       },
-      errorMessage: inPrisonError,
+      errorMessage: inCustodyError,
       items: [
         {
           value: "true",
@@ -56,8 +61,8 @@
           text: "No",
           checked: inCustodyAtRecall === false or inCustodyAtRecall === "false",
           conditional: {
-          html: rtcDateHtml
-        }
+            html: rtcDateHtml
+          }
         }
       ]
     }) }}
