@@ -8,17 +8,6 @@
 
 {% set isNomisRecall = model.source === 'NOMIS' %}
 
-{% set hasActions = false %}
-{% if isNomisRecall %}
-  {% if allowDeleteOnAllRecalls %}
-    {% set hasActions = true %}
-  {% endif %}
-{% else %}
-  {% if model.canEdit or model.canDelete %}
-    {% set hasActions = true %}
-  {% endif %}
-{% endif %}
-
 <div class="govuk-summary-card govuk-!-margin-bottom-6">
   <div class="govuk-summary-card__title-wrapper recall-card">
     <h2 class="govuk-summary-card__title" data-qa="recall-{{ model.recallUuid }}-card-title">
@@ -27,41 +16,29 @@
       {% endif %}
     </h2>
 
-    {# NOMIS badge moved outside actions list #}
-    {% if isNomisRecall %}
-      <span class="moj-badge moj-badge--grey govuk-!-margin-bottom-1 govuk-!-margin-left-1"
-        data-qa="recall-{{ model.recallUuid }}-nomis-badge">NOMIS</span>
-    {% endif %}
-
-    {% if hasActions %}
-      <ul class="govuk-summary-card__actions">
-        {% if isNomisRecall %}
-          {% if allowDeleteOnAllRecalls %}
-            <li class="govuk-summary-card__action">
-            <a class="govuk-link govuk-link--destructive"
-  data-qa="recall-{{ model.recallUuid }}-delete-link"
-  href="/person/{{ model.prisonerId }}/recall/{{ model.recallUuid }}/delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
-            </li>
-          {% endif %}
-        {% else %}
-          {% if model.canEdit %}
-            <li class="govuk-summary-card__action">
-              <a class="govuk-link"
-  data-qa="recall-{{ model.recallUuid }}-edit-link"
-  href="/person/{{ model.prisonerId }}/recall/edit/{{ model.recallUuid }}/start">Edit<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
-            </li>
-          {% endif %}
-
-   {% if model.canDelete %}
-  <li class="govuk-summary-card__action">
-    <a class="govuk-link govuk-link--destructive"
-      data-qa="recall-{{ model.recallUuid }}-delete-link"
-      href="/person/{{ model.prisonerId }}/recall/{{ model.recallUuid }}/delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
-  </li>
-{% endif %}
+    <ul class="govuk-summary-card__actions">
+      {% if isNomisRecall %}
+        <li class="govuk-summary-card__action">
+          <span class="moj-badge moj-badge--grey govuk-!-margin-bottom-1 govuk-!-margin-left-1" data-qa="recall-{{ model.recallUuid }}-nomis-badge">NOMIS</span>
+        </li>
+        {% if allowDeleteOnAllRecalls %}
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link govuk-link--destructive" data-qa="recall-{{ model.recallUuid }}-delete-link"  href="/person/{{ model.prisonerId }}/recall/{{ model.recallUuid }}/delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
+          </li>
         {% endif %}
-      </ul>
-    {% endif %}
+      {% else %}
+        {% if model.canEdit %}
+          <li class="govuk-summary-card__action">
+              <a class="govuk-link" data-qa="recall-{{ model.recallUuid }}-edit-link" href="/person/{{ model.prisonerId }}/recall/edit/{{ model.recallUuid }}/start">Edit<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
+          </li>
+        {% endif %}
+        {% if model.canDelete %}
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link govuk-link--destructive" data-qa="recall-{{ model.recallUuid }}-delete-link"  href="/person/{{ model.prisonerId }}/recall/{{ model.recallUuid }}/delete">Delete<span class="govuk-visually-hidden"> recall recorded on {{ model.createdAtTimestamp | formatDate }}</span></a>
+          </li>
+        {% endif %}
+      {% endif %}
+    </ul>
   </div>
 
   <div class="govuk-summary-card__content govuk-!-margin-bottom-0" id="recall-summary">
@@ -127,6 +104,7 @@
                       {% set offenceStartDate = sentence.offenceStartDate | formatDate('DD/MM/YYYY') if sentence.offenceStartDate else 'Not entered' %}
                       {% set offenceEndDate = sentence.offenceEndDate | formatDate('DD/MM/YYYY') if sentence.offenceEndDate else null %}
                       {% set sentenceDate = sentence.sentenceDate | formatDate('DD/MM/YYYY') if sentence.sentenceDate else 'Not entered' %}
+                      {# Determine numeric values for count and line number#}
                       {% if sentence.countNumber and sentence.countNumber != '-1' %}
                         {% set countNumberWithText = sentence.countNumber %}
                         {% set lineNumberWithText = null %}
@@ -134,6 +112,7 @@
                         {% set countNumberWithText = null %}
                         {% set lineNumberWithText = sentence.lineNumber %}
                       {% else %}
+                        {# countNumber is '-1' → show neither#}
                         {% set countNumberWithText = null %}
                         {% set lineNumberWithText = null %}
                       {% endif %}
