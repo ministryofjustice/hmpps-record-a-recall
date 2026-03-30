@@ -855,6 +855,50 @@ describe('Recall service', () => {
         offenceEndDate: null,
       })
     })
+
+    it('should not allow delete for NOMIS recall if its sentence exists on a DPS recall', async () => {
+      const sentenceUuid = uuidv4()
+
+      const sentence = {
+        sentenceUuid,
+        offenceCode: 'A1',
+        periodLengths: [],
+        sentenceServeType: 'CONCURRENT',
+      }
+
+      const nomisRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        createdAt: '2020-01-01T00:00:00Z',
+        source: 'NOMIS',
+        courtCases: [{ sentences: [sentence] }],
+      })
+
+      const dpsRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        createdAt: '2021-01-01T00:00:00Z',
+        source: 'DPS',
+        courtCases: [{ sentences: [sentence] }],
+      })
+
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([nomisRecall, dpsRecall])
+
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recallUuid: dpsRecall.recallUuid,
+            canDelete: true,
+            canEdit: true,
+          }),
+          expect.objectContaining({
+            recallUuid: nomisRecall.recallUuid,
+            canDelete: false,
+            canEdit: false,
+          }),
+        ]),
+      )
+    })
   })
 
   describe('getRecallByUuid', () => {
