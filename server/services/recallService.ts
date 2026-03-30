@@ -248,8 +248,7 @@ export default class RecallService {
     dpsRecallSentenceIds: Set<string> = new Set(),
   ): ExistingRecall {
     const isLatestAndDpsRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
-    const recallSentenceId = recall.courtCases?.[0]?.sentences?.[0]?.sentenceUuid
-    const canDeleteNomisRecall = recall.source === 'NOMIS' && !dpsRecallSentenceIds.has(recallSentenceId)
+    const canDeleteNomisRecall = this.canDeleteNomisRecall(recall, dpsRecallSentenceIds)
 
     const sentenceIds: string[] = []
 
@@ -321,6 +320,14 @@ export default class RecallService {
     }
 
     return { ...existingRecall, sentenceIds }
+  }
+
+  private canDeleteNomisRecall(recall: ApiRecall, dpsSentenceIds: Set<string>): boolean {
+    if (recall.source !== 'NOMIS') return false
+
+    // NOMIS recalls only have one sentence associated
+    const sentenceId = recall.courtCases?.[0]?.sentences?.[0]?.sentenceUuid
+    return !dpsSentenceIds.has(sentenceId)
   }
 
   private getDpsRecallSentenceIds(recalls: ApiRecall[]): Set<string> {
