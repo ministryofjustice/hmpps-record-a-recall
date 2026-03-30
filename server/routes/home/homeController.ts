@@ -27,7 +27,6 @@ export default class HomeController implements Controller {
       prisoner,
       nomsId,
       serviceDefinitions,
-      allowDeleteOnAllRecalls: config.featureToggles.allowDeleteOnAllRecalls,
     })
   }
 }

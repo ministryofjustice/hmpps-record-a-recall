@@ -31,7 +31,6 @@ generic-service:
 
     ENVIRONMENT_NAME: PRE-PRODUCTION
     AUDIT_ENABLED: "false"
-    ALLOW_DELETE_ON_ALL_RECALLS: "true"
 
   allowlist:
     ark-dom1-farnborough: 194.33.192.0/24
