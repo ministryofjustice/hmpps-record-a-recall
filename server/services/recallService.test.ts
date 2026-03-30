@@ -537,7 +537,7 @@ describe('Recall service', () => {
       ])
     })
 
-    it('should not allow edit and delete if latest is a NOMIS recall', async () => {
+    it('should not allow edit if latest is a NOMIS recall, but can delete', async () => {
       const latest = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
         source: 'NOMIS',
@@ -556,7 +556,7 @@ describe('Recall service', () => {
           createdAtTimestamp: '2021-03-19T13:40:56Z',
           source: 'NOMIS',
           canEdit: false,
-          canDelete: false,
+          canDelete: true,
         }),
         TestData.existingRecall({
           recallUuid: oldest.recallUuid,
