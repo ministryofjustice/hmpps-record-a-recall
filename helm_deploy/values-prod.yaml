@@ -29,6 +29,7 @@ generic-service:
 
     ENVIRONMENT_NAME: PROD
     AUDIT_ENABLED: "false"
+    ALLOW_INACTIVE_BOOKINGS: "false"
 
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts
