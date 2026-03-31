@@ -3,7 +3,6 @@ import { Controller } from '../controller'
 import { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
-import config from '../../config'
 
 export default class HomeController implements Controller {
   constructor(
