@@ -183,6 +183,7 @@ export default {
   featureToggles: {
     ftr56: get('FTR_56_ENABLED', 'false'),
     allowDeleteOnAllRecalls: get('ALLOW_DELETE_ON_ALL_RECALLS', 'false') === 'true',
+    allowInactiveBookings: get('ALLOW_INACTIVE_BOOKINGS', 'false') === 'true',
   },
   appInsightsConnectionString: get('APPLICATIONINSIGHTS_CONNECTION_STRING', '', requiredInProduction),
 }

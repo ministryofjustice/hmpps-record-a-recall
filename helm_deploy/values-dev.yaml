@@ -31,6 +31,7 @@ generic-service:
     ENVIRONMENT_NAME: DEV
     AUDIT_ENABLED: "false"
     ALLOW_DELETE_ON_ALL_RECALLS: "true"
+    ALLOW_INACTIVE_BOOKINGS: "true"
 
   scheduledDowntime:
     enabled: true
