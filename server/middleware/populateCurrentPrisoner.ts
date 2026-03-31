@@ -15,8 +15,6 @@ export default function populateCurrentPrisoner(prisonerSearchService: PrisonerS
         const prisoner = await prisonerSearchService.getPrisonerDetails(nomsId, username)
         res.locals.prisoner = prisoner
         if (!config.featureToggles.allowInactiveBookings) {
-          console.log('**************AAAAA')
-          console.log('FLAG VALUE:', config.featureToggles.allowInactiveBookings)
           if (
             prisoner.prisonId === 'OUT' ||
             !caseLoads.map(caseload => caseload.caseLoadId).includes(prisoner.prisonId)
