@@ -30,6 +30,7 @@ generic-service:
 
     ENVIRONMENT_NAME: DEV
     AUDIT_ENABLED: "false"
+    ALLOW_INACTIVE_BOOKINGS: "true"
 
   scheduledDowntime:
     enabled: true

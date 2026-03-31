@@ -182,6 +182,7 @@ export default {
   },
   featureToggles: {
     ftr56: get('FTR_56_ENABLED', 'false'),
+    allowInactiveBookings: get('ALLOW_INACTIVE_BOOKINGS', 'false') === 'true',
   },
   appInsightsConnectionString: get('APPLICATIONINSIGHTS_CONNECTION_STRING', '', requiredInProduction),
 }
