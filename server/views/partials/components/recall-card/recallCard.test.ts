@@ -474,4 +474,12 @@ describe('Tests for recall card component', () => {
 
     expect($('[data-qa=recall-abc123-card-title]').text().trim()).toBe('Recorded on 03 Feb 2021 at HMP Brixton')
   })
+
+  it('shows delete for NOMIS when canDelete=true', () => {
+    const model: ExistingRecall = { ...aRecall, source: 'NOMIS', canDelete: true }
+
+    const $ = cheerio.load(nunjucks.render('test.njk', { model, serviceDefinitions }))
+
+    expect($('[data-qa=recall-abc123-delete-link]')).toHaveLength(1)
+  })
 })
