@@ -41,33 +41,36 @@
     After deleting the recall, check the adjustments to make sure the information is up to date.
   </p>
 
-  {{ govukRadios({
-    name: "confirmDeleteRecall",
-    fieldset: {
-      legend: {
-        text: "Are you sure you want to delete the recall?",
-        classes: "govuk-fieldset__legend--m"
-      }
-    },
-    items: [
-      {
-        value: 'YES',
-        text: 'Yes, delete the recall'
-      },
-      {
-        value: 'NO',
-        text: 'No, go back to recalls'
-      }
-    ],
-    errorMessage: validationErrors | findError('confirmDeleteRecall')
-  }) }}
-
   <form method="post" action="">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    {{ govukRadios({
+      name: "confirmDeleteRecall",
+      fieldset: {
+        legend: {
+          text: "Are you sure you want to delete the recall?",
+          classes: "govuk-fieldset__legend--m"
+        }
+      },
+      items: [
+        {
+          value: 'YES',
+          text: 'Yes, delete the recall',
+          checked: confirmDeleteRecall == 'YES'
+        },
+        {
+          value: 'NO',
+          text: 'No, go back to recalls',
+          checked: confirmDeleteRecall == 'NO'
+        }
+      ],
+      errorMessage: validationErrors | findError('confirmDeleteRecall')
+    }) }}
 
     <div class="govuk-button-group">
       {{ govukButton({
         text: "Confirm",
+        classes: "govuk-button--warning",
         preventDoubleClick: true,
         attributes: { id: "submit" }
       }) }}
