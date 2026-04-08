@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import logger from '../../../../logger'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
@@ -67,6 +68,8 @@ export default class ReviewSentencesController implements Controller {
       buildRecordARecallRequest(journey, recallId),
       username,
     )
+    // temporary logging to diagnose issue
+    logger.info(`CRD decision made for sentences to recall for ${nomsId}: ${JSON.stringify(decision)}`)
 
     // The make-decision call to the CRD-API can return DUPLICATED sentences, they need omitting.
     // Doing that in the same way the GET currently works; i.e. by only including sentences that exist from the RAS-API get-recallable-court-cases call
