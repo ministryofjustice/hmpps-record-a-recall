@@ -89,3 +89,46 @@ describe('POST', () => {
     expect(recallService.deleteRecall).toHaveBeenCalledWith('abc', 'user1')
   })
 })
+
+describe('recall delete page content', () => {
+  it('should display the correct text for DPS recalls', async () => {
+    // Given
+    const recall = TestData.existingRecall({
+      source: 'DPS',
+    })
+    recallService.getRecall.mockResolvedValue(recall)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/${recall.recallUuid}/delete`)
+    const $ = cheerio.load(response.text)
+
+    // Then
+    const bodyText = $('body').text()
+    expect(bodyText).toContain('Deleting a recall recorded in DPS:')
+    expect(bodyText).toContain('does not delete remand and tagged bail')
+    expect(bodyText).toContain('deletes any associated UAL')
+    expect(bodyText).toContain('reverts the NOMIS sentences back to their original sentence type')
+    expect(bodyText).not.toContain('Deleting a recall recorded in NOMIS:')
+  })
+
+  it('should display the correct text for NOMIS recalls', async () => {
+    // Given
+    const recall = TestData.existingRecall({
+      source: 'NOMIS',
+    })
+    recallService.getRecall.mockResolvedValue(recall)
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/${recall.recallUuid}/delete`)
+    const $ = cheerio.load(response.text)
+
+    // Then
+    const bodyText = $('body').text()
+    expect(bodyText).toContain('Deleting a recall recorded in NOMIS:')
+    expect(bodyText).toContain('deletes any associated remand and tagged bail')
+    expect(bodyText).toContain('does not delete UAL')
+    expect(bodyText).toContain('will remove the recall completely from both NOMIS and DPS')
+    expect(bodyText).toContain('will not reinstate the original sentence type')
+    expect(bodyText).not.toContain('Deleting a recall recorded in DPS:')
+  })
+})
