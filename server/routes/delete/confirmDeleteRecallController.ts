@@ -17,11 +17,9 @@ export default class ConfirmDeleteRecallController implements Controller {
     const backLink = GlobalRecallUrls.home(nomsId)
     const recall = await this.recallService.getRecall(recallUuid, username)
 
-    const recallForTemplate = { ...recall, canDelete: false }
-
     return res.render('pages/recall/delete-confirmation', {
       prisoner,
-      recall: recallForTemplate,
+      recall: { ...recall, canDelete: false },
       backLink,
     })
   }
