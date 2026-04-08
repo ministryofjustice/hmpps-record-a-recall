@@ -124,6 +124,8 @@ export default class RemandAndSentencingApiClient extends RestClient {
   }
 
   async isRecallPossible(request: IsRecallPossibleRequest, username: string): Promise<IsRecallPossibleResponse> {
+    // temporary logging to diagnose issue
+    logger.info(`Checking if recall is possible requested by ${username}, payload: ${JSON.stringify(request)}`)
     return this.post(
       {
         path: `/recall/is-possible`,
