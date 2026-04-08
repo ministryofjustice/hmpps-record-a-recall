@@ -4,6 +4,9 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "partials/components/recall-card/macro.njk" import recallCard %}
 
+{% set isNomisRecall = recall.source == 'NOMIS' %}
+{% set isDpsRecall = recall.source == 'DPS' %}
+
 {% set title = "Are you sure you want to delete the recall?" %}
 {% set pageTitle = applicationName + " - " + title %}
 
@@ -13,31 +16,65 @@
 
   {{ recallCard(recall) }}
 
+  {% if isDpsRecall %}
+    <p class="govuk-body">Deleting a recall recorded in DPS:</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+      <li>does not delete remand and tagged bail</li>
+      <li>deletes any associated UAL</li>
+      <li>reverts the NOMIS sentences back to their original sentence type</li>
+    </ul>
+  {% endif %}
+
+  {% if isNomisRecall %}
+    <p class="govuk-body">Deleting a recall recorded in NOMIS:</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+      <li>deletes any associated remand and tagged bail</li>
+      <li>does not delete UAL</li>
+      <li>will remove the recall completely from both NOMIS and DPS</li>
+      <li>will not reinstate the original sentence type</li>
+    </ul>
+  {% endif %}
+
+  <p class="govuk-body">
+    After deleting the recall, check the adjustments to make sure the information is up to date.
+  </p>
+
   <form method="post" action="">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     {{ govukRadios({
       name: "confirmDeleteRecall",
+      fieldset: {
+        legend: {
+          text: "Are you sure you want to delete the recall?",
+          classes: "govuk-fieldset__legend--m"
+        }
+      },
       items: [
         {
           value: 'YES',
-          text: 'Yes, delete the recall'
+          text: 'Yes, delete the recall',
+          checked: confirmDeleteRecall == 'YES'
         },
         {
           value: 'NO',
-          text: 'No, go back to recalls'
+          text: 'No, go back to recalls',
+          checked: confirmDeleteRecall == 'NO'
         }
       ],
       errorMessage: validationErrors | findError('confirmDeleteRecall')
     }) }}
 
-
     <div class="govuk-button-group">
       {{ govukButton({
         text: "Confirm",
+        classes: "govuk-button--warning",
         preventDoubleClick: true,
         attributes: { id: "submit" }
       }) }}
     </div>
   </form>
+
 {% endblock %}
