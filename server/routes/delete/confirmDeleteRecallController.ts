@@ -19,7 +19,7 @@ export default class ConfirmDeleteRecallController implements Controller {
 
     return res.render('pages/recall/delete-confirmation', {
       prisoner,
-      recall: { ...recall, canDelete: false },
+      recall: { ...recall, canDelete: false, canEdit: false},
       backLink,
     })
   }
