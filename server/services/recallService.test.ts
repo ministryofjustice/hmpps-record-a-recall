@@ -900,7 +900,7 @@ describe('Recall service', () => {
       )
     })
 
-    it('allows delete for non-latest recall when no court cases are attached', async () => {
+    it('allows delete when no court cases are attached, even if not latest', async () => {
       const latest = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
         source: 'DPS',
