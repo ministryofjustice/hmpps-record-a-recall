@@ -249,6 +249,7 @@ export default class RecallService {
   ): ExistingRecall {
     const isLatestAndDpsRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
     const canDeleteNomisRecall = this.canDeleteNomisRecall(recall, dpsRecallSentenceIds)
+    const hasNoCourtCasesAttached = !recall.courtCases?.length
 
     const sentenceIds: string[] = []
 
@@ -259,7 +260,7 @@ export default class RecallService {
       createdAtTimestamp: recall.createdAt,
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: isLatestAndDpsRecall,
-      canDelete: isLatestAndDpsRecall || canDeleteNomisRecall,
+      canDelete: hasNoCourtCasesAttached || isLatestAndDpsRecall || canDeleteNomisRecall,
       recallTypeCode: recall.recallType,
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,

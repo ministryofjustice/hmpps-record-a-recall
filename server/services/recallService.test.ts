@@ -310,7 +310,7 @@ describe('Recall service', () => {
           createdAtLocationName: undefined,
           createdAtTimestamp: '2019-01-18T13:40:56Z',
           courtCases: [],
-          canDelete: false,
+          canDelete: true,
           canEdit: false,
         },
       ])
@@ -525,14 +525,14 @@ describe('Recall service', () => {
           createdAtTimestamp: '2020-02-26T13:40:56Z',
           source: 'DPS',
           canEdit: false,
-          canDelete: false,
+          canDelete: true,
         }),
         TestData.existingRecall({
           recallUuid: oldest.recallUuid,
           createdAtTimestamp: '2019-01-18T13:40:56Z',
           source: 'DPS',
           canEdit: false,
-          canDelete: false,
+          canDelete: true,
         }),
       ])
     })
@@ -563,7 +563,7 @@ describe('Recall service', () => {
           createdAtTimestamp: '2019-01-18T13:40:56Z',
           source: 'DPS',
           canEdit: false,
-          canDelete: false,
+          canDelete: true,
         }),
       ])
     })
@@ -899,6 +899,26 @@ describe('Recall service', () => {
         ]),
       )
     })
+
+    it('allows delete for non-latest recall when no court cases are attached', async () => {
+      const latest = TestData.apiRecall({
+        createdAt: '2021-03-19T13:40:56Z',
+        source: 'DPS',
+        courtCases: [{ sentences: [{ sentenceUuid: uuidv4(), offenceCode: 'A1', periodLengths: [], sentenceServeType: 'CONCURRENT' }] }],
+      })
+      const olderWithNoCourtCases = TestData.apiRecall({
+        createdAt: '2020-02-26T13:40:56Z',
+        source: 'DPS',
+        courtCases: [],
+      })
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([olderWithNoCourtCases, latest])
+
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const olderRecall = result.find(recall => recall.recallUuid === olderWithNoCourtCases.recallUuid)
+
+      expect(olderRecall?.canDelete).toBe(true)
+      expect(olderRecall?.canEdit).toBe(false)
+    })
   })
 
   describe('getRecallByUuid', () => {
@@ -928,7 +948,7 @@ describe('Recall service', () => {
         createdAtLocationName: 'Kirkham (HMP)',
         createdAtTimestamp: '2021-03-19T13:40:56Z',
         courtCases: [],
-        canDelete: false,
+        canDelete: true,
         canEdit: false,
       })
     })
@@ -959,7 +979,7 @@ describe('Recall service', () => {
         createdAtLocationName: undefined,
         createdAtTimestamp: '2019-01-18T13:40:56Z',
         courtCases: [],
-        canDelete: false,
+        canDelete: true,
         canEdit: false,
       })
       expect(prisonRegisterApiClient.getPrisonNames).not.toHaveBeenCalled()
