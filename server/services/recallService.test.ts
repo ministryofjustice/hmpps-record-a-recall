@@ -904,7 +904,13 @@ describe('Recall service', () => {
       const latest = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
         source: 'DPS',
-        courtCases: [{ sentences: [{ sentenceUuid: uuidv4(), offenceCode: 'A1', periodLengths: [], sentenceServeType: 'CONCURRENT' }] }],
+        courtCases: [
+          {
+            sentences: [
+              { sentenceUuid: uuidv4(), offenceCode: 'A1', periodLengths: [], sentenceServeType: 'CONCURRENT' },
+            ],
+          },
+        ],
       })
       const olderWithNoCourtCases = TestData.apiRecall({
         createdAt: '2020-02-26T13:40:56Z',
