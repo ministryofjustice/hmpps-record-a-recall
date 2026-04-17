@@ -567,6 +567,33 @@ describe('Recall service', () => {
         }),
       ])
     })
+
+    it('does not allow delete for NOMIS recall when court cases are attached', async () => {
+      const nomisRecallWithCourtCase = TestData.apiRecall({
+        createdAt: '2021-03-19T13:40:56Z',
+        source: 'NOMIS',
+        courtCases: [{ sentences: [] }],
+      })
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([nomisRecallWithCourtCase])
+
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+
+      expect(result[0].canDelete).toBe(false)
+    })
+
+    it('allows delete for NOMIS recall when no court cases are attached', async () => {
+      const nomisRecallWithoutCourtCases = TestData.apiRecall({
+        createdAt: '2021-03-19T13:40:56Z',
+        source: 'NOMIS',
+        courtCases: [],
+      })
+      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([nomisRecallWithoutCourtCases])
+
+      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+
+      expect(result[0].canDelete).toBe(true)
+    })
+
     it('should map adjustments information if present', async () => {
       const recallWithUal = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
