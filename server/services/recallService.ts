@@ -223,18 +223,8 @@ export default class RecallService {
       consecutiveToDetails,
     )
 
-    const dpsSentenceIds = this.getDpsRecallSentenceIds(recalls)
-
     return recalls.map(recall =>
-      this.toExistingRecall(
-        recall,
-        prisons,
-        courts,
-        offences,
-        latestRecallUuid,
-        consecutiveToDetailsBySentenceUuid,
-        dpsSentenceIds,
-      ),
+      this.toExistingRecall(recall, prisons, courts, offences, latestRecallUuid, consecutiveToDetailsBySentenceUuid),
     )
   }
 
@@ -245,10 +235,8 @@ export default class RecallService {
     offences: Offence[],
     latestRecallUuid?: string,
     consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),
-    dpsRecallSentenceIds: Set<string> = new Set(),
   ): ExistingRecall {
     const isLatestAndDpsRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
-    const canDeleteNomisRecall = this.canDeleteNomisRecall(recall, dpsRecallSentenceIds)
     const hasNoCourtCasesAttached = !recall.courtCases?.length
 
     const sentenceIds: string[] = []
@@ -260,7 +248,7 @@ export default class RecallService {
       createdAtTimestamp: recall.createdAt,
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: isLatestAndDpsRecall,
-      canDelete: hasNoCourtCasesAttached || isLatestAndDpsRecall || canDeleteNomisRecall,
+      canDelete: hasNoCourtCasesAttached || isLatestAndDpsRecall, // NOTE: We do not allow the deletion of NOMIS recalls (that have sentences) as there are downstream consequences on the NOMIS side
       recallTypeCode: recall.recallType,
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,
@@ -321,24 +309,6 @@ export default class RecallService {
     }
 
     return { ...existingRecall, sentenceIds }
-  }
-
-  private canDeleteNomisRecall(recall: ApiRecall, dpsSentenceIds: Set<string>): boolean {
-    if (recall.source !== 'NOMIS') return false
-
-    // NOMIS recalls only have one sentence associated
-    const sentenceId = recall.courtCases?.[0]?.sentences?.[0]?.sentenceUuid
-    return !dpsSentenceIds.has(sentenceId)
-  }
-
-  private getDpsRecallSentenceIds(recalls: ApiRecall[]): Set<string> {
-    return new Set(
-      recalls
-        .filter(r => r.source === 'DPS')
-        .flatMap(r => r.courtCases ?? [])
-        .flatMap(cc => cc.sentences ?? [])
-        .map(s => s.sentenceUuid),
-    )
   }
 
   public getApiRecallFromJourney(journey: RecallJourney, username: string, prison: string): CreateRecall {
