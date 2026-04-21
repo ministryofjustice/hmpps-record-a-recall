@@ -4,6 +4,7 @@
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
 {% from "partials/components/recall-card/macro.njk" import recallCard %}
+{% from "partials/unknown-pre-recall-type-panel.njk" import unknownPreRecallTypePanel %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
@@ -19,10 +20,14 @@
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">Recalls</h1>
     {{ thingsToDo(serviceDefinitions, 'recalls') }}
-      {% if not hasRecalls %}
-        <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
-      {% endif %}
 
+    {% if not hasRecalls %}
+      <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
+    {% endif %}
+
+    {# {% if isPreRecallSentenceTypeUnknown %} #}
+      {{ unknownPreRecallTypePanel(nomsId) }}
+    {# {% else %}
       {{ govukButton({
         classes: "govuk-button--secondary",
         text: "Record a recall",
@@ -30,13 +35,16 @@
         href: '/person/' + nomsId + '/recall/create/start',
         attributes: { 'data-qa': 'create-new-recall-btn' }
       }) }}
+    {% endif %} #}
+
   </div>
 </div>
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
-      {% for recall in recalls %}
-        {{ recallCard(recall, serviceDefinitions) }}
-      {% endfor %}
-    </div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
+    {% for recall in recalls %}
+      {{ recallCard(recall, serviceDefinitions) }}
+    {% endfor %}
   </div>
+</div>
 {% endblock %}
