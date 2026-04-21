@@ -25,9 +25,9 @@
       <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
     {% endif %}
 
-    {# {% if isPreRecallSentenceTypeUnknown %} #}
+    {% if isPreRecallSentenceTypeUnknown %} 
       {{ unknownPreRecallTypePanel(nomsId) }}
-    {# {% else %}
+    {% else %}
       {{ govukButton({
         classes: "govuk-button--secondary",
         text: "Record a recall",
@@ -35,7 +35,7 @@
         href: '/person/' + nomsId + '/recall/create/start',
         attributes: { 'data-qa': 'create-new-recall-btn' }
       }) }}
-    {% endif %} #}
+    {% endif %}
 
   </div>
 </div>

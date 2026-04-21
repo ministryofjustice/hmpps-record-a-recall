@@ -24,8 +24,10 @@ export default class HomeController implements Controller {
     const recalls = await this.recallService
       .getRecallsForPrisoner(nomsId, user.username)
       .then(it =>
-        it.sort((a, b) =>
-          new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime(),
+        it.sort(
+          (a, b) =>
+            new Date(b.createdAtTimestamp).getTime() -
+            new Date(a.createdAtTimestamp).getTime(),
         ),
       )
 
@@ -34,19 +36,13 @@ export default class HomeController implements Controller {
       user.username,
     )
 
-    const isPossible = await this.recallService.isRecallPossible(
-      {
-        recallType: null, 
-        sentenceIds: recallableCourtCases.flatMap(c =>
-          [...c.recallableSentences, ...c.nonRecallableSentences].map(s => s.sentenceUuid),
-        ),
-      },
-      user.username,
-    )
-
     const isPreRecallSentenceTypeUnknown =
-      !isPossible?.sentenceIds ||
-      isPossible.sentenceIds.length === 0
+      recallableCourtCases.length === 0 ||
+      recallableCourtCases.every(
+        c =>
+          c.recallableSentences.length === 0 &&
+          c.nonRecallableSentences.length === 0,
+      )
 
     return res.render('pages/person/home', {
       recalls,
