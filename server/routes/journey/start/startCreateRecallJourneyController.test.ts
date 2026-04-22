@@ -215,4 +215,19 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     expect(response.status).toEqual(302)
     expect(response.headers.location).toMatch(new RegExp(`^/person/${nomsId}/recall/create/.+/validation-intercept$`))
   })
+
+  it('should mark unknown pre recall flag as RESOLVED when starting a new journey', async () => {
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+    recallService.hasSentences.mockResolvedValue(true)
+
+    const anySession = session as any
+
+    anySession.unknownPreRecallByNomsId = {
+      [nomsId]: true,
+    }
+
+    await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    expect(anySession.unknownPreRecallByNomsId[nomsId]).toBe(true)
+  })
 })

@@ -115,4 +115,33 @@ describe('GET', () => {
       `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0`,
     )
   })
+
+  it('should set unknown pre recall session flag to PENDING when page loads', async () => {
+    // Given
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    recallService.isRecallPossible.mockResolvedValue({
+      isRecallPossible: 'UNKNOWN_PRE_RECALL_MAPPING',
+      sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
+    })
+
+    let capturedSession: any
+
+    app = appWithAllRoutes({
+      services: { auditService, recallService },
+      userSupplier: () => user,
+      sessionReceiver: (receivedSession: any) => {
+        receivedSession.recallJourneys = {}
+        receivedSession.recallJourneys[journeyId] = existingJourney
+
+        capturedSession = receivedSession
+      },
+    })
+
+    // When
+    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`)
+
+    // Then
+    expect(res.status).toEqual(200)
+    expect(capturedSession.unknownPreRecallByNomsId[nomsId]).toBe('PENDING')
+  })
 })

@@ -16,14 +16,14 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
     const { username } = req.user
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
- 
-const session = req.session as any
 
-if (!session.unknownPreRecallByNomsId) {
-  session.unknownPreRecallByNomsId = {}
-}
+    const session = req.session as any
 
-session.unknownPreRecallByNomsId[nomsId] = 'PENDING'
+    if (!session.unknownPreRecallByNomsId) {
+      session.unknownPreRecallByNomsId = {}
+    }
+
+    session.unknownPreRecallByNomsId[nomsId] = 'PENDING'
 
     const isPossible = await this.recallService.isRecallPossible(
       {
