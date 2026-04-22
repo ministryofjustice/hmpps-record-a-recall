@@ -16,6 +16,14 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
     const { username } = req.user
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
+ 
+const session = req.session as any
+
+if (!session.unknownPreRecallByNomsId) {
+  session.unknownPreRecallByNomsId = {}
+}
+
+session.unknownPreRecallByNomsId[nomsId] = 'PENDING'
 
     const isPossible = await this.recallService.isRecallPossible(
       {
@@ -24,6 +32,7 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       },
       username,
     )
+
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
     const unknownPreRecallCourtCases = recallableCourtCases

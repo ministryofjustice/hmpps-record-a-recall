@@ -31,18 +31,11 @@ export default class HomeController implements Controller {
         ),
       )
 
-    const recallableCourtCases = await this.recallService.getRecallableCourtCases(
-      nomsId,
-      user.username,
-    )
 
-    const isPreRecallSentenceTypeUnknown =
-      recallableCourtCases.length === 0 ||
-      recallableCourtCases.every(
-        c =>
-          c.recallableSentences.length === 0 &&
-          c.nonRecallableSentences.length === 0,
-      )
+const session = req.session as any
+
+const isPreRecallSentenceTypeUnknown =
+  session.unknownPreRecallByNomsId?.[nomsId] === 'PENDING'
 
     return res.render('pages/person/home', {
       recalls,

@@ -18,6 +18,12 @@ export default class StartCreateRecallJourneyController implements Controller {
   private MAX_JOURNEYS = 5
 
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
+
+const session = req.session as any
+
+if (session.unknownPreRecallByNomsId?.[req.params.nomsId]) {
+  session.unknownPreRecallByNomsId[req.params.nomsId] = 'RESOLVED'
+}
     const { username } = req.user
     const { nomsId } = req.params
     const prisonerHasSentences = await this.recallService.hasSentences(nomsId, username)
