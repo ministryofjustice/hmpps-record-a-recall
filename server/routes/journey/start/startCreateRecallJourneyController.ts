@@ -18,7 +18,9 @@ export default class StartCreateRecallJourneyController implements Controller {
   private MAX_JOURNEYS = 5
 
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
-    const session = req.session as any
+    const session = req.session as Partial<{
+      unknownPreRecallByNomsId: Record<string, string>
+    }>
 
     if (session.unknownPreRecallByNomsId?.[req.params.nomsId]) {
       session.unknownPreRecallByNomsId[req.params.nomsId] = 'RESOLVED'

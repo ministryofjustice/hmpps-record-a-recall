@@ -17,7 +17,9 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
 
-    const session = req.session as any
+    const session = req.session as Partial<{
+      unknownPreRecallByNomsId: Record<string, string>
+    }>
 
     if (!session.unknownPreRecallByNomsId) {
       session.unknownPreRecallByNomsId = {}
