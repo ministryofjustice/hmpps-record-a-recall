@@ -15,9 +15,7 @@ export default class HomeController implements Controller {
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
     const { nomsId } = req.params
     const { prisoner, user } = res.locals
-
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
-
     const recalls = await this.recallService
       .getRecallsForPrisoner(nomsId, user.username)
       .then(it =>

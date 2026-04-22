@@ -34,7 +34,6 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
       },
       username,
     )
-
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
 
     const unknownPreRecallCourtCases = recallableCourtCases
