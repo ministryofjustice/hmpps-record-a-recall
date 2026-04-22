@@ -10,7 +10,10 @@ import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 
 let app: Express
-let session: Partial<SessionData>
+type TestSession = Partial<SessionData> & {
+  unknownPreRecallByNomsId?: Record<string, boolean | string>
+}
+let session: TestSession
 let preExistingJourneysToAddToSession: Array<RecallJourney>
 const nomsId = 'A1234BC'
 const successfulCrdsValidationResult = {
@@ -29,6 +32,7 @@ const auditService = new AuditService(null) as jest.Mocked<AuditService>
 const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 
 beforeEach(() => {
+  preExistingJourneysToAddToSession = undefined
   app = appWithAllRoutes({
     services: {
       calculateReleaseDatesService,
@@ -37,7 +41,12 @@ beforeEach(() => {
     },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-      session = receivedSession
+      session = receivedSession as TestSession
+
+      // ensure session object exists
+      if (!session.unknownPreRecallByNomsId) {
+        session.unknownPreRecallByNomsId = {}
+      }
       if (preExistingJourneysToAddToSession) {
         session.recallJourneys = {}
         preExistingJourneysToAddToSession.forEach((journey: RecallJourney) => {
@@ -214,5 +223,19 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     // Then
     expect(response.status).toEqual(302)
     expect(response.headers.location).toMatch(new RegExp(`^/person/${nomsId}/recall/create/.+/validation-intercept$`))
+  })
+
+  it('should clear unknown pre recall flag when starting a new journey', async () => {
+    calculateReleaseDatesService.validateForRecordARecall.mockResolvedValue(successfulCrdsValidationResult)
+    recallService.hasSentences.mockResolvedValue(true)
+
+    await request(app).get(`/person/${nomsId}/recall/create/start`).expect(302)
+
+    session.unknownPreRecallByNomsId = session.unknownPreRecallByNomsId ?? {}
+    session.unknownPreRecallByNomsId[nomsId] = 'PENDING'
+
+    await request(app).get(`/person/${nomsId}/recall/create/start`)
+
+    expect(session.unknownPreRecallByNomsId?.[nomsId]).toBeUndefined()
   })
 })

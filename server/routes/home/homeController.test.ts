@@ -1,6 +1,7 @@
 import type { Express } from 'express'
 import request from 'supertest'
 import * as cheerio from 'cheerio'
+import { SessionData } from 'express-session'
 import { appWithAllRoutes, user } from '../testutils/appSetup'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import PrisonerSearchService from '../../services/prisonerSearchService'
@@ -21,6 +22,9 @@ const recallService = new RecallService(null, null, null, null) as jest.Mocked<R
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
 
 let app: Express
+let session: Partial<SessionData> & {
+  unknownPreRecallByNomsId?: Record<string, string>
+}
 const nomsId = 'A1234BC'
 
 beforeEach(() => {
@@ -68,7 +72,7 @@ describe('GET', () => {
     expect($('[data-qa=no-recalls-hint]').text().trim()).toStrictEqual('There are no recalls recorded.')
     const createButton = $('[data-qa=create-new-recall-btn]')
     expect(createButton.text().trim()).toStrictEqual('Record a recall')
-    expect(createButton.attr('href')).toStrictEqual(`/person/${nomsId}/recall/create/start`)
+    expect(createButton.attr('href')).toStrictEqual(`/person/${nomsId}/recall/create/start?resetPreRecall=true`)
   })
 
   it('should show recalls sorted by most recent with edit and delete as per service', async () => {
@@ -123,5 +127,69 @@ describe('GET', () => {
     expect(thirdCard.find('.govuk-summary-card__title').text().trim()).toStrictEqual('Recorded on 18 Jan 2019')
     expect(thirdCard.find($(editSelector))).toHaveLength(0)
     expect(thirdCard.find($(deleteSelector))).toHaveLength(0)
+  })
+  it('should show grey box when session flag is PENDING', async () => {
+    // Given
+    recallService.getRecallsForPrisoner.mockResolvedValue([])
+
+    app = appWithAllRoutes({
+      services: {
+        prisonerSearchService,
+        courtCasesReleaseDatesService,
+        recallService,
+        auditService,
+      },
+      userSupplier: () => user,
+
+      sessionReceiver: (receivedSession: Partial<SessionData>) => {
+        session = receivedSession
+
+        session.unknownPreRecallByNomsId = {
+          [nomsId]: 'PENDING',
+        }
+      },
+    })
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}`)
+
+    // Then
+    expect(response.status).toBe(200)
+
+    const $ = cheerio.load(response.text)
+
+    expect($('[data-qa="unknown-pre-recall-panel"]').length).toBe(1)
+  })
+
+  it('should NOT show grey box when session flag is not set', async () => {
+    // Given
+    recallService.getRecallsForPrisoner.mockResolvedValue([])
+
+    app = appWithAllRoutes({
+      services: {
+        prisonerSearchService,
+        courtCasesReleaseDatesService,
+        recallService,
+        auditService,
+      },
+      userSupplier: () => user,
+
+      sessionReceiver: (receivedSession: Partial<SessionData>) => {
+        session = receivedSession
+
+        session.unknownPreRecallByNomsId = {}
+      },
+    })
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}`)
+
+    // Then
+    expect(response.status).toBe(200)
+
+    const $ = cheerio.load(response.text)
+
+    expect($('[data-qa="unknown-pre-recall-panel"]').length).toBe(0)
+    expect($('[data-qa="create-new-recall-btn"]').length).toBe(1)
   })
 })

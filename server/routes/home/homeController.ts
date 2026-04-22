@@ -21,11 +21,19 @@ export default class HomeController implements Controller {
       .then(it =>
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
+
+    const session = req.session as Partial<{
+      unknownPreRecallByNomsId: Record<string, string>
+    }>
+
+    const isPreRecallSentenceTypeUnknown = session.unknownPreRecallByNomsId?.[nomsId] === 'PENDING'
+
     return res.render('pages/person/home', {
       recalls,
       prisoner,
       nomsId,
       serviceDefinitions,
+      isPreRecallSentenceTypeUnknown,
     })
   }
 }
