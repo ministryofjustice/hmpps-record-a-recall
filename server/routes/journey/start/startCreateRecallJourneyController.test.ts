@@ -41,7 +41,7 @@ beforeEach(() => {
     },
     userSupplier: () => user,
     sessionReceiver: (receivedSession: Partial<SessionData>) => {
-        session = receivedSession as TestSession
+      session = receivedSession as TestSession
 
       // ensure session object exists
       if (!session.unknownPreRecallByNomsId) {
