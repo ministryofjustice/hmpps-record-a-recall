@@ -136,6 +136,5 @@ describe('GET', () => {
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
     expect($('[data-qa="unknown-pre-recall-panel"]')).toHaveLength(1)
-    // expect($('[data-qa="create-new-recall-btn"]')).toHaveLength(0)
   })
 })

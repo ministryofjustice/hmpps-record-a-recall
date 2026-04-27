@@ -18,7 +18,9 @@
 {% set hasRecalls = recalls and recalls.length %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
     <h1 class="govuk-heading-xl">Recalls</h1>
+
     {{ thingsToDo(serviceDefinitions, 'recalls') }}
     {% if not hasRecalls %}
       <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
@@ -37,14 +39,12 @@
         href: '/person/' + nomsId + '/recall/create/start',
         attributes: { 'data-qa': 'create-new-recall-btn' }
       }) }}
-       {% endif %}
+    {% endif %}
+
+    {% for recall in recalls %}
+      {{ recallCard(recall, serviceDefinitions) }}
+    {% endfor %}
+
   </div>
 </div>
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
-      {% for recall in recalls %}
-        {{ recallCard(recall, serviceDefinitions) }}
-      {% endfor %}
-    </div>
-  </div>
 {% endblock %}
