@@ -125,7 +125,7 @@ describe('GET', () => {
     expect(thirdCard.find($(deleteSelector))).toHaveLength(0)
   })
 
-    it('should show unknown pre-recall panel and hide create button when query param is true', async () => {
+  it('should show unknown pre-recall panel and hide create button when query param is true', async () => {
     // Given
     recallService.getRecallsForPrisoner.mockResolvedValue([])
 
