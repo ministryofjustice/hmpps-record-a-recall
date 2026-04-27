@@ -1,0 +1,25 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% macro unknownPreRecallTypePanel(nomsId) %}
+
+<article class="moj-ticket-panel" aria-label="Unknown pre-recall action">
+
+  <section class="moj-ticket-panel__content moj-ticket-panel__content--grey govuk-!-margin-bottom-8" aria-label="Record recall section">
+    
+    <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+      Record a recall
+    </h2>
+
+    <p class="govuk-body">
+      Some information has changed. Check that all information is up to date then record a recall.
+    </p>
+
+    {{ govukButton({
+      text: "Record a recall",
+      preventDoubleClick: true,
+      href: '/person/' + nomsId + '/recall/create/start',
+      attributes: { 'data-qa': 'create-new-recall-btn' }
+    }) }}
+
+  </div>
+{% endmacro %}
