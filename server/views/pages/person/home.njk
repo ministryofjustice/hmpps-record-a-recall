@@ -4,7 +4,7 @@
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
 {% from "partials/components/recall-card/macro.njk" import recallCard %}
-{% from "partials/unknown-pre-recall-sentence-type-panel.njk" import unknownPreRecallSentenceTypePanel %}
+{% from "partials/record-a-recall-notification.njk" import recordARecallNoificationPanel %}
 
 {% set pageTitle = applicationName + " - person home" %}
 {% set pageId = "person-home" %}
@@ -24,9 +24,9 @@
       <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
     {% endif %}
 
-    {% if unknownPreRecallJourneyComplete %} 
+    {% if fromUnknownPreRecallJourney %} 
       <div data-qa="unknown-pre-recall-panel">
-        {{ unknownPreRecallSentenceTypePanel(nomsId) }}
+        {{ recordARecallNoificationPanel(nomsId) }}
       </div>
     {% else %}
 
