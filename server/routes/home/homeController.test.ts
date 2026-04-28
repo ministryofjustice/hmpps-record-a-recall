@@ -125,7 +125,7 @@ describe('GET', () => {
     expect(thirdCard.find($(deleteSelector))).toHaveLength(0)
   })
 
-  it('should show unknown pre-recall panel and hide create button when query param is true', async () => {
+  it('should show trvotd-recall notification banner when coming from unknown-pre-recall journey', async () => {
     // Given
     recallService.getRecallsForPrisoner.mockResolvedValue([])
 
@@ -135,6 +135,6 @@ describe('GET', () => {
     // Then
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
-    expect($('[data-qa="unknown-pre-recall-panel"]')).toHaveLength(1)
+    expect($('[data-qa="record-recall-notification-panel"]')).toHaveLength(1)
   })
 })
