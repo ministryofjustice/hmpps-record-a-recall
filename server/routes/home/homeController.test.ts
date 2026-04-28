@@ -13,9 +13,9 @@ jest.mock('../../services/prisonerSearchService')
 jest.mock('../../services/recallService')
 jest.mock('../../services/auditService')
 
-const courtCasesReleaseDatesService = new CourtCasesReleaseDatesService(
-  null,
-) as jest.Mocked<CourtCasesReleaseDatesService>
+const courtCasesReleaseDatesService = {
+  getServiceDefinitions: jest.fn().mockResolvedValue(TestData.serviceDefinitions()),
+} as unknown as jest.Mocked<CourtCasesReleaseDatesService>
 const prisonerSearchService = new PrisonerSearchService(null) as jest.Mocked<PrisonerSearchService>
 const recallService = new RecallService(null, null, null, null) as jest.Mocked<RecallService>
 const auditService = new AuditService(null) as jest.Mocked<AuditService>
@@ -123,5 +123,18 @@ describe('GET', () => {
     expect(thirdCard.find('.govuk-summary-card__title').text().trim()).toStrictEqual('Recorded on 18 Jan 2019')
     expect(thirdCard.find($(editSelector))).toHaveLength(0)
     expect(thirdCard.find($(deleteSelector))).toHaveLength(0)
+  })
+
+  it('should show trvotd-recall notification banner when coming from unknown-pre-recall journey', async () => {
+    // Given
+    recallService.getRecallsForPrisoner.mockResolvedValue([])
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}?unknownPreRecallJourney=true`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('[data-qa="record-recall-notification-panel"]')).toHaveLength(1)
   })
 })
