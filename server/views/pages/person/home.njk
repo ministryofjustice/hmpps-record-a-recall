@@ -4,6 +4,7 @@
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
 {% from "partials/components/recall-card/macro.njk" import recallCard %}
+{% from "partials/components/custodial-period-view/macro.njk" import custodialPeriodView %}
 {% from "partials/record-a-recall-notification.njk" import recordARecallNoificationPanel %}
 
 {% set pageTitle = applicationName + " - person home" %}
@@ -37,8 +38,13 @@
         href: '/person/' + nomsId + '/recall/create/start',
         attributes: { 'data-qa': 'create-new-recall-btn' }
       }) }}
-    {% endif %}
-      </div>
+         {% endif %}
+
+
+      {{ custodialPeriodView() }}
+
+    </div>
+
 </div>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
