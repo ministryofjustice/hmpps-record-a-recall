@@ -16,21 +16,31 @@ export default class HomeController implements Controller {
     const { nomsId } = req.params
     const { prisoner, user } = res.locals
 
+    const { sortBy } = req.query as {
+      sortBy: string
+    }
+
+    const sortByQuery = sortBy || 'STATUS_APPEARANCE_DATE_DESC'
+
     const fromUnknownPreRecallJourney = req.query?.unknownPreRecallJourney === 'true'
 
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
 
-    const recalls = await this.recallService
-      .getRecallsForPrisoner(nomsId, user.username)
-      .then(it =>
-        it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
-      )
+    const recalls = await this.recallService.getRecallsForPrisoner(nomsId, user.username).then(it => {
+      if (sortBy === 'APPEARANCE_DATE_ASC') {
+        return it.sort((a, b) => new Date(a.createdAtTimestamp).getTime() - new Date(b.createdAtTimestamp).getTime())
+      }
+
+      return it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime())
+    })
     return res.render('pages/person/home', {
       recalls,
       prisoner,
       nomsId,
       serviceDefinitions,
       fromUnknownPreRecallJourney,
+      sortBy,
+      sortByQuery,
     })
   }
 }
