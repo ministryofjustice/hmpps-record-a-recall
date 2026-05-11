@@ -65,14 +65,14 @@
     "helmet": "^8.1.0",
     "http-errors": "^2.0.1",
     "jwt-decode": "^4.0.0",
-    "lodash": "^4.17.23",
+    "lodash": "^4.18.1",
     "nocache": "^4.0.0",
     "nunjucks": "^3.2.4",
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
     "redis": "^5.12.1",
     "superagent": "^10.3.0",
-    "uuid": "^11.1.0",
+    "uuid": "^11.1.1",
     "zod": "4.4.3"
   },
   "devDependencies": {
