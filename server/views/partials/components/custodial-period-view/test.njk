@@ -1,0 +1,12 @@
+<html lang="en">
+  <body>
+    {% from "./macro.njk" import custodialPeriodView %}
+       {{ custodialPeriodView({
+            sortBy: sortBy,
+            includeCasesFromPreviousPeriodsOfCustody: includeCasesFromPreviousPeriodsOfCustody,
+            disableIncludeCasesFromPreviousPeriodsOfCustody: disableIncludeCasesFromPreviousPeriodsOfCustody,
+            filterErrors: filterErrors,
+            recalls: recalls
+    }) }}
+  </body>
+</html>

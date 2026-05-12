@@ -1,3 +1,9 @@
-{% macro custodialPeriodView() %}
-    {%- include "./template.njk" -%}
+{% macro custodialPeriodView(params) %}
+  {% set sortBy = params.sortBy %}
+  {% set includeCasesFromPreviousPeriodsOfCustody = params.includeCasesFromPreviousPeriodsOfCustody %}
+  {% set disableIncludeCasesFromPreviousPeriodsOfCustody = params.disableIncludeCasesFromPreviousPeriodsOfCustody %}
+  {% set filterErrors = params.filterErrors %}
+  {% set recalls = params.recalls %}
+
+  {% include "./template.njk" %}
 {% endmacro %}

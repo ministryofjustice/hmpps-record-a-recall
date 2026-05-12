@@ -41,7 +41,13 @@
          {% endif %}
 
 
-      {{ custodialPeriodView() }}
+        {{ custodialPeriodView({
+            sortBy: sortBy,
+            includeCasesFromPreviousPeriodsOfCustody: includeCasesFromPreviousPeriodsOfCustody,
+            disableIncludeCasesFromPreviousPeriodsOfCustody: disableIncludeCasesFromPreviousPeriodsOfCustody,
+            filterErrors: filterErrors,
+            recalls: recalls
+        }) }}
 
     </div>
 
