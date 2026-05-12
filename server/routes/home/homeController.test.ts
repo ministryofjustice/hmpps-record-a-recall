@@ -137,4 +137,45 @@ describe('GET', () => {
     const $ = cheerio.load(response.text)
     expect($('[data-qa="record-recall-notification-panel"]')).toHaveLength(1)
   })
+
+  it('should sort recalls by oldest first when APPEARANCE_DATE_ASC is selected', async () => {
+    // Given
+    const latest = TestData.existingRecall({
+      createdAtTimestamp: '2021-03-19T13:40:56Z',
+      createdAtLocationName: 'Kirkham (HMP)',
+    })
+
+    const middle = TestData.existingRecall({
+      createdAtTimestamp: '2020-02-26T13:40:56Z',
+      createdAtLocationName: 'Moorland (HMP & YOI)',
+    })
+
+    const oldest = TestData.existingRecall({
+      createdAtTimestamp: '2019-01-18T13:40:56Z',
+    })
+
+    recallService.getRecallsForPrisoner.mockResolvedValue([middle, latest, oldest])
+
+    // When
+    const response = await request(app).get(`/person/${nomsId}?sortBy=APPEARANCE_DATE_ASC`)
+
+    // Then
+    expect(response.status).toEqual(200)
+
+    const $ = cheerio.load(response.text)
+
+    const recallCards = $('.recall-card')
+
+    expect(recallCards).toHaveLength(3)
+
+    expect(recallCards.eq(0).find('.govuk-summary-card__title').text().trim()).toStrictEqual('Recorded on 18 Jan 2019')
+
+    expect(recallCards.eq(1).find('.govuk-summary-card__title').text().trim()).toStrictEqual(
+      'Recorded on 26 Feb 2020 at Moorland (HMP & YOI)',
+    )
+
+    expect(recallCards.eq(2).find('.govuk-summary-card__title').text().trim()).toStrictEqual(
+      'Recorded on 19 Mar 2021 at Kirkham (HMP)',
+    )
+  })
 })

@@ -31,6 +31,7 @@ export default class RecallService {
   public async getRecallableCourtCases(
     prisonerId: string,
     username: string,
+    sortBy = 'STATUS_APPEARANCE_DATE_DESC',
     mergeDuplicateCourtCases = false,
   ): Promise<DecoratedCourtCase[]> {
     const response = await this.remandAndSentencingApiClient.getRecallableCourtCases(
@@ -100,7 +101,11 @@ export default class RecallService {
       }
     })
 
-    return sortByDateDesc(decoratedCases, c => c.appearanceDate)
+    if (sortBy === 'APPEARANCE_DATE_ASC') {
+      return decoratedCases.sort((a, b) => new Date(a.appearanceDate).getTime() - new Date(b.appearanceDate).getTime())
+    }
+
+    return decoratedCases.sort((a, b) => new Date(b.appearanceDate).getTime() - new Date(a.appearanceDate).getTime())
   }
 
   private async getConsecutiveToDetails<TSentence extends { consecutiveToSentenceUuid?: string | null }>(
