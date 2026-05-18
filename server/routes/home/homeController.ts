@@ -3,11 +3,13 @@ import { Controller } from '../controller'
 import { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
+import AuditService from '../../services/auditService'
 
 export default class HomeController implements Controller {
   constructor(
     private readonly courtCasesReleaseDatesService: CourtCasesReleaseDatesService,
     private readonly recallService: RecallService,
+    private readonly auditService: AuditService,
   ) {}
 
   public PAGE_NAME = Page.HOME
@@ -25,6 +27,16 @@ export default class HomeController implements Controller {
       .then(it =>
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
+
+     res.locals.recallIds = recalls.map(recall => recall.recallUuid)
+
+    await this.auditService.logPageView(Page.HOME, {
+      who: user.username,
+      subjectId: nomsId,
+      subjectType: 'PRISONER_ID',
+      correlationId: req.id,
+    })
+
     return res.render('pages/person/home', {
       recalls,
       prisoner,

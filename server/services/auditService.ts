@@ -48,4 +48,25 @@ export default class AuditService {
     }
     await this.hmppsAuditClient.sendMessage(event)
   }
+
+  async loglandingPageAddEvent(
+    username: string,
+    nomsId: string,
+    correlationId: string,
+    recallUuids: string[],
+  ) {
+    const auditDetails = {
+      recallIds: recallUuids,
+      time: Date.now(),
+    }
+
+    await this.hmppsAuditClient.sendMessage({
+      who: username,
+      what: `PAGE_VIEW_HOME`,
+      subjectId: nomsId,
+      subjectType: 'PRISONER_ID',
+      correlationId,
+      details: auditDetails,
+    })
+  }
 }
