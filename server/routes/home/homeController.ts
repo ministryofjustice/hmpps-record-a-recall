@@ -29,17 +29,12 @@ export default class HomeController implements Controller {
 
     res.locals.recallIds = recalls.map(recall => recall.recallUuid)
 
-    try {
-      await this.auditService.logHomePageViewEvent(
-        user.username,
-        nomsId,
-        req.id,
-        recalls.map(recall => recall.recallUuid),
-      )
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Audit failed', e)
-    }
+    await this.auditService.logHomePageViewEvent(
+      user.username,
+      nomsId,
+      req.id,
+      recalls.map(recall => recall.recallUuid),
+    )
 
     return res.render('pages/person/home', {
       recalls,
