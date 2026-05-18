@@ -1,9 +1,8 @@
 import { Request, Response } from 'express'
 import { Controller } from '../controller'
-import { Page } from '../../services/auditService'
+import AuditService, { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
-import AuditService from '../../services/auditService'
 
 export default class HomeController implements Controller {
   constructor(
@@ -28,14 +27,14 @@ export default class HomeController implements Controller {
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
 
-     res.locals.recallIds = recalls.map(recall => recall.recallUuid)
+    res.locals.recallIds = recalls.map(recall => recall.recallUuid)
 
-    await this.auditService.logPageView(Page.HOME, {
-      who: user.username,
-      subjectId: nomsId,
-      subjectType: 'PRISONER_ID',
-      correlationId: req.id,
-    })
+    await this.auditService.logHomePageViewEvent(
+      user.username,
+      nomsId,
+      req.id,
+      recalls.map(recall => recall.recallUuid),
+    )
 
     return res.render('pages/person/home', {
       recalls,
