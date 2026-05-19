@@ -80,7 +80,7 @@ export default function routes({
   // dashboard
   route({
     path: '/person/:nomsId',
-    controller: new HomeController(courtCasesReleaseDatesService, recallService),
+    controller: new HomeController(courtCasesReleaseDatesService, recallService, auditService),
   })
 
   // create recall
