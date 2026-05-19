@@ -76,31 +76,31 @@ export default class AuditService {
   }
 
   async logCreateRecallEvent(
-  username: string,
-  nomsId: string,
-  correlationId: string,
-  identifiers: {
-    recallIds: string[]
-    courtCaseUuids: string[]
-    courtAppearanceUuids: string[]
-    chargeUuids: string[]
-    sentenceUuids: string[]
-    periodLengthUuids: string[]
-    time?: number
-  },
-) {
-  const auditDetails = {
-    ...identifiers,
-    time: identifiers.time ?? Date.now(),
-  }
+    username: string,
+    nomsId: string,
+    correlationId: string,
+    identifiers: {
+      recallIds: string[]
+      courtCaseUuids: string[]
+      courtAppearanceUuids: string[]
+      chargeUuids: string[]
+      sentenceUuids: string[]
+      periodLengthUuids: string[]
+      time?: number
+    },
+  ) {
+    const auditDetails = {
+      ...identifiers,
+      time: identifiers.time ?? Date.now(),
+    }
 
-  await this.hmppsAuditClient.sendMessage({
-    who: username,
-    what: 'ADD_RECALL',
-    subjectId: nomsId,
-    subjectType: 'PRISONER_ID',
-    correlationId,
-    details: auditDetails,
-  })
-}
+    await this.hmppsAuditClient.sendMessage({
+      who: username,
+      what: 'ADD_RECALL',
+      subjectId: nomsId,
+      subjectType: 'PRISONER_ID',
+      correlationId,
+      details: auditDetails,
+    })
+  }
 }
