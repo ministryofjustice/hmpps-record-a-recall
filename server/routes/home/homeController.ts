@@ -3,6 +3,7 @@ import { Controller } from '../controller'
 import AuditService, { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
+import { extractRecallUuids } from '../../utils/utils'
 
 export default class HomeController implements Controller {
   constructor(
@@ -27,25 +28,7 @@ export default class HomeController implements Controller {
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
 
-    const recallIds = recalls.map(recall => recall.recallUuid)
-
-    const courtCaseUuids = recalls.flatMap(recall =>
-      recall.courtCases.map(courtCase => courtCase.courtCaseUuid).filter(Boolean),
-    )
-
-    const sentenceUuids = recalls.flatMap(recall =>
-      recall.courtCases.flatMap(courtCase =>
-        courtCase.sentences.map(sentence => sentence.sentenceUuid).filter(Boolean),
-      ),
-    )
-
-    const periodLengthUuids = recalls.flatMap(recall =>
-      recall.courtCases.flatMap(courtCase =>
-        courtCase.sentences.flatMap(sentence =>
-          sentence.periodLengths.map(periodLength => periodLength.periodLengthUuid).filter(Boolean),
-        ),
-      ),
-    )
+    const { recallIds, courtCaseUuids, sentenceUuids, periodLengthUuids } = extractRecallUuids(recalls)
 
     await this.auditService.logHomePageViewEvent(user.username, nomsId, req.id, {
       recallIds,

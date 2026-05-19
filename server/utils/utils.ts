@@ -145,3 +145,24 @@ export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: str
 
 export const sortByDateDesc = <T>(items: T[], getDate: (item: T) => string | undefined) =>
   [...items].sort((a, b) => (new Date(getDate(b) ?? '').getTime() || 0) - (new Date(getDate(a) ?? '').getTime() || 0))
+
+export const extractRecallUuids = (recalls: any[]) => {
+  const recallIds = recalls.map(r => r.recallUuid)
+
+  const courtCaseUuids = recalls.flatMap(r => r.courtCases.map(c => c.courtCaseUuid).filter(Boolean))
+
+  const sentenceUuids = recalls.flatMap(r =>
+    r.courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid).filter(Boolean)),
+  )
+
+  const periodLengthUuids = recalls.flatMap(r =>
+    r.courtCases.flatMap(c => c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid).filter(Boolean))),
+  )
+
+  return {
+    recallIds,
+    courtCaseUuids,
+    sentenceUuids,
+    periodLengthUuids,
+  }
+}
