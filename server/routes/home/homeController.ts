@@ -3,7 +3,6 @@ import { Controller } from '../controller'
 import AuditService, { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
-import { extractRecallUuids } from '../../utils/utils'
 
 export default class HomeController implements Controller {
   constructor(
@@ -28,14 +27,9 @@ export default class HomeController implements Controller {
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
 
-    const { recallIds, courtCaseUuids, sentenceUuids, periodLengthUuids } = extractRecallUuids(recalls)
+    const auditDetails = this.extractRecallUuids(recalls)
 
-    await this.auditService.logHomePageViewEvent(user.username, nomsId, req.id, {
-      recallIds,
-      courtCaseUuids,
-      sentenceUuids,
-      periodLengthUuids,
-    })
+    await this.auditService.logHomePageViewEvent(user.username, nomsId, req.id, auditDetails)
 
     return res.render('pages/person/home', {
       recalls,
@@ -44,5 +38,26 @@ export default class HomeController implements Controller {
       serviceDefinitions,
       fromUnknownPreRecallJourney,
     })
+  }
+
+  extractRecallUuids = recalls => {
+    const recallIds = recalls.map(r => r.recallUuid)
+
+    const courtCaseUuids = recalls.flatMap(r => r.courtCases.map(c => c.courtCaseUuid).filter(Boolean))
+
+    const sentenceUuids = recalls.flatMap(r =>
+      r.courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid).filter(Boolean)),
+    )
+
+    const periodLengthUuids = recalls.flatMap(r =>
+      r.courtCases.flatMap(c => c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid).filter(Boolean))),
+    )
+
+    return {
+      recallIds,
+      courtCaseUuids,
+      sentenceUuids,
+      periodLengthUuids,
+    }
   }
 }
