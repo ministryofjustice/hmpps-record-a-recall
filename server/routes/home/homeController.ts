@@ -27,8 +27,6 @@ export default class HomeController implements Controller {
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
 
-    // res.locals.recallIds = recalls.map(recall => recall.recallUuid)
-
     const recallIds = recalls.map(recall => recall.recallUuid)
 
     const courtCaseUuids = recalls.flatMap(recall =>
