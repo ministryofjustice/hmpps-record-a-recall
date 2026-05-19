@@ -27,14 +27,34 @@ export default class HomeController implements Controller {
         it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
       )
 
-    res.locals.recallIds = recalls.map(recall => recall.recallUuid)
+    // res.locals.recallIds = recalls.map(recall => recall.recallUuid)
 
-    await this.auditService.logHomePageViewEvent(
-      user.username,
-      nomsId,
-      req.id,
-      recalls.map(recall => recall.recallUuid),
+    const recallIds = recalls.map(recall => recall.recallUuid)
+
+    const courtCaseUuids = recalls.flatMap(recall =>
+      recall.courtCases.map(courtCase => courtCase.courtCaseUuid).filter(Boolean),
     )
+
+    const sentenceUuids = recalls.flatMap(recall =>
+      recall.courtCases.flatMap(courtCase =>
+        courtCase.sentences.map(sentence => sentence.sentenceUuid).filter(Boolean),
+      ),
+    )
+
+    const periodLengthUuids = recalls.flatMap(recall =>
+      recall.courtCases.flatMap(courtCase =>
+        courtCase.sentences.flatMap(sentence =>
+          sentence.periodLengths.map(periodLength => periodLength.periodLengthUuid).filter(Boolean),
+        ),
+      ),
+    )
+
+    await this.auditService.logHomePageViewEvent(user.username, nomsId, req.id, {
+      recallIds,
+      courtCaseUuids,
+      sentenceUuids,
+      periodLengthUuids,
+    })
 
     return res.render('pages/person/home', {
       recalls,
