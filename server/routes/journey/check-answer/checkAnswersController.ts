@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
-import { PersonJourneyParams } from '../../../@types/journeys'
-import { Page } from '../../../services/auditService'
+import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
+import AuditService, { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import { calculateUal } from '../../../utils/utils'
 import { RecallTypes } from '../../../@types/recallTypes'
@@ -13,7 +13,10 @@ import logger from '../../../../logger'
 export default class CheckAnswersController implements Controller {
   PAGE_NAME: Page = Page.CHECK_ANSWERS
 
-  constructor(private readonly recallService: RecallService) {}
+  constructor(
+    private readonly recallService: RecallService,
+    private readonly auditService: AuditService,
+  ) {}
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { username } = req.user
@@ -107,6 +110,38 @@ export default class CheckAnswersController implements Controller {
       await this.recallService.editRecall(recallId, recall, username)
     }
 
+    const courtCases = journey.recallableCourtCases ?? []
+
+    const recallIds = journey.sentenceIds ?? []
+
+    const { courtCaseUuids, sentenceUuids, periodLengthUuids } = this.extractJourneyUuids(courtCases)
+
+    await this.auditService.logCreateRecallEvent(username, nomsId, req.id, {
+      recallIds,
+      courtCaseUuids,
+      courtAppearanceUuids: [],
+      chargeUuids: [],
+      sentenceUuids,
+      periodLengthUuids,
+      time: Date.now(),
+    })
+
     return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, responseId))
+  }
+
+  extractJourneyUuids = (courtCases: DecoratedCourtCase[]) => {
+    const courtCaseUuids = courtCases.map(c => c.courtCaseUuid)
+
+    const sentenceUuids = courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid))
+
+    const periodLengthUuids = courtCases.flatMap(c =>
+      c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid)),
+    )
+
+    return {
+      courtCaseUuids,
+      sentenceUuids,
+      periodLengthUuids,
+    }
   }
 }
