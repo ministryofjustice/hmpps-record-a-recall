@@ -80,18 +80,13 @@ export default class AuditService {
     nomsId: string,
     correlationId: string,
     identifiers: {
-      recallIds: string[]
-      courtCaseUuids: string[]
-      courtAppearanceUuids: string[]
-      chargeUuids: string[]
+      recallId: string
       sentenceUuids: string[]
-      periodLengthUuids: string[]
-      time?: number
     },
   ) {
     const auditDetails = {
       ...identifiers,
-      time: identifiers.time ?? Date.now(),
+      time: Date.now(),
     }
 
     await this.hmppsAuditClient.sendMessage({

@@ -103,45 +103,20 @@ export default class CheckAnswersController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
-    let responseId = recallId
+    let recallUuid = recallId
     if (createOrEdit === 'create') {
-      responseId = (await this.recallService.createRecall(recall, username)).recallUuid
-      const courtCases = journey.recallableCourtCases ?? []
-  
-      const recallIds = journey.sentenceIds ?? []
-  
-      const { courtCaseUuids, sentenceUuids, periodLengthUuids } = this.extractJourneyUuids(courtCases)
-  
+      recallUuid = (await this.recallService.createRecall(recall, username)).recallUuid
+
       await this.auditService.logCreateRecallEvent(username, nomsId, req.id, {
-        recallIds,
-        courtCaseUuids,
-        courtAppearanceUuids: [],
-        chargeUuids: [],
-        sentenceUuids,
-        periodLengthUuids,
-        time: Date.now(),
+        recallId: recallUuid,
+        sentenceUuids: recall.sentenceIds,
       })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
     }
 
 
-    return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, responseId))
+    return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, recallUuid))
   }
 
-  extractJourneyUuids = (courtCases: DecoratedCourtCase[]) => {
-    const courtCaseUuids = courtCases.map(c => c.courtCaseUuid)
-
-    const sentenceUuids = courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid))
-
-    const periodLengthUuids = courtCases.flatMap(c =>
-      c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid)),
-    )
-
-    return {
-      courtCaseUuids,
-      sentenceUuids,
-      periodLengthUuids,
-    }
-  }
 }
