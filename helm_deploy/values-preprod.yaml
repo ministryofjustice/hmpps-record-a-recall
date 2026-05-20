@@ -30,7 +30,7 @@ generic-service:
     REMAND_AND_SENTENCING_URL: "https://remand-and-sentencing-preprod.hmpps.service.justice.gov.uk"
 
     ENVIRONMENT_NAME: PRE-PRODUCTION
-    AUDIT_ENABLED: "false"
+    AUDIT_ENABLED: "true"
     ALLOW_INACTIVE_BOOKINGS: "true"
 
   allowlist:

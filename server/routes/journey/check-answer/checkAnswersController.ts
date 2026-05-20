@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
-import { Page } from '../../../services/auditService'
+import AuditService, { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import { calculateUal } from '../../../utils/utils'
 import { RecallTypes } from '../../../@types/recallTypes'
@@ -13,7 +13,10 @@ import logger from '../../../../logger'
 export default class CheckAnswersController implements Controller {
   PAGE_NAME: Page = Page.CHECK_ANSWERS
 
-  constructor(private readonly recallService: RecallService) {}
+  constructor(
+    private readonly recallService: RecallService,
+    private readonly auditService: AuditService,
+  ) {}
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { username } = req.user
@@ -100,13 +103,20 @@ export default class CheckAnswersController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
-    let responseId = recallId
+    let recallUuid = recallId
     if (createOrEdit === 'create') {
-      responseId = (await this.recallService.createRecall(recall, username)).recallUuid
+      recallUuid = (await this.recallService.createRecall(recall, username)).recallUuid
+
+      const requestId = req.id ?? 'test-request-id'
+
+      await this.auditService.logCreateRecallEvent(username, nomsId, requestId, {
+        recallId: recallUuid,
+        sentenceUuids: recall.sentenceIds ?? [],
+      })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
     }
 
-    return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, responseId))
+    return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, recallUuid))
   }
 }

@@ -212,6 +212,8 @@ describe('POST', () => {
   it('should redirect to confirm page and create recall', async () => {
     // Given
     const createdRecallId: string = uuidv4()
+
+    recallService.getApiRecallFromJourney.mockReturnValue(recallToBeCreated)
     recallService.createRecall.mockResolvedValue({
       recallUuid: createdRecallId,
     })
