@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
-import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
+import { PersonJourneyParams } from '../../../@types/journeys'
 import AuditService, { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import { calculateUal } from '../../../utils/utils'
@@ -115,8 +115,6 @@ export default class CheckAnswersController implements Controller {
       await this.recallService.editRecall(recallId, recall, username)
     }
 
-
     return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, recallUuid))
   }
-
 }
