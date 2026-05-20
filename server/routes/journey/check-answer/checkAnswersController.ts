@@ -107,9 +107,11 @@ export default class CheckAnswersController implements Controller {
     if (createOrEdit === 'create') {
       recallUuid = (await this.recallService.createRecall(recall, username)).recallUuid
 
-      await this.auditService.logCreateRecallEvent(username, nomsId, req.id, {
+      const requestId = req.id ?? 'test-request-id'
+
+      await this.auditService.logCreateRecallEvent(username, nomsId, requestId, {
         recallId: recallUuid,
-        sentenceUuids: recall.sentenceIds,
+        sentenceUuids: recall.sentenceIds ?? [],
       })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
