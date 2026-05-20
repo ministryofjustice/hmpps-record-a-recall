@@ -106,25 +106,25 @@ export default class CheckAnswersController implements Controller {
     let responseId = recallId
     if (createOrEdit === 'create') {
       responseId = (await this.recallService.createRecall(recall, username)).recallUuid
+      const courtCases = journey.recallableCourtCases ?? []
+  
+      const recallIds = journey.sentenceIds ?? []
+  
+      const { courtCaseUuids, sentenceUuids, periodLengthUuids } = this.extractJourneyUuids(courtCases)
+  
+      await this.auditService.logCreateRecallEvent(username, nomsId, req.id, {
+        recallIds,
+        courtCaseUuids,
+        courtAppearanceUuids: [],
+        chargeUuids: [],
+        sentenceUuids,
+        periodLengthUuids,
+        time: Date.now(),
+      })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
     }
 
-    const courtCases = journey.recallableCourtCases ?? []
-
-    const recallIds = journey.sentenceIds ?? []
-
-    const { courtCaseUuids, sentenceUuids, periodLengthUuids } = this.extractJourneyUuids(courtCases)
-
-    await this.auditService.logCreateRecallEvent(username, nomsId, req.id, {
-      recallIds,
-      courtCaseUuids,
-      courtAppearanceUuids: [],
-      chargeUuids: [],
-      sentenceUuids,
-      periodLengthUuids,
-      time: Date.now(),
-    })
 
     return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, responseId))
   }
