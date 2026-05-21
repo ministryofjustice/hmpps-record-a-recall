@@ -1,6 +1,125 @@
 import { SuperAgentRequest } from 'superagent'
 import { stubFor } from './wiremock'
 
+const CUSTODY_FILTER_PRISONER_ID = 'A0164ED'
+const ACTIVE_BOOKING_ID = 1233536
+const OTHER_BOOKING_ID = 9999999
+
+export const custodyFilterRecallIds = {
+  currentPeriod: '11111111-1111-1111-1111-111111111111',
+  previousPeriod: '22222222-2222-2222-2222-222222222222',
+  nullBooking: '33333333-3333-3333-3333-333333333333',
+}
+
+const custodyFilterSentence = (sentenceUuid: string) => ({
+  sentenceUuid,
+  offenceCode: 'WA11001',
+  offenceStartDate: '2023-02-02',
+  offenceEndDate: null,
+  sentenceDate: '2023-08-14',
+  lineNumber: '1',
+  countNumber: null,
+  periodLengths: [
+    {
+      years: 1,
+      months: null,
+      weeks: null,
+      days: null,
+      periodOrder: 'years,months,weeks,days',
+      periodLengthType: 'SENTENCE_LENGTH',
+      legacyData: {
+        lifeSentence: false,
+        sentenceTermCode: 'IMP',
+        sentenceTermDescription: 'Imprisonment',
+      },
+      periodLengthUuid: '57f57e29-88aa-41b6-9605-9d7876c24b72',
+    },
+  ],
+  sentenceServeType: 'CONCURRENT',
+  sentenceTypeDescription: 'Unknown pre-recall sentence',
+})
+
+const custodyFilterRecall = ({
+  recallUuid,
+  bookingId,
+  source = 'DPS',
+  createdAt = '2026-02-02T10:28:17Z',
+  createdByPrison = 'KMI',
+}: {
+  recallUuid: string
+  bookingId: number | null
+  source?: 'DPS' | 'NOMIS'
+  createdAt?: string
+  createdByPrison?: string | null
+}) => ({
+  recallUuid,
+  prisonerId: CUSTODY_FILTER_PRISONER_ID,
+  revocationDate: '2025-10-20',
+  returnToCustodyDate: '2025-10-25',
+  inPrisonOnRevocationDate: false,
+  recallType: 'LR',
+  createdAt,
+  createdByUsername: 'RECORD_A_RECALL_USER',
+  createdByPrison,
+  source,
+  courtCases: [
+    {
+      courtCaseReference: 'REF001',
+      courtCaseUuid: `court-case-${recallUuid}`,
+      courtCode: 'PENRCT',
+      sentencingAppearanceDate: '2025-04-01',
+      bookingId,
+      sentences: [custodyFilterSentence(`sentence-${recallUuid}`)],
+    },
+  ],
+  ual: null,
+  calculationRequestId: null,
+  isManual: true,
+})
+
+const prisonerRecallsResponse = (
+  recalls: ReturnType<typeof custodyFilterRecall>[],
+  prisonerRecallTotal = recalls.length,
+) => ({
+  recalls,
+  prisonerRecallTotal,
+})
+
+const custodyFilterAllRecalls = () => [
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.currentPeriod,
+    bookingId: ACTIVE_BOOKING_ID,
+    createdAt: '2026-03-01T10:00:00Z',
+  }),
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.previousPeriod,
+    bookingId: OTHER_BOOKING_ID,
+    createdAt: '2026-02-01T10:00:00Z',
+  }),
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.nullBooking,
+    bookingId: null,
+    source: 'NOMIS',
+    createdAt: '2026-01-01T10:00:00Z',
+    createdByPrison: null,
+  }),
+]
+
+const custodyFilterCurrentPeriodRecalls = () => [
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.currentPeriod,
+    bookingId: ACTIVE_BOOKING_ID,
+    createdAt: '2026-03-01T10:00:00Z',
+  }),
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.nullBooking,
+    bookingId: null,
+    source: 'NOMIS',
+    createdAt: '2026-01-01T10:00:00Z',
+    createdByPrison: null,
+  }),
+]
+
 export default {
   stubPing: (httpStatus = 200): SuperAgentRequest =>
     stubFor({
@@ -166,7 +285,9 @@ export default {
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: [
+        jsonBody: {
+          prisonerRecallTotal: 1,
+          recalls: [
           {
             recallUuid: 'ab8bf994-4329-4de1-9187-3bb5254325d0',
             prisonerId: 'A6684EC',
@@ -442,9 +563,91 @@ export default {
             isManual: true,
           },
         ],
+        },
       },
     })
   },
+  stubRecallsForCustodyPeriodFilter: async (): Promise<void> => {
+    await Promise.all([
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          queryParameters: {
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse(custodyFilterCurrentPeriodRecalls(), 3),
+        },
+      }),
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          queryParameters: {
+            bookingId: { equalTo: '' },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse(custodyFilterAllRecalls(), 3),
+        },
+      }),
+    ])
+  },
+  stubRecallsOnlyOnPreviousBooking: async (): Promise<void> => {
+    await Promise.all([
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          queryParameters: {
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse([], 1),
+        },
+      }),
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          queryParameters: {
+            bookingId: { equalTo: '' },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse([
+            custodyFilterRecall({
+              recallUuid: custodyFilterRecallIds.previousPeriod,
+              bookingId: OTHER_BOOKING_ID,
+            }),
+          ], 1),
+        },
+      }),
+    ])
+  },
+  stubNoRecallsForPrisoner: (): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: prisonerRecallsResponse([], 0),
+      },
+    }),
   stubCreateRecall: (): SuperAgentRequest =>
     stubFor({
       request: {

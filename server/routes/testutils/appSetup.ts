@@ -7,6 +7,8 @@ import nunjucksSetup from '../../utils/nunjucksSetup'
 import errorHandler from '../../errorHandler'
 import type { Services } from '../../services'
 import AuditService from '../../services/auditService'
+import PrisonerSearchService from '../../services/prisonerSearchService'
+import TestData from '../../testutils/testData'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import setUpWebSession from '../../middleware/setUpWebSession'
 import populateValidationErrors from '../../middleware/populateValidationErrors'
@@ -62,12 +64,23 @@ function appSetup(
   app.use((req, res, next) => {
     req.user = userSupplier() as Express.User
     req.flash = flashProvider
-    res.locals = {
-      user: { ...req.user } as HmppsUser,
-      prisoner: {
-        firstName: 'JOHN',
-        lastName: 'SMITH',
-      } as PrisonerSearchApiPrisoner,
+    res.locals.user = { ...req.user } as HmppsUser
+    res.locals.prisoner = {
+      firstName: 'JOHN',
+      lastName: 'SMITH',
+    } as PrisonerSearchApiPrisoner
+    next()
+  })
+  app.use('/person/:nomsId', async (req, res, next) => {
+    if (services.prisonerSearchService) {
+      try {
+        res.locals.prisoner = await (services.prisonerSearchService as PrisonerSearchService).getPrisonerDetails(
+          req.params.nomsId,
+          res.locals.user.username,
+        )
+      } catch {
+        res.locals.prisoner = TestData.prisoner({ prisonerNumber: req.params.nomsId })
+      }
     }
     next()
   })

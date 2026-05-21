@@ -25,6 +25,7 @@ export default class TestData {
     prisonName = 'HMP Hewell',
     cellLocation = '1-1-C-028',
     locationDescription = undefined,
+    ...overrides
   }: Partial<PrisonerSearchApiPrisoner> = {}): PrisonerSearchApiPrisoner =>
     ({
       prisonerNumber,
@@ -35,6 +36,7 @@ export default class TestData {
       prisonName,
       cellLocation,
       locationDescription,
+      ...overrides,
     }) as PrisonerSearchApiPrisoner
 
   static apiRecall = ({
@@ -104,6 +106,14 @@ export default class TestData {
       recallTypeCode,
       sentenceIds,
     }) as ExistingRecall
+
+  static recallsForPrisoner = (
+    recalls: ExistingRecall[],
+    prisonerRecallTotal: number = recalls.length,
+  ): { recalls: ExistingRecall[]; prisonerRecallTotal: number } => ({
+    recalls,
+    prisonerRecallTotal,
+  })
 
   static serviceDefinitions = ({
     services = {

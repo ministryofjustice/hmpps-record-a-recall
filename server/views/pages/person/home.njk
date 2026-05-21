@@ -1,6 +1,7 @@
 {% extends "../../partials/prisonerBannerLayout.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "hmpps/components/court-cases-release-dates/sub-navigation/macro.njk" import subNavigation %}
 {% from "hmpps/components/court-cases-release-dates/things-to-do/macro.njk" import thingsToDo %}
 {% from "partials/components/recall-card/macro.njk" import recallCard %}
@@ -15,21 +16,17 @@
 {% endblock %}
 
 {% block content %}
-{% set hasRecalls = recalls and recalls.length %}
+{% set hasRecalls = totalRecallsCount > 0 %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">Recalls</h1>
     {{ thingsToDo(serviceDefinitions, 'recalls') }}
-    {% if not hasRecalls %}
-      <p data-qa="no-recalls-hint">There are no recalls recorded.</p>
-    {% endif %}
 
-    {% if fromUnknownPreRecallJourney %} 
+    {% if fromUnknownPreRecallJourney %}
       <div data-qa="record-recall-notification-panel">
         {{ recordARecallNoificationPanel(nomsId) }}
       </div>
     {% else %}
-
       {{ govukButton({
         classes: "govuk-button--secondary",
         text: "Record a recall",
@@ -38,14 +35,78 @@
         attributes: { 'data-qa': 'create-new-recall-btn' }
       }) }}
     {% endif %}
+
+    {% if hasRecalls %}
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+          <details class="govuk-details filter filter-box govuk-!-margin-bottom-2" data-qa="filter-previous-periods-of-custody">
+            <summary class="govuk-details__summary" data-qa="filterSortSummary">
+              <span class="govuk-details__summary-text">
+                Filter previous periods of custody
+              </span>
+              <div class="govuk-body govuk-!-font-weight-bold results" data-qa="recalls-showing-count">
+                Showing <strong>{{ displayedRecallsCount }}</strong> of <strong>{{ totalRecallsCount }}</strong> recalls
+              </div>
+            </summary>
+            <div class="govuk-details__text">
+              <form method="get" action="/person/{{ nomsId }}">
+                {% if fromUnknownPreRecallJourney %}
+                  <input type="hidden" name="unknownPreRecallJourney" value="true">
+                {% endif %}
+                {{
+                  govukCheckboxes({
+                    name: 'includeRecallsFromPreviousPeriodsOfCustody',
+                    classes: "govuk-checkboxes--small",
+                    fieldset: {
+                      legend: {
+                        text: "Previous recalls",
+                        classes: "govuk-fieldset__legend--s"
+                      }
+                    },
+                    items: [{
+                      value: 'true',
+                      text: 'Include recalls from previous periods of custody',
+                      checked: includeRecallsFromPreviousPeriodsOfCustody
+                    }]
+                  })
+                }}
+
+                {{ govukButton({
+                  text: "Apply",
+                  classes: 'govuk-!-margin-bottom-1',
+                  attributes: {
+                    'data-qa': 'applyButton'
+                  }
+                }) }}
+              </form>
+            </div>
+          </details>
+        </div>
       </div>
-</div>
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
-    {% for recall in recalls %}
-      {{ recallCard(recall, serviceDefinitions) }}
-    {% endfor %}
+      <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--m">
+    {% endif %}
+
+    {% if not hasRecalls %}
+      <p class="govuk-body" data-qa="no-recalls-hint">There are no recalls recorded.</p>
+    {% elif showNoRecallsInCurrentPeriodOfCustodyMessage %}
+      <p class="govuk-body" data-qa="no-recalls-in-current-period-hint">
+        There are no recalls recorded for this period of custody for {{ prisoner | firstNameSpaceLastName }}.
+      </p>
+      <p class="govuk-body" data-qa="no-recalls-in-current-period-filter-hint">
+        You can use the filters to show recalls from previous periods of custody.
+      </p>
+    {% endif %}
   </div>
 </div>
- 
+
+{% if recalls and recalls.length %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-0">
+      {% for recall in recalls %}
+        {{ recallCard(recall, serviceDefinitions) }}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
 {% endblock %}

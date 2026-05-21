@@ -164,12 +164,18 @@ export default class RecallService {
     return sortedRecalls.length > 0 ? new Date(sortedRecalls[0].revocationDate) : undefined
   }
 
-  public async getRecallsForPrisoner(prisonerId: string, username: string): Promise<ExistingRecall[]> {
-    const sortedRecalls = await this.remandAndSentencingApiClient
-      .getAllRecalls(prisonerId, username)
-      .then(recalls => recalls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+  public async getRecallsForPrisoner(
+    prisonerId: string,
+    username: string,
+    bookingId = '',
+  ): Promise<{ recalls: ExistingRecall[]; prisonerRecallTotal: number }> {
+    const response = await this.remandAndSentencingApiClient.getRecallsForPrisoner(prisonerId, username, bookingId)
+    const sortedRecalls = response.recalls.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
     const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
-    return this.enrichRecalls(sortedRecalls, username, latestRecallUuid)
+    const recalls = await this.enrichRecalls(sortedRecalls, username, latestRecallUuid)
+    return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
   }
 
   public async getRecall(recallUuid: string, username: string): Promise<ExistingRecall> {
@@ -267,6 +273,7 @@ export default class RecallService {
               ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
               : undefined,
             courtCaseDate: courtCase.sentencingAppearanceDate,
+            bookingId: courtCase.bookingId,
             sentences: courtCase.sentences.map(sentence => {
               sentenceIds.push(sentence.sentenceUuid)
 

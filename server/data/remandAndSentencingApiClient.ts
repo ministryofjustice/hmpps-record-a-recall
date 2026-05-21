@@ -2,6 +2,7 @@ import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import {
   ApiRecall,
+  PrisonerRecallsResponse,
   CreateRecall,
   CreateRecallResponse,
   UpdateSentenceTypesRequest,
@@ -59,13 +60,23 @@ export default class RemandAndSentencingApiClient extends RestClient {
     ) as Promise<CreateRecallResponse>
   }
 
-  async getAllRecalls(prisonerId: string, username: string): Promise<ApiRecall[]> {
+  async getRecallsForPrisoner(
+    prisonerId: string,
+    username: string,
+    bookingId = '',
+  ): Promise<PrisonerRecallsResponse> {
     return this.get(
       {
         path: `/recall/person/${prisonerId}`,
+        query: { bookingId },
       },
       asSystem(username),
-    ) as Promise<ApiRecall[]>
+    ) as Promise<PrisonerRecallsResponse>
+  }
+
+  async getAllRecalls(prisonerId: string, username: string): Promise<ApiRecall[]> {
+    const response = await this.getRecallsForPrisoner(prisonerId, username)
+    return response.recalls
   }
 
   async deleteRecall(recallId: string, username: string): Promise<void> {

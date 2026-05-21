@@ -25,6 +25,7 @@ export interface ExistingRecallCourtCase {
   courtCaseUuid?: string
   courtName?: string
   courtCaseDate?: string
+  bookingId?: number | null
   sentences?: ExistingRecallSentence[]
 }
 

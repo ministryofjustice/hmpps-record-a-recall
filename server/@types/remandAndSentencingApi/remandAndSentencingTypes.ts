@@ -3,6 +3,7 @@ import { components } from './index'
 export type CreateRecall = components['schemas']['CreateRecall']
 export type CreateRecallResponse = components['schemas']['SaveRecallResponse']
 export type ApiRecall = components['schemas']['Recall']
+export type PrisonerRecallsResponse = components['schemas']['PrisonerRecallsResponse']
 export type ApiRecallType = ApiRecall['recallType']
 export type ApiRecalledSentence = components['schemas']['RecalledSentence']
 
