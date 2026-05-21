@@ -154,13 +154,10 @@ export default class RecallService {
     username: string,
     recallIdToExclude?: string,
   ): Promise<Date> {
-    const sortedRecalls = await this.remandAndSentencingApiClient
-      .getAllRecalls(prisonerId, username)
-      .then(recalls =>
-        recalls
-          .filter(it => it.revocationDate && (!recallIdToExclude || it.recallUuid !== recallIdToExclude))
-          .sort((a, b) => new Date(b.revocationDate).getTime() - new Date(a.revocationDate).getTime()),
-      )
+    const { recalls } = await this.remandAndSentencingApiClient.getRecallsForPrisoner(prisonerId, username)
+    const sortedRecalls = recalls
+      .filter(it => it.revocationDate && (!recallIdToExclude || it.recallUuid !== recallIdToExclude))
+      .sort((a, b) => new Date(b.revocationDate).getTime() - new Date(a.revocationDate).getTime())
     return sortedRecalls.length > 0 ? new Date(sortedRecalls[0].revocationDate) : undefined
   }
 
@@ -168,13 +165,25 @@ export default class RecallService {
     prisonerId: string,
     username: string,
     bookingId = '',
+    periodOfCustodyBookingId = '',
   ): Promise<{ recalls: ExistingRecall[]; prisonerRecallTotal: number }> {
-    const response = await this.remandAndSentencingApiClient.getRecallsForPrisoner(prisonerId, username, bookingId)
-    const sortedRecalls = response.recalls.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    const response = await this.remandAndSentencingApiClient.getRecallsForPrisoner(
+      prisonerId,
+      username,
+      bookingId,
+      periodOfCustodyBookingId,
     )
-    const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
-    const recalls = await this.enrichRecalls(sortedRecalls, username, latestRecallUuid)
+    const latestRecallUuid = response.recalls.reduce<ApiRecall | undefined>(
+      (latest, recall) =>
+        !latest || new Date(recall.createdAt).getTime() > new Date(latest.createdAt).getTime() ? recall : latest,
+      undefined,
+    )?.recallUuid
+    const recallsInDisplayOrder = periodOfCustodyBookingId
+      ? response.recalls
+      : [...response.recalls].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
+    const recalls = await this.enrichRecalls(recallsInDisplayOrder, username, latestRecallUuid)
     return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
   }
 
@@ -273,7 +282,6 @@ export default class RecallService {
               ? courts.find(court => court.courtId === courtCase.courtCode)?.courtName
               : undefined,
             courtCaseDate: courtCase.sentencingAppearanceDate,
-            bookingId: courtCase.bookingId,
             sentences: courtCase.sentences.map(sentence => {
               sentenceIds.push(sentence.sentenceUuid)
 

@@ -364,7 +364,6 @@ describe('Recall service', () => {
           createdAtTimestamp: '2021-03-19T13:40:56Z',
           courtCases: [
             {
-              bookingId: undefined,
               courtName: undefined,
               courtCaseReference: 'CC1',
               courtCaseUuid: 'cc1-uuid',
@@ -372,7 +371,6 @@ describe('Recall service', () => {
               sentences: [],
             },
             {
-              bookingId: undefined,
               courtName: 'Inner London Sessions House Crown Court',
               courtCaseReference: undefined,
               courtCaseUuid: undefined,
@@ -476,7 +474,6 @@ describe('Recall service', () => {
           sentenceIds: [sentenceWithMaximum.sentenceUuid, sentenceWithMinimum.sentenceUuid],
           courtCases: [
             {
-              bookingId: undefined,
               courtName: undefined,
               courtCaseReference: 'CC1',
               courtCaseUuid: 'cc1-uuid',
@@ -1068,7 +1065,6 @@ describe('Recall service', () => {
         createdAtTimestamp: '2021-03-19T13:40:56Z',
         courtCases: [
           {
-            bookingId: undefined,
             courtName: undefined,
             courtCaseReference: 'CC1',
             courtCaseUuid: 'cc1-uuid',
@@ -1076,7 +1072,6 @@ describe('Recall service', () => {
             sentences: [],
           },
           {
-            bookingId: undefined,
             courtName: 'Inner London Sessions House Crown Court',
             courtCaseReference: undefined,
             courtCaseUuid: undefined,
@@ -1176,7 +1171,6 @@ describe('Recall service', () => {
         createdAtTimestamp: '2021-03-19T13:40:56Z',
         courtCases: [
           {
-            bookingId: undefined,
             courtName: undefined,
             courtCaseReference: 'CC1',
             courtCaseUuid: 'cc1-uuid',
@@ -1247,11 +1241,10 @@ describe('Recall service', () => {
         source: 'NOMIS',
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([
-        olderRecall,
-        newerRecall,
-        recallWithoutRevocationDate,
-      ])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [olderRecall, newerRecall, recallWithoutRevocationDate],
+        prisonerRecallTotal: 3,
+      })
 
       const result = await service.getLatestRevocationDate('A1234BC', 'user1')
 
@@ -1270,7 +1263,10 @@ describe('Recall service', () => {
         source: 'DPS',
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([excludedRecall, includedRecall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [excludedRecall, includedRecall],
+        prisonerRecallTotal: 2,
+      })
 
       const result = await service.getLatestRevocationDate('A1234BC', 'user1', excludedRecall.recallUuid)
 

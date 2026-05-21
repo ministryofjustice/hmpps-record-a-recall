@@ -145,7 +145,7 @@ describe('GET', () => {
     recallService.getRecallsForPrisoner.mockResolvedValue(
       TestData.recallsForPrisoner([
         TestData.existingRecall({
-          courtCases: [{ courtCaseUuid: 'cc-1', bookingId: 1233536, sentences: [] }],
+          courtCases: [{ courtCaseUuid: 'cc-1', sentences: [] }],
         }),
       ]),
     )
@@ -187,11 +187,11 @@ describe('GET', () => {
     )
     const currentRecall = TestData.existingRecall({
       createdAtTimestamp: '2024-01-01T00:00:00Z',
-      courtCases: [{ courtCaseUuid: 'cc-current', bookingId: 1233536, sentences: [] }],
+      courtCases: [{ courtCaseUuid: 'cc-current', sentences: [] }],
     })
     const previousRecall = TestData.existingRecall({
       createdAtTimestamp: '2023-01-01T00:00:00Z',
-      courtCases: [{ courtCaseUuid: 'cc-previous', bookingId: 9999999, sentences: [] }],
+      courtCases: [{ courtCaseUuid: 'cc-previous', sentences: [] }],
     })
     recallService.getRecallsForPrisoner.mockResolvedValue(
       TestData.recallsForPrisoner([currentRecall, previousRecall], 2),
@@ -211,11 +211,11 @@ describe('GET', () => {
     )
     const currentRecall = TestData.existingRecall({
       createdAtTimestamp: '2024-01-01T00:00:00Z',
-      courtCases: [{ courtCaseUuid: 'cc-current', bookingId: 1233536, sentences: [] }],
+      courtCases: [{ courtCaseUuid: 'cc-current', sentences: [] }],
     })
     const previousRecall = TestData.existingRecall({
       createdAtTimestamp: '2023-01-01T00:00:00Z',
-      courtCases: [{ courtCaseUuid: 'cc-previous', bookingId: 9999999, sentences: [] }],
+      courtCases: [{ courtCaseUuid: 'cc-previous', sentences: [] }],
     })
     recallService.getRecallsForPrisoner.mockImplementation((_nomsId, _user, bookingId) => {
       if (bookingId === '1233536') {

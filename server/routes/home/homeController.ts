@@ -3,8 +3,6 @@ import { Controller } from '../controller'
 import AuditService, { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
-import { sortRecallsWithCurrentPeriodFirst } from '../../utils/recallCustodySort'
-
 export default class HomeController implements Controller {
   constructor(
     private readonly courtCasesReleaseDatesService: CourtCasesReleaseDatesService,
@@ -26,18 +24,16 @@ export default class HomeController implements Controller {
 
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
 
-    const activeBookingId = prisoner.bookingId
-    const bookingIdForApi = includeRecallsFromPreviousPeriodsOfCustodyValue ? '' : (activeBookingId ?? '')
+    const activeBookingId = prisoner.bookingId ?? ''
+    const bookingIdForApi = includeRecallsFromPreviousPeriodsOfCustodyValue ? '' : activeBookingId
+    const periodOfCustodyBookingIdForApi = includeRecallsFromPreviousPeriodsOfCustodyValue ? activeBookingId : ''
 
-    const { recalls: recallsFromApi, prisonerRecallTotal } = await this.recallService.getRecallsForPrisoner(
+    const { recalls: displayedRecalls, prisonerRecallTotal } = await this.recallService.getRecallsForPrisoner(
       nomsId,
       user.username,
       bookingIdForApi,
+      periodOfCustodyBookingIdForApi,
     )
-
-    const displayedRecalls = includeRecallsFromPreviousPeriodsOfCustodyValue
-      ? sortRecallsWithCurrentPeriodFirst(recallsFromApi, activeBookingId)
-      : recallsFromApi
 
     const auditDetails = this.extractRecallUuids(displayedRecalls)
 

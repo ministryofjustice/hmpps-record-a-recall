@@ -277,17 +277,7 @@ export default {
   },
 
   stubAllRecallsForPrisoner: (): SuperAgentRequest => {
-    return stubFor({
-      request: {
-        method: 'GET',
-        urlPath: '/remand-and-sentencing-api/recall/person/A0164ED',
-      },
-      response: {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: {
-          prisonerRecallTotal: 1,
-          recalls: [
+    const recalls = [
           {
             recallUuid: 'ab8bf994-4329-4de1-9187-3bb5254325d0',
             prisonerId: 'A6684EC',
@@ -562,8 +552,16 @@ export default {
             calculationRequestId: null,
             isManual: true,
           },
-        ],
-        },
+        ]
+    return stubFor({
+      request: {
+        method: 'GET',
+        urlPath: '/remand-and-sentencing-api/recall/person/A0164ED/search',
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: { recalls, prisonerRecallTotal: recalls.length },
       },
     })
   },
@@ -572,7 +570,7 @@ export default {
       stubFor({
         request: {
           method: 'GET',
-          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
             bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
           },
@@ -586,7 +584,7 @@ export default {
       stubFor({
         request: {
           method: 'GET',
-          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
             bookingId: { equalTo: '' },
           },
@@ -604,7 +602,7 @@ export default {
       stubFor({
         request: {
           method: 'GET',
-          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
             bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
           },
@@ -618,7 +616,7 @@ export default {
       stubFor({
         request: {
           method: 'GET',
-          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
             bookingId: { equalTo: '' },
           },
@@ -640,7 +638,7 @@ export default {
     stubFor({
       request: {
         method: 'GET',
-        urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}`,
+        urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
       },
       response: {
         status: 200,
