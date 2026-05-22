@@ -165,25 +165,20 @@ export default class RecallService {
     prisonerId: string,
     username: string,
     bookingId = '',
-    periodOfCustodyBookingId = '',
+    includeAllPeriods = false,
   ): Promise<{ recalls: ExistingRecall[]; prisonerRecallTotal: number }> {
     const response = await this.remandAndSentencingApiClient.getRecallsForPrisoner(
       prisonerId,
       username,
       bookingId,
-      periodOfCustodyBookingId,
+      includeAllPeriods,
     )
     const latestRecallUuid = response.recalls.reduce<ApiRecall | undefined>(
       (latest, recall) =>
         !latest || new Date(recall.createdAt).getTime() > new Date(latest.createdAt).getTime() ? recall : latest,
       undefined,
     )?.recallUuid
-    const recallsInDisplayOrder = periodOfCustodyBookingId
-      ? response.recalls
-      : [...response.recalls].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        )
-    const recalls = await this.enrichRecalls(recallsInDisplayOrder, username, latestRecallUuid)
+    const recalls = await this.enrichRecalls(response.recalls, username, latestRecallUuid)
     return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
   }
 

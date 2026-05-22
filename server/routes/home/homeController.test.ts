@@ -217,11 +217,11 @@ describe('GET', () => {
       createdAtTimestamp: '2023-01-01T00:00:00Z',
       courtCases: [{ courtCaseUuid: 'cc-previous', sentences: [] }],
     })
-    recallService.getRecallsForPrisoner.mockImplementation((_nomsId, _user, bookingId) => {
-      if (bookingId === '1233536') {
-        return Promise.resolve(TestData.recallsForPrisoner([currentRecall], 2))
+    recallService.getRecallsForPrisoner.mockImplementation((_nomsId, _user, _bookingId, includeAllPeriods) => {
+      if (includeAllPeriods) {
+        return Promise.resolve(TestData.recallsForPrisoner([currentRecall, previousRecall], 2))
       }
-      return Promise.resolve(TestData.recallsForPrisoner([currentRecall, previousRecall], 2))
+      return Promise.resolve(TestData.recallsForPrisoner([currentRecall], 2))
     })
 
     const response = await request(app).get(`/person/${nomsId}?includeRecallsFromPreviousPeriodsOfCustody=true`)

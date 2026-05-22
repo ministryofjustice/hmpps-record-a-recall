@@ -511,7 +511,7 @@ describe('Recall service', () => {
         createdAt: '2019-01-18T13:40:56Z',
         source: 'DPS',
       })
-      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({ recalls: [middle, oldest, latest], prisonerRecallTotal: [middle, oldest, latest].length })
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({ recalls: [latest, middle, oldest], prisonerRecallTotal: [middle, oldest, latest].length })
 
       const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
@@ -549,7 +549,7 @@ describe('Recall service', () => {
         createdAt: '2019-01-18T13:40:56Z',
         source: 'DPS',
       })
-      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({ recalls: [oldest, latest], prisonerRecallTotal: [oldest, latest].length })
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({ recalls: [latest, oldest], prisonerRecallTotal: [oldest, latest].length })
 
       const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 

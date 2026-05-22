@@ -573,6 +573,7 @@ export default {
           urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
             bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { absent: true },
           },
         },
         response: {
@@ -586,7 +587,8 @@ export default {
           method: 'GET',
           urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
-            bookingId: { equalTo: '' },
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { equalTo: 'true' },
           },
         },
         response: {
@@ -605,6 +607,7 @@ export default {
           urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
             bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { absent: true },
           },
         },
         response: {
@@ -618,7 +621,8 @@ export default {
           method: 'GET',
           urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
           queryParameters: {
-            bookingId: { equalTo: '' },
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { equalTo: 'true' },
           },
         },
         response: {

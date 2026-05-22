@@ -25,14 +25,12 @@ export default class HomeController implements Controller {
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
 
     const activeBookingId = prisoner.bookingId ?? ''
-    const bookingIdForApi = includeRecallsFromPreviousPeriodsOfCustodyValue ? '' : activeBookingId
-    const periodOfCustodyBookingIdForApi = includeRecallsFromPreviousPeriodsOfCustodyValue ? activeBookingId : ''
 
     const { recalls: displayedRecalls, prisonerRecallTotal } = await this.recallService.getRecallsForPrisoner(
       nomsId,
       user.username,
-      bookingIdForApi,
-      periodOfCustodyBookingIdForApi,
+      activeBookingId,
+      includeRecallsFromPreviousPeriodsOfCustodyValue,
     )
 
     const auditDetails = this.extractRecallUuids(displayedRecalls)

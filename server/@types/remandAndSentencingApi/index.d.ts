@@ -1269,9 +1269,30 @@ export interface paths {
     }
     /**
      * Retrieve all recalls for a person
+     * @deprecated
      * @description This endpoint will retrieve  all recalls for a person
      */
     get: operations['getRecallsByPrisonerId']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/recall/person/{prisonerId}/search': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Search recalls for a person by period of custody
+     * @description Returns recalls for a person, optionally filtered by bookingId (current period of custody from prisoner search). When includeAllPeriods is false, only recalls linked to that booking (or with no court cases) are returned. When includeAllPeriods is true, all recalls are returned with current period of custody sorted before previous periods.
+     */
+    get: operations['searchRecallsByPrisonerId']
     put?: never
     post?: never
     delete?: never
@@ -2242,7 +2263,7 @@ export interface components {
       outcomeDescription?: string | null
       /** Format: date-time */
       nextEventDateTime?: string | null
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime?: string | null
       outcomeDispositionCode?: string | null
       outcomeConvictionFlag?: boolean | null
@@ -2380,7 +2401,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime?: string | null
       courtCode: string
       /** Format: uuid */
@@ -2963,7 +2984,7 @@ export interface components {
        * Format: int32
        * @description The size of the attachment file in bytes
        */
-      filesize: number
+      filesize?: number | null
       /** @description The filename of attachment file */
       filename: string
       /** @description The additional headers to use when calling the url for fetching this attachment */
@@ -3344,7 +3365,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime?: string | null
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -3632,7 +3653,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime: string
       nomisOutcomeCode?: string | null
       legacyData?: components['schemas']['CourtAppearanceLegacyData'] | null
@@ -3655,7 +3676,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime?: string | null
       courtId: string
     }
@@ -3710,7 +3731,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance'] | null
@@ -3721,7 +3742,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime?: string | null
       courtId: string
     }
@@ -3951,7 +3972,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 11:11:42.354922924 */
+      /** @example 19:08:04.752596334 */
       appearanceTime?: string | null
       courtCode?: string | null
       appearanceTypeDescription: string
@@ -7461,9 +7482,7 @@ export interface operations {
   }
   getRecallsByPrisonerId: {
     parameters: {
-      query?: {
-        bookingId?: string
-      }
+      query?: never
       header?: never
       path: {
         prisonerId: string
@@ -7473,6 +7492,49 @@ export interface operations {
     requestBody?: never
     responses: {
       /** @description Returns all recalls for person */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Recall'][]
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Recall'][]
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Recall'][]
+        }
+      }
+    }
+  }
+  searchRecallsByPrisonerId: {
+    parameters: {
+      query?: {
+        bookingId?: string
+        includeAllPeriods?: boolean
+      }
+      header?: never
+      path: {
+        prisonerId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns recalls for person with total count */
       200: {
         headers: {
           [name: string]: unknown

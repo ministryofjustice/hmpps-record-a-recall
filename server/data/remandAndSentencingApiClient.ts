@@ -64,12 +64,15 @@ export default class RemandAndSentencingApiClient extends RestClient {
     prisonerId: string,
     username: string,
     bookingId = '',
-    periodOfCustodyBookingId = '',
+    includeAllPeriods = false,
   ): Promise<PrisonerRecallsResponse> {
     return this.get(
       {
         path: `/recall/person/${prisonerId}/search`,
-        query: { bookingId, periodOfCustodyBookingId },
+        query: {
+          bookingId,
+          ...(includeAllPeriods ? { includeAllPeriods: true } : {}),
+        },
       },
       asSystem(username),
     ) as Promise<PrisonerRecallsResponse>
