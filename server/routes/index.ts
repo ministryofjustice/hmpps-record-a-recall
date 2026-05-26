@@ -131,7 +131,7 @@ export default function routes({
 
   route({
     path: `${journeyPath}/check-answers`,
-    controller: new CheckAnswersController(recallService),
+    controller: new CheckAnswersController(recallService, auditService),
     additionalMiddleware: [ensureInRecallJourney],
   })
 
