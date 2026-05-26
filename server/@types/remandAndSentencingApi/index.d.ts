@@ -1290,7 +1290,7 @@ export interface paths {
     }
     /**
      * Search recalls for a person by period of custody
-     * @description Returns recalls for a person, optionally filtered by bookingId (current period of custody from prisoner search). When includeAllPeriods is false, only recalls linked to that booking (or with no court cases) are returned. When includeAllPeriods is true, all recalls are returned with current period of custody sorted before previous periods.
+     * @description Filter by bookingId (current period of custody) unless includeAllPeriods is true, when all recalls are returned with the current period listed first.
      */
     get: operations['searchRecallsByPrisonerId']
     put?: never
@@ -2263,7 +2263,7 @@ export interface components {
       outcomeDescription?: string | null
       /** Format: date-time */
       nextEventDateTime?: string | null
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime?: string | null
       outcomeDispositionCode?: string | null
       outcomeConvictionFlag?: boolean | null
@@ -2401,7 +2401,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime?: string | null
       courtCode: string
       /** Format: uuid */
@@ -3365,7 +3365,7 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime?: string | null
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
@@ -3653,7 +3653,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime: string
       nomisOutcomeCode?: string | null
       legacyData?: components['schemas']['CourtAppearanceLegacyData'] | null
@@ -3676,7 +3676,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime?: string | null
       courtId: string
     }
@@ -3731,7 +3731,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance'] | null
@@ -3742,7 +3742,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime?: string | null
       courtId: string
     }
@@ -3863,11 +3863,11 @@ export interface components {
       /** Format: int64 */
       offset?: number
       sort?: components['schemas']['SortObject']
+      /** Format: int32 */
+      pageSize?: number
       paged?: boolean
       /** Format: int32 */
       pageNumber?: number
-      /** Format: int32 */
-      pageSize?: number
       unpaged?: boolean
     }
     PagedAppearancePeriodLength: {
@@ -3972,7 +3972,7 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 19:08:04.752596334 */
+      /** @example 07:44:12.325357304 */
       appearanceTime?: string | null
       courtCode?: string | null
       appearanceTypeDescription: string
@@ -4055,9 +4055,9 @@ export interface components {
       /** Format: int32 */
       number?: number
       first?: boolean
+      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
-      sort?: components['schemas']['SortObject']
       empty?: boolean
     }
     SortObject: {
