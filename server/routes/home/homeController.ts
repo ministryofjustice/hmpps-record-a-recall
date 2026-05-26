@@ -3,6 +3,7 @@ import { Controller } from '../controller'
 import AuditService, { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
+
 export default class HomeController implements Controller {
   constructor(
     private readonly courtCasesReleaseDatesService: CourtCasesReleaseDatesService,
@@ -40,9 +41,7 @@ export default class HomeController implements Controller {
     const totalRecallsCount = prisonerRecallTotal
     const displayedRecallsCount = displayedRecalls.length
     const showNoRecallsInCurrentPeriodOfCustodyMessage =
-      totalRecallsCount > 0 &&
-      displayedRecallsCount === 0 &&
-      !includeRecallsFromPreviousPeriodsOfCustodyValue
+      totalRecallsCount > 0 && displayedRecallsCount === 0 && !includeRecallsFromPreviousPeriodsOfCustodyValue
 
     return res.render('pages/person/home', {
       recalls: displayedRecalls,

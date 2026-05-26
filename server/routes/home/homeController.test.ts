@@ -163,12 +163,7 @@ describe('GET', () => {
     prisonerSearchService.getPrisonerDetails.mockResolvedValue(
       TestData.prisoner({ prisonerNumber: nomsId, bookingId: '1233536' }),
     )
-    recallService.getRecallsForPrisoner.mockResolvedValue(
-      TestData.recallsForPrisoner(
-        [],
-        1,
-      ),
-    )
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([], 1))
 
     const response = await request(app).get(`/person/${nomsId}`)
 
