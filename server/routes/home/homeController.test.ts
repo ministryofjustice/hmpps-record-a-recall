@@ -44,7 +44,7 @@ afterEach(() => {
 describe('GET', () => {
   it('should render home page with correct navigation', async () => {
     // Given
-    recallService.getRecallsForPrisoner.mockResolvedValue([])
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([]))
 
     // When
     const response = await request(app).get(`/person/${nomsId}`)
@@ -57,7 +57,7 @@ describe('GET', () => {
 
   it('should show no recalls hint if there are no recalls', async () => {
     // Given
-    recallService.getRecallsForPrisoner.mockResolvedValue([])
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([]))
 
     // When
     const response = await request(app).get(`/person/${nomsId}`)
@@ -94,7 +94,7 @@ describe('GET', () => {
       canDelete: false,
       source: 'DPS',
     })
-    recallService.getRecallsForPrisoner.mockResolvedValue([middle, oldest, latest])
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([latest, middle, oldest]))
 
     // When
     const response = await request(app).get(`/person/${nomsId}`)
@@ -127,7 +127,7 @@ describe('GET', () => {
 
   it('should show trvotd-recall notification banner when coming from unknown-pre-recall journey', async () => {
     // Given
-    recallService.getRecallsForPrisoner.mockResolvedValue([])
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([]))
 
     // When
     const response = await request(app).get(`/person/${nomsId}?unknownPreRecallJourney=true`)
@@ -136,5 +136,100 @@ describe('GET', () => {
     expect(response.status).toEqual(200)
     const $ = cheerio.load(response.text)
     expect($('[data-qa="record-recall-notification-panel"]')).toHaveLength(1)
+  })
+
+  it('should show filter and recall counts when recalls exist', async () => {
+    prisonerSearchService.getPrisonerDetails.mockResolvedValue(
+      TestData.prisoner({ prisonerNumber: nomsId, bookingId: '1233536' }),
+    )
+    recallService.getRecallsForPrisoner.mockResolvedValue(
+      TestData.recallsForPrisoner([
+        TestData.existingRecall({
+          courtCases: [{ courtCaseUuid: 'cc-1', sentences: [] }],
+        }),
+      ]),
+    )
+
+    const response = await request(app).get(`/person/${nomsId}`)
+
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('[data-qa=filter-previous-periods-of-custody]')).toHaveLength(1)
+    expect($('[data-qa=recalls-showing-count]').text().replace(/\s+/g, ' ').trim()).toBe('Showing 1 of 1 recalls')
+    expect($('[data-qa=no-recalls-hint]')).toHaveLength(0)
+  })
+
+  it('should show empty current period message when recalls exist only on other bookings', async () => {
+    prisonerSearchService.getPrisonerDetails.mockResolvedValue(
+      TestData.prisoner({ prisonerNumber: nomsId, bookingId: '1233536' }),
+    )
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([], 1))
+
+    const response = await request(app).get(`/person/${nomsId}`)
+
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('[data-qa=recalls-showing-count]').text().replace(/\s+/g, ' ').trim()).toBe('Showing 0 of 1 recalls')
+    expect($('[data-qa=no-recalls-in-current-period-hint]').text().trim()).toBe(
+      'There are no recalls recorded for this period of custody for John Smith.',
+    )
+    expect($('.recall-card')).toHaveLength(0)
+  })
+
+  it('should show all recalls when include previous periods filter is applied', async () => {
+    prisonerSearchService.getPrisonerDetails.mockResolvedValue(
+      TestData.prisoner({ prisonerNumber: nomsId, bookingId: '1233536' }),
+    )
+    const currentRecall = TestData.existingRecall({
+      createdAtTimestamp: '2024-01-01T00:00:00Z',
+      courtCases: [{ courtCaseUuid: 'cc-current', sentences: [] }],
+    })
+    const previousRecall = TestData.existingRecall({
+      createdAtTimestamp: '2023-01-01T00:00:00Z',
+      courtCases: [{ courtCaseUuid: 'cc-previous', sentences: [] }],
+    })
+    recallService.getRecallsForPrisoner.mockResolvedValue(
+      TestData.recallsForPrisoner([currentRecall, previousRecall], 2),
+    )
+
+    const response = await request(app).get(`/person/${nomsId}?includeRecallsFromPreviousPeriodsOfCustody=true`)
+
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('[data-qa=recalls-showing-count]').text().replace(/\s+/g, ' ').trim()).toBe('Showing 2 of 2 recalls')
+    expect($('.recall-card')).toHaveLength(2)
+  })
+
+  it('returns to current period view when filter is unchecked and applied', async () => {
+    prisonerSearchService.getPrisonerDetails.mockResolvedValue(
+      TestData.prisoner({ prisonerNumber: nomsId, bookingId: '1233536' }),
+    )
+    const currentRecall = TestData.existingRecall({
+      createdAtTimestamp: '2024-01-01T00:00:00Z',
+      courtCases: [{ courtCaseUuid: 'cc-current', sentences: [] }],
+    })
+    const previousRecall = TestData.existingRecall({
+      createdAtTimestamp: '2023-01-01T00:00:00Z',
+      courtCases: [{ courtCaseUuid: 'cc-previous', sentences: [] }],
+    })
+    recallService.getRecallsForPrisoner.mockImplementation((_nomsId, _user, _bookingId, includeAllPeriods) => {
+      if (includeAllPeriods) {
+        return Promise.resolve(TestData.recallsForPrisoner([currentRecall, previousRecall], 2))
+      }
+      return Promise.resolve(TestData.recallsForPrisoner([currentRecall], 2))
+    })
+
+    const response = await request(app).get(`/person/${nomsId}?includeRecallsFromPreviousPeriodsOfCustody=true`)
+
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('[data-qa=recalls-showing-count]').text().replace(/\s+/g, ' ').trim()).toBe('Showing 2 of 2 recalls')
+
+    const filteredResponse = await request(app).get(`/person/${nomsId}`)
+    const filtered$ = cheerio.load(filteredResponse.text)
+    expect(filtered$('[data-qa=recalls-showing-count]').text().replace(/\s+/g, ' ').trim()).toBe(
+      'Showing 1 of 2 recalls',
+    )
+    expect(filtered$('.recall-card')).toHaveLength(1)
   })
 })

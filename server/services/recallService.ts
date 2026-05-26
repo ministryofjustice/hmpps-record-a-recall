@@ -154,22 +154,28 @@ export default class RecallService {
     username: string,
     recallIdToExclude?: string,
   ): Promise<Date> {
-    const sortedRecalls = await this.remandAndSentencingApiClient
-      .getAllRecalls(prisonerId, username)
-      .then(recalls =>
-        recalls
-          .filter(it => it.revocationDate && (!recallIdToExclude || it.recallUuid !== recallIdToExclude))
-          .sort((a, b) => new Date(b.revocationDate).getTime() - new Date(a.revocationDate).getTime()),
-      )
+    const { recalls } = await this.remandAndSentencingApiClient.getRecallsForPrisoner(prisonerId, username)
+    const sortedRecalls = recalls
+      .filter(it => it.revocationDate && (!recallIdToExclude || it.recallUuid !== recallIdToExclude))
+      .sort((a, b) => new Date(b.revocationDate).getTime() - new Date(a.revocationDate).getTime())
     return sortedRecalls.length > 0 ? new Date(sortedRecalls[0].revocationDate) : undefined
   }
 
-  public async getRecallsForPrisoner(prisonerId: string, username: string): Promise<ExistingRecall[]> {
-    const sortedRecalls = await this.remandAndSentencingApiClient
-      .getAllRecalls(prisonerId, username)
-      .then(recalls => recalls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
-    const latestRecallUuid = sortedRecalls.length > 0 ? sortedRecalls[0].recallUuid : undefined
-    return this.enrichRecalls(sortedRecalls, username, latestRecallUuid)
+  public async getRecallsForPrisoner(
+    prisonerId: string,
+    username: string,
+    bookingId = '',
+    includeAllPeriods = false,
+  ): Promise<{ recalls: ExistingRecall[]; prisonerRecallTotal: number }> {
+    const response = await this.remandAndSentencingApiClient.getRecallsForPrisoner(
+      prisonerId,
+      username,
+      bookingId,
+      includeAllPeriods,
+    )
+    const latestRecallUuid = response.recalls[0]?.recallUuid
+    const recalls = await this.enrichRecalls(response.recalls, username, latestRecallUuid)
+    return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
   }
 
   public async getRecall(recallUuid: string, username: string): Promise<ExistingRecall> {

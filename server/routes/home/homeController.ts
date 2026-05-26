@@ -16,27 +16,43 @@ export default class HomeController implements Controller {
   GET = async (req: Request<{ nomsId: string }>, res: Response): Promise<void> => {
     const { nomsId } = req.params
     const { prisoner, user } = res.locals
+    const { includeRecallsFromPreviousPeriodsOfCustody } = req.query as {
+      includeRecallsFromPreviousPeriodsOfCustody?: string
+    }
 
     const fromUnknownPreRecallJourney = req.query?.unknownPreRecallJourney === 'true'
+    const includeRecallsFromPreviousPeriodsOfCustodyValue = includeRecallsFromPreviousPeriodsOfCustody === 'true'
 
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
 
-    const recalls = await this.recallService
-      .getRecallsForPrisoner(nomsId, user.username)
-      .then(it =>
-        it.sort((a, b) => new Date(b.createdAtTimestamp).getTime() - new Date(a.createdAtTimestamp).getTime()),
-      )
+    const activeBookingId = prisoner.bookingId ?? ''
 
-    const auditDetails = this.extractRecallUuids(recalls)
+    const { recalls: displayedRecalls, prisonerRecallTotal } = await this.recallService.getRecallsForPrisoner(
+      nomsId,
+      user.username,
+      activeBookingId,
+      includeRecallsFromPreviousPeriodsOfCustodyValue,
+    )
+
+    const auditDetails = this.extractRecallUuids(displayedRecalls)
 
     await this.auditService.logHomePageViewEvent(user.username, nomsId, req.id, auditDetails)
 
+    const totalRecallsCount = prisonerRecallTotal
+    const displayedRecallsCount = displayedRecalls.length
+    const showNoRecallsInCurrentPeriodOfCustodyMessage =
+      totalRecallsCount > 0 && displayedRecallsCount === 0 && !includeRecallsFromPreviousPeriodsOfCustodyValue
+
     return res.render('pages/person/home', {
-      recalls,
+      recalls: displayedRecalls,
       prisoner,
       nomsId,
       serviceDefinitions,
       fromUnknownPreRecallJourney,
+      totalRecallsCount,
+      displayedRecallsCount,
+      includeRecallsFromPreviousPeriodsOfCustody: includeRecallsFromPreviousPeriodsOfCustodyValue,
+      showNoRecallsInCurrentPeriodOfCustodyMessage,
     })
   }
 

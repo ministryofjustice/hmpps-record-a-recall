@@ -1,6 +1,125 @@
 import { SuperAgentRequest } from 'superagent'
 import { stubFor } from './wiremock'
 
+const CUSTODY_FILTER_PRISONER_ID = 'A0164ED'
+const ACTIVE_BOOKING_ID = 1233536
+const OTHER_BOOKING_ID = 9999999
+
+export const custodyFilterRecallIds = {
+  currentPeriod: '11111111-1111-1111-1111-111111111111',
+  previousPeriod: '22222222-2222-2222-2222-222222222222',
+  nullBooking: '33333333-3333-3333-3333-333333333333',
+}
+
+const custodyFilterSentence = (sentenceUuid: string) => ({
+  sentenceUuid,
+  offenceCode: 'WA11001',
+  offenceStartDate: '2023-02-02',
+  offenceEndDate: null,
+  sentenceDate: '2023-08-14',
+  lineNumber: '1',
+  countNumber: null,
+  periodLengths: [
+    {
+      years: 1,
+      months: null,
+      weeks: null,
+      days: null,
+      periodOrder: 'years,months,weeks,days',
+      periodLengthType: 'SENTENCE_LENGTH',
+      legacyData: {
+        lifeSentence: false,
+        sentenceTermCode: 'IMP',
+        sentenceTermDescription: 'Imprisonment',
+      },
+      periodLengthUuid: '57f57e29-88aa-41b6-9605-9d7876c24b72',
+    },
+  ],
+  sentenceServeType: 'CONCURRENT',
+  sentenceTypeDescription: 'Unknown pre-recall sentence',
+})
+
+const custodyFilterRecall = ({
+  recallUuid,
+  bookingId,
+  source = 'DPS',
+  createdAt = '2026-02-02T10:28:17Z',
+  createdByPrison = 'KMI',
+}: {
+  recallUuid: string
+  bookingId: number | null
+  source?: 'DPS' | 'NOMIS'
+  createdAt?: string
+  createdByPrison?: string | null
+}) => ({
+  recallUuid,
+  prisonerId: CUSTODY_FILTER_PRISONER_ID,
+  revocationDate: '2025-10-20',
+  returnToCustodyDate: '2025-10-25',
+  inPrisonOnRevocationDate: false,
+  recallType: 'LR',
+  createdAt,
+  createdByUsername: 'RECORD_A_RECALL_USER',
+  createdByPrison,
+  source,
+  courtCases: [
+    {
+      courtCaseReference: 'REF001',
+      courtCaseUuid: `court-case-${recallUuid}`,
+      courtCode: 'PENRCT',
+      sentencingAppearanceDate: '2025-04-01',
+      bookingId,
+      sentences: [custodyFilterSentence(`sentence-${recallUuid}`)],
+    },
+  ],
+  ual: null,
+  calculationRequestId: null,
+  isManual: true,
+})
+
+const prisonerRecallsResponse = (
+  recalls: ReturnType<typeof custodyFilterRecall>[],
+  prisonerRecallTotal = recalls.length,
+) => ({
+  recalls,
+  prisonerRecallTotal,
+})
+
+const custodyFilterAllRecalls = () => [
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.currentPeriod,
+    bookingId: ACTIVE_BOOKING_ID,
+    createdAt: '2026-03-01T10:00:00Z',
+  }),
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.previousPeriod,
+    bookingId: OTHER_BOOKING_ID,
+    createdAt: '2026-02-01T10:00:00Z',
+  }),
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.nullBooking,
+    bookingId: null,
+    source: 'NOMIS',
+    createdAt: '2026-01-01T10:00:00Z',
+    createdByPrison: null,
+  }),
+]
+
+const custodyFilterCurrentPeriodRecalls = () => [
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.currentPeriod,
+    bookingId: ACTIVE_BOOKING_ID,
+    createdAt: '2026-03-01T10:00:00Z',
+  }),
+  custodyFilterRecall({
+    recallUuid: custodyFilterRecallIds.nullBooking,
+    bookingId: null,
+    source: 'NOMIS',
+    createdAt: '2026-01-01T10:00:00Z',
+    createdByPrison: null,
+  }),
+]
+
 export default {
   stubPing: (httpStatus = 200): SuperAgentRequest =>
     stubFor({
@@ -158,293 +277,382 @@ export default {
   },
 
   stubAllRecallsForPrisoner: (): SuperAgentRequest => {
+    const recalls = [
+      {
+        recallUuid: 'ab8bf994-4329-4de1-9187-3bb5254325d0',
+        prisonerId: 'A6684EC',
+        revocationDate: '2025-10-20',
+        returnToCustodyDate: '2025-10-25',
+        inPrisonOnRevocationDate: false,
+        recallType: 'LR',
+        createdAt: '2026-02-02T10:28:17Z',
+        createdByUsername: 'RECORD_A_RECALL_USER',
+        createdByPrison: 'KMI',
+        source: 'DPS',
+        courtCases: [
+          {
+            courtCaseReference: null,
+            courtCaseUuid: '77cd2265-7903-406b-bbad-8268696779ee',
+            courtCode: 'PENRCT',
+            sentencingAppearanceDate: '2023-08-14',
+            sentences: [
+              {
+                sentenceUuid: '579e2584-18a6-43b1-97f7-36156d1b8bd9',
+                offenceCode: 'WA11001',
+                offenceStartDate: '2023-02-02',
+                offenceEndDate: null,
+                sentenceDate: '2023-08-14',
+                lineNumber: '1',
+                countNumber: null,
+                periodLengths: [
+                  {
+                    years: 1,
+                    months: null,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'SENTENCE_LENGTH',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'IMP',
+                      sentenceTermDescription: 'Imprisonment',
+                    },
+                    periodLengthUuid: '57f57e29-88aa-41b6-9605-9d7876c24b72',
+                  },
+                  {
+                    years: 2,
+                    months: null,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'LICENCE_PERIOD',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'LIC',
+                      sentenceTermDescription: 'Licence',
+                    },
+                    periodLengthUuid: '5a7cabbc-b000-449e-8e03-b17a05f77838',
+                  },
+                ],
+                sentenceServeType: 'CONCURRENT',
+                sentenceTypeDescription: 'Unknown pre-recall sentence',
+              },
+            ],
+          },
+          {
+            courtCaseReference: null,
+            courtCaseUuid: 'dd1f6eff-8922-48ac-858a-fe2609ec96d1',
+            courtCode: 'PENRCT',
+            sentencingAppearanceDate: '2025-03-03',
+            sentences: [
+              {
+                sentenceUuid: 'aa64f43f-8d81-460a-830d-5305f9153a2a',
+                offenceCode: 'TP47017',
+                offenceStartDate: '2025-02-02',
+                offenceEndDate: null,
+                sentenceDate: '2025-03-03',
+                lineNumber: '2',
+                countNumber: null,
+                periodLengths: [
+                  {
+                    years: null,
+                    months: 10,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'SENTENCE_LENGTH',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'IMP',
+                      sentenceTermDescription: 'Imprisonment',
+                    },
+                    periodLengthUuid: '79e8ddea-7694-4572-b8fd-e78f725e2e73',
+                  },
+                ],
+                sentenceServeType: 'CONCURRENT',
+                sentenceTypeDescription: 'Unknown pre-recall sentence',
+              },
+            ],
+          },
+        ],
+        ual: {
+          id: '155ec2e2-2622-4c4d-b5a7-076f2e581d59',
+          days: 4,
+        },
+        calculationRequestId: null,
+        isManual: true,
+      },
+      {
+        recallUuid: 'e62d4060-272b-4aa1-bf1a-def285b8edf4',
+        prisonerId: 'A6684EC',
+        revocationDate: null,
+        returnToCustodyDate: null,
+        inPrisonOnRevocationDate: null,
+        recallType: 'LR',
+        createdAt: '2026-01-30T16:28:18Z',
+        createdByUsername: 'hmpps-prisoner-from-nomis-migration-court-sentencing-2',
+        createdByPrison: null,
+        source: 'NOMIS',
+        courtCases: [
+          {
+            courtCaseReference: '12345',
+            courtCaseUuid: '90606348-64c2-4b77-92f9-d1659cfc830a',
+            courtCode: 'PENRCT',
+            sentencingAppearanceDate: '2024-04-04',
+            sentences: [
+              {
+                sentenceUuid: '27802785-d787-4b58-8c18-4ca9b84e7438',
+                offenceCode: 'AN16074',
+                offenceStartDate: '2023-03-03',
+                offenceEndDate: null,
+                sentenceDate: '2024-04-04',
+                lineNumber: '3',
+                countNumber: null,
+                periodLengths: [
+                  {
+                    years: 2,
+                    months: null,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'SENTENCE_LENGTH',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'IMP',
+                      sentenceTermDescription: 'Imprisonment',
+                    },
+                    periodLengthUuid: '8fd4bad4-563a-47e7-ba77-23003f93c6e4',
+                  },
+                ],
+                sentenceServeType: 'CONCURRENT',
+                sentenceTypeDescription: 'Unknown pre-recall sentence',
+              },
+            ],
+          },
+        ],
+        ual: null,
+        calculationRequestId: null,
+        isManual: true,
+      },
+      {
+        recallUuid: '599dd7cc-9180-4007-9f74-aae898570ca2',
+        prisonerId: 'A6684EC',
+        revocationDate: null,
+        returnToCustodyDate: null,
+        inPrisonOnRevocationDate: null,
+        recallType: 'LR',
+        createdAt: '2026-01-30T16:28:18Z',
+        createdByUsername: 'hmpps-prisoner-from-nomis-migration-court-sentencing-2',
+        createdByPrison: null,
+        source: 'NOMIS',
+        courtCases: [
+          {
+            courtCaseReference: null,
+            courtCaseUuid: 'dd1f6eff-8922-48ac-858a-fe2609ec96d1',
+            courtCode: 'PENRCT',
+            sentencingAppearanceDate: '2025-03-03',
+            sentences: [
+              {
+                sentenceUuid: 'aa64f43f-8d81-460a-830d-5305f9153a2a',
+                offenceCode: 'TP47017',
+                offenceStartDate: '2025-02-02',
+                offenceEndDate: null,
+                sentenceDate: '2025-03-03',
+                lineNumber: '2',
+                countNumber: null,
+                periodLengths: [
+                  {
+                    years: null,
+                    months: 10,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'SENTENCE_LENGTH',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'IMP',
+                      sentenceTermDescription: 'Imprisonment',
+                    },
+                    periodLengthUuid: '79e8ddea-7694-4572-b8fd-e78f725e2e73',
+                  },
+                ],
+                sentenceServeType: 'CONCURRENT',
+                sentenceTypeDescription: 'Unknown pre-recall sentence',
+              },
+            ],
+          },
+        ],
+        ual: null,
+        calculationRequestId: null,
+        isManual: true,
+      },
+      {
+        recallUuid: '9dad0869-567d-4565-9828-ceb0a2d1d241',
+        prisonerId: 'A6684EC',
+        revocationDate: null,
+        returnToCustodyDate: null,
+        inPrisonOnRevocationDate: null,
+        recallType: 'LR',
+        createdAt: '2026-01-30T16:28:19Z',
+        createdByUsername: 'hmpps-prisoner-from-nomis-migration-court-sentencing-2',
+        createdByPrison: null,
+        source: 'NOMIS',
+        courtCases: [
+          {
+            courtCaseReference: null,
+            courtCaseUuid: '77cd2265-7903-406b-bbad-8268696779ee',
+            courtCode: 'PENRCT',
+            sentencingAppearanceDate: '2023-08-14',
+            sentences: [
+              {
+                sentenceUuid: '579e2584-18a6-43b1-97f7-36156d1b8bd9',
+                offenceCode: 'WA11001',
+                offenceStartDate: '2023-02-02',
+                offenceEndDate: null,
+                sentenceDate: '2023-08-14',
+                lineNumber: '1',
+                countNumber: null,
+                periodLengths: [
+                  {
+                    years: 1,
+                    months: null,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'SENTENCE_LENGTH',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'IMP',
+                      sentenceTermDescription: 'Imprisonment',
+                    },
+                    periodLengthUuid: '57f57e29-88aa-41b6-9605-9d7876c24b72',
+                  },
+                  {
+                    years: 2,
+                    months: null,
+                    weeks: null,
+                    days: null,
+                    periodOrder: 'years,months,weeks,days',
+                    periodLengthType: 'LICENCE_PERIOD',
+                    legacyData: {
+                      lifeSentence: false,
+                      sentenceTermCode: 'LIC',
+                      sentenceTermDescription: 'Licence',
+                    },
+                    periodLengthUuid: '5a7cabbc-b000-449e-8e03-b17a05f77838',
+                  },
+                ],
+                sentenceServeType: 'CONCURRENT',
+                sentenceTypeDescription: 'Unknown pre-recall sentence',
+              },
+            ],
+          },
+        ],
+        ual: null,
+        calculationRequestId: null,
+        isManual: true,
+      },
+    ]
     return stubFor({
       request: {
         method: 'GET',
-        urlPath: '/remand-and-sentencing-api/recall/person/A0164ED',
+        urlPath: '/remand-and-sentencing-api/recall/person/A0164ED/search',
       },
       response: {
         status: 200,
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-        jsonBody: [
-          {
-            recallUuid: 'ab8bf994-4329-4de1-9187-3bb5254325d0',
-            prisonerId: 'A6684EC',
-            revocationDate: '2025-10-20',
-            returnToCustodyDate: '2025-10-25',
-            inPrisonOnRevocationDate: false,
-            recallType: 'LR',
-            createdAt: '2026-02-02T10:28:17Z',
-            createdByUsername: 'RECORD_A_RECALL_USER',
-            createdByPrison: 'KMI',
-            source: 'DPS',
-            courtCases: [
-              {
-                courtCaseReference: null,
-                courtCaseUuid: '77cd2265-7903-406b-bbad-8268696779ee',
-                courtCode: 'PENRCT',
-                sentencingAppearanceDate: '2023-08-14',
-                sentences: [
-                  {
-                    sentenceUuid: '579e2584-18a6-43b1-97f7-36156d1b8bd9',
-                    offenceCode: 'WA11001',
-                    offenceStartDate: '2023-02-02',
-                    offenceEndDate: null,
-                    sentenceDate: '2023-08-14',
-                    lineNumber: '1',
-                    countNumber: null,
-                    periodLengths: [
-                      {
-                        years: 1,
-                        months: null,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'SENTENCE_LENGTH',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'IMP',
-                          sentenceTermDescription: 'Imprisonment',
-                        },
-                        periodLengthUuid: '57f57e29-88aa-41b6-9605-9d7876c24b72',
-                      },
-                      {
-                        years: 2,
-                        months: null,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'LICENCE_PERIOD',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'LIC',
-                          sentenceTermDescription: 'Licence',
-                        },
-                        periodLengthUuid: '5a7cabbc-b000-449e-8e03-b17a05f77838',
-                      },
-                    ],
-                    sentenceServeType: 'CONCURRENT',
-                    sentenceTypeDescription: 'Unknown pre-recall sentence',
-                  },
-                ],
-              },
-              {
-                courtCaseReference: null,
-                courtCaseUuid: 'dd1f6eff-8922-48ac-858a-fe2609ec96d1',
-                courtCode: 'PENRCT',
-                sentencingAppearanceDate: '2025-03-03',
-                sentences: [
-                  {
-                    sentenceUuid: 'aa64f43f-8d81-460a-830d-5305f9153a2a',
-                    offenceCode: 'TP47017',
-                    offenceStartDate: '2025-02-02',
-                    offenceEndDate: null,
-                    sentenceDate: '2025-03-03',
-                    lineNumber: '2',
-                    countNumber: null,
-                    periodLengths: [
-                      {
-                        years: null,
-                        months: 10,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'SENTENCE_LENGTH',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'IMP',
-                          sentenceTermDescription: 'Imprisonment',
-                        },
-                        periodLengthUuid: '79e8ddea-7694-4572-b8fd-e78f725e2e73',
-                      },
-                    ],
-                    sentenceServeType: 'CONCURRENT',
-                    sentenceTypeDescription: 'Unknown pre-recall sentence',
-                  },
-                ],
-              },
-            ],
-            ual: {
-              id: '155ec2e2-2622-4c4d-b5a7-076f2e581d59',
-              days: 4,
-            },
-            calculationRequestId: null,
-            isManual: true,
-          },
-          {
-            recallUuid: 'e62d4060-272b-4aa1-bf1a-def285b8edf4',
-            prisonerId: 'A6684EC',
-            revocationDate: null,
-            returnToCustodyDate: null,
-            inPrisonOnRevocationDate: null,
-            recallType: 'LR',
-            createdAt: '2026-01-30T16:28:18Z',
-            createdByUsername: 'hmpps-prisoner-from-nomis-migration-court-sentencing-2',
-            createdByPrison: null,
-            source: 'NOMIS',
-            courtCases: [
-              {
-                courtCaseReference: '12345',
-                courtCaseUuid: '90606348-64c2-4b77-92f9-d1659cfc830a',
-                courtCode: 'PENRCT',
-                sentencingAppearanceDate: '2024-04-04',
-                sentences: [
-                  {
-                    sentenceUuid: '27802785-d787-4b58-8c18-4ca9b84e7438',
-                    offenceCode: 'AN16074',
-                    offenceStartDate: '2023-03-03',
-                    offenceEndDate: null,
-                    sentenceDate: '2024-04-04',
-                    lineNumber: '3',
-                    countNumber: null,
-                    periodLengths: [
-                      {
-                        years: 2,
-                        months: null,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'SENTENCE_LENGTH',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'IMP',
-                          sentenceTermDescription: 'Imprisonment',
-                        },
-                        periodLengthUuid: '8fd4bad4-563a-47e7-ba77-23003f93c6e4',
-                      },
-                    ],
-                    sentenceServeType: 'CONCURRENT',
-                    sentenceTypeDescription: 'Unknown pre-recall sentence',
-                  },
-                ],
-              },
-            ],
-            ual: null,
-            calculationRequestId: null,
-            isManual: true,
-          },
-          {
-            recallUuid: '599dd7cc-9180-4007-9f74-aae898570ca2',
-            prisonerId: 'A6684EC',
-            revocationDate: null,
-            returnToCustodyDate: null,
-            inPrisonOnRevocationDate: null,
-            recallType: 'LR',
-            createdAt: '2026-01-30T16:28:18Z',
-            createdByUsername: 'hmpps-prisoner-from-nomis-migration-court-sentencing-2',
-            createdByPrison: null,
-            source: 'NOMIS',
-            courtCases: [
-              {
-                courtCaseReference: null,
-                courtCaseUuid: 'dd1f6eff-8922-48ac-858a-fe2609ec96d1',
-                courtCode: 'PENRCT',
-                sentencingAppearanceDate: '2025-03-03',
-                sentences: [
-                  {
-                    sentenceUuid: 'aa64f43f-8d81-460a-830d-5305f9153a2a',
-                    offenceCode: 'TP47017',
-                    offenceStartDate: '2025-02-02',
-                    offenceEndDate: null,
-                    sentenceDate: '2025-03-03',
-                    lineNumber: '2',
-                    countNumber: null,
-                    periodLengths: [
-                      {
-                        years: null,
-                        months: 10,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'SENTENCE_LENGTH',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'IMP',
-                          sentenceTermDescription: 'Imprisonment',
-                        },
-                        periodLengthUuid: '79e8ddea-7694-4572-b8fd-e78f725e2e73',
-                      },
-                    ],
-                    sentenceServeType: 'CONCURRENT',
-                    sentenceTypeDescription: 'Unknown pre-recall sentence',
-                  },
-                ],
-              },
-            ],
-            ual: null,
-            calculationRequestId: null,
-            isManual: true,
-          },
-          {
-            recallUuid: '9dad0869-567d-4565-9828-ceb0a2d1d241',
-            prisonerId: 'A6684EC',
-            revocationDate: null,
-            returnToCustodyDate: null,
-            inPrisonOnRevocationDate: null,
-            recallType: 'LR',
-            createdAt: '2026-01-30T16:28:19Z',
-            createdByUsername: 'hmpps-prisoner-from-nomis-migration-court-sentencing-2',
-            createdByPrison: null,
-            source: 'NOMIS',
-            courtCases: [
-              {
-                courtCaseReference: null,
-                courtCaseUuid: '77cd2265-7903-406b-bbad-8268696779ee',
-                courtCode: 'PENRCT',
-                sentencingAppearanceDate: '2023-08-14',
-                sentences: [
-                  {
-                    sentenceUuid: '579e2584-18a6-43b1-97f7-36156d1b8bd9',
-                    offenceCode: 'WA11001',
-                    offenceStartDate: '2023-02-02',
-                    offenceEndDate: null,
-                    sentenceDate: '2023-08-14',
-                    lineNumber: '1',
-                    countNumber: null,
-                    periodLengths: [
-                      {
-                        years: 1,
-                        months: null,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'SENTENCE_LENGTH',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'IMP',
-                          sentenceTermDescription: 'Imprisonment',
-                        },
-                        periodLengthUuid: '57f57e29-88aa-41b6-9605-9d7876c24b72',
-                      },
-                      {
-                        years: 2,
-                        months: null,
-                        weeks: null,
-                        days: null,
-                        periodOrder: 'years,months,weeks,days',
-                        periodLengthType: 'LICENCE_PERIOD',
-                        legacyData: {
-                          lifeSentence: false,
-                          sentenceTermCode: 'LIC',
-                          sentenceTermDescription: 'Licence',
-                        },
-                        periodLengthUuid: '5a7cabbc-b000-449e-8e03-b17a05f77838',
-                      },
-                    ],
-                    sentenceServeType: 'CONCURRENT',
-                    sentenceTypeDescription: 'Unknown pre-recall sentence',
-                  },
-                ],
-              },
-            ],
-            ual: null,
-            calculationRequestId: null,
-            isManual: true,
-          },
-        ],
+        jsonBody: { recalls, prisonerRecallTotal: recalls.length },
       },
     })
   },
+  stubRecallsForCustodyPeriodFilter: async (): Promise<void> => {
+    await Promise.all([
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
+          queryParameters: {
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { absent: true },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse(custodyFilterCurrentPeriodRecalls(), 3),
+        },
+      }),
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
+          queryParameters: {
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { equalTo: 'true' },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse(custodyFilterAllRecalls(), 3),
+        },
+      }),
+    ])
+  },
+  stubRecallsOnlyOnPreviousBooking: async (): Promise<void> => {
+    await Promise.all([
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
+          queryParameters: {
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { absent: true },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse([], 1),
+        },
+      }),
+      stubFor({
+        request: {
+          method: 'GET',
+          urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
+          queryParameters: {
+            bookingId: { equalTo: String(ACTIVE_BOOKING_ID) },
+            includeAllPeriods: { equalTo: 'true' },
+          },
+        },
+        response: {
+          status: 200,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+          jsonBody: prisonerRecallsResponse(
+            [
+              custodyFilterRecall({
+                recallUuid: custodyFilterRecallIds.previousPeriod,
+                bookingId: OTHER_BOOKING_ID,
+              }),
+            ],
+            1,
+          ),
+        },
+      }),
+    ])
+  },
+  stubNoRecallsForPrisoner: (): SuperAgentRequest =>
+    stubFor({
+      request: {
+        method: 'GET',
+        urlPath: `/remand-and-sentencing-api/recall/person/${CUSTODY_FILTER_PRISONER_ID}/search`,
+      },
+      response: {
+        status: 200,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+        jsonBody: prisonerRecallsResponse([], 0),
+      },
+    }),
   stubCreateRecall: (): SuperAgentRequest =>
     stubFor({
       request: {

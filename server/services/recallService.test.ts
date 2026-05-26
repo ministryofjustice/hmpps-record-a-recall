@@ -272,9 +272,12 @@ describe('Recall service', () => {
         createdByPrison: undefined,
         source: 'DPS',
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([withPrisonName, withNoPrisonName])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [withPrisonName, withNoPrisonName],
+        prisonerRecallTotal: 2,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result).toStrictEqual([
         {
@@ -340,9 +343,12 @@ describe('Recall service', () => {
           },
         ],
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [recall],
+        prisonerRecallTotal: [recall].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result).toStrictEqual([
         {
@@ -450,9 +456,12 @@ describe('Recall service', () => {
           },
         ],
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [recall],
+        prisonerRecallTotal: [recall].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result).toStrictEqual([
         {
@@ -508,9 +517,12 @@ describe('Recall service', () => {
         createdAt: '2019-01-18T13:40:56Z',
         source: 'DPS',
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([middle, oldest, latest])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [latest, middle, oldest],
+        prisonerRecallTotal: [middle, oldest, latest].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result).toStrictEqual([
         TestData.existingRecall({
@@ -546,9 +558,12 @@ describe('Recall service', () => {
         createdAt: '2019-01-18T13:40:56Z',
         source: 'DPS',
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([oldest, latest])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [latest, oldest],
+        prisonerRecallTotal: [oldest, latest].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result).toStrictEqual([
         TestData.existingRecall({
@@ -574,9 +589,12 @@ describe('Recall service', () => {
         source: 'NOMIS',
         courtCases: [{ sentences: [] }],
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([nomisRecallWithCourtCase])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [nomisRecallWithCourtCase],
+        prisonerRecallTotal: [nomisRecallWithCourtCase].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result[0].canDelete).toBe(false)
     })
@@ -587,9 +605,12 @@ describe('Recall service', () => {
         source: 'NOMIS',
         courtCases: [],
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([nomisRecallWithoutCourtCases])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [nomisRecallWithoutCourtCases],
+        prisonerRecallTotal: [nomisRecallWithoutCourtCases].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result[0].canDelete).toBe(true)
     })
@@ -610,8 +631,11 @@ describe('Recall service', () => {
         ual: undefined,
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recallWithUal, recallWithoutUal])
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [recallWithUal, recallWithoutUal],
+        prisonerRecallTotal: [recallWithUal, recallWithoutUal].length,
+      })
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result.find(it => it.recallUuid === recallWithUal.recallUuid).ualAdjustmentTotalDays).toStrictEqual(20)
       expect(result.find(it => it.recallUuid === recallWithoutUal.recallUuid).ualAdjustmentTotalDays).toBeUndefined()
@@ -661,7 +685,10 @@ describe('Recall service', () => {
         ],
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [recall],
+        prisonerRecallTotal: [recall].length,
+      })
 
       remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
         sentences: [
@@ -679,7 +706,7 @@ describe('Recall service', () => {
       })
 
       // When
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       // Then
       expect(result[0].courtCases[0].sentences[0].consecutiveTo).toEqual({
@@ -740,7 +767,10 @@ describe('Recall service', () => {
         ],
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [recall],
+        prisonerRecallTotal: [recall].length,
+      })
 
       remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
         sentences: [
@@ -758,7 +788,7 @@ describe('Recall service', () => {
       })
 
       // When
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       // Then
       const { consecutiveTo } = result[0].courtCases[0].sentences[1]
@@ -820,7 +850,10 @@ describe('Recall service', () => {
         ],
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([recall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [recall],
+        prisonerRecallTotal: [recall].length,
+      })
 
       remandAndSentencingApiClient.getConsecutiveToDetails.mockResolvedValue({
         sentences: [
@@ -862,7 +895,7 @@ describe('Recall service', () => {
       ])
 
       // When
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       // Then: enrichRecalls included NEWCT + C3 in lookup calls
       expect(courtRegisterApiClient.getCourtDetails).toHaveBeenCalledWith(
@@ -907,9 +940,12 @@ describe('Recall service', () => {
         courtCases: [{ sentences: [sentence] }],
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([nomisRecall, dpsRecall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [dpsRecall, nomisRecall],
+        prisonerRecallTotal: [nomisRecall, dpsRecall].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
       expect(result).toEqual(
         expect.arrayContaining([
@@ -944,9 +980,12 @@ describe('Recall service', () => {
         source: 'DPS',
         courtCases: [],
       })
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([olderWithNoCourtCases, latest])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [latest, olderWithNoCourtCases],
+        prisonerRecallTotal: [olderWithNoCourtCases, latest].length,
+      })
 
-      const result = await service.getRecallsForPrisoner('A1234BC', 'user1')
+      const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
       const olderRecall = result.find(recall => recall.recallUuid === olderWithNoCourtCases.recallUuid)
 
       expect(olderRecall?.canDelete).toBe(true)
@@ -1238,11 +1277,10 @@ describe('Recall service', () => {
         source: 'NOMIS',
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([
-        olderRecall,
-        newerRecall,
-        recallWithoutRevocationDate,
-      ])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [olderRecall, newerRecall, recallWithoutRevocationDate],
+        prisonerRecallTotal: 3,
+      })
 
       const result = await service.getLatestRevocationDate('A1234BC', 'user1')
 
@@ -1261,7 +1299,10 @@ describe('Recall service', () => {
         source: 'DPS',
       })
 
-      remandAndSentencingApiClient.getAllRecalls.mockResolvedValue([excludedRecall, includedRecall])
+      remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
+        recalls: [excludedRecall, includedRecall],
+        prisonerRecallTotal: 2,
+      })
 
       const result = await service.getLatestRevocationDate('A1234BC', 'user1', excludedRecall.recallUuid)
 

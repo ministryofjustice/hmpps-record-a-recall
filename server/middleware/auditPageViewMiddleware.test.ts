@@ -34,7 +34,7 @@ beforeEach(() => {
   })
   prisonerSearchService.getPrisonerDetails.mockResolvedValue(TestData.prisoner({ prisonerNumber: nomsId }))
   courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(TestData.serviceDefinitions())
-  recallService.getRecallsForPrisoner.mockResolvedValue([])
+  recallService.getRecallsForPrisoner.mockResolvedValue({ recalls: [], prisonerRecallTotal: 0 })
 })
 
 afterEach(() => {
