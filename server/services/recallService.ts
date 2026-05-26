@@ -173,11 +173,7 @@ export default class RecallService {
       bookingId,
       includeAllPeriods,
     )
-    const latestRecallUuid = response.recalls.reduce<ApiRecall | undefined>(
-      (latest, recall) =>
-        !latest || new Date(recall.createdAt).getTime() > new Date(latest.createdAt).getTime() ? recall : latest,
-      undefined,
-    )?.recallUuid
+    const latestRecallUuid = response.recalls[0]?.recallUuid
     const recalls = await this.enrichRecalls(response.recalls, username, latestRecallUuid)
     return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
   }

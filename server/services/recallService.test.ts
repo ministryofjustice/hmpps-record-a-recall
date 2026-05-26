@@ -941,7 +941,7 @@ describe('Recall service', () => {
       })
 
       remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
-        recalls: [nomisRecall, dpsRecall],
+        recalls: [dpsRecall, nomisRecall],
         prisonerRecallTotal: [nomisRecall, dpsRecall].length,
       })
 
@@ -981,7 +981,7 @@ describe('Recall service', () => {
         courtCases: [],
       })
       remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
-        recalls: [olderWithNoCourtCases, latest],
+        recalls: [latest, olderWithNoCourtCases],
         prisonerRecallTotal: [olderWithNoCourtCases, latest].length,
       })
 
