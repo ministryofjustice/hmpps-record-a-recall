@@ -7,7 +7,6 @@ import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calcula
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0]!.toUpperCase() + word.toLowerCase().slice(1) : word
-
 const isBlank = (str?: string | null): boolean => !str || /^\s*$/.test(str)
 
 /**

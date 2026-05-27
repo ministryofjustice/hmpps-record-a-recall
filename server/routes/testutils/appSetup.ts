@@ -65,7 +65,15 @@ function appSetup(
   app.use((req, res, next) => {
     req.user = userSupplier() as Express.User
     req.flash = flashProvider
-    res.locals.user = { ...req.user } as HmppsUser
+    res.locals = {
+      user: { ...req.user } as HmppsUser,
+      cspNonce: '',
+      csrfToken: '',
+      asset_path: '',
+      applicationName: '',
+      environmentName: '',
+      environmentNameColour: '',
+    }
     res.locals.prisoner = {
       firstName: 'JOHN',
       lastName: 'SMITH',
