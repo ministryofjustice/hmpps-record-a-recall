@@ -7,6 +7,7 @@ import nunjucksSetup from '../../utils/nunjucksSetup'
 import errorHandler from '../../errorHandler'
 import type { Services } from '../../services'
 import AuditService from '../../services/auditService'
+import HmppsAuditClient from '../../data/hmppsAuditClient'
 import PrisonerSearchService from '../../services/prisonerSearchService'
 import TestData from '../../testutils/testData'
 import { HmppsUser } from '../../interfaces/hmppsUser'
@@ -84,7 +85,7 @@ function appSetup(
     }
     next()
   })
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     req.id = randomUUID()
     next()
   })
@@ -96,7 +97,7 @@ function appSetup(
   app.use(express.urlencoded({ extended: true }))
   app.use(populateValidationErrors())
   app.use(routes(services))
-  app.use((req, res, next) => next(new NotFound()))
+  app.use((_req, _res, next) => next(new NotFound()))
   app.use(errorHandler(production))
 
   return app
@@ -105,7 +106,7 @@ function appSetup(
 export function appWithAllRoutes({
   production = false,
   services = {
-    auditService: new AuditService(null) as jest.Mocked<AuditService>,
+    auditService: new AuditService({} as HmppsAuditClient) as jest.Mocked<AuditService>,
   },
   userSupplier = () => user,
   sessionReceiver = undefined,
