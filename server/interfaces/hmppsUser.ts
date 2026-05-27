@@ -25,8 +25,8 @@ export interface BaseUser {
  */
 export interface PrisonUser extends BaseUser {
   authSource: 'nomis'
-  staffId: number
-  activeCaseLoadId: string
+  staffId: number | undefined
+  activeCaseLoadId?: string
   caseLoads: CaseLoad[]
   hasAdjustmentsAccess: boolean
 }
