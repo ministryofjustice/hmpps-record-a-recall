@@ -25,16 +25,17 @@ export default class StartEditRecallJourneyController implements Controller {
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const recall = await this.recallService.getRecall(recallId, username)
 
+    const courtCases = recall.courtCases ?? []
+
     const recallIds = [recall.recallUuid]
 
-    const courtCaseUuids = recall.courtCases.map(c => c.courtCaseUuid)
+    const courtCaseUuids = courtCases.map(c => c.courtCaseUuid)
 
-    const sentenceUuids = recall.courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid))
+    const sentenceUuids = courtCases.flatMap(c => (c.sentences ?? []).map(s => s.sentenceUuid))
 
-    const periodLengthUuids = recall.courtCases.flatMap(c =>
-      c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid)),
+    const periodLengthUuids = courtCases.flatMap(c =>
+      (c.sentences ?? []).flatMap(s => (s.periodLengths ?? []).map(p => p.periodLengthUuid)),
     )
-
     await this.auditService.logEditPageEvent(username, nomsId, req.id, {
       recallIds,
       courtCaseUuids,
