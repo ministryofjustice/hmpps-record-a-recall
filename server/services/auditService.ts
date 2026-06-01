@@ -98,4 +98,30 @@ export default class AuditService {
       details: auditDetails,
     })
   }
+
+  async logEditPageEvent(
+    username: string,
+    nomsId: string,
+    correlationId: string,
+    identifiers: {
+      recallIds: string[]
+      courtCaseUuids: string[]
+      sentenceUuids: string[]
+      periodLengthUuids: string[]
+    },
+  ) {
+    const auditDetails = {
+      ...identifiers,
+      time: Date.now(),
+    }
+
+    await this.hmppsAuditClient.sendMessage({
+      who: username,
+      what: 'EDIT_RECALL',
+      subjectId: nomsId,
+      subjectType: 'PRISONER_ID',
+      correlationId,
+      details: auditDetails,
+    })
+  }
 }

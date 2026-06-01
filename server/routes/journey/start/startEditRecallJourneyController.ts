@@ -4,7 +4,7 @@ import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, RecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
-import { Page } from '../../../services/auditService'
+import AuditService, { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import { dateStringToDateParts } from '../../../utils/utils'
 
@@ -14,6 +14,7 @@ export default class StartEditRecallJourneyController implements Controller {
   constructor(
     private readonly calculateReleaseDatesService: CalculateReleaseDatesService,
     private readonly recallService: RecallService,
+    private readonly auditService: AuditService,
   ) {}
 
   private MAX_JOURNEYS = 5
@@ -23,6 +24,23 @@ export default class StartEditRecallJourneyController implements Controller {
     const { nomsId, recallId } = req.params
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const recall = await this.recallService.getRecall(recallId, username)
+
+    const recallIds = [recall.recallUuid]
+
+    const courtCaseUuids = recall.courtCases.map(c => c.courtCaseUuid)
+
+    const sentenceUuids = recall.courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid))
+
+    const periodLengthUuids = recall.courtCases.flatMap(c =>
+      c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid)),
+    )
+
+    await this.auditService.logEditPageEvent(username, nomsId, req.id, {
+      recallIds,
+      courtCaseUuids,
+      sentenceUuids,
+      periodLengthUuids,
+    })
 
     const isManualJourney = !recall.calculationRequestId
 
