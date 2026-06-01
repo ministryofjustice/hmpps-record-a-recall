@@ -38,9 +38,29 @@ export function buildAppInsightsClient(
     defaultClient.addTelemetryProcessor(parameterisePaths)
     defaultClient.addTelemetryProcessor(ignoredRequestsProcessor)
     defaultClient.addTelemetryProcessor(ignoredDependenciesProcessor)
+    defaultClient.addTelemetryProcessor(addCustomDataToRequests)
     return defaultClient
   }
   return null
+}
+
+export function addCustomDataToRequests(
+  envelope: EnvelopeTelemetry,
+  contextObjects: ContextObject | undefined,
+): boolean {
+  const isRequest = envelope.data.baseType === Contracts.TelemetryTypeString.Request
+  if (isRequest) {
+    const { username } = contextObjects?.['http.ServerRequest']?.res?.locals?.user || {}
+    const prisonId = contextObjects?.['http.ServerRequest']?.res?.locals?.prisoner?.prisonId || null
+    const { properties } = envelope.data.baseData
+    // eslint-disable-next-line no-param-reassign
+    envelope.data.baseData.properties = {
+      ...properties,
+      ...(username && { username }),
+      ...(prisonId && { caseloadId: prisonId }),
+    }
+  }
+  return true
 }
 
 function parameterisePaths(envelope: EnvelopeTelemetry, contextObjects: Record<string, unknown> | undefined) {
