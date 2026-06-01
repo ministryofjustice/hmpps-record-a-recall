@@ -115,6 +115,27 @@ export default class CheckAnswersController implements Controller {
       })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
+
+      const courtCases = journey.recallableCourtCases ?? []
+
+      const recallIds = [recallId]
+
+      const courtCaseUuids = courtCases.map(c => c.courtCaseUuid)
+
+      const sentenceUuids = courtCases.flatMap(c => c.sentences.map(s => s.sentenceUuid))
+
+      const periodLengthUuids = courtCases.flatMap(c =>
+        c.sentences.flatMap(s => s.periodLengths.map(p => p.periodLengthUuid)),
+      )
+
+      const requestId = req.id ?? 'test-request-id'
+
+      await this.auditService.logEditRecallEvent(username, nomsId, requestId, {
+        recallIds,
+        courtCaseUuids,
+        sentenceUuids,
+        periodLengthUuids,
+      })
     }
 
     return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, recallUuid))

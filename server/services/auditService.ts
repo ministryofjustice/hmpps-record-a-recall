@@ -99,7 +99,7 @@ export default class AuditService {
     })
   }
 
-  async logEditPageEvent(
+  async logEditRecallEvent(
     username: string,
     nomsId: string,
     correlationId: string,
