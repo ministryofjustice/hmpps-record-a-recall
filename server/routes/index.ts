@@ -91,7 +91,7 @@ export default function routes({
   // edit recall
   route({
     path: '/person/:nomsId/recall/edit/:recallId/start',
-    controller: new StartEditRecallJourneyController(calculateReleaseDatesService, recallService),
+    controller: new StartEditRecallJourneyController(calculateReleaseDatesService, recallService, auditService),
   })
 
   // Common pages for edit and create
