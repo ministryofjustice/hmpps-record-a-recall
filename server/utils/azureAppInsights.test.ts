@@ -51,6 +51,7 @@ describe('azureAppInsights', () => {
       expect(envelope.data.baseData.properties).toStrictEqual({
         ...user,
         other: 'things',
+        caseloadId: 'test-prison',
       })
     })
 
@@ -73,6 +74,7 @@ describe('azureAppInsights', () => {
 
       expect(envelope.data.baseData.properties).toStrictEqual({
         ...user,
+        caseloadId: 'test-prison',
       })
     })
 
@@ -89,7 +91,10 @@ describe('azureAppInsights', () => {
 
       addCustomDataToRequests(envelope, context)
 
-      expect(envelope.data.baseData.properties).toStrictEqual(user)
+      expect(envelope.data.baseData.properties).toStrictEqual({
+        ...user,
+        caseloadId: 'test-prison',
+      })
     })
 
     it('handles missing user details', () => {
