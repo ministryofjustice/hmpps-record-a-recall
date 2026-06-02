@@ -1,6 +1,19 @@
 import { DataTelemetry, EnvelopeTelemetry } from 'applicationinsights/out/Declarations/Contracts'
 import { Contracts } from 'applicationinsights'
-import { ignoredDependenciesProcessor, ignoredRequestsProcessor } from './azureAppInsights'
+import {
+  ignoredDependenciesProcessor,
+  ignoredRequestsProcessor,
+  addCustomDataToRequests,
+  ContextObject,
+} from './azureAppInsights'
+
+const user = {
+  username: 'test-user',
+}
+
+const prisoner = {
+  prisonId: 'test-prison',
+}
 
 const createEnvelope = (properties: Record<string, string | boolean>, baseType = 'RequestData') =>
   ({
@@ -10,7 +23,93 @@ const createEnvelope = (properties: Record<string, string | boolean>, baseType =
     } as DataTelemetry,
   }) as EnvelopeTelemetry
 
+const createContext = (username: string, prisonId: string) =>
+  ({
+    'http.ServerRequest': {
+      res: {
+        locals: {
+          prisoner: {
+            prisonId,
+          },
+          user: {
+            username,
+          },
+        },
+      },
+    },
+  }) as ContextObject
+
+const context = createContext(user.username, prisoner.prisonId)
+
 describe('azureAppInsights', () => {
+  describe('addUserDataToRequests', () => {
+    it('adds user data to properties when present', () => {
+      const envelope = createEnvelope({ other: 'things' })
+
+      addCustomDataToRequests(envelope, context)
+
+      expect(envelope.data.baseData.properties).toStrictEqual({
+        ...user,
+        other: 'things',
+        caseloadId: 'test-prison',
+      })
+    })
+
+    it('adds prison data to properties when present', () => {
+      const envelope = createEnvelope({ other: 'things' })
+
+      addCustomDataToRequests(envelope, context)
+
+      expect(envelope.data.baseData.properties).toStrictEqual({
+        ...user,
+        other: 'things',
+        caseloadId: 'test-prison',
+      })
+    })
+
+    it('handles absent user data', () => {
+      const envelope = createEnvelope({})
+
+      addCustomDataToRequests(envelope, context)
+
+      expect(envelope.data.baseData.properties).toStrictEqual({
+        ...user,
+        caseloadId: 'test-prison',
+      })
+    })
+
+    it('returns true when not RequestData type', () => {
+      const envelope = createEnvelope({}, 'NOT_REQUEST_DATA')
+
+      const response = addCustomDataToRequests(envelope, context)
+
+      expect(response).toStrictEqual(true)
+    })
+
+    it('handles when no properties have been set', () => {
+      const envelope = createEnvelope(undefined)
+
+      addCustomDataToRequests(envelope, context)
+
+      expect(envelope.data.baseData.properties).toStrictEqual({
+        ...user,
+        caseloadId: 'test-prison',
+      })
+    })
+
+    it('handles missing user details', () => {
+      const envelope = createEnvelope({ other: 'things' })
+
+      addCustomDataToRequests(envelope, {
+        'http.ServerRequest': {},
+      } as ContextObject)
+
+      expect(envelope.data.baseData.properties).toEqual({
+        other: 'things',
+      })
+    })
+  })
+
   describe('ignoredRequestsProcessor', () => {
     it.each([
       ['GET /assets/some.css', false],
