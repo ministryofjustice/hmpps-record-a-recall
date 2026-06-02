@@ -104,26 +104,13 @@ export default class CheckAnswersController implements Controller {
     const journey = req.session.recallJourneys[journeyId]!
     const recall = this.recallService.getApiRecallFromJourney(journey, username, prisoner?.prisonId)
     let recallUuid = recallId
-    if (!req.id) {
-      throw new Error('Request ID is missing')
-    }
-
-    const requestId = req.id
 
     if (createOrEdit === 'create') {
       recallUuid = (await this.recallService.createRecall(recall, username)).recallUuid
-
-      await this.auditService.logCreateRecallEvent(username, nomsId, requestId, {
-        recallId: recallUuid,
-        sentenceUuids: recall.sentenceIds ?? [],
-      })
+      await this.auditService.logCreateRecallEvent(username, nomsId, req.id, { recallId: recallUuid })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
-
-      await this.auditService.logEditRecallEvent(username, nomsId, requestId, {
-        recallId,
-        sentenceUuids: recall.sentenceIds ?? [],
-      })
+      await this.auditService.logEditRecallEvent(username, nomsId, req.id, { recallId })
     }
 
     return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, recallUuid))
