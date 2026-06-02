@@ -79,6 +79,12 @@ describe('POST', () => {
   })
 
   it('should return to the home page without deleting if YES was selected', async () => {
+    recallService.getRecall.mockResolvedValue(
+      TestData.existingRecall({
+        recallUuid: 'abc',
+        sentenceIds: ['s1', 's2'],
+      }),
+    )
     await request(app)
       .post(`/person/${nomsId}/recall/abc/delete`)
       .type('form')
