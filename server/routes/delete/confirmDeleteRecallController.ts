@@ -42,13 +42,8 @@ export default class ConfirmDeleteRecallController implements Controller {
     const { username } = res.locals.user
     const { confirmDeleteRecall } = req.body
     if (confirmDeleteRecall === 'YES') {
-      const recall = await this.recallService.getRecall(recallUuid, username)
       await this.recallService.deleteRecall(recallUuid, username)
-
-      await this.auditService.logDeleteRecallEvent(username, nomsId, req.id, {
-        recallId: recallUuid,
-        sentenceUuids: recall.sentenceIds ?? [],
-      })
+      await this.auditService.logDeleteRecallEvent(username, nomsId, req.id, { recallId: recallUuid })
     }
     return res.redirect(GlobalRecallUrls.home(nomsId))
   }

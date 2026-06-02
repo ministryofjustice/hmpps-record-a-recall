@@ -84,17 +84,7 @@ export default class AuditService {
       sentenceUuids: string[]
     },
   ) {
-    await this.hmppsAuditClient.sendMessage({
-      who: username,
-      what: 'ADD_RECALL',
-      subjectId: nomsId,
-      subjectType: 'PRISONER_ID',
-      correlationId,
-      details: {
-        ...identifiers,
-        time: Date.now(),
-      },
-    })
+    await this.logRecallEvent('ADD_RECALL', username, nomsId, correlationId, identifiers)
   }
 
   async logEditRecallEvent(
@@ -106,17 +96,7 @@ export default class AuditService {
       sentenceUuids: string[]
     },
   ) {
-    await this.hmppsAuditClient.sendMessage({
-      who: username,
-      what: 'EDIT_RECALL',
-      subjectId: nomsId,
-      subjectType: 'PRISONER_ID',
-      correlationId,
-      details: {
-        ...identifiers,
-        time: Date.now(),
-      },
-    })
+    await this.logRecallEvent('EDIT_RECALL', username, nomsId, correlationId, identifiers)
   }
 
   async logDeleteRecallEvent(
@@ -125,12 +105,21 @@ export default class AuditService {
     correlationId: string,
     identifiers: {
       recallId: string
-      sentenceUuids: string[]
     },
+  ) {
+    await this.logRecallEvent('DELETE_RECALL', username, nomsId, correlationId, identifiers)
+  }
+
+  private async logRecallEvent(
+    what: 'ADD_RECALL' | 'EDIT_RECALL' | 'DELETE_RECALL',
+    username: string,
+    nomsId: string,
+    correlationId: string,
+    identifiers: object,
   ) {
     await this.hmppsAuditClient.sendMessage({
       who: username,
-      what: 'DELETE_RECALL',
+      what,
       subjectId: nomsId,
       subjectType: 'PRISONER_ID',
       correlationId,
