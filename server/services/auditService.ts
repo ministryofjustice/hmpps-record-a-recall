@@ -104,10 +104,8 @@ export default class AuditService {
     nomsId: string,
     correlationId: string,
     identifiers: {
-      recallIds: string[]
-      courtCaseUuids: string[]
+      recallId: string
       sentenceUuids: string[]
-      periodLengthUuids: string[]
     },
   ) {
     const auditDetails = {
