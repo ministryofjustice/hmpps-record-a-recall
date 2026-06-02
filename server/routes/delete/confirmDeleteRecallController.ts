@@ -2,11 +2,14 @@ import { Request, Response } from 'express'
 import GlobalRecallUrls from '../globalRecallUrls'
 import { Controller } from '../controller'
 import RecallService from '../../services/recallService'
-import { Page } from '../../services/auditService'
+import AuditService, { Page } from '../../services/auditService'
 import { ConfirmDeleteRecallForm } from './confirmDeleteRecallSchema'
 
 export default class ConfirmDeleteRecallController implements Controller {
-  constructor(private readonly recallService: RecallService) {}
+  constructor(
+    private readonly recallService: RecallService,
+    private readonly auditService: AuditService,
+  ) {}
 
   PAGE_NAME: Page = Page.CONFIRM_DELETE_RECALL
 
@@ -39,7 +42,13 @@ export default class ConfirmDeleteRecallController implements Controller {
     const { username } = res.locals.user
     const { confirmDeleteRecall } = req.body
     if (confirmDeleteRecall === 'YES') {
+      const recall = await this.recallService.getRecall(recallUuid, username)
       await this.recallService.deleteRecall(recallUuid, username)
+
+      await this.auditService.logDeleteRecallEvent(username, nomsId, req.id, {
+        recallId: recallUuid,
+        sentenceUuids: recall.sentenceIds ?? [],
+      })
     }
     return res.redirect(GlobalRecallUrls.home(nomsId))
   }

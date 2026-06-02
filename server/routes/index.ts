@@ -229,7 +229,7 @@ export default function routes({
   // delete recall
   route({
     path: '/person/:nomsId/recall/:recallUuid/delete',
-    controller: new ConfirmDeleteRecallController(recallService),
+    controller: new ConfirmDeleteRecallController(recallService, auditService),
     validateToSchema: confirmDeleteRecallSchema,
   })
 

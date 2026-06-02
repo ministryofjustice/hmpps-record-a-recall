@@ -67,7 +67,7 @@ describe('POST', () => {
       .expect('Location', `/person/${nomsId}/recall/abc/delete#`)
   })
 
-  it('should return to the home page without deleting if no was selected', async () => {
+  it('should return to the home page without deleting if NO was selected', async () => {
     await request(app)
       .post(`/person/${nomsId}/recall/abc/delete`)
       .type('form')
@@ -78,7 +78,7 @@ describe('POST', () => {
     expect(recallService.deleteRecall).not.toHaveBeenCalled()
   })
 
-  it('should return to the home page without deleting if no was selected', async () => {
+  it('should return to the home page without deleting if YES was selected', async () => {
     await request(app)
       .post(`/person/${nomsId}/recall/abc/delete`)
       .type('form')

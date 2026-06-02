@@ -118,4 +118,26 @@ export default class AuditService {
       },
     })
   }
+
+  async logDeleteRecallEvent(
+    username: string,
+    nomsId: string,
+    correlationId: string,
+    identifiers: {
+      recallId: string
+      sentenceUuids: string[]
+    },
+  ) {
+    await this.hmppsAuditClient.sendMessage({
+      who: username,
+      what: 'DELETE_RECALL',
+      subjectId: nomsId,
+      subjectType: 'PRISONER_ID',
+      correlationId,
+      details: {
+        ...identifiers,
+        time: Date.now(),
+      },
+    })
+  }
 }
