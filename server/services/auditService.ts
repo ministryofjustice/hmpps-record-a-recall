@@ -81,6 +81,7 @@ export default class AuditService {
     correlationId: string,
     identifiers: {
       recallId: string
+      sentenceUuids: string[]
     },
   ) {
     await this.hmppsAuditClient.sendMessage({
@@ -102,6 +103,7 @@ export default class AuditService {
     correlationId: string,
     identifiers: {
       recallId: string
+      sentenceUuids: string[]
     },
   ) {
     await this.hmppsAuditClient.sendMessage({

@@ -107,10 +107,16 @@ export default class CheckAnswersController implements Controller {
 
     if (createOrEdit === 'create') {
       recallUuid = (await this.recallService.createRecall(recall, username)).recallUuid
-      await this.auditService.logCreateRecallEvent(username, nomsId, req.id, { recallId: recallUuid })
+      await this.auditService.logCreateRecallEvent(username, nomsId, req.id, {
+        recallId: recallUuid,
+        sentenceUuids: recall.sentenceIds ?? [],
+      })
     } else {
       await this.recallService.editRecall(recallId, recall, username)
-      await this.auditService.logEditRecallEvent(username, nomsId, req.id, { recallId })
+      await this.auditService.logEditRecallEvent(username, nomsId, req.id, {
+        recallId,
+        sentenceUuids: recall.sentenceIds ?? [],
+      })
     }
 
     return res.redirect(RecallJourneyUrls.recallConfirmation(nomsId, createOrEdit, recallUuid))
