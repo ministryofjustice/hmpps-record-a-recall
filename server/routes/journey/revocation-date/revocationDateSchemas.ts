@@ -23,7 +23,7 @@ export const revocationDateSchemaFactory = (recallService: RecallService) => asy
     year: z.string().trim().optional(),
   })
     .superRefine((val, ctx) => {
-      const parsedDate = dateValidation(val, ctx)
+      const parsedDate = dateValidation(val, ctx, 'Enter the date their licence was revoked')
       if (parsedDate) {
         if (
           journey.crdsValidationResult.earliestSentenceDate &&

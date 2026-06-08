@@ -17,7 +17,7 @@ export const returnToCustodyDateSchemaFactory = () => async (req: Request) => {
   })
     .superRefine((val, ctx) => {
       if (val.inCustodyAtRecall === 'false') {
-        const parsedDate = dateValidation(val, ctx)
+        const parsedDate = dateValidation(val, ctx, `Enter the date they were arrested`)
         if (parsedDate) {
           futureDateValidation('Arrest date', parsedDate, ctx)
           if (datePartsToDate(journey.revocationDate) > parsedDate) {
