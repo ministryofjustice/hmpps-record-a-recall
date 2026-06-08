@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { isValid, parse } from 'date-fns'
 
-const DATE_IS_REQUIRED_MESSAGE = `Enter the date they were arrested`
 const SINGLE_FIELD_MISSING_ERROR = (field: string) => `The date must include a ${field}`
 const TWO_FIELDS_MISSING_ERROR = (fieldOne: string, fieldTwo: string) =>
   `The date must include a ${fieldOne} and a ${fieldTwo}`
@@ -14,11 +13,7 @@ type DateForm = {
   year?: string
 }
 
-export function dateValidation(
-  val: DateForm,
-  ctx: z.RefinementCtx<z.output<DateForm>>,
-  requiredMessage: string = DATE_IS_REQUIRED_MESSAGE,
-): Date {
+export function dateValidation(val: DateForm, ctx: z.RefinementCtx<z.output<DateForm>>, requiredMessage: string): Date {
   if (!val.day && !val.month && !val.year) {
     ctx.addIssue({ code: 'custom', message: requiredMessage, path: ['day'] })
     ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['month'] })
