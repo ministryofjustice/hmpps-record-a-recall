@@ -196,7 +196,7 @@ describe('dateValidationTest', () => {
       year: z.string().trim().optional(),
     })
       .superRefine((val, ctx) => {
-        dateValidation(val, ctx)
+        dateValidation(val, ctx, 'Enter the date they were arrested')
       })
       .transform(val => {
         const { day, month, year } = val
