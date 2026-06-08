@@ -14,9 +14,13 @@ type DateForm = {
   year?: string
 }
 
-export function dateValidation(val: DateForm, ctx: z.RefinementCtx<z.output<DateForm>>): Date {
+export function dateValidation(
+  val: DateForm,
+  ctx: z.RefinementCtx<z.output<DateForm>>,
+  requiredMessage: string = DATE_IS_REQUIRED_MESSAGE,
+): Date {
   if (!val.day && !val.month && !val.year) {
-    ctx.addIssue({ code: 'custom', message: DATE_IS_REQUIRED_MESSAGE, path: ['day'] })
+    ctx.addIssue({ code: 'custom', message: requiredMessage, path: ['day'] })
     ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['month'] })
     ctx.addIssue({ code: 'custom', message: BLANK_MESSAGE_SO_FIELD_HIGHLIGHTED, path: ['year'] })
   } else {

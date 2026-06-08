@@ -110,4 +110,23 @@ describe('revocationDateSchema', () => {
     const schema = await revocationDateSchemaFactory(recallService)(request)
     return schema.safeParse(form)
   }
+
+  it('Should return revocation date error message when all fields are empty', async () => {
+    // Given
+    recallService.getLatestRevocationDate.mockResolvedValue(new Date('2025-01-01'))
+    const form = {}
+
+    // When
+    const result = await doValidate(form)
+
+    // Then
+    expect(result.success).toStrictEqual(false)
+
+    const errors = deduplicateFieldErrors(result.error!)
+    expect(errors).toStrictEqual({
+      day: ['Enter the date their licence was revoked'],
+      month: [''],
+      year: [''],
+    })
+  })
 })
