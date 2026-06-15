@@ -131,7 +131,8 @@
                         sentenceDate: sentenceDate,
                         isSentenced: true,
                         detailsClasses: 'govuk-!-padding-4 offence-card-for-sentence-' + sentence.sentenceUiid,
-                        consecutiveTo: sentence.consecutiveTo
+                        consecutiveTo: sentence.consecutiveTo,
+                        aggravatingFactors: sentence.aggravatingFactors
                       }) }}
                     </div>
                 {% endfor %}

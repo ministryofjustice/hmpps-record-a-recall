@@ -173,6 +173,14 @@ export default class RecallService {
       bookingId,
       includeAllPeriods,
     )
+// console.log(
+//   'RAW API SENTENCE (service layer):',
+//   JSON.stringify(
+//     response.recalls?.[0]?.courtCases?.[0]?.sentences?.[0]?.aggravatingFactors,
+//     null,
+//     2,
+//   ),
+// )
     const latestRecallUuid = response.recalls[0]?.recallUuid
     const recalls = await this.enrichRecalls(response.recalls, username, latestRecallUuid)
     return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
@@ -306,6 +314,7 @@ export default class RecallService {
                 sentenceServeType: sentence.sentenceServeType,
                 sentenceTypeDescription: sentence.sentenceTypeDescription,
                 consecutiveTo,
+                aggravatingFactors: sentence.aggravatingFactors,
               }
             }),
           }
