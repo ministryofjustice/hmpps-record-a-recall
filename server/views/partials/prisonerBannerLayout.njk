@@ -6,10 +6,16 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "hmpps/components/outage-banner/macro.njk" import outageBanner %}
 
 
 {% block beforeContent %}
     <aside role="complementary">
+        {% if displayMaintenanceAlert and serviceDefinitions.maintenanceAlert.enabled %}
+            <div class="govuk-!-margin-top-7">
+                {{ outageBanner({ text: serviceDefinitions.maintenanceAlert.message}) }}
+            </div>
+        {% endif %}
         {% block banner %}
             {% set person = {
                 firstName: prisoner.firstName,
