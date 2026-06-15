@@ -232,4 +232,21 @@ describe('GET', () => {
     )
     expect(filtered$('.recall-card')).toHaveLength(1)
   })
+
+  it('display maintenance banner', async () => {
+    // Given
+    recallService.getRecallsForPrisoner.mockResolvedValue(TestData.recallsForPrisoner([]))
+    courtCasesReleaseDatesService.getServiceDefinitions.mockResolvedValue(
+      TestData.serviceDefinitions({
+        maintenanceAlert: { enabled: true, message: 'There is due to be an outage in the future' },
+      }),
+    )
+    // When
+    const response = await request(app).get(`/person/${nomsId}`)
+
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('.moj-outage-banner').text().trim()).toStrictEqual('There is due to be an outage in the future')
+  })
 })

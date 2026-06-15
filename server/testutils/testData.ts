@@ -122,6 +122,7 @@ export default class TestData {
         text: 'Overview',
         thingsToDo: {
           count: 0,
+          things: [],
         },
       },
       recalls: {
@@ -129,6 +130,7 @@ export default class TestData {
         text: 'Recalls',
         thingsToDo: {
           count: 0,
+          things: [],
         },
       },
       releaseDates: {
@@ -136,6 +138,7 @@ export default class TestData {
         text: 'Release dates and calculations',
         thingsToDo: {
           count: 0,
+          things: [],
         },
       },
       adjustments: {
@@ -143,12 +146,18 @@ export default class TestData {
         text: 'Adjustments',
         thingsToDo: {
           count: 0,
+          things: [],
         },
       },
+    },
+    maintenanceAlert = {
+      enabled: false,
+      message: 'placeholder',
     },
   }: Partial<CcrdServiceDefinitions> = {}): CcrdServiceDefinitions =>
     ({
       services,
+      maintenanceAlert,
     }) as CcrdServiceDefinitions
 
   static recallableSentence(overrides: Partial<RecallableCourtCaseSentence & { offenceDescription?: string }> = {}) {

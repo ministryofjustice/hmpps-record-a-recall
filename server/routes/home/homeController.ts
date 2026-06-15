@@ -53,6 +53,7 @@ export default class HomeController implements Controller {
       displayedRecallsCount,
       includeRecallsFromPreviousPeriodsOfCustody: includeRecallsFromPreviousPeriodsOfCustodyValue,
       showNoRecallsInCurrentPeriodOfCustodyMessage,
+      displayMaintenanceAlert: true,
     })
   }
 
