@@ -86,10 +86,17 @@ export default class RecallService {
               }
             : fullConsecutiveTo
 
+          const aggravatingFactors = this.getAggravatingFactors({
+            isDomesticViolenceRelated: s.isDomesticViolenceRelated,
+            isTerrorRelated: s.isTerrorRelated,
+            isForeignPowerRelated: s.isForeignPowerRelated,
+          })
+
         return {
           ...s,
           offenceDescription,
           consecutiveTo,
+          ...(aggravatingFactors ? { aggravatingFactors } : {}),
         }
       }
 
