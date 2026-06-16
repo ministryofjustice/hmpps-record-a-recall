@@ -414,6 +414,9 @@ describe('Recall service', () => {
         ],
         sentenceServeType: 'CONCURRENT',
         sentenceTypeDescription: 'Serious Offence Sec 250 Sentencing Code (U18)',
+        aggravatingFactors: {
+          isTerrorRelated: true,
+        },
       }
       const sentenceWithMinimum: ApiRecalledSentence = {
         sentenceUuid: uuidv4(),
@@ -487,6 +490,7 @@ describe('Recall service', () => {
               sentences: [
                 {
                   ...sentenceWithMaximum,
+                  aggravatingFactors: ['Offences aggravated by a terrorist connection'],
                   offenceDescription: 'Assault',
                   consecutiveTo: undefined,
                 },
