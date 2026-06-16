@@ -8,7 +8,7 @@ export type RecallType = {
 }
 
 export const RecallTypes = {
-  STANDARD_RECALL: {``
+  STANDARD_RECALL: {
     code: 'LR',
     description: 'Standard',
     fixedTerm: false,

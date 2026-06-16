@@ -42,5 +42,4 @@ export interface ExistingRecallSentence {
   sentenceServeType: string
   sentenceTypeDescription?: string
   consecutiveTo?: ConsecutiveToDetails | null
-  aggravatingFactors?: string[]
 }
