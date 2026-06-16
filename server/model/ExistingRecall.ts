@@ -41,9 +41,5 @@ export interface ExistingRecallSentence {
   sentenceServeType: string
   sentenceTypeDescription?: string
   consecutiveTo?: ConsecutiveToDetails | null
-  aggravatingFactors?: {
-    isDomesticViolenceRelated: boolean | null
-    isTerrorRelated: boolean | null
-    isForeignPowerRelated: boolean | null
-  } | null
+  aggravatingFactors?: string[]
 }

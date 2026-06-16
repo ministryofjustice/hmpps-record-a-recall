@@ -314,7 +314,13 @@ export default class RecallService {
                 sentenceServeType: sentence.sentenceServeType,
                 sentenceTypeDescription: sentence.sentenceTypeDescription,
                 consecutiveTo,
-                aggravatingFactors: sentence.aggravatingFactors,
+                  aggravatingFactors: sentence.aggravatingFactors
+                ? [
+                    sentence.aggravatingFactors.isDomesticViolenceRelated && 'Domestic violence related',
+                    sentence.aggravatingFactors.isTerrorRelated && 'Terror related',
+                    sentence.aggravatingFactors.isForeignPowerRelated && 'Foreign power related',
+                  ].filter(Boolean)
+                : [],
               }
             }),
           }
