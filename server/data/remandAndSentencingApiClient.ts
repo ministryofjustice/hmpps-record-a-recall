@@ -77,11 +77,6 @@ async getRecallsForPrisoner(
     asSystem(username),
   )) as PrisonerRecallsResponse
 
-console.log(
-  'RAW RECALL SENTENCE:',
-  JSON.stringify(response.recalls?.[0]?.courtCases?.[0]?.sentences?.[0], null, 2),
-)
-
   return response
 }
 

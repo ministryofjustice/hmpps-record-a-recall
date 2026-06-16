@@ -10,7 +10,12 @@ import {
   SentenceConsecutiveToDetailsResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
-import { ConsecutiveToDetails, getRecallType, SentenceAndOffence } from '../@types/recallTypes'
+import {
+  ConsecutiveToDetails,
+  getRecallType,
+  SentenceAndOffence,
+} from '../@types/recallTypes'
+import { AGGRAVATING_FACTOR_LABELS, ApiAggravatingFactors } from '../@types/aggravatingFactorsTypes'
 import { ExistingRecall } from '../model/ExistingRecall'
 import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
 import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
@@ -173,14 +178,6 @@ export default class RecallService {
       bookingId,
       includeAllPeriods,
     )
-// console.log(
-//   'RAW API SENTENCE (service layer):',
-//   JSON.stringify(
-//     response.recalls?.[0]?.courtCases?.[0]?.sentences?.[0]?.aggravatingFactors,
-//     null,
-//     2,
-//   ),
-// )
     const latestRecallUuid = response.recalls[0]?.recallUuid
     const recalls = await this.enrichRecalls(response.recalls, username, latestRecallUuid)
     return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
@@ -283,6 +280,7 @@ export default class RecallService {
             courtCaseDate: courtCase.sentencingAppearanceDate,
             sentences: courtCase.sentences.map(sentence => {
               sentenceIds.push(sentence.sentenceUuid)
+              const aggravatingFactors = this.getAggravatingFactors(sentence.aggravatingFactors)
 
               const fullConsecutiveTo =
                 sentence.consecutiveToSentenceUuid &&
@@ -314,13 +312,7 @@ export default class RecallService {
                 sentenceServeType: sentence.sentenceServeType,
                 sentenceTypeDescription: sentence.sentenceTypeDescription,
                 consecutiveTo,
-                  aggravatingFactors: sentence.aggravatingFactors
-                ? [
-                    sentence.aggravatingFactors.isDomesticViolenceRelated && 'Domestic violence related',
-                    sentence.aggravatingFactors.isTerrorRelated && 'Terror related',
-                    sentence.aggravatingFactors.isForeignPowerRelated && 'Foreign power related',
-                  ].filter(Boolean)
-                : [],
+                ...(aggravatingFactors ? { aggravatingFactors } : {}),
               }
             }),
           }
@@ -330,6 +322,16 @@ export default class RecallService {
     }
 
     return { ...existingRecall, sentenceIds }
+  }
+
+  private getAggravatingFactors(aggravatingFactors?: ApiAggravatingFactors | null): string[] | undefined {
+    if (!aggravatingFactors) return undefined
+
+    const factors = Object.entries(AGGRAVATING_FACTOR_LABELS)
+      .filter(([factorKey]) => aggravatingFactors[factorKey])
+      .map(([, factorLabel]) => factorLabel)
+
+    return factors.length ? factors : undefined
   }
 
   public getApiRecallFromJourney(journey: RecallJourney, username: string, prison: string): CreateRecall {

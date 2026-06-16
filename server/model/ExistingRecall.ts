@@ -32,6 +32,7 @@ export interface ExistingRecallSentence {
   sentenceUuid: string
   offenceCode: string
   offenceDescription: string
+  aggravatingFactors?: string[]
   offenceStartDate?: string
   offenceEndDate?: string
   sentenceDate?: string

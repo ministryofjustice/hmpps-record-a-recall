@@ -34,18 +34,6 @@ export default class HomeController implements Controller {
       includeRecallsFromPreviousPeriodsOfCustodyValue,
     )
 
-// const aggravatingFactors = displayedRecalls.flatMap(recall =>
-//   recall.courtCases.flatMap(courtCase =>
-//     courtCase.sentences.map(sentence => ({
-//       recallUuid: recall.recallUuid,
-//       sentenceUuid: sentence.sentenceUuid,
-//       aggravatingFactors: sentence.aggravatingFactors?.isTerrorRelated,
-//     })),
-//   ),
-// )
-
-// console.log('Aggravating factors********************:', aggravatingFactors)
-
     const auditDetails = this.extractRecallUuids(displayedRecalls)
 
     await this.auditService.logHomePageViewEvent(user.username, nomsId, req.id, auditDetails)

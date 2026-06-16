@@ -299,6 +299,7 @@ describe('Tests for recall card component', () => {
       sentenceUuid: uuidv4(),
       offenceCode: 'A1',
       offenceDescription: 'Assault',
+      aggravatingFactors: ['Offences aggravated by a terrorist connection'],
       offenceStartDate: '2019-02-25',
       offenceEndDate: '2020-03-30',
       sentenceDate: '2021-04-12',
@@ -382,6 +383,9 @@ describe('Tests for recall card component', () => {
     )
     expect(maximumOffenceCard.find('dt:contains("Consecutive or concurrent")').next().text().trim()).toStrictEqual(
       'Concurrent',
+    )
+    expect(maximumOffenceCard.find('dt:contains("Aggravating factors")').next().text().trim()).toContain(
+      'Offences aggravated by a terrorist connection',
     )
 
     const minimumOffenceCard = $(`[data-qa=recall-abc123-court-case-1-sentences-2]`).find(
