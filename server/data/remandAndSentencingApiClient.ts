@@ -60,25 +60,25 @@ export default class RemandAndSentencingApiClient extends RestClient {
     ) as Promise<CreateRecallResponse>
   }
 
-async getRecallsForPrisoner(
-  prisonerId: string,
-  username: string,
-  bookingId = '',
-  includeAllPeriods = false,
-): Promise<PrisonerRecallsResponse> {
-  const response = (await this.get(
-    {
-      path: `/recall/person/${prisonerId}/search`,
-      query: {
-        bookingId,
-        ...(includeAllPeriods ? { includeAllPeriods: true } : {}),
+  async getRecallsForPrisoner(
+    prisonerId: string,
+    username: string,
+    bookingId = '',
+    includeAllPeriods = false,
+  ): Promise<PrisonerRecallsResponse> {
+    const response = (await this.get(
+      {
+        path: `/recall/person/${prisonerId}/search`,
+        query: {
+          bookingId,
+          ...(includeAllPeriods ? { includeAllPeriods: true } : {}),
+        },
       },
-    },
-    asSystem(username),
-  )) as PrisonerRecallsResponse
+      asSystem(username),
+    )) as PrisonerRecallsResponse
 
-  return response
-}
+    return response
+  }
 
   async deleteRecall(recallId: string, username: string): Promise<void> {
     await this.delete(

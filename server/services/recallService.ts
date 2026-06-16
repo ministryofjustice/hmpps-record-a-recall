@@ -10,11 +10,7 @@ import {
   SentenceConsecutiveToDetailsResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
-import {
-  ConsecutiveToDetails,
-  getRecallType,
-  SentenceAndOffence,
-} from '../@types/recallTypes'
+import { ConsecutiveToDetails, getRecallType, SentenceAndOffence } from '../@types/recallTypes'
 import { AGGRAVATING_FACTOR_LABELS, ApiAggravatingFactors } from '../@types/aggravatingFactorsTypes'
 import { ExistingRecall } from '../model/ExistingRecall'
 import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
