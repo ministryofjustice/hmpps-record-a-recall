@@ -124,6 +124,10 @@ export default class TestData {
           count: 0,
           things: [],
         },
+        maintenanceAlert: {
+          enabled: false,
+          message: 'placeholder',
+        },
       },
       recalls: {
         href: 'https://recalls/person/A1234BC',
@@ -131,6 +135,10 @@ export default class TestData {
         thingsToDo: {
           count: 0,
           things: [],
+        },
+        maintenanceAlert: {
+          enabled: false,
+          message: 'placeholder',
         },
       },
       releaseDates: {
@@ -140,6 +148,10 @@ export default class TestData {
           count: 0,
           things: [],
         },
+        maintenanceAlert: {
+          enabled: false,
+          message: 'placeholder',
+        },
       },
       adjustments: {
         href: 'https://adjustments?prisonId=A1234BC',
@@ -147,6 +159,10 @@ export default class TestData {
         thingsToDo: {
           count: 0,
           things: [],
+        },
+        maintenanceAlert: {
+          enabled: false,
+          message: 'placeholder',
         },
       },
     },
