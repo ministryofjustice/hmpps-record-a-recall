@@ -89,18 +89,30 @@ export default class RemandAndSentencingApiClient extends RestClient {
     )
   }
 
-  async getRecallableCourtCases(
-    prisonerId: string,
-    mergeDuplicateCourtCases = false,
-  ): Promise<RecallableCourtCasesResponseAugmented> {
-    return this.get(
-      {
-        path: `/court-case/${prisonerId}/recallable-court-cases`,
-        query: { mergeDuplicateCourtCases },
-      },
-      asSystem(),
-    )
-  }
+async getRecallableCourtCases(
+  prisonerId: string,
+  mergeDuplicateCourtCases = false,
+): Promise<RecallableCourtCasesResponseAugmented> {
+  const response = (await this.get(
+    {
+      path: `/court-case/${prisonerId}/recallable-court-cases`,
+      query: { mergeDuplicateCourtCases },
+    },
+    asSystem(),
+  )) as RecallableCourtCasesResponseAugmented
+
+  console.log(
+    'RAW recallableCourtCases response:',
+    JSON.stringify(response, null, 2),
+  )
+
+  console.log(
+    'FIRST SENTENCE FLAGS:',
+    response?.cases?.[0]?.sentences?.[0]
+  )
+
+  return response
+}
 
   async updateSentenceTypes(
     courtCaseUuid: string,
