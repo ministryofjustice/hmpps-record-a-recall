@@ -68,41 +68,41 @@ export default class RecallService {
       const sentences = courtCase.sentences ?? []
       const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
 
-  const decorate = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
-  // console.log('RAW sentence flags from API:', {
-  //   sentenceUuid: s.sentenceUuid,
-  //   isDomesticViolenceRelated: s.isDomesticViolenceRelated,
-  //   isTerrorRelated: s.isTerrorRelated,
-  //   isForeignPowerRelated: s.isForeignPowerRelated,
-  // })
+      const decorate = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
+        // console.log('RAW sentence flags from API:', {
+        //   sentenceUuid: s.sentenceUuid,
+        //   isDomesticViolenceRelated: s.isDomesticViolenceRelated,
+        //   isTerrorRelated: s.isTerrorRelated,
+        //   isForeignPowerRelated: s.isForeignPowerRelated,
+        // })
 
-  const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
+        const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
 
-  const fullConsecutiveTo = s.consecutiveToSentenceUuid
-    ? (consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid) ?? null)
-    : null
+        const fullConsecutiveTo = s.consecutiveToSentenceUuid
+          ? (consecutiveToDetailsBySentenceUuid.get(s.consecutiveToSentenceUuid) ?? null)
+          : null
 
-  const consecutiveTo =
-    fullConsecutiveTo && s.consecutiveToSentenceUuid && sentenceUuidsInThisCase.has(s.consecutiveToSentenceUuid)
-      ? {
-          countNumber: fullConsecutiveTo.countNumber,
-          offenceCode: fullConsecutiveTo.offenceCode,
-          offenceDescription: fullConsecutiveTo.offenceDescription,
-          offenceStartDate: fullConsecutiveTo.offenceStartDate,
-          offenceEndDate: fullConsecutiveTo.offenceEndDate,
-        }
-      : fullConsecutiveTo
+        const consecutiveTo =
+          fullConsecutiveTo && s.consecutiveToSentenceUuid && sentenceUuidsInThisCase.has(s.consecutiveToSentenceUuid)
+            ? {
+                countNumber: fullConsecutiveTo.countNumber,
+                offenceCode: fullConsecutiveTo.offenceCode,
+                offenceDescription: fullConsecutiveTo.offenceDescription,
+                offenceStartDate: fullConsecutiveTo.offenceStartDate,
+                offenceEndDate: fullConsecutiveTo.offenceEndDate,
+              }
+            : fullConsecutiveTo
 
-  const aggravatingFactors = this.getAggravatingFactors({
-    isDomesticViolenceRelated: s.isDomesticViolenceRelated,
-    isTerrorRelated: s.isTerrorRelated,
-    isForeignPowerRelated: s.isForeignPowerRelated,
-  })
+        const aggravatingFactors = this.getAggravatingFactors({
+          isDomesticViolenceRelated: s.isDomesticViolenceRelated,
+          isTerrorRelated: s.isTerrorRelated,
+          isForeignPowerRelated: s.isForeignPowerRelated,
+        })
 
-  //   console.log('DERIVED aggravatingFactors:', {
-  //   sentenceUuid: s.sentenceUuid,
-  //   aggravatingFactors,
-  // })
+        //   console.log('DERIVED aggravatingFactors:', {
+        //   sentenceUuid: s.sentenceUuid,
+        //   aggravatingFactors,
+        // })
 
         return {
           ...s,
