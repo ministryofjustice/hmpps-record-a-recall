@@ -33,7 +33,7 @@ export default class StartEditRecallJourneyController implements Controller {
     if (isManualJourney) {
       courtCaseIdsSelectedForRecall = recall.courtCases.map(it => it.courtCaseUuid)
 
-      recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
+      recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username, true)
 
       courtCaseIdsExcludedFromRecall = recallableCourtCases
         .filter(it => !courtCaseIdsSelectedForRecall.includes(it.courtCaseUuid))
