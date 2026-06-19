@@ -202,7 +202,7 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
 
     // Then
     expect(response.status).toEqual(302)
-    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, user.username)
+    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, user.username, true)
 
     const journeys = Object.values(session.recallJourneys!)
     expect(journeys).toHaveLength(1)
@@ -229,7 +229,7 @@ describe('GET /person/:nomsId/recall/edit/:recallId/start', () => {
 
     // Then
     expect(response.status).toEqual(302)
-    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, user.username)
+    expect(recallService.getRecallableCourtCases).toHaveBeenCalledWith(nomsId, user.username, true)
 
     const journeys = Object.values(session.recallJourneys!)
     expect(journeys).toHaveLength(1)
