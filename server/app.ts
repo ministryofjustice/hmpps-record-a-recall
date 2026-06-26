@@ -4,7 +4,6 @@ import createError from 'http-errors'
 
 import nunjucksSetup from './utils/nunjucksSetup'
 import errorHandler from './errorHandler'
-import { appInsightsMiddleware } from './utils/azureAppInsights'
 import authorisationMiddleware from './middleware/authorisationMiddleware'
 
 import setUpAuthentication from './middleware/setUpAuthentication'
@@ -21,6 +20,7 @@ import type { Services } from './services'
 import populateValidationErrors from './middleware/populateValidationErrors'
 import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
 import getFrontendComponents from './middleware/getFeComponents'
+import addUsernameAndCaseloadToTelemetry from './utils/azureAppInsights'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
@@ -29,7 +29,6 @@ export default function createApp(services: Services): express.Application {
   app.set('trust proxy', true)
   app.set('port', process.env.PORT || 3000)
 
-  app.use(appInsightsMiddleware())
   app.use(setUpHealthChecks(services.applicationInfo))
   app.use(setUpWebSecurity())
   app.use(setUpWebSession())
@@ -43,6 +42,7 @@ export default function createApp(services: Services): express.Application {
   app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
   app.use(populateValidationErrors())
   app.get('/{*splat}', getFrontendComponents(services))
+  app.use(addUsernameAndCaseloadToTelemetry())
   app.use(routes(services))
 
   app.use((_req, _res, next) => next(createError(404, 'Not found')))

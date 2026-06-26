@@ -50,9 +50,6 @@ export default function routes({
 
   const router = Router()
 
-  router.get('/', async (req, res) => {
-    return res.render('pages/index')
-  })
   router.get('/api/person/:nomsId/image', apiRoutes.personImage)
 
   const route = <P extends { [key: string]: string }>({

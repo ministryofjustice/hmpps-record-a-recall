@@ -2,20 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>ministryofjustice/hmpps-renovate-config:node"],
   "prBodyTemplate": "{{{table}}}{{{notes}}}{{{warnings}}}{{{controls}}}",
-  "ignoreDeps": ["esbuild"],
   "packageRules": [
     {
       "matchManagers": ["npm"],
-      "rangeStrategy": "bump",
-      "automerge": true
+      "rangeStrategy": "bump"
     },
     {
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "all non major NPM dependencies",
       "groupSlug": "all-npm-minor-patch",
-      "stabilityDays": 5,
-      "automerge": true
+      "stabilityDays": 7
     },
     {
       "matchDepTypes": ["engines"],
@@ -24,8 +21,7 @@
     {
       "matchPackageNames": ["typescript", "govuk-frontend"],
       "rangeStrategy": "bump",
-      "stabilityDays": 0,
-      "automerge": true
+      "stabilityDays": 0
     },
     {
       "matchManagers": ["npm"],
@@ -41,7 +37,13 @@
     },
     {
       "matchManagers": ["github-actions"],
-      "matchFileNames": ["**/.github/workflows/**/*.ya?ml", "**/.github/actions/**/*.ya?ml"]
+      "matchFileNames": ["**/.github/workflows/**/*.ya?ml"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["pre-commit"],
+      "groupName": "all pre-commit dependencies"
     }
   ],
   "vulnerabilityAlerts": {

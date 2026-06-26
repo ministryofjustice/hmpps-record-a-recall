@@ -3,6 +3,7 @@ import { Controller } from '../controller'
 import AuditService, { Page } from '../../services/auditService'
 import CourtCasesReleaseDatesService from '../../services/courtCasesReleaseDatesService'
 import RecallService from '../../services/recallService'
+import { ExistingRecall } from '../../model/ExistingRecall'
 
 export default class HomeController implements Controller {
   constructor(
@@ -57,7 +58,7 @@ export default class HomeController implements Controller {
     })
   }
 
-  extractRecallUuids = recalls => {
+  extractRecallUuids = (recalls: ExistingRecall[]) => {
     const recallIds = recalls.map(r => r.recallUuid)
 
     const courtCaseUuids = recalls.flatMap(r => r.courtCases.map(c => c.courtCaseUuid).filter(Boolean))

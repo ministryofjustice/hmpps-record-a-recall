@@ -103,7 +103,7 @@ describe('sortByDateDesc', () => {
   })
 
   it('returns empty array when given empty input', () => {
-    const courtCases = []
+    const courtCases: { courtCaseUuid: string; courtCaseDate: string }[] = []
 
     const sorted = sortByDateDesc(courtCases, c => c.courtCaseDate)
 
