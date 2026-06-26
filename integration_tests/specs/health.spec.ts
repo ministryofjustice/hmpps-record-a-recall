@@ -14,6 +14,21 @@ import adjustmentsApi from '../mockApis/adjustmentsApi'
 import ccardApi from '../mockApis/ccardApi'
 import frontEndComponentsApi from '../mockApis/frontEndComponentsApi'
 
+const mockApis = [
+  hmppsAuth,
+  tokenVerification,
+  remandAndSentencingApi,
+  prisonApi,
+  prisonerSearchApi,
+  calculateReleaseDatesApi,
+  courtRegisterApi,
+  prisonRegisterApi,
+  manageOffencesApi,
+  adjustmentsApi,
+  ccardApi,
+  frontEndComponentsApi,
+]
+
 test.describe('Health', () => {
   test.afterEach(async () => {
     await resetStubs()
@@ -21,21 +36,7 @@ test.describe('Health', () => {
 
   test.describe('All healthy', () => {
     test.beforeEach(async () => {
-      await Promise.all([
-        hmppsAuth.stubPing(),
-        tokenVerification.stubPing(),
-        remandAndSentencingApi.stubPing(),
-        prisonApi.stubPing(),
-        prisonerSearchApi.stubPing(),
-        calculateReleaseDatesApi.stubPing(),
-        courtRegisterApi.stubPing(),
-        prisonRegisterApi.stubPing(),
-        manageOffencesApi.stubPing(),
-        adjustmentsApi.stubPing(),
-        ccardApi.stubPing(),
-        frontEndComponentsApi.stubPing(),
-        frontEndComponentsApi.stubComponents(),
-      ])
+      await Promise.all([...mockApis.map(api => api.stubPing()), frontEndComponentsApi.stubComponents()])
     })
 
     test('Health check is accessible and status is UP', async ({ page }) => {
@@ -58,11 +59,9 @@ test.describe('Health', () => {
   })
 
   test.describe('Some unhealthy', () => {
-    test.beforeEach(async () => {
-      await Promise.all([hmppsAuth.stubPing(), tokenVerification.stubPing(500)])
-    })
+    test('Health check status is down for 1 api', async ({ page }) => {
+      await Promise.all(mockApis.map(api => (api === tokenVerification ? api.stubPing(500) : api.stubPing())))
 
-    test('Health check status is down', async ({ page }) => {
       const response = await page.request.get('/health')
       const payload = await response.json()
       expect(payload.status).toBe('DOWN')
@@ -70,6 +69,12 @@ test.describe('Health', () => {
       expect(payload.components.tokenVerification.status).toBe('DOWN')
       expect(payload.components.tokenVerification.details.status).toBe(500)
       expect(payload.components.tokenVerification.details.attempts).toBe(3)
+      expect(
+        Object.values<{ status: 'UP' | 'DOWN' }>(payload.components).reduce(
+          (downCount, api) => (api.status === 'DOWN' ? downCount + 1 : downCount),
+          0,
+        ),
+      ).toEqual(1)
     })
   })
 })

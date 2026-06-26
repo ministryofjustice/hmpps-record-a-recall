@@ -1,5 +1,5 @@
 import type { SuperAgentRequest } from 'superagent'
-import { stubFor } from './wiremock'
+import { stubFor, stubPing } from './wiremock'
 
 export default {
   stubPing: (httpStatus = 200): SuperAgentRequest =>
