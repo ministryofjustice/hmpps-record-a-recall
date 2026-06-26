@@ -727,7 +727,18 @@ describe('Recall service', () => {
 
     it('redacts consecutiveTo when consecutive target exists in the same court case', async () => {
       // Given:
-      const sentence1 = {
+      const sentence1: {
+        sentenceUuid: string
+        offenceCode: string
+        offenceStartDate: undefined
+        offenceEndDate: undefined
+        sentenceDate: undefined
+        lineNumber: undefined
+        countNumber: string
+        periodLengths: []
+        sentenceServeType: string
+        sentenceTypeDescription: undefined
+      } = {
         sentenceUuid: 's1',
         offenceCode: 'A1',
         offenceStartDate: undefined,
@@ -740,7 +751,19 @@ describe('Recall service', () => {
         sentenceTypeDescription: undefined,
       }
 
-      const sentence2 = {
+      const sentence2: {
+        sentenceUuid: string
+        offenceCode: string
+        offenceStartDate: undefined
+        offenceEndDate: undefined
+        sentenceDate: undefined
+        lineNumber: undefined
+        countNumber: string
+        periodLengths: []
+        sentenceServeType: string
+        sentenceTypeDescription: undefined
+        consecutiveToSentenceUuid: string
+      } = {
         sentenceUuid: 's2',
         offenceCode: 'B2',
         offenceStartDate: undefined,
@@ -923,7 +946,12 @@ describe('Recall service', () => {
     it('should not allow delete for NOMIS recall if its sentence exists on a DPS recall', async () => {
       const sentenceUuid = uuidv4()
 
-      const sentence = {
+      const sentence: {
+        sentenceUuid: string
+        offenceCode: string
+        periodLengths: []
+        sentenceServeType: string
+      } = {
         sentenceUuid,
         offenceCode: 'A1',
         periodLengths: [],

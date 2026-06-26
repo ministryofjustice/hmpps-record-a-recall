@@ -47,23 +47,28 @@ export default function setUpCurrentUser(userService: UserService) {
   return router
 }
 
-async function getUserCaseLoads(res, userService: UserService) {
+async function getUserCaseLoads(res: express.Response, userService: UserService) {
+  const { user } = res.locals
+  if (user.authSource !== 'nomis') {
+    return
+  }
+
   try {
-    const userCaseLoads = await userService.getUserCaseLoads(res.locals.user.token)
+    const userCaseLoads = await userService.getUserCaseLoads(user.token)
     if (userCaseLoads && Array.isArray(userCaseLoads)) {
       const availableCaseLoads = userCaseLoads.filter(caseload => caseload.type !== 'APP')
       const activeCaseLoad = availableCaseLoads.filter((caseLoad: CaseLoad) => caseLoad.currentlyActive)[0]
 
-      res.locals.user.caseLoads = availableCaseLoads
+      user.caseLoads = availableCaseLoads
 
       if (activeCaseLoad) {
-        res.locals.user.activeCaseLoadId = activeCaseLoad.caseLoadId
+        user.activeCaseLoadId = activeCaseLoad.caseLoadId
       }
     } else {
       logger.info('No user case loads available')
     }
   } catch (error) {
-    logger.error(error, `Failed to retrieve case loads for: ${res.locals.user && res.locals.user.username}`)
+    logger.error(error, `Failed to retrieve case loads for: ${user.username}`)
     throw error
   }
 }

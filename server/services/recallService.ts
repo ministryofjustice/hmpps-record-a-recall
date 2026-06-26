@@ -323,9 +323,9 @@ export default class RecallService {
   private getAggravatingFactors(aggravatingFactors?: ApiAggravatingFactors | null): string[] | undefined {
     if (!aggravatingFactors) return undefined
 
-    const factors = Object.entries(AGGRAVATING_FACTOR_LABELS)
-      .filter(([factorKey]) => aggravatingFactors[factorKey])
-      .map(([, factorLabel]) => factorLabel)
+    const factors = (Object.keys(AGGRAVATING_FACTOR_LABELS) as (keyof typeof AGGRAVATING_FACTOR_LABELS)[])
+      .filter(factorKey => aggravatingFactors[factorKey])
+      .map(factorKey => AGGRAVATING_FACTOR_LABELS[factorKey])
 
     return factors.length ? factors : undefined
   }
