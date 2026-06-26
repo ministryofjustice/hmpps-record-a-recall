@@ -9,10 +9,7 @@ const url = 'http://localhost:9091/__admin'
 interface Mapping {
   request?: {
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
-    queryParameters?: Record<
-      string,
-      { equalTo: string } | { matches: string } | { absent: boolean }
-    >
+    queryParameters?: Record<string, { equalTo: string } | { matches: string } | { absent: boolean }>
     bodyPatterns?: ({ contains: string } | { equalToJson: unknown } | { matchesJsonPath: string })[]
   } & ({ url?: string } | { urlPath: string } | { urlPathPattern: string } | { urlPattern: string })
   response?: {
