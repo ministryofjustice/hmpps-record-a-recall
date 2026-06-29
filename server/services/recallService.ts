@@ -69,12 +69,6 @@ export default class RecallService {
       const sentenceUuidsInThisCase = new Set(sentences.map(s => s.sentenceUuid).filter(Boolean) as string[])
 
       const decorate = (s: RecallableCourtCaseSentence): SentenceAndOffence => {
-        // console.log('RAW sentence flags from API:', {
-        //   sentenceUuid: s.sentenceUuid,
-        //   isDomesticViolenceRelated: s.isDomesticViolenceRelated,
-        //   isTerrorRelated: s.isTerrorRelated,
-        //   isForeignPowerRelated: s.isForeignPowerRelated,
-        // })
 
         const offenceDescription = s.offenceCode ? (offenceMap.get(s.offenceCode) ?? null) : null
 
@@ -94,9 +88,9 @@ export default class RecallService {
             : fullConsecutiveTo
 
         const aggravatingFactors = this.getAggravatingFactors({
-          isDomesticViolenceRelated: s.isDomesticViolenceRelated,
-          isTerrorRelated: s.isTerrorRelated,
-          isForeignPowerRelated: s.isForeignPowerRelated,
+          isDomesticViolenceRelated: s.aggravatingFactors.isDomesticViolenceRelated,
+          isTerrorRelated: s.aggravatingFactors.isTerrorRelated,
+          isForeignPowerRelated: s.aggravatingFactors.isForeignPowerRelated,
         })
 
         //   console.log('DERIVED aggravatingFactors:', {
@@ -108,7 +102,7 @@ export default class RecallService {
           ...s,
           offenceDescription,
           consecutiveTo,
-          ...(aggravatingFactors ? { aggravatingFactors } : {}),
+          ...aggravatingFactors,
         }
       }
 
