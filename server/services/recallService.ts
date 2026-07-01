@@ -305,7 +305,7 @@ export default class RecallService {
                 sentenceServeType: sentence.sentenceServeType,
                 sentenceTypeDescription: sentence.sentenceTypeDescription,
                 consecutiveTo,
-                aggravatingFactors: sentence.aggravatingFactors?.map(f => f.title) ?? [],
+                aggravatingFactors: sentence.aggravatingFactors,
               }
             }),
           }

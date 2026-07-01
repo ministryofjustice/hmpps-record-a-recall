@@ -1,7 +1,7 @@
 import { addDays, differenceInCalendarDays, parse, isEqual, subDays, formatISO } from 'date-fns'
 import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
-import { PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { AggravatingFactor, PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { DateParts, RecallJourney } from '../@types/journeys'
 import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 
@@ -115,6 +115,8 @@ export const lowercaseFirstLetter = (s: string): string => {
 
 export const addUnique = (list: string[], addValue: string) => (list.includes(addValue) ? list : [...list, addValue])
 export const removeItem = (list: string[], removeValue: string) => list.filter(it => it !== removeValue)
+
+export const toAggravatingFactorTitles = (factors: AggravatingFactor[]): string[] => factors.map(f => f.title)
 
 export const sentenceTypeValueOrLegacy = (sentenceTypeValue: string, legacyData: Record<string, never>) => {
   if (sentenceTypeValue) {

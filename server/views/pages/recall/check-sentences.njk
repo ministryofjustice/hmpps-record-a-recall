@@ -114,12 +114,6 @@
         {% set lineNumberWithText = null %}
     {% endif %}
 
-    {% set aggravatingFactorTitles = [] %}
-
-    {% for factor in sentence.aggravatingFactors | default([]) %}
-        {% set aggravatingFactorTitles = aggravatingFactorTitles.concat([factor.title]) %}
-    {% endfor %}
-
     {# Add eligibility information if the sentence is ineligible #}
     {% set cardHtml %}
         {{ offenceCard({
@@ -139,7 +133,7 @@
             isSentenced: true,
             detailsClasses: 'govuk-!-padding-4',
             consecutiveTo: sentence.consecutiveTo,
-            aggravatingFactors: aggravatingFactorTitles
+            aggravatingFactors: sentence.aggravatingFactors | toAggravatingFactorTitles
         }) }}
     {% endset %}
 

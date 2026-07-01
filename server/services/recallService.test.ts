@@ -496,7 +496,6 @@ describe('Recall service', () => {
               sentences: [
                 {
                   ...sentenceWithMaximum,
-                  aggravatingFactors: ['Offences aggravated by a terrorist connection'],
                   offenceDescription: 'Assault',
                   consecutiveTo: undefined,
                 },
