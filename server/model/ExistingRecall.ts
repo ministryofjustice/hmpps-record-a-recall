@@ -1,4 +1,8 @@
-import { ApiRecallType, PeriodLength, AggravatingFactor } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  ApiRecallType,
+  PeriodLength,
+  AggravatingFactor,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { ConsecutiveToDetails } from '../@types/recallTypes'
 
 export interface ExistingRecall {
@@ -32,7 +36,7 @@ export interface ExistingRecallSentence {
   sentenceUuid: string
   offenceCode: string
   offenceDescription: string
-  aggravatingFactors?: AggravatingFactor[]
+  aggravatingFactors?: string[]
   offenceStartDate?: string
   offenceEndDate?: string
   sentenceDate?: string

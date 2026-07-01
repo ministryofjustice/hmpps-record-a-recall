@@ -2,7 +2,11 @@ import { v4 as uuidv4 } from 'uuid'
 import RecallService from './recallService'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
-import { ApiRecalledSentence, RecallableCourtCase } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import {
+  ApiRecalledSentence,
+  RecallableCourtCase,
+  AggravatingFactor,
+} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
 import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
@@ -414,9 +418,14 @@ describe('Recall service', () => {
         ],
         sentenceServeType: 'CONCURRENT',
         sentenceTypeDescription: 'Serious Offence Sec 250 Sentencing Code (U18)',
-        aggravatingFactors: {
-          isTerrorRelated: true,
-        },
+        aggravatingFactors: [
+          {
+            code: 'OATC',
+            title: 'Offences aggravated by a terrorist connection',
+            description: 'Offences aggravated by a terrorist connection',
+            displayOrder: 20,
+          },
+        ],
       }
       const sentenceWithMinimum: ApiRecalledSentence = {
         sentenceUuid: uuidv4(),
@@ -440,6 +449,7 @@ describe('Recall service', () => {
         ],
         sentenceServeType: 'CONCURRENT',
         sentenceTypeDescription: undefined,
+        aggravatingFactors: [],
       }
       const recall = TestData.apiRecall({
         calculationRequestId: 1,
@@ -670,6 +680,7 @@ describe('Recall service', () => {
         sentenceServeType: 'CONSECUTIVE',
         sentenceTypeDescription: undefined,
         consecutiveToSentenceUuid: 'sentence-2',
+        aggravatingFactors: [],
       }
 
       const recall = TestData.apiRecall({
@@ -1179,6 +1190,7 @@ describe('Recall service', () => {
         ],
         sentenceServeType: 'CONCURRENT',
         sentenceTypeDescription: 'Serious Offence Sec 250 Sentencing Code (U18)',
+        aggravatingFactors: [],
       }
       const sentenceWithMinimum: ApiRecalledSentence = {
         sentenceUuid: uuidv4(),
@@ -1202,6 +1214,7 @@ describe('Recall service', () => {
         ],
         sentenceServeType: 'CONCURRENT',
         sentenceTypeDescription: undefined,
+        aggravatingFactors: [],
       }
       const recall = TestData.apiRecall({
         prisonerId: 'A1234BC',
@@ -1248,11 +1261,13 @@ describe('Recall service', () => {
                 ...sentenceWithMaximum,
                 offenceDescription: 'Assault',
                 consecutiveTo: undefined,
+                aggravatingFactors: [],
               },
               {
                 ...sentenceWithMinimum,
                 offenceDescription: 'Burglary',
                 consecutiveTo: undefined,
+                aggravatingFactors: [],
               },
             ],
           },

@@ -292,8 +292,6 @@ export default class RecallService {
                     }
                   : fullConsecutiveTo
 
-                  console.log('*****************recall service sentence.aggravatingFactors', sentence.aggravatingFactors)
-
               return {
                 sentenceUuid: sentence.sentenceUuid,
                 offenceCode: sentence.offenceCode,
@@ -307,7 +305,7 @@ export default class RecallService {
                 sentenceServeType: sentence.sentenceServeType,
                 sentenceTypeDescription: sentence.sentenceTypeDescription,
                 consecutiveTo,
-                aggravatingFactors: sentence.aggravatingFactors ?? [],
+                aggravatingFactors: sentence.aggravatingFactors?.map(f => f.title) ?? [],
               }
             }),
           }
