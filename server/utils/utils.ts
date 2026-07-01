@@ -58,6 +58,7 @@ const periodLengthTypeHeadings = {
   TARIFF_LENGTH: 'Tariff length',
   TERM_LENGTH: 'Term length',
   OVERALL_SENTENCE_LENGTH: 'Overall sentence length',
+  BREACH_OF_SUPERVISION_REQUIREMENTS: 'Breach of supervision requirements',
   UNSUPPORTED: 'Unknown',
 }
 
