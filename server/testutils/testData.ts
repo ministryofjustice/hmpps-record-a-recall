@@ -185,6 +185,7 @@ export default class TestData {
       offenceDescription: 'Offence 1',
       lineNumber: 1,
       countNumber: 1,
+      aggravatingFactors: [],
       ...overrides,
     } as RecallableCourtCaseSentence
   }
@@ -198,6 +199,7 @@ export default class TestData {
       offenceDescription: 'Offence 2',
       lineNumber: 2,
       countNumber: 2,
+      aggravatingFactors: [],
       ...overrides,
     } as RecallableCourtCaseSentence
   }
