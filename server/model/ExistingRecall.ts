@@ -1,8 +1,4 @@
-import {
-  ApiRecallType,
-  PeriodLength,
-  AggravatingFactor,
-} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { ApiRecallType, PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { ConsecutiveToDetails } from '../@types/recallTypes'
 
 export interface ExistingRecall {
