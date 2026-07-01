@@ -1,5 +1,11 @@
 {% from "hmpps/components/court-cases-release-dates/offence-card/macro.njk" import offenceCard %}
 
+{% set aggravatingFactorTitles = [] %}
+
+{% for factor in sentence.aggravatingFactors | default([]) %}
+  {% set aggravatingFactorTitles = aggravatingFactorTitles.concat([factor.title]) %}
+{% endfor %}
+
 {{ offenceCard({
     offenceCode: sentence.offenceCode,
     offenceName: sentence.offenceDescription,
@@ -15,5 +21,6 @@
     sentenceDate: sentence.sentenceDate | formatDate('DD/MM/YYYY'),
     fineAmount: sentence.fineAmount,
     detailsClasses: 'govuk-!-padding-4',
-    consecutiveTo: sentence.consecutiveTo
+    consecutiveTo: sentence.consecutiveTo,
+    aggravatingFactors: aggravatingFactorTitles
 }) }}
