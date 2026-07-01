@@ -37,6 +37,7 @@ const custodyFilterSentence = (sentenceUuid: string) => ({
   ],
   sentenceServeType: 'CONCURRENT',
   sentenceTypeDescription: 'Unknown pre-recall sentence',
+  aggravatingFactors: [],
 })
 
 const custodyFilterRecall = ({
@@ -207,6 +208,7 @@ export default {
                   isRecallable: true,
                   sentenceTypeUuid: 'e138374d-810f-4718-a81a-1c9d4745031e',
                   sentenceDate: '2025-04-01',
+                  aggravatingFactors: [],
                 },
               ],
               recallableSentences: [
@@ -251,6 +253,7 @@ export default {
                   sentenceTypeUuid: 'e138374d-810f-4718-a81a-1c9d4745031e',
                   sentenceDate: '2025-04-01',
                   offenceDescription: 'Affray',
+                  aggravatingFactors: [],
                 },
               ],
               nonRecallableSentences: [],
@@ -336,6 +339,7 @@ export default {
                 ],
                 sentenceServeType: 'CONCURRENT',
                 sentenceTypeDescription: 'Unknown pre-recall sentence',
+                aggravatingFactors: [],
               },
             ],
           },
@@ -371,6 +375,7 @@ export default {
                 ],
                 sentenceServeType: 'CONCURRENT',
                 sentenceTypeDescription: 'Unknown pre-recall sentence',
+                aggravatingFactors: [],
               },
             ],
           },
@@ -426,6 +431,7 @@ export default {
                 ],
                 sentenceServeType: 'CONCURRENT',
                 sentenceTypeDescription: 'Unknown pre-recall sentence',
+                aggravatingFactors: [],
               },
             ],
           },
@@ -478,6 +484,7 @@ export default {
                 ],
                 sentenceServeType: 'CONCURRENT',
                 sentenceTypeDescription: 'Unknown pre-recall sentence',
+                aggravatingFactors: [],
               },
             ],
           },
@@ -544,6 +551,7 @@ export default {
                 ],
                 sentenceServeType: 'CONCURRENT',
                 sentenceTypeDescription: 'Unknown pre-recall sentence',
+                aggravatingFactors: [],
               },
             ],
           },

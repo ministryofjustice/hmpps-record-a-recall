@@ -5,6 +5,7 @@ import {
   initialiseName,
   removeItem,
   sortByDateDesc,
+  toAggravatingFactorTitles,
 } from './utils'
 import { RecallJourney } from '../@types/journeys'
 
@@ -34,6 +35,20 @@ describe('initialise name', () => {
     ['Double barrelled', 'Robert-John Smith-Jones-Wilson', 'R. Smith-Jones-Wilson'],
   ])('%s initialiseName(%s, %s)', (_: string | null, a: string | null, expected: string | null) => {
     expect(initialiseName(a)).toEqual(expected)
+  })
+})
+
+describe('toAggravatingFactorTitles', () => {
+  it('maps aggravating factor objects to titles', () => {
+    expect(
+      toAggravatingFactorTitles([
+        { code: 'OATC', title: 'Offences aggravated by a terrorist connection', displayOrder: 20 },
+      ]),
+    ).toEqual(['Offences aggravated by a terrorist connection'])
+  })
+
+  it('returns an empty array when no factors are present', () => {
+    expect(toAggravatingFactorTitles([])).toEqual([])
   })
 })
 

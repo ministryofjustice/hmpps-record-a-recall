@@ -132,7 +132,8 @@
             fineAmount: sentence.fineAmount | string | default(null) if sentence.fineAmount else null,
             isSentenced: true,
             detailsClasses: 'govuk-!-padding-4',
-            consecutiveTo: sentence.consecutiveTo
+            consecutiveTo: sentence.consecutiveTo,
+            aggravatingFactors: sentence.aggravatingFactors | toAggravatingFactorTitles
         }) }}
     {% endset %}
 

@@ -20,6 +20,7 @@ import {
   lowercaseFirstLetter,
   periodLengthsToSentenceLengths,
   sentenceTypeValueOrLegacy,
+  toAggravatingFactorTitles,
 } from './utils'
 import config from '../config'
 import logger from '../../logger'
@@ -78,6 +79,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
   njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
+  njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 

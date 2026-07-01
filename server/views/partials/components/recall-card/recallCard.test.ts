@@ -9,7 +9,7 @@ import {
   sortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { ExistingRecall, ExistingRecallSentence } from '../../../../model/ExistingRecall'
-import { formatDate, periodLengthsToSentenceLengths } from '../../../../utils/utils'
+import { formatDate, periodLengthsToSentenceLengths, toAggravatingFactorTitles } from '../../../../utils/utils'
 import TestData from '../../../../testutils/testData'
 
 const njkEnv = nunjucks.configure([
@@ -22,6 +22,7 @@ const njkEnv = nunjucks.configure([
 ])
 njkEnv.addFilter('formatDate', formatDate)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
+njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatLengths', formatLengths)
 njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
@@ -299,7 +300,14 @@ describe('Tests for recall card component', () => {
       sentenceUuid: uuidv4(),
       offenceCode: 'A1',
       offenceDescription: 'Assault',
-      aggravatingFactors: ['Offences aggravated by a terrorist connection'],
+      aggravatingFactors: [
+        {
+          code: 'OATC',
+          title: 'Offences aggravated by a terrorist connection',
+          description: 'Offences aggravated by a terrorist connection',
+          displayOrder: 20,
+        },
+      ],
       offenceStartDate: '2019-02-25',
       offenceEndDate: '2020-03-30',
       sentenceDate: '2021-04-12',
@@ -347,6 +355,7 @@ describe('Tests for recall card component', () => {
       ],
       sentenceServeType: 'CONSECUTIVE',
       sentenceTypeDescription: undefined,
+      aggravatingFactors: [],
     }
     const model: ExistingRecall = {
       ...aRecall,
@@ -435,6 +444,7 @@ describe('Tests for recall card component', () => {
       ],
       sentenceServeType: 'CONCURRENT',
       sentenceTypeDescription: 'Serious Offence Sec 250 Sentencing Code (U18)',
+      aggravatingFactors: [],
     }
     const model: ExistingRecall = {
       ...aRecall,

@@ -6,6 +6,7 @@ export type ApiRecall = components['schemas']['Recall']
 export type PrisonerRecallsResponse = components['schemas']['PrisonerRecallsResponse']
 export type ApiRecallType = ApiRecall['recallType']
 export type ApiRecalledSentence = components['schemas']['RecalledSentence']
+export type AggravatingFactor = components['schemas']['AggravatingFactor']
 
 export type RecallableCourtCase = components['schemas']['RecallableCourtCase']
 export type RecallableCourtCaseSentence = components['schemas']['RecallableCourtCaseSentence']

@@ -6,7 +6,12 @@ import {
   groupAndSortPeriodLengths,
   consecutiveToDetailsToDescription,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy } from '../../../../utils/utils'
+import {
+  formatDate,
+  periodLengthsToSentenceLengths,
+  sentenceTypeValueOrLegacy,
+  toAggravatingFactorTitles,
+} from '../../../../utils/utils'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 const njkEnv = nunjucks.configure([
@@ -22,6 +27,7 @@ njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLength
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
+njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
 
 function valueInOffenceCard(key: string, $: cheerio.CheerioAPI) {
@@ -48,6 +54,7 @@ describe('Tests for sentence component', () => {
       periodLengths: [],
       sentenceServeType: 'CONCURRENT',
       sentenceType: 'ORA SDS',
+      aggravatingFactors: [],
     } as unknown as RecallableCourtCaseSentence
 
     const html = njkEnv.render('test.njk', { sentence })
@@ -86,6 +93,7 @@ describe('Tests for sentence component', () => {
         offenceDescription: 'Offence Description',
       },
       sentenceType: 'ORA SDS',
+      aggravatingFactors: [],
     } as unknown as RecallableCourtCaseSentence
 
     const html = njkEnv.render('test.njk', { sentence })

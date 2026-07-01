@@ -7,7 +7,12 @@ import {
   formatCountNumber,
   groupAndSortPeriodLengths,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
-import { formatDate, periodLengthsToSentenceLengths, sentenceTypeValueOrLegacy } from '../../../../utils/utils'
+import {
+  formatDate,
+  periodLengthsToSentenceLengths,
+  sentenceTypeValueOrLegacy,
+  toAggravatingFactorTitles,
+} from '../../../../utils/utils'
 import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 const njkEnv = nunjucks.configure([
@@ -24,6 +29,7 @@ njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLength
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
+njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 
 const baseCase = {
   id: uuidv4(),
@@ -59,6 +65,7 @@ describe('Tests for case-and-sentences component', () => {
           sentenceDate: '2023-07-01',
           countNumber: '1',
           periodLengths: [],
+          aggravatingFactors: [],
         } as unknown as RecallableCourtCaseSentence,
       ],
     }
@@ -72,6 +79,7 @@ describe('Tests for case-and-sentences component', () => {
         sentenceDate: '2023-07-01',
         countNumber: '1',
         periodLengths: [],
+        aggravatingFactors: [],
       } as unknown as RecallableCourtCaseSentence,
     ]
 
@@ -84,6 +92,7 @@ describe('Tests for case-and-sentences component', () => {
         sentenceDate: '2023-07-01',
         countNumber: '1',
         periodLengths: [],
+        aggravatingFactors: [],
       } as unknown as RecallableCourtCaseSentence,
     ]
     const html = nunjucks.render('partials/components/case-and-sentences/test.njk', {
@@ -114,6 +123,7 @@ describe('Tests for case-and-sentences component', () => {
       sentenceDate: '2024-03-01',
       countNumber: '2',
       periodLengths: [],
+      aggravatingFactors: [],
     } as unknown as RecallableCourtCaseSentence
 
     const sentenceWithLineNumber = {
@@ -125,6 +135,7 @@ describe('Tests for case-and-sentences component', () => {
       lineNumber: 'L-10',
       sentenceLegacyData: true,
       periodLengths: [],
+      aggravatingFactors: [],
     } as unknown as RecallableCourtCaseSentence
 
     const courtCase = {
