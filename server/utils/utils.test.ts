@@ -9,6 +9,7 @@ import {
   sortSentences,
 } from './utils'
 import { RecallJourney } from '../@types/journeys'
+import { SentenceAndOffence } from '../@types/recallTypes'
 
 describe('convert to title case', () => {
   it.each([
@@ -148,3 +149,109 @@ describe('sortByDateDesc', () => {
   })
 })
 
+describe('sortSentences', () => {
+  type TestSentence = Pick<SentenceAndOffence, 'sentenceUuid' | 'countNumber' | 'lineNumber' | 'offenceStartDate'>
+
+  it('sorts sentences by count number, then line number, then offence start date', () => {
+    const sentences: TestSentence[] = [
+      {
+        sentenceUuid: 'date-later',
+        countNumber: null,
+        lineNumber: null,
+        offenceStartDate: '2023-01-01',
+      },
+      {
+        sentenceUuid: 'line-two',
+        countNumber: null,
+        lineNumber: '2',
+        offenceStartDate: '2022-01-01',
+      },
+      {
+        sentenceUuid: 'count-three',
+        countNumber: '3',
+        lineNumber: null,
+        offenceStartDate: '2021-01-01',
+      },
+      {
+        sentenceUuid: 'date-earlier',
+        countNumber: null,
+        lineNumber: null,
+        offenceStartDate: '2020-01-01',
+      },
+      {
+        sentenceUuid: 'count-one',
+        countNumber: '1',
+        lineNumber: null,
+        offenceStartDate: '2024-01-01',
+      },
+      {
+        sentenceUuid: 'count-two',
+        countNumber: '2',
+        lineNumber: null,
+        offenceStartDate: '2025-01-01',
+      },
+      {
+        sentenceUuid: 'line-one',
+        countNumber: null,
+        lineNumber: '1',
+        offenceStartDate: '2026-01-01',
+      },
+    ]
+
+    const sorted = sortSentences(sentences as SentenceAndOffence[])
+
+    expect(sorted.map(sentence => sentence.sentenceUuid)).toEqual([
+      'count-one',
+      'count-two',
+      'count-three',
+      'line-one',
+      'line-two',
+      'date-earlier',
+      'date-later',
+    ])
+  })
+
+  it('treats count number -1 as having no count number', () => {
+    const sentences: TestSentence[] = [
+      {
+        sentenceUuid: 'count-minus-one',
+        countNumber: '-1',
+        lineNumber: null,
+        offenceStartDate: '2020-01-01',
+      },
+      {
+        sentenceUuid: 'count-one',
+        countNumber: '1',
+        lineNumber: null,
+        offenceStartDate: '2021-01-01',
+      },
+    ]
+
+    const sorted = sortSentences(sentences as SentenceAndOffence[])
+
+    expect(sorted.map(sentence => sentence.sentenceUuid)).toEqual(['count-one', 'count-minus-one'])
+  })
+
+  it('does not mutate the original array', () => {
+    const sentences: TestSentence[] = [
+      {
+        sentenceUuid: 'count-two',
+        countNumber: '2',
+        lineNumber: null,
+        offenceStartDate: '2022-01-01',
+      },
+      {
+        sentenceUuid: 'count-one',
+        countNumber: '1',
+        lineNumber: null,
+        offenceStartDate: '2021-01-01',
+      },
+    ]
+
+    const copy = [...sentences]
+
+    sortSentences(sentences as SentenceAndOffence[])
+
+    expect(sentences).toEqual(copy)
+  })
+})
