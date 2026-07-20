@@ -6,6 +6,7 @@ import {
   removeItem,
   sortByDateDesc,
   toAggravatingFactorTitles,
+  sortSentences,
 } from './utils'
 import { RecallJourney } from '../@types/journeys'
 
@@ -144,5 +145,88 @@ describe('sortByDateDesc', () => {
     const copy = [...items]
     sortByDateDesc(items, item => item.date)
     expect(items).toEqual(copy)
+  })
+})
+
+describe('sortSentences', () => {
+  it('sorts sentences by ascending count number first, then line number, then offence start date', () => {
+    const sentences = [
+      {
+        sentenceUuid: 'date-later',
+        offenceStartDate: '2022-01-01',
+      },
+      {
+        sentenceUuid: 'count-two',
+        countNumber: '2',
+        offenceStartDate: '2020-01-01',
+      },
+      {
+        sentenceUuid: 'line-one',
+        lineNumber: '1',
+        offenceStartDate: '2019-01-01',
+      },
+      {
+        sentenceUuid: 'count-one',
+        countNumber: '1',
+        offenceStartDate: '2021-01-01',
+      },
+      {
+        sentenceUuid: 'date-earlier',
+        offenceStartDate: '2020-01-01',
+      },
+    ]
+
+    const sorted = sortSentences(sentences as any)
+
+    expect(sorted.map(sentence => sentence.sentenceUuid)).toEqual([
+      'count-one',
+      'count-two',
+      'line-one',
+      'date-earlier',
+      'date-later',
+    ])
+  })
+
+  it('treats count number -1 as having no count number', () => {
+    const sentences = [
+      {
+        sentenceUuid: 'count-minus-one',
+        countNumber: '-1',
+        offenceStartDate: '2022-01-01',
+      },
+      {
+        sentenceUuid: 'count-one',
+        countNumber: '1',
+        offenceStartDate: '2021-01-01',
+      },
+    ]
+
+    const sorted = sortSentences(sentences as any)
+
+    expect(sorted.map(sentence => sentence.sentenceUuid)).toEqual([
+      'count-one',
+      'count-minus-one',
+    ])
+  })
+
+  it('does not mutate the original array', () => {
+    const sentences = [
+      {
+        sentenceUuid: 'two',
+        countNumber: '2',
+        offenceStartDate: '2022-01-01',
+      },
+      {
+        sentenceUuid: 'one',
+        countNumber: '1',
+        offenceStartDate: '2021-01-01',
+      },
+    ]
+
+    const copy = [...sentences]
+
+    sortSentences(sentences as any)
+
+    expect(sentences).toEqual(copy)
   })
 })
