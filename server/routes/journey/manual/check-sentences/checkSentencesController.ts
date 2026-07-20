@@ -25,13 +25,11 @@ export default class CheckSentencesController implements Controller {
     const journey = req.session.recallJourneys[journeyId]
 
     const licenceDates = await this.calculateReleaseDatesService.getLicenceDatesFromLatestCalc(nomsId)
-    const casesSelectedForRecall = this.recallService
-      .getCasesSelectedForRecall(journey)
-      .map(courtCase => ({
-        ...courtCase,
-        recallableSentences: sortSentences(courtCase.recallableSentences ?? []),
-        nonRecallableSentences: sortSentences(courtCase.nonRecallableSentences ?? []),
-      }))
+    const casesSelectedForRecall = this.recallService.getCasesSelectedForRecall(journey).map(courtCase => ({
+      ...courtCase,
+      recallableSentences: sortSentences(courtCase.recallableSentences ?? []),
+      nonRecallableSentences: sortSentences(courtCase.nonRecallableSentences ?? []),
+    }))
 
     return res.render('pages/recall/manual/check-sentences', {
       prisoner,

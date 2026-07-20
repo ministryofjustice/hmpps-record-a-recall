@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
 import { AggravatingFactor, PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import { DateParts, RecallJourney } from '../@types/journeys'
-import { RecallableSentence, RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import { SentenceAndOffence } from '../@types/recallTypes'
 
 const properCase = (word: string): string =>
@@ -150,7 +150,6 @@ export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: str
 export const sortByDateDesc = <T>(items: T[], getDate: (item: T) => string | undefined) =>
   [...items].sort((a, b) => (new Date(getDate(b) ?? '').getTime() || 0) - (new Date(getDate(a) ?? '').getTime() || 0))
 
-
 export function sortSentences(sentences: SentenceAndOffence[]): SentenceAndOffence[] {
   return [...sentences].sort((a, b) => {
     const aHasCount = a.countNumber && a.countNumber !== '-1'
@@ -171,13 +170,9 @@ export function sortSentences(sentences: SentenceAndOffence[]): SentenceAndOffen
     if (aHasLine) return -1
     if (bHasLine) return 1
 
-    const aDate = a.offenceStartDate
-      ? new Date(a.offenceStartDate).getTime()
-      : Number.MAX_SAFE_INTEGER
+    const aDate = a.offenceStartDate ? new Date(a.offenceStartDate).getTime() : Number.MAX_SAFE_INTEGER
 
-    const bDate = b.offenceStartDate
-      ? new Date(b.offenceStartDate).getTime()
-      : Number.MAX_SAFE_INTEGER
+    const bDate = b.offenceStartDate ? new Date(b.offenceStartDate).getTime() : Number.MAX_SAFE_INTEGER
 
     return aDate - bDate
   })
