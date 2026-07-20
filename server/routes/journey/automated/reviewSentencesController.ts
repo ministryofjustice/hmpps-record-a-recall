@@ -5,7 +5,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { DecoratedCourtCase, PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
-import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
+import { buildRecordARecallRequest, maxOf, sortSentences } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
 import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
@@ -117,9 +117,9 @@ export default class ReviewSentencesController implements Controller {
 
         return {
           ...courtCase,
-          eligibleSentences: sentences.eligible,
-          ineligibleSentences: sentences.ineligible,
-          expiredSentences: sentences.expired,
+          eligibleSentences: sortSentences(sentences.eligible),
+          ineligibleSentences: sortSentences(sentences.ineligible),
+          expiredSentences: sortSentences(sentences.expired),
         } as DecoratedCourtCaseWithCrdsResults
       })
       .filter(courtCase => courtCase.eligibleSentences.length)

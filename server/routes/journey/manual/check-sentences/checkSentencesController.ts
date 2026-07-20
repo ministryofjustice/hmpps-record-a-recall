@@ -18,6 +18,7 @@ export default class CheckSentencesController implements Controller {
   public PAGE_NAME = Page.MANUAL_CHECK_SENTENCES
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
+     console.log('CHECK SENTENCES GET HIT')
     const { prisoner, user } = res.locals
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const serviceDefinitions = await this.courtCasesReleaseDatesService.getServiceDefinitions(nomsId, user.token)
@@ -30,6 +31,10 @@ export default class CheckSentencesController implements Controller {
       recallableSentences: sortSentences(courtCase.recallableSentences ?? []),
       nonRecallableSentences: sortSentences(courtCase.nonRecallableSentences ?? []),
     }))
+
+    console.log('***123**********************',
+  casesSelectedForRecall[0]?.recallableSentences.map(s => s.countNumber),
+)
 
     return res.render('pages/recall/manual/check-sentences', {
       prisoner,
