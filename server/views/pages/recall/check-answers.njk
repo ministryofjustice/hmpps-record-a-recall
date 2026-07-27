@@ -29,11 +29,12 @@
                 value: {
                     text: recall.revocationDate | formatDate('DD/MM/YYYY')
                 },
-                actions: {
-                    items: [{
-                        href: urls.revocationDate,
-                        text: 'Edit'
-                    }]
+             actions: {
+                items: [{
+                    href: urls.revocationDate,
+                    text: 'Edit',
+                    classes: 'govuk-link--no-visited-state'
+                }]
                 }
             },
             {
@@ -46,7 +47,8 @@
                 actions: {
                     items: [{
                         href: urls.returnToCustodyDate,
-                        text: 'Edit'
+                        text: 'Edit',
+                        classes: 'govuk-link--no-visited-state'
                     }]
                 }
             }
@@ -65,7 +67,8 @@
                 actions: {
                     items: [{
                         href: urls.manualSelectCases,
-                        text: 'Edit'
+                        text: 'Edit',
+                        classes: 'govuk-link--no-visited-state'
                     }]
                 }
             }), checkAnswersRows)
@@ -84,7 +87,8 @@
                 actions: {
                     items: [{
                         href: urls.reviewSentences,
-                        text: 'Review'
+                        text: 'Review',
+                        classes: 'govuk-link--no-visited-state'
                     }]
                 }
             }), checkAnswersRows)
@@ -100,7 +104,8 @@
                 actions: {
                     items: [{
                         href: urls.recallType,
-                        text: 'Edit'
+                        text: 'Edit',
+                        classes: 'govuk-link--no-visited-state'
                     }]
                 }
             }), checkAnswersRows)
