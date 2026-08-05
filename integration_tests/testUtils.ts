@@ -11,10 +11,11 @@ import courtRegisterApi from './mockApis/courtRegisterApi'
 import manageOffencesApi from './mockApis/manageOffencesApi'
 import remandAndSentencingApi from './mockApis/remandAndSentencingApi'
 import HomePage from './pages/homePage'
+import { Roles } from '../server/@types/roles'
 
 export { resetStubs }
 
-const DEFAULT_ROLES = ['ROLE_RECALL_MAINTAINER', 'ROLE_RELEASE_DATES_CALCULATOR']
+const DEFAULT_ROLES = [...Roles.values()]
 const RECALLS_HOME_PRISONER_ID = 'A0164ED'
 
 export const stubRecallsHomePage = async () => {
