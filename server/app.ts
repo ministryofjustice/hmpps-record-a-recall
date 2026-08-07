@@ -21,6 +21,7 @@ import populateValidationErrors from './middleware/populateValidationErrors'
 import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
 import getFrontendComponents from './middleware/getFeComponents'
 import addUsernameAndCaseloadToTelemetry from './utils/azureAppInsights'
+import { Roles, Role } from './@types/roles'
 
 export default function createApp(services: Services): express.Application {
   const app = express()
@@ -36,7 +37,8 @@ export default function createApp(services: Services): express.Application {
   app.use(setUpStaticResources())
   nunjucksSetup(app, services.applicationInfo)
   app.use(setUpAuthentication())
-  app.use(authorisationMiddleware(['RECALL_MAINTAINER', 'ROLE_RELEASE_DATES_CALCULATOR']))
+  app.use(authorisationMiddleware([Roles.getAuthority(Role.RECALL_MAINTAINER), Roles.getAuthority(Role.COURT_CASES)]))
+  app.use(authorisationMiddleware([Roles.getAuthority(Role.RELEASE_DATES_CALCULATOR)]))
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services.userService))
   app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
