@@ -108,4 +108,16 @@ test.describe('Recalls custody period filter', () => {
     await expect(homePage.recallCards).toHaveCount(2)
     await expect(homePage.recallCard(custodyFilterRecallIds.previousPeriod)).toHaveCount(0)
   })
+
+  test('filter panel is open by default on load', async ({ page }) => {
+    await remandAndSentencingApi.stubRecallsForCustodyPeriodFilter()
+    await login(page)
+    await page.goto(`/person/${PRISONER_ID}`)
+
+    const homePage = await HomePage.verifyOnPage(page)
+
+    await expect(homePage.filterPreviousPeriodsOfCustody).toHaveAttribute('open', '')
+    await expect(homePage.includePreviousPeriodsCheckbox).toBeVisible()
+    await expect(homePage.applyFilterButton).toBeVisible()
+  })
 })
