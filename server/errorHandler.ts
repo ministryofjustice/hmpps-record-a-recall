@@ -1,12 +1,32 @@
 import type { Request, Response, NextFunction } from 'express'
 import type { HTTPError } from 'superagent'
+import type { SanitisedError } from '@ministryofjustice/hmpps-rest-client'
 import logger from '../logger'
+import { saveSession } from './data/sessionRecoveryStore'
+
+function extractStatus(error: HTTPError | SanitisedError): number | undefined {
+  const sanitisedError = error as SanitisedError<{ status?: number }>
+  return (error as HTTPError).status ?? sanitisedError.responseStatus ?? sanitisedError.data?.status
+}
+
+function extractNomsIdFromUrl(originalUrl: string): string | undefined {
+  return originalUrl.match(/^\/person\/([^/?]+)/)?.[1]
+}
 
 export default function createErrorHandler(production: boolean) {
-  return (error: HTTPError, req: Request, res: Response, _next: NextFunction): void => {
+  return async (error: HTTPError, req: Request, res: Response, _next: NextFunction): Promise<void> => {
     logger.error(`Error handling request for '${req.originalUrl}', user '${res.locals.user?.username}'`, error)
 
-    if (error.status === 401 || error.status === 403) {
+    const username = res.locals.user?.username
+    const paramsNomsId = req.params?.nomsId
+    const nomsId =
+      (typeof paramsNomsId === 'string' ? paramsNomsId : undefined) ?? extractNomsIdFromUrl(req.originalUrl)
+    if (username && nomsId) {
+      await saveSession(username, nomsId, req.session)
+    }
+
+    const status = extractStatus(error)
+    if (status === 401 || status === 403) {
       logger.info('Logging user out')
       return res.redirect('/sign-out')
     }
@@ -14,10 +34,10 @@ export default function createErrorHandler(production: boolean) {
     res.locals.message = production
       ? 'Something went wrong. The error has been logged. Please try again'
       : error.message
-    res.locals.status = error.status
+    res.locals.status = status
     res.locals.stack = production ? null : error.stack
 
-    res.status(error.status || 500)
+    res.status(status || 500)
 
     return res.render('pages/error')
   }
