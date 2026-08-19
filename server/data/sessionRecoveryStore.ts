@@ -1,3 +1,4 @@
+import { createHmac } from 'crypto'
 import type { Session, SessionData } from 'express-session'
 import { createRedisClient } from './redisClient'
 import config from '../config'
@@ -11,9 +12,10 @@ if (redisEnabled && redis) {
   logger.info('Redis session recovery disabled — journey data will not survive a token refresh')
 }
 
-const RECOVERY_TTL_SECONDS = 30 * 60
+const RECOVERY_TTL_SECONDS = config.session.recoveryTtlMinutes * 60
 
-const getKey = (username: string, nomsId: string) => `session-recovery:${username}:${nomsId}`
+const getKey = (username: string, nomsId: string) =>
+  `session-recovery:${createHmac('sha256', config.session.secret).update(`${username}:${nomsId}`).digest('hex')}`
 
 export async function saveSession(
   username: string,
