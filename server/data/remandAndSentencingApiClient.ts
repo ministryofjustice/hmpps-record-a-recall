@@ -1,4 +1,4 @@
-import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import { asSystem } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import {
   ApiRecall,
@@ -15,8 +15,9 @@ import {
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
+import SystemRestClient from './systemRestClient'
 
-export default class RemandAndSentencingApiClient extends RestClient {
+export default class RemandAndSentencingApiClient extends SystemRestClient {
   constructor(authenticationClient: AuthenticationClient) {
     super('Remand and sentencing  API', config.apis.remandAndSentencingApi, logger, authenticationClient)
   }

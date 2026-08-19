@@ -1,10 +1,11 @@
-import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import { asSystem } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import logger from '../../logger'
 import config from '../config'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
+import SystemRestClient from './systemRestClient'
 
-export default class ManageOffencesApiClient extends RestClient {
+export default class ManageOffencesApiClient extends SystemRestClient {
   constructor(authenticationClient: AuthenticationClient) {
     super('Manage Offences API', config.apis.manageOffencesApi, logger, authenticationClient)
   }

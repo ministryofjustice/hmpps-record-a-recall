@@ -1,10 +1,11 @@
-import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import { asSystem } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
 import config from '../config'
 import logger from '../../logger'
+import SystemRestClient from './systemRestClient'
 
-export default class AdjustmentsApiClient extends RestClient {
+export default class AdjustmentsApiClient extends SystemRestClient {
   constructor(authenticationClient: AuthenticationClient) {
     super('Adjustments API', config.apis.adjustmentsApi, logger, authenticationClient)
   }

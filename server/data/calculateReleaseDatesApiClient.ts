@@ -1,5 +1,5 @@
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
-import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
+import { asSystem } from '@ministryofjustice/hmpps-rest-client'
 import config from '../config'
 import logger from '../../logger'
 import {
@@ -10,8 +10,9 @@ import {
   RecordARecallValidationResult,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import SystemRestClient from './systemRestClient'
 
-export default class CalculateReleaseDatesApiClient extends RestClient {
+export default class CalculateReleaseDatesApiClient extends SystemRestClient {
   constructor(authenticationClient: AuthenticationClient) {
     super('Calculate Release Dates API', config.apis.calculateReleaseDatesApi, logger, authenticationClient)
   }
