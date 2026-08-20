@@ -58,7 +58,7 @@ describe('ClientCredentialsRestClient', () => {
   })
 
   describe('successful calls', () => {
-    it('passes the request straight through to the underlying RestClient.get', async () => {
+    it('should pass the request straight through to the underlying RestClient.get', async () => {
       mockUnderlyingClient.get.mockResolvedValue({ some: 'data' })
 
       const result = await client.get({ path: '/foo' }, asSystem('user1'))
@@ -70,7 +70,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(authOptionsArg).toEqual(asSystem('user1'))
     })
 
-    it('attaches a custom errorHandler to every request', async () => {
+    it('should attach a custom errorHandler to every request', async () => {
       mockUnderlyingClient.get.mockResolvedValue({})
       await client.get({ path: '/foo' }, asSystem('user1'))
 
@@ -80,7 +80,7 @@ describe('ClientCredentialsRestClient', () => {
   })
 
   describe('error tagging', () => {
-    it('tags errors thrown via the injected errorHandler with grantType CLIENT_CREDENTIALS', async () => {
+    it('should tag errors thrown via the injected errorHandler with grantType CLIENT_CREDENTIALS', async () => {
       mockUnderlyingClient.get.mockImplementation(async (request: { errorHandler: (...args: unknown[]) => unknown }) =>
         request.errorHandler('/foo', 'GET', sanitisedError(500)),
       )
@@ -90,7 +90,7 @@ describe('ClientCredentialsRestClient', () => {
       })
     })
 
-    it('logs the error via the shared logger', async () => {
+    it('should log the error via the shared logger', async () => {
       mockUnderlyingClient.get.mockImplementation(async (request: { errorHandler: (...args: unknown[]) => unknown }) =>
         request.errorHandler('/foo', 'GET', sanitisedError(500)),
       )
@@ -101,7 +101,7 @@ describe('ClientCredentialsRestClient', () => {
   })
 
   describe('token retry on 401/403', () => {
-    it('evicts the cached token for the username and retries once on a 401', async () => {
+    it('should evict the cached token for the username and retries once on a 401', async () => {
       const error = sanitisedError(401)
       mockUnderlyingClient.get.mockRejectedValueOnce(error).mockResolvedValueOnce({ recovered: true })
 
@@ -112,7 +112,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(mockUnderlyingClient.get).toHaveBeenCalledTimes(2)
     })
 
-    it('evicts the cached token and retries once on a 403', async () => {
+    it('should evict the cached token and retries once on a 403', async () => {
       const error = sanitisedError(403)
       mockUnderlyingClient.get.mockRejectedValueOnce(error).mockResolvedValueOnce({ recovered: true })
 
@@ -122,7 +122,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(tokenStore.evictToken).toHaveBeenCalledWith('user1')
     })
 
-    it('uses the %ANONYMOUS% key when no username is supplied to asSystem()', async () => {
+    it('should use the %ANONYMOUS% key when no username is supplied to asSystem()', async () => {
       const error = sanitisedError(401)
       mockUnderlyingClient.get.mockRejectedValueOnce(error).mockResolvedValueOnce({})
 
@@ -131,7 +131,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(tokenStore.evictToken).toHaveBeenCalledWith('%ANONYMOUS%')
     })
 
-    it('only retries once — a second consecutive 401 propagates', async () => {
+    it('should only retry once — a second consecutive 401 propagates the error', async () => {
       const error = sanitisedError(401)
       mockUnderlyingClient.get.mockRejectedValue(error)
 
@@ -140,7 +140,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(tokenStore.evictToken).toHaveBeenCalledTimes(1)
     })
 
-    it('does not evict or retry on a non-401/403 error (e.g. 500)', async () => {
+    it('should not evict or retry on a non-401/403 error (e.g. 500)', async () => {
       const error = sanitisedError(500)
       mockUnderlyingClient.get.mockRejectedValueOnce(error)
 
@@ -149,7 +149,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(mockUnderlyingClient.get).toHaveBeenCalledTimes(1)
     })
 
-    it('does not evict or retry when authOptions is a raw token string', async () => {
+    it('should not evict or retry when authOptions is a raw token string', async () => {
       const error = sanitisedError(401)
       mockUnderlyingClient.get.mockRejectedValueOnce(error)
 
@@ -157,7 +157,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(tokenStore.evictToken).not.toHaveBeenCalled()
     })
 
-    it('does not evict or retry when authOptions is undefined', async () => {
+    it('should not evict or retry when authOptions is undefined', async () => {
       const error = sanitisedError(401)
       mockUnderlyingClient.get.mockRejectedValueOnce(error)
 
@@ -165,7 +165,7 @@ describe('ClientCredentialsRestClient', () => {
       expect(tokenStore.evictToken).not.toHaveBeenCalled()
     })
 
-    it('applies the same retry behaviour to post/put/patch/delete', async () => {
+    it('should apply the same retry behaviour to post/put/patch/delete', async () => {
       const error = sanitisedError(401)
 
       mockUnderlyingClient.post.mockRejectedValueOnce(error).mockResolvedValueOnce({ ok: true })

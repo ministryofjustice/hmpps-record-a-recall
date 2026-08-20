@@ -11,16 +11,16 @@ describe('ClientCredentialsInMemoryTokenStore', () => {
     jest.useRealTimers()
   })
 
-  it('returns null when no token has been stored for a key', async () => {
+  it('should return null when no token has been stored for a key', async () => {
     await expect(store.getToken('user1')).resolves.toBeNull()
   })
 
-  it('returns a stored token before it expires', async () => {
+  it('should return a stored token before it expires', async () => {
     await store.setToken('user1', 'abc123', 3600)
     await expect(store.getToken('user1')).resolves.toBe('abc123')
   })
 
-  it('returns null once the token has expired', async () => {
+  it('should return null once the token has expired', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-01-01T00:00:00Z'))
     await store.setToken('user1', 'abc123', 10)
 
@@ -29,7 +29,7 @@ describe('ClientCredentialsInMemoryTokenStore', () => {
     await expect(store.getToken('user1')).resolves.toBeNull()
   })
 
-  it('keys tokens independently per user', async () => {
+  it('should use key tokens independently per user', async () => {
     await store.setToken('user1', 'tokenA', 3600)
     await store.setToken('user2', 'tokenB', 3600)
 
@@ -37,14 +37,14 @@ describe('ClientCredentialsInMemoryTokenStore', () => {
     await expect(store.getToken('user2')).resolves.toBe('tokenB')
   })
 
-  it('removes a token on eviction', async () => {
+  it('should remove a token on eviction', async () => {
     await store.setToken('user1', 'abc123', 3600)
     await store.evictToken('user1')
 
     await expect(store.getToken('user1')).resolves.toBeNull()
   })
 
-  it('evicting a key that was never set is a no-op', async () => {
+  it('should evict a key that was never set is a no-op', async () => {
     await expect(store.evictToken('never-set')).resolves.toBeUndefined()
   })
 })
