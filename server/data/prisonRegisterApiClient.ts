@@ -8,7 +8,13 @@ import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
 export default class PrisonRegisterApiClient extends ClientCredentialsRestClient {
   constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
-    super('Prison Register API', config.apis.prisonRegisterApi, logger, authenticationClient, clientCredentialsTokenStore)
+    super(
+      'Prison Register API',
+      config.apis.prisonRegisterApi,
+      logger,
+      authenticationClient,
+      clientCredentialsTokenStore,
+    )
   }
 
   getPrisonNames(prisonIds: string[], username: string): Promise<Prison[]> {

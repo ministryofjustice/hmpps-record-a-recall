@@ -2,11 +2,12 @@ import { RestClient, AuthOptions, ApiConfig } from '@ministryofjustice/hmpps-res
 import type { SanitisedError, AuthenticationClient } from '@ministryofjustice/hmpps-rest-client'
 import type Logger from 'bunyan'
 import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
+import GrantType from './grantType'
 
 /**
  * Adapter/proxy around RestClient to ensure every request automatically goes through the pattern of:
  *  - client-credentials-token 401/403 -> evict cached token -> retry once
- *  Note all errors also tagged with authTokenType: 'CLIENT_CREDENTIALS'
+ *  Note all errors also tagged with grantType: CLIENT_CREDENTIALS
  */
 export default class ClientCredentialsRestClient {
   private readonly client: RestClient
@@ -26,7 +27,7 @@ export default class ClientCredentialsRestClient {
 
   private handleError<Response, ErrorData>(path: string, method: string, error: SanitisedError<ErrorData>): Response {
     this.logger.warn({ ...error }, `Error calling path: '${path}', verb: '${method}'`)
-    throw Object.assign(error, { authTokenType: 'CLIENT_CREDENTIALS' as const })
+    throw Object.assign(error, { grantType: GrantType.SYSTEM_TOKEN as const })
   }
 
   private tokenKeyFor(authOptions?: AuthOptions | string): string | undefined {
@@ -49,7 +50,7 @@ export default class ClientCredentialsRestClient {
           `client-credentials token rejected (status ${status}) — evicting cached token for '${key}' and retrying once`,
         )
         await this.tokenStore.evictToken(key)
-        return await call()
+        return call()
       }
       throw error
     }

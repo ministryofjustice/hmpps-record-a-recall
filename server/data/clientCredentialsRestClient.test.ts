@@ -2,6 +2,7 @@ import { RestClient, AgentConfig, asSystem } from '@ministryofjustice/hmpps-rest
 import type { SanitisedError } from '@ministryofjustice/hmpps-rest-client'
 import ClientCredentialsRestClient from './clientCredentialsRestClient'
 import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
+import GrantType from './grantType'
 
 jest.mock('@ministryofjustice/hmpps-rest-client', () => {
   const actual = jest.requireActual('@ministryofjustice/hmpps-rest-client')
@@ -53,13 +54,7 @@ describe('ClientCredentialsRestClient', () => {
       evictToken: jest.fn(),
     }
 
-    client = new ClientCredentialsRestClient(
-      'Test API',
-      apiConfig,
-      mockLogger as never,
-      {} as never,
-      tokenStore,
-    )
+    client = new ClientCredentialsRestClient('Test API', apiConfig, mockLogger as never, {} as never, tokenStore)
   })
 
   describe('successful calls', () => {
@@ -85,13 +80,13 @@ describe('ClientCredentialsRestClient', () => {
   })
 
   describe('error tagging', () => {
-    it('tags errors thrown via the injected errorHandler with authTokenType CLIENT_CREDENTIALS', async () => {
+    it('tags errors thrown via the injected errorHandler with grantType CLIENT_CREDENTIALS', async () => {
       mockUnderlyingClient.get.mockImplementation(async (request: { errorHandler: (...args: unknown[]) => unknown }) =>
         request.errorHandler('/foo', 'GET', sanitisedError(500)),
       )
 
       await expect(client.get({ path: '/foo' }, asSystem('user1'))).rejects.toMatchObject({
-        authTokenType: 'CLIENT_CREDENTIALS',
+        grantType: GrantType.SYSTEM_TOKEN,
       })
     })
 

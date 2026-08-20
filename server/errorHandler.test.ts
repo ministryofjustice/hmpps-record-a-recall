@@ -4,6 +4,7 @@ import request from 'supertest'
 import { appWithAllRoutes } from './routes/testutils/appSetup'
 import createErrorHandler from './errorHandler'
 import { saveSession } from './data/sessionRecoveryStore'
+import GrantType from './data/grantType'
 
 function httpError(message: string, status: number): HTTPError {
   return Object.assign(new Error(message), { status }) as unknown as HTTPError
@@ -16,7 +17,10 @@ function sanitisedError(message: string, responseStatus: number): HTTPError {
 }
 
 function clientCredentialsError(message: string, responseStatus: number): HTTPError {
-  return Object.assign(new Error(message), { responseStatus, authTokenType: 'CLIENT_CREDENTIALS' }) as unknown as HTTPError
+  return Object.assign(new Error(message), {
+    responseStatus,
+    grantType: GrantType.SYSTEM_TOKEN,
+  }) as unknown as HTTPError
 }
 
 jest.mock('./data/sessionRecoveryStore')

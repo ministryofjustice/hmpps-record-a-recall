@@ -8,7 +8,13 @@ import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
 export default class ManageOffencesApiClient extends ClientCredentialsRestClient {
   constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
-    super('Manage Offences API', config.apis.manageOffencesApi, logger, authenticationClient, clientCredentialsTokenStore)
+    super(
+      'Manage Offences API',
+      config.apis.manageOffencesApi,
+      logger,
+      authenticationClient,
+      clientCredentialsTokenStore,
+    )
   }
 
   async getOffenceByCode(code: string): Promise<Offence> {

@@ -8,7 +8,13 @@ import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
 export default class PrisonerSearchApiClient extends ClientCredentialsRestClient {
   constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
-    super('Prisoner Search API', config.apis.prisonerSearchApi, logger, authenticationClient, clientCredentialsTokenStore)
+    super(
+      'Prisoner Search API',
+      config.apis.prisonerSearchApi,
+      logger,
+      authenticationClient,
+      clientCredentialsTokenStore,
+    )
   }
 
   async getPrisonerDetails(nomsId: string, username: string): Promise<PrisonerSearchApiPrisoner> {
