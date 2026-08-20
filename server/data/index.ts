@@ -1,4 +1,4 @@
-import { AuthenticationClient, InMemoryTokenStore, RedisTokenStore } from '@ministryofjustice/hmpps-auth-clients'
+import { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import { createRedisClient } from './redisClient'
 import config from '../config'
 import HmppsAuditClient from './hmppsAuditClient'
@@ -14,30 +14,32 @@ import FeComponentsClient from './feComponentsClient'
 import PrisonRegisterApiClient from './prisonRegisterApiClient'
 import CourtRegisterApiClient from './courtRegisterApiClient'
 import applicationInfoSupplier from '../applicationInfo'
+import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
+import ClientCredentialsRedisTokenStore from './clientCredentialsRedisTokenStore'
+import ClientCredentialsInMemoryTokenStore from './clientCredentialsInMemoryTokenStore'
 
 const applicationInfo = applicationInfoSupplier()
 
 export const dataAccess = () => {
-  const hmppsAuthClient = new AuthenticationClient(
-    config.apis.hmppsAuth,
-    logger,
-    config.redis.enabled ? new RedisTokenStore(createRedisClient()) : new InMemoryTokenStore(),
-  )
+  const clientCredentialsTokenStore: ClientCredentialsTokenStore = config.redis.enabled
+    ? new ClientCredentialsRedisTokenStore(createRedisClient())
+    : new ClientCredentialsInMemoryTokenStore()
+  const hmppsAuthClient = new AuthenticationClient(config.apis.hmppsAuth, logger, clientCredentialsTokenStore)
 
   return {
     applicationInfo,
     hmppsAuthClient,
     hmppsAuditClient: new HmppsAuditClient(config.sqs.audit),
-    adjustmentsApiClient: new AdjustmentsApiClient(hmppsAuthClient),
-    calculateReleaseDatesApiClient: new CalculateReleaseDatesApiClient(hmppsAuthClient),
+    adjustmentsApiClient: new AdjustmentsApiClient(hmppsAuthClient, clientCredentialsTokenStore),
+    calculateReleaseDatesApiClient: new CalculateReleaseDatesApiClient(hmppsAuthClient, clientCredentialsTokenStore),
     courtCasesReleaseDatesApiClient: new CourtCasesReleaseDatesApiClient(hmppsAuthClient),
-    manageOffencesApiClient: new ManageOffencesApiClient(hmppsAuthClient),
+    manageOffencesApiClient: new ManageOffencesApiClient(hmppsAuthClient, clientCredentialsTokenStore),
     prisonApiClient: new PrisonApiClient(hmppsAuthClient),
-    prisonerSearchApiClient: new PrisonerSearchApiClient(hmppsAuthClient),
-    remandAndSentencingApiClient: new RemandAndSentencingApiClient(hmppsAuthClient),
-    prisonRegisterApiClient: new PrisonRegisterApiClient(hmppsAuthClient),
+    prisonerSearchApiClient: new PrisonerSearchApiClient(hmppsAuthClient, clientCredentialsTokenStore),
+    remandAndSentencingApiClient: new RemandAndSentencingApiClient(hmppsAuthClient, clientCredentialsTokenStore),
+    prisonRegisterApiClient: new PrisonRegisterApiClient(hmppsAuthClient, clientCredentialsTokenStore),
     feComponentsClient: new FeComponentsClient(hmppsAuthClient),
-    courtRegisterApiClient: new CourtRegisterApiClient(hmppsAuthClient),
+    courtRegisterApiClient: new CourtRegisterApiClient(hmppsAuthClient, clientCredentialsTokenStore),
   }
 }
 

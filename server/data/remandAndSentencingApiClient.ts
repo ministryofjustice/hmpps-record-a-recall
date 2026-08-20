@@ -15,11 +15,18 @@ import {
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
-import SystemRestClient from './systemRestClient'
+import ClientCredentialsRestClient from './clientCredentialsRestClient'
+import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
-export default class RemandAndSentencingApiClient extends SystemRestClient {
-  constructor(authenticationClient: AuthenticationClient) {
-    super('Remand and sentencing  API', config.apis.remandAndSentencingApi, logger, authenticationClient)
+export default class RemandAndSentencingApiClient extends ClientCredentialsRestClient {
+  constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
+    super(
+      'Remand and sentencing  API',
+      config.apis.remandAndSentencingApi,
+      logger,
+      authenticationClient,
+      clientCredentialsTokenStore,
+    )
   }
 
   async createRecall(createRecall: CreateRecall, username: string): Promise<CreateRecallResponse> {

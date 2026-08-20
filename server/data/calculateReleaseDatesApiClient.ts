@@ -10,11 +10,18 @@ import {
   RecordARecallValidationResult,
   SentenceAndOffenceWithReleaseArrangements,
 } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import SystemRestClient from './systemRestClient'
+import ClientCredentialsRestClient from './clientCredentialsRestClient'
+import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
-export default class CalculateReleaseDatesApiClient extends SystemRestClient {
-  constructor(authenticationClient: AuthenticationClient) {
-    super('Calculate Release Dates API', config.apis.calculateReleaseDatesApi, logger, authenticationClient)
+export default class CalculateReleaseDatesApiClient extends ClientCredentialsRestClient {
+  constructor(authenticationClient: AuthenticationClient, systemTokenStore: ClientCredentialsTokenStore) {
+    super(
+      'Calculate Release Dates API',
+      config.apis.calculateReleaseDatesApi,
+      logger,
+      authenticationClient,
+      systemTokenStore,
+    )
   }
 
   async validateForRecordARecall(prisonerNumber: string, username: string): Promise<RecordARecallValidationResult> {

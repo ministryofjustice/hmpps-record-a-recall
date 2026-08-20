@@ -4,7 +4,7 @@ import type { SanitisedError } from '@ministryofjustice/hmpps-rest-client'
 import logger from '../logger'
 import { saveSession } from './data/sessionRecoveryStore'
 
-type TaggedError = (HTTPError | SanitisedError) & { authTokenType?: 'SYSTEM' | 'USER' }
+type TaggedError = (HTTPError | SanitisedError) & { authTokenType?: 'CLIENT_CREDENTIALS' | 'USER' }
 
 function extractStatus(error: TaggedError): number | undefined {
   const sanitisedError = error as SanitisedError<{ status?: number }>
@@ -28,14 +28,14 @@ export default function createErrorHandler(production: boolean) {
     }
 
     const status = extractStatus(error)
-    const isSystemTokenFailure = error.authTokenType === 'SYSTEM'
+    const isClientCredentialsTokenFailure = error.authTokenType === 'CLIENT_CREDENTIALS'
 
-    if ((status === 401 || status === 403) && !isSystemTokenFailure) {
+    if ((status === 401 || status === 403) && !isClientCredentialsTokenFailure) {
       logger.info('Logging user out')
       return res.redirect('/sign-out')
     }
 
-    if (isSystemTokenFailure) {
+    if (isClientCredentialsTokenFailure) {
       logger.error(`System/client-credentials token call failed with status ${status}`)
     }
 

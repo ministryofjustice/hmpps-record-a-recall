@@ -3,11 +3,12 @@ import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients
 import logger from '../../logger'
 import config from '../config'
 import { Prison, PrisonsSearchRequest } from '../@types/prisonRegisterApi/prisonRegisterTypes'
-import SystemRestClient from './systemRestClient'
+import ClientCredentialsRestClient from './clientCredentialsRestClient'
+import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
-export default class PrisonRegisterApiClient extends SystemRestClient {
-  constructor(authenticationClient: AuthenticationClient) {
-    super('Prison Register API', config.apis.prisonRegisterApi, logger, authenticationClient)
+export default class PrisonRegisterApiClient extends ClientCredentialsRestClient {
+  constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
+    super('Prison Register API', config.apis.prisonRegisterApi, logger, authenticationClient, clientCredentialsTokenStore)
   }
 
   getPrisonNames(prisonIds: string[], username: string): Promise<Prison[]> {

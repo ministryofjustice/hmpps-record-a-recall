@@ -15,6 +15,10 @@ function sanitisedError(message: string, responseStatus: number): HTTPError {
   return Object.assign(new Error(message), { responseStatus }) as unknown as HTTPError
 }
 
+function clientCredentialsError(message: string, responseStatus: number): HTTPError {
+  return Object.assign(new Error(message), { responseStatus, authTokenType: 'CLIENT_CREDENTIALS' }) as unknown as HTTPError
+}
+
 jest.mock('./data/sessionRecoveryStore')
 
 let app: Express
@@ -140,5 +144,64 @@ describe('auth error handling (401/403)', () => {
     expect(saveSession).toHaveBeenCalledWith('user1', 'A1234BC', req.session)
     expect(res.redirect).not.toHaveBeenCalled()
     expect(res.render).toHaveBeenCalledWith('pages/error')
+  })
+})
+
+describe('client-credentials (system token) error handling', () => {
+  const next = jest.fn()
+
+  function createReqRes({ nomsId, username }: { nomsId?: string; username?: string }) {
+    const req = {
+      originalUrl: nomsId ? `/person/${nomsId}/journey/some-step` : '/some-non-prisoner-route',
+      params: nomsId ? { nomsId } : {},
+      session: { recallJourneys: { 'journey-1': { id: 'journey-1' } } },
+    } as unknown as Request
+
+    const res = {
+      locals: { user: username ? { username } : undefined },
+      redirect: jest.fn(),
+      render: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    } as unknown as Response
+
+    return { req, res }
+  }
+
+  it('should NOT redirect to sign-out on a 401 tagged as a client-credentials failure', async () => {
+    const { req, res } = createReqRes({ nomsId: 'A1234BC', username: 'user1' })
+    const error = clientCredentialsError('unauthorized', 401)
+
+    await createErrorHandler(false)(error, req, res, next)
+
+    expect(res.redirect).not.toHaveBeenCalled()
+    expect(res.render).toHaveBeenCalledWith('pages/error')
+  })
+
+  it('should NOT redirect to sign-out on a 403 tagged as a client-credentials failure', async () => {
+    const { req, res } = createReqRes({ nomsId: 'A1234BC', username: 'user1' })
+    const error = clientCredentialsError('forbidden', 403)
+
+    await createErrorHandler(false)(error, req, res, next)
+
+    expect(res.redirect).not.toHaveBeenCalled()
+    expect(res.render).toHaveBeenCalledWith('pages/error')
+  })
+
+  it('should still snapshot the session for a client-credentials failure', async () => {
+    const { req, res } = createReqRes({ nomsId: 'A1234BC', username: 'user1' })
+    const error = clientCredentialsError('unauthorized', 401)
+
+    await createErrorHandler(false)(error, req, res, next)
+
+    expect(saveSession).toHaveBeenCalledWith('user1', 'A1234BC', req.session)
+  })
+
+  it('should still sets the correct response status even though it does not sign out', async () => {
+    const { req, res } = createReqRes({ nomsId: 'A1234BC', username: 'user1' })
+    const error = clientCredentialsError('unauthorized', 401)
+
+    await createErrorHandler(false)(error, req, res, next)
+
+    expect(res.status).toHaveBeenCalledWith(401)
   })
 })

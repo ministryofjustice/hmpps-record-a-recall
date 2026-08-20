@@ -3,11 +3,12 @@ import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients
 import logger from '../../logger'
 import config from '../config'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
-import SystemRestClient from './systemRestClient'
+import ClientCredentialsRestClient from './clientCredentialsRestClient'
+import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
-export default class ManageOffencesApiClient extends SystemRestClient {
-  constructor(authenticationClient: AuthenticationClient) {
-    super('Manage Offences API', config.apis.manageOffencesApi, logger, authenticationClient)
+export default class ManageOffencesApiClient extends ClientCredentialsRestClient {
+  constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
+    super('Manage Offences API', config.apis.manageOffencesApi, logger, authenticationClient, clientCredentialsTokenStore)
   }
 
   async getOffenceByCode(code: string): Promise<Offence> {

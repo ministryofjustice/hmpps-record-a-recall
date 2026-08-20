@@ -3,11 +3,12 @@ import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients
 import { PagedCollectionOfPrisoners, PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
 import logger from '../../logger'
 import config from '../config'
-import SystemRestClient from './systemRestClient'
+import ClientCredentialsRestClient from './clientCredentialsRestClient'
+import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 
-export default class PrisonerSearchApiClient extends SystemRestClient {
-  constructor(authenticationClient: AuthenticationClient) {
-    super('Prisoner Search API', config.apis.prisonerSearchApi, logger, authenticationClient)
+export default class PrisonerSearchApiClient extends ClientCredentialsRestClient {
+  constructor(authenticationClient: AuthenticationClient, clientCredentialsTokenStore: ClientCredentialsTokenStore) {
+    super('Prisoner Search API', config.apis.prisonerSearchApi, logger, authenticationClient, clientCredentialsTokenStore)
   }
 
   async getPrisonerDetails(nomsId: string, username: string): Promise<PrisonerSearchApiPrisoner> {
