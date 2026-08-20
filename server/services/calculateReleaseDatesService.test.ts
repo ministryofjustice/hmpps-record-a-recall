@@ -5,7 +5,7 @@ import { LatestCalculation } from '../@types/calculateReleaseDatesApi/calculateR
 jest.mock('../data/calculateReleaseDatesApiClient')
 
 const calculateReleaseDatesApiClient = new CalculateReleaseDatesApiClient(
-  null,
+  null, null
 ) as jest.Mocked<CalculateReleaseDatesApiClient>
 
 let service: CalculateReleaseDatesService

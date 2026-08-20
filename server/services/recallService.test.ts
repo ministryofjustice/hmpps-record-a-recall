@@ -14,10 +14,10 @@ jest.mock('../data/manageOffencesApiClient')
 jest.mock('../data/prisonRegisterApiClient')
 jest.mock('../data/courtRegisterApiClient')
 
-const remandAndSentencingApiClient = new RemandAndSentencingApiClient(null) as jest.Mocked<RemandAndSentencingApiClient>
-const manageOffencesApiClient = new ManageOffencesApiClient(null) as jest.Mocked<ManageOffencesApiClient>
-const prisonRegisterApiClient = new PrisonRegisterApiClient(null) as jest.Mocked<PrisonRegisterApiClient>
-const courtRegisterApiClient = new CourtRegisterApiClient(null) as jest.Mocked<CourtRegisterApiClient>
+const remandAndSentencingApiClient = new RemandAndSentencingApiClient(null, null) as jest.Mocked<RemandAndSentencingApiClient>
+const manageOffencesApiClient = new ManageOffencesApiClient(null, null) as jest.Mocked<ManageOffencesApiClient>
+const prisonRegisterApiClient = new PrisonRegisterApiClient(null, null) as jest.Mocked<PrisonRegisterApiClient>
+const courtRegisterApiClient = new CourtRegisterApiClient(null, null) as jest.Mocked<CourtRegisterApiClient>
 
 let service: RecallService
 
