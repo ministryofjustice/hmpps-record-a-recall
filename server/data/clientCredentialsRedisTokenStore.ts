@@ -5,7 +5,7 @@ import ClientCredentialsTokenStore from './clientCredentialsTokenStore'
 export default class ClientCredentialsRedisTokenStore implements ClientCredentialsTokenStore {
   private readonly delegate: RedisTokenStore
 
-  private readonly prefix = 'clientCredentialsToken'
+  private readonly prefix = 'systemToken'
 
   constructor(private readonly client: RedisClientType) {
     this.delegate = new RedisTokenStore(client, this.prefix)
