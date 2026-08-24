@@ -104,8 +104,8 @@ export default {
       url: get('REMAND_AND_SENTENCING_API_URL', 'http://127.0.0.1:8087', requiredInProduction),
       healthPath: '/health/ping',
       timeout: {
-        response: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 1200000)),
-        deadline: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 1200000)),
+        response: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_RESPONSE', 20000)),
+        deadline: Number(get('REMAND_AND_SENTENCING_API_TIMEOUT_DEADLINE', 20000)),
       },
       agent: new AgentConfig(),
     },
