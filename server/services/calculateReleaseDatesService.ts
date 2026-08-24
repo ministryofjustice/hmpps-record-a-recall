@@ -22,8 +22,16 @@ export default class CalculateReleaseDatesService {
         `${result.penultimateOtherMessages.length} penultimateOther`,
     )
 
+    result.latestCriticalMessages.forEach(v => {
+      logger.info(`CRDS validation latestCritical: ${v.code} for ${nomsId}: ${v.message}`)
+    })
+
     result.latestOtherMessages.forEach(v => {
       logger.info(`CRDS validation latestOther: ${v.code} for ${nomsId}: ${v.message}`)
+    })
+
+    result.penultimateCriticalMessages.forEach(v => {
+      logger.info(`CRDS validation penultimateCritical: ${v.code} for ${nomsId}: ${v.message}`)
     })
 
     result.penultimateOtherMessages.forEach(v => {
