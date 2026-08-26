@@ -61,7 +61,9 @@ describe('GET', () => {
     // Given
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/unexpected-recall-type`)
+    const response = await request(app).get(
+      `/person/${nomsId}/recall/create/${journeyId}/unexpected-recall-type?recallType=LR`,
+    )
 
     // Then
     expect(response.status).toEqual(200)
@@ -72,6 +74,21 @@ describe('GET', () => {
     expect(text).toContain('Is this the correct recall type?')
     expect(text).toContain('The recall type currently selected is Standard')
     expect(text).toContain('Continue')
+    expect($('form').attr('method')).toBe('post')
+    expect($('input[name="recallType"]').val()).toBe('LR')
+  })
+
+  it('should persist recall type and go to check answers when continue is posted', async () => {
+    existingJourney.recallType = 'FTR_56'
+
+    await request(app)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/unexpected-recall-type`)
+      .type('form')
+      .send({ recallType: 'LR' })
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/check-answers`)
+
+    expect(existingJourney.recallType).toStrictEqual('LR')
   })
 
   it('should return to start of journey if not found in session', async () => {

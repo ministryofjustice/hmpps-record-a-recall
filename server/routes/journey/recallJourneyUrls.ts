@@ -53,8 +53,10 @@ export default class RecallJourneyUrls {
     journeyId: string,
     createOrEdit: 'edit' | 'create',
     recallId: string,
+    recallType: string,
   ) => {
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unexpected-recall-type`
+    const query = new URLSearchParams({ recallType })
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unexpected-recall-type?${query}`
   }
 
   static unsupportedRecallTypeSentenceTypeMappingIntercept = (
@@ -62,8 +64,10 @@ export default class RecallJourneyUrls {
     journeyId: string,
     createOrEdit: 'edit' | 'create',
     recallId: string,
+    recallType: string,
   ) => {
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unsupported-recall-type`
+    const query = new URLSearchParams({ recallType })
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unsupported-recall-type?${query}`
   }
 
   static unknownPreRecallTypeIntercept = (

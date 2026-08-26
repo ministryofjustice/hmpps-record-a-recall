@@ -61,7 +61,9 @@ describe('GET', () => {
     // Given
 
     // When
-    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/unsupported-recall-type`)
+    const response = await request(app).get(
+      `/person/${nomsId}/recall/create/${journeyId}/unsupported-recall-type?recallType=LR`,
+    )
 
     // Then
     expect(response.status).toEqual(200)
