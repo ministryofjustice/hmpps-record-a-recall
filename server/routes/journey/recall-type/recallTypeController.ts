@@ -64,16 +64,23 @@ export default class RecallTypeController implements Controller {
       username,
     )
     if (isPossible.isRecallPossible === 'YES') {
-      journey.recallType = recallType
       if (journey.automatedCalculationData?.unexpectedRecallTypes?.includes(recallType) === true) {
-        return res.redirect(RecallJourneyUrls.unexpectedRecallTypeIntercept(nomsId, journeyId, createOrEdit, recallId))
+        return res.redirect(
+          RecallJourneyUrls.unexpectedRecallTypeIntercept(nomsId, journeyId, createOrEdit, recallId, recallType),
+        )
       }
+      journey.recallType = recallType
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
     if (isPossible.isRecallPossible === 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE') {
-      journey.recallType = recallType
       return res.redirect(
-        RecallJourneyUrls.unsupportedRecallTypeSentenceTypeMappingIntercept(nomsId, journeyId, createOrEdit, recallId),
+        RecallJourneyUrls.unsupportedRecallTypeSentenceTypeMappingIntercept(
+          nomsId,
+          journeyId,
+          createOrEdit,
+          recallId,
+          recallType,
+        ),
       )
     }
     if (isPossible.isRecallPossible === 'UNKNOWN_PRE_RECALL_MAPPING') {
