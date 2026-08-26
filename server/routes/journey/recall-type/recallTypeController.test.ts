@@ -188,10 +188,7 @@ describe('POST', () => {
       .type('form')
       .send({ recallType: 'LR' })
       .expect(302)
-      .expect(
-        'Location',
-        `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type?recallType=LR`,
-      )
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type?recallType=LR`)
 
     expect(existingJourney.recallType).toStrictEqual('FTR_56')
   })
