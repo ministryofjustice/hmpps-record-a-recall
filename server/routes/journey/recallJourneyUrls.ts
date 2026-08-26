@@ -66,13 +66,15 @@ export default class RecallJourneyUrls {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unsupported-recall-type`
   }
 
-  static unkownPreRecallTypeIntercept = (
+  static unknownPreRecallTypeIntercept = (
     nomsId: string,
     journeyId: string,
     createOrEdit: 'edit' | 'create',
     recallId: string,
+    recallType: string,
   ) => {
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unknown-pre-recall-sentence-type`
+    const query = new URLSearchParams({ recallType })
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/unknown-pre-recall-sentence-type?${query}`
   }
 
   static recallConfirmation = (nomsId: string, createOrEdit: 'edit' | 'create', recallId: string) => {
