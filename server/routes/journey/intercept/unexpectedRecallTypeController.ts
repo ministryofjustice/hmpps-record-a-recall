@@ -4,6 +4,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import { getRecallType } from '../../../@types/recallTypes'
+import { ApiRecallType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class UnexpectedRecallTypeController implements Controller {
   PAGE_NAME: Page = Page.UNEXPECTED_RECALL_TYPE_INTERCEPT
@@ -12,6 +13,12 @@ export default class UnexpectedRecallTypeController implements Controller {
     const { prisoner } = res.locals
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
+    const recallType = req.query.recallType as ApiRecallType
+
+    if (req.query.confirm === 'true') {
+      journey.recallType = recallType
+      return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
+    }
 
     const backLink = RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId)
     const cancelLink = RecallJourneyUrls.confirmCancel(
@@ -21,14 +28,20 @@ export default class UnexpectedRecallTypeController implements Controller {
       recallId,
       RecallJourneyUrls.manualJourneyStart.name,
     )
-    const continueLink = RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
+    const continueLink = RecallJourneyUrls.unexpectedRecallTypeContinue(
+      nomsId,
+      journeyId,
+      createOrEdit,
+      recallId,
+      recallType,
+    )
     return res.render('pages/recall/unexpected-recall-type', {
       prisoner,
       pageCaption: 'Record a recall',
       backLink,
       cancelLink,
       continueLink,
-      recallTypeDescription: getRecallType(journey.recallType).description,
+      recallTypeDescription: getRecallType(recallType).description,
     })
   }
 }
