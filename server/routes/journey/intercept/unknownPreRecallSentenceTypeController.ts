@@ -5,6 +5,7 @@ import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import OtherServiceUrls from '../../otherServiceUrls'
+import { ApiRecallType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class UnknownPreRecallSentenceTypeController implements Controller {
   PAGE_NAME: Page = Page.UNKNOWN_PRE_RECALL_SENTENCE_TYPE_INTERCEPT
@@ -16,10 +17,11 @@ export default class UnknownPreRecallSentenceTypeController implements Controlle
     const { username } = req.user
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
+    const recallType = req.query.recallType as ApiRecallType
 
     const isPossible = await this.recallService.isRecallPossible(
       {
-        recallType: journey.recallType,
+        recallType,
         sentenceIds: journey.sentenceIds,
       },
       username,
