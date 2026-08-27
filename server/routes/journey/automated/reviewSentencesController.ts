@@ -9,6 +9,7 @@ import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
 import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { setAutomatedCalculationData } from '../recallJourneyOperations'
 
 export default class ReviewSentencesController implements Controller {
   PAGE_NAME: Page = Page.REVIEW_SENTENCES_AUTOMATED
@@ -46,6 +47,8 @@ export default class ReviewSentencesController implements Controller {
       recallId,
       RecallJourneyUrls.reviewSentencesAutomatedJourney.name,
     )
+    const manualJourneyUrl = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId)
+
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
       isEdit: createOrEdit === 'edit',
@@ -56,6 +59,7 @@ export default class ReviewSentencesController implements Controller {
       ),
       backLink,
       cancelUrl,
+      manualJourneyUrl,
     })
   }
 
@@ -74,12 +78,7 @@ export default class ReviewSentencesController implements Controller {
     // The make-decision call to the CRD-API can return DUPLICATED sentences, they need omitting.
     // Doing that in the same way the GET currently works; i.e. by only including sentences that exist from the RAS-API get-recallable-court-cases call
     const recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username)
-    journey.sentenceIds = recallableCourtCases
-      .flatMap(courtCase => [...courtCase.recallableSentences, ...courtCase.nonRecallableSentences])
-      .map(sentence => sentence.sentenceUuid)
-      .filter(uuid => decision.automatedCalculationData.recallableSentences.some(sentence => sentence.uuid === uuid))
-    journey.calculationRequestId = decision.automatedCalculationData.calculationRequestId
-    journey.automatedCalculationData = decision.automatedCalculationData
+    setAutomatedCalculationData(journey, recallableCourtCases, decision.automatedCalculationData)
 
     return res.redirect(RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId))
   }

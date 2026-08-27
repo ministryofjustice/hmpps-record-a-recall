@@ -7,6 +7,7 @@ import { RecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import AuditService from '../../../../services/auditService'
 import RecallJourneyUrls from '../../recallJourneyUrls'
+import { MANUAL_SELECT_CASES, MANUAL_SELECT_CASES_LINK } from '../../../testutils/constants'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -68,6 +69,9 @@ describe('GET /manual/start', () => {
       `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=manualJourneyStart`,
     )
     expect(cancelLink.text().trim()).toBe('Cancel recall')
+
+    expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).length).toBe(0)
+    expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).length).toBe(0)
   })
 
   describe('backlink tests', () => {
@@ -85,7 +89,7 @@ describe('GET /manual/start', () => {
 describe('POST /manual/start', () => {
   const url = `/person/${nomsId}/recall/create/${journeyId}/manual/start`
 
-  it('sets calculationRewuestId to undefined and redirects to manualSelectCases when not checking answers', async () => {
+  it('sets calculationRequestId to undefined and redirects to manualSelectCases when not checking answers', async () => {
     // Given
     existingJourney.isCheckingAnswers = false
     existingJourney.calculationRequestId = 991
@@ -96,6 +100,8 @@ describe('POST /manual/start', () => {
     // Then
     expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`)
     expect(existingJourney.calculationRequestId).toBeUndefined()
+    expect(existingJourney.automatedCalculationData).toBeUndefined()
+    expect(existingJourney.sentenceIds).toBeUndefined()
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
 

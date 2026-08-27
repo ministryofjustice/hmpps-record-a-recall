@@ -3,6 +3,7 @@ import { Controller } from '../../../controller'
 import { PersonJourneyParams } from '../../../../@types/journeys'
 import RecallJourneyUrls from '../../recallJourneyUrls'
 import { Page } from '../../../../services/auditService'
+import { clearAutomatedCalculationData, resetCheckingAnswers } from '../../recallJourneyOperations'
 
 export default class ManualJourneyInterceptController implements Controller {
   public PAGE_NAME = Page.MANUAL_INTERCEPT
@@ -29,10 +30,11 @@ export default class ManualJourneyInterceptController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]
 
-    // The absence of a calculationRequestId implies manual journey
-    delete journey.calculationRequestId
+    // The absence of a calculationRequestId, sentenceIds, and automatedCalculationData implies manual journey
+    clearAutomatedCalculationData(journey)
+
     // If the user navigated here from check your-answers then they must repeat full journey
-    journey.isCheckingAnswers = false
+    resetCheckingAnswers(journey)
 
     return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId))
   }

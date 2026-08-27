@@ -183,6 +183,7 @@ export default {
   },
   featureToggles: {
     ftr56: get('FTR_56_ENABLED', 'false'),
+    manualSentenceOverride: get('MANUAL_SENTENCE_OVERRIDE', 'false'),
   },
   appInsightsConnectionString: get('APPLICATIONINSIGHTS_CONNECTION_STRING', '', requiredInProduction),
 }

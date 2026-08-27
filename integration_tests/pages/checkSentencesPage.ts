@@ -6,11 +6,14 @@ export default class CheckSentencesPage extends AbstractPage {
 
   readonly confirmAndContinueButton: Locator
 
+  readonly manualSelectCasesLink: Locator
+
   private constructor(page: Page) {
     super(page)
 
     this.header = page.locator('[data-qa="check-sentences-heading"]')
     this.confirmAndContinueButton = page.locator('[data-qa=confirm-and-continue-btn]')
+    this.manualSelectCasesLink = page.locator('[data-qa="manual-select-cases-link"]')
   }
 
   static async verifyOnPage(page: Page): Promise<CheckSentencesPage> {
@@ -21,5 +24,9 @@ export default class CheckSentencesPage extends AbstractPage {
 
   async confirmAndContinue() {
     await this.confirmAndContinueButton.click()
+  }
+
+  async clickManualSelectCases() {
+    await this.manualSelectCasesLink.click()
   }
 }

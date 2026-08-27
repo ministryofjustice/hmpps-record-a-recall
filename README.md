@@ -6,13 +6,13 @@ Template github repo used for new Typescript based projects.
 
 # Instructions
 
-If this is a HMPPS project then the project will be created as part of bootstrapping - 
+If this is a HMPPS project then the project will be created as part of bootstrapping -
 see https://github.com/ministryofjustice/hmpps-project-bootstrap. You are able to specify a template application using the `github_template_repo` attribute to clone without the need to manually do this yourself within GitHub.
 
-This bootstrap is community managed by the mojdt `#typescript` slack channel. 
+This bootstrap is community managed by the mojdt `#typescript` slack channel.
 Please raise any questions or queries there. Contributions welcome!
 
-Our security policy is located [here](https://github.com/ministryofjustice/hmpps-record-a-recall/security/policy). 
+Our security policy is located [here](https://github.com/ministryofjustice/hmpps-record-a-recall/security/policy).
 
 More information about the template project including features can be found [here](https://dsdmoj.atlassian.net/wiki/spaces/NDSS/pages/3488677932/Typescript+template+project).
 
@@ -54,7 +54,7 @@ These credentials are configured using the following env variables:
 ### HMPPS Auth
 
 To allow authenticated users to access your application you need to point it to a running instance of `hmpps-auth`.
-We use the dev instance of auth for this. 
+We use the dev instance of auth for this.
 It's common for developers to run against the instance of auth running in the development/T3 environment for
 local development.
 Most APIs don't have images with cached data that you can run with docker: setting up realistic stubbed data in sync
@@ -132,7 +132,7 @@ The secret scanner hook can also be configured as described [here](https://githu
 
 For local running, start a wiremock instance by:
 
-`docker compose -f docker-compose-test.yml up`
+`docker compose -f docker-compose-test.yml up -d`
 
 Then run the server in test mode by:
 

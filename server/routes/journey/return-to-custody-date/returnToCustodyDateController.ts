@@ -6,6 +6,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { ReturnToCustodyDateForm } from './returnToCustodyDateSchemas'
 import { Page } from '../../../services/auditService'
 import { capitaliseFirstLetter } from '../../../utils/utils'
+import { resetCheckingAnswers } from '../recallJourneyOperations'
 
 export default class ReturnToCustodyDateController implements Controller {
   PAGE_NAME: Page = Page.ENTER_RETURN_TO_CUSTODY_DATE
@@ -56,7 +57,7 @@ export default class ReturnToCustodyDateController implements Controller {
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
 
-    journey.isCheckingAnswers = false
+    resetCheckingAnswers(journey)
     journey.inCustodyAtRecall = inCustodyAtRecall
     journey.returnToCustodyDate = { day, month, year }
 

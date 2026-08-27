@@ -6,6 +6,7 @@ import GlobalRecallUrls from '../../globalRecallUrls'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { RevocationDateForm } from './revocationDateSchemas'
 import { Page } from '../../../services/auditService'
+import { resetCheckingAnswers } from '../recallJourneyOperations'
 
 export default class RevocationDateController implements Controller {
   public PAGE_NAME = Page.ENTER_REVOCATION_DATE
@@ -47,7 +48,7 @@ export default class RevocationDateController implements Controller {
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
     journey.revocationDate = { day, month, year }
-    journey.isCheckingAnswers = false
+    resetCheckingAnswers(journey)
 
     return res.redirect(RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, createOrEdit, recallId))
   }
