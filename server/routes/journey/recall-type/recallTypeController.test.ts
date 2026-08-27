@@ -144,15 +144,8 @@ describe('POST', () => {
   it.each([
     ['YES', [], `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
     ['YES', ['FTR_28'], `/person/${nomsId}/recall/create/${journeyId}/check-answers`],
-    ['YES', ['FTR_14'], `/person/${nomsId}/recall/create/${journeyId}/unexpected-recall-type`],
-    ['UNKNOWN_PRE_RECALL_MAPPING', [], `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`],
-    [
-      'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE',
-      [],
-      `/person/${nomsId}/recall/create/${journeyId}/unsupported-recall-type`,
-    ],
   ])(
-    'should redirect to correct location if recall is possible',
+    'should persist recall type and redirect if recall is possible',
     async (
       isRecallPossible: IsRecallPossibleResponse['isRecallPossible'],
       unexpectedType: ApiRecallType[],
@@ -176,6 +169,57 @@ describe('POST', () => {
       expect(existingJourney.recallType).toStrictEqual('FTR_14')
     },
   )
+
+  it('should not persist recall type when unknown pre-recall intercept is shown', async () => {
+    existingJourney.recallType = 'FTR_56'
+    recallService.isRecallPossible.mockResolvedValue({
+      isRecallPossible: 'UNKNOWN_PRE_RECALL_MAPPING',
+      sentenceIds: [],
+    })
+
+    await request(app)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
+      .type('form')
+      .send({ recallType: 'LR' })
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type?recallType=LR`)
+
+    expect(existingJourney.recallType).toStrictEqual('FTR_56')
+  })
+
+  it('should not persist recall type when unsupported recall type intercept is shown', async () => {
+    existingJourney.recallType = 'FTR_56'
+    recallService.isRecallPossible.mockResolvedValue({
+      isRecallPossible: 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE',
+      sentenceIds: [],
+    })
+
+    await request(app)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
+      .type('form')
+      .send({ recallType: 'LR' })
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/unsupported-recall-type?recallType=LR`)
+
+    expect(existingJourney.recallType).toStrictEqual('FTR_56')
+  })
+
+  it('should not persist recall type when unexpected recall type intercept is shown', async () => {
+    existingJourney.recallType = 'FTR_56'
+    existingJourney.automatedCalculationData = {
+      unexpectedRecallTypes: ['LR'],
+    } as unknown as AutomatedCalculationData
+    recallService.isRecallPossible.mockResolvedValue({ isRecallPossible: 'YES', sentenceIds: [] })
+
+    await request(app)
+      .post(`/person/${nomsId}/recall/create/${journeyId}/recall-type`)
+      .type('form')
+      .send({ recallType: 'LR' })
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/${journeyId}/unexpected-recall-type?recallType=LR`)
+
+    expect(existingJourney.recallType).toStrictEqual('FTR_56')
+  })
 
   it('should return to the input page if there are validation errors', async () => {
     // Given

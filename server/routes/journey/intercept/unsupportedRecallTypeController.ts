@@ -4,6 +4,7 @@ import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import { getRecallType } from '../../../@types/recallTypes'
+import { ApiRecallType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
 
 export default class UnsupportedRecallTypeController implements Controller {
   PAGE_NAME: Page = Page.UNSUPPORTED_RECALL_TYPE_INTERCEPT
@@ -11,7 +12,7 @@ export default class UnsupportedRecallTypeController implements Controller {
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { prisoner } = res.locals
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
-    const journey = req.session.recallJourneys[journeyId]!
+    const recallType = req.query.recallType as ApiRecallType
 
     const backLink = RecallJourneyUrls.recallType(nomsId, journeyId, createOrEdit, recallId)
     const cancelLink = RecallJourneyUrls.confirmCancel(
@@ -27,7 +28,7 @@ export default class UnsupportedRecallTypeController implements Controller {
       backLink,
       cancelLink,
       updateRecallTypeLink: backLink,
-      recallTypeDescription: getRecallType(journey.recallType).description,
+      recallTypeDescription: getRecallType(recallType).description,
     })
   }
 }

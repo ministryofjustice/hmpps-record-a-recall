@@ -55,7 +55,6 @@ export default class RecallTypeController implements Controller {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
     const journey = req.session.recallJourneys[journeyId]!
     const { recallType } = req.body
-    journey.recallType = recallType
 
     const isPossible = await this.recallService.isRecallPossible(
       {
@@ -66,17 +65,28 @@ export default class RecallTypeController implements Controller {
     )
     if (isPossible.isRecallPossible === 'YES') {
       if (journey.automatedCalculationData?.unexpectedRecallTypes?.includes(recallType) === true) {
-        return res.redirect(RecallJourneyUrls.unexpectedRecallTypeIntercept(nomsId, journeyId, createOrEdit, recallId))
+        return res.redirect(
+          RecallJourneyUrls.unexpectedRecallTypeIntercept(nomsId, journeyId, createOrEdit, recallId, recallType),
+        )
       }
+      journey.recallType = recallType
       return res.redirect(RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId))
     }
     if (isPossible.isRecallPossible === 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE') {
       return res.redirect(
-        RecallJourneyUrls.unsupportedRecallTypeSentenceTypeMappingIntercept(nomsId, journeyId, createOrEdit, recallId),
+        RecallJourneyUrls.unsupportedRecallTypeSentenceTypeMappingIntercept(
+          nomsId,
+          journeyId,
+          createOrEdit,
+          recallId,
+          recallType,
+        ),
       )
     }
     if (isPossible.isRecallPossible === 'UNKNOWN_PRE_RECALL_MAPPING') {
-      return res.redirect(RecallJourneyUrls.unkownPreRecallTypeIntercept(nomsId, journeyId, createOrEdit, recallId))
+      return res.redirect(
+        RecallJourneyUrls.unknownPreRecallTypeIntercept(nomsId, journeyId, createOrEdit, recallId, recallType),
+      )
     }
     throw Error(`Unknown is possible response ${isPossible.isRecallPossible}`)
   }
