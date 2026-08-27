@@ -6,6 +6,7 @@ import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { SelectCourtCasesForm } from './selectCourtCasesSchema'
 import { addUnique, removeItem } from '../../../../utils/utils'
+import { resetCheckingAnswers } from '../../recallJourneyOperations'
 
 export default class SelectCasesController implements Controller {
   public PAGE_NAME = Page.MANUAL_SELECT_CASES
@@ -91,9 +92,9 @@ export default class SelectCasesController implements Controller {
         journey.courtCaseIdsExcludedFromRecall = addUnique(journey.courtCaseIdsExcludedFromRecall, uuid)
       })
 
-      journey.isCheckingAnswers = false
+      resetCheckingAnswers(journey)
     } else if (wasPreviouslySelected !== isSelectingYes) {
-      journey.isCheckingAnswers = false
+      resetCheckingAnswers(journey)
     }
 
     if (hasNextCase && !isNoAndFinished) {
