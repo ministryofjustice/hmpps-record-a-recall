@@ -45,7 +45,7 @@ beforeEach(() => {
       month: 10,
       day: 5,
     },
-    recallType: 'LR',
+    recallType: 'FTR_56',
   }
   app = appWithAllRoutes({
     services: { auditService, recallService },
@@ -71,7 +71,7 @@ describe('GET', () => {
     })
     // When
     const response = await request(app).get(
-      `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`,
+      `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type?recallType=LR`,
     )
 
     // Then
@@ -90,11 +90,15 @@ describe('GET', () => {
     expect(href).toBe(
       `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?sentenceUuids=72f79e94-b932-4e0f-9c93-3964047c76f0&sentenceUuids=0ef67702-99cd-4821-9235-46ce42c9f39e`,
     )
+    expect(recallService.isRecallPossible).toHaveBeenCalledWith(
+      { recallType: 'LR', sentenceIds: existingJourney.sentenceIds },
+      'user1',
+    )
   })
 
   it('should return to start of journey if not found in session', async () => {
     await request(app)
-      .get(`/person/${nomsId}/recall/create/${uuidv4()}/unknown-pre-recall-sentence-type`)
+      .get(`/person/${nomsId}/recall/create/${uuidv4()}/unknown-pre-recall-sentence-type?recallType=LR`)
       .expect(302)
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
@@ -106,7 +110,9 @@ describe('GET', () => {
       sentenceIds: ['72f79e94-b932-4e0f-9c93-3964047c76f0'],
     })
 
-    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type`)
+    const res = await request(app).get(
+      `/person/${nomsId}/recall/create/${journeyId}/unknown-pre-recall-sentence-type?recallType=LR`,
+    )
 
     const $ = cheerio.load(res.text)
 
