@@ -46,6 +46,8 @@ export default class ReviewSentencesController implements Controller {
       recallId,
       RecallJourneyUrls.reviewSentencesAutomatedJourney.name,
     )
+    const manualJourneyUrl = RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId)
+
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,
       isEdit: createOrEdit === 'edit',
@@ -56,6 +58,7 @@ export default class ReviewSentencesController implements Controller {
       ),
       backLink,
       cancelUrl,
+      manualJourneyUrl,
     })
   }
 

@@ -7,6 +7,7 @@ import { RecallJourney } from '../../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../../testutils/appSetup'
 import AuditService from '../../../../services/auditService'
 import RecallJourneyUrls from '../../recallJourneyUrls'
+import { MANUAL_SELECT_CASES, MANUAL_SELECT_CASES_LINK } from '../../../testutils/constants'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -68,6 +69,9 @@ describe('GET /manual/start', () => {
       `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=manualJourneyStart`,
     )
     expect(cancelLink.text().trim()).toBe('Cancel recall')
+
+    expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).length).toBe(0)
+    expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).length).toBe(0)
   })
 
   describe('backlink tests', () => {

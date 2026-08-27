@@ -11,6 +11,7 @@ import CalculateReleaseDatesService from '../../../services/calculateReleaseDate
 import TestData from '../../../testutils/testData'
 import AuditService from '../../../services/auditService'
 import RecallJourneyUrls from '../recallJourneyUrls'
+import { MANUAL_SELECT_CASES, MANUAL_SELECT_CASES_LINK } from '../../testutils/constants'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -83,6 +84,13 @@ describe('GET', () => {
       "The latest SLED (Sentence and licence expiry date) is 01 Dec 2025. This is the SLED on this person's licence.",
     )
     expect($('[data-qa=court-case-count]').text()).toContain('Court cases with sentences eligible for recall (1)')
+    expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/start`,
+    )
+    expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).text()).toContain(
+      'If this list is missing a court case, you can manually select court cases instead.',
+    )
+
     const offenceCardText = $('[data-qa=recallable-court-cases]').text()
     expect(offenceCardText).toContain('OFF1 Offence 1')
     expect(offenceCardText).toContain('Standard Determinate')

@@ -22,7 +22,7 @@
     <h2 class="govuk-heading-l" data-qa="court-case-count">
         Court cases with sentences eligible for recall ({{ courtCases.length }})
     </h2>
-  
+
     {# Recallable Offences Section #}
     <div data-qa="recallable-court-cases">
         {% for courtCase in courtCases %}
@@ -32,11 +32,13 @@
 
     <h2 class="govuk-heading-l govuk-!-margin-top-8">Confirm the sentences and offences are correct</h2>
 
+    <h2 class="govuk-heading-m">If you need to change the court cases</h2>
+    <p class="govuk-body" data-qa="manual-select-cases">If this list is missing a court case, you can <a class="govuk-link" href="{{ manualJourneyUrl }}" data-qa="manual-select-cases-link">manually select court cases</a> instead.</p>
     <p class="govuk-body">If you think the details are wrong, you can change the information in Court cases and release dates.</p>
 
     <form method="post" action="">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-     
+
         <div class="govuk-button-group">
             {{ govukButton({
                 text: "Continue",
