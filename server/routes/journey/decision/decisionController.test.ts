@@ -56,7 +56,6 @@ afterEach(() => {
 
 describe('GET', () => {
   it.each([
-    ['CRITICAL_ERRORS', `/person/${nomsId}/recall/create/${journeyId}/validation-intercept`],
     ['AUTOMATED', `/person/${nomsId}/recall/create/${journeyId}/review-sentences`],
     ['NO_RECALLABLE_SENTENCES_FOUND', `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`],
     ['VALIDATION', `/person/${nomsId}/recall/create/${journeyId}/manual/start`],

@@ -66,7 +66,8 @@ describe('GET', () => {
     const $ = cheerio.load(response.text)
 
     expect($('[data-qa=back-link]').attr('href')).toStrictEqual(`/person/${nomsId}`)
-
+    expect($('h1').text()).toContain('You can record a recall, but some of the information might be wrong')
+    expect($('[data-qa=continue-btn]').attr('href')).toContain('/revocation-date')
     expect($('[data-qa=validation-message]').text()).toContain(
       'This is because court case 1 NOMIS line reference 1 must have a licence term of at least one year',
     )
@@ -89,7 +90,7 @@ describe('GET', () => {
       .expect('Location', `/person/${nomsId}/recall/create/start`)
   })
 
-  it('should render penultimate critical errors page when only penultimateCriticalMessages exist', async () => {
+  it('should render the soft-block page when only penultimateCriticalMessages exist', async () => {
     // Given
     existingJourney.crdsValidationResult.latestCriticalMessages = []
     existingJourney.crdsValidationResult.penultimateCriticalMessages = [
@@ -145,5 +146,31 @@ describe('GET', () => {
     expect(listItems.length).toBe(2)
     expect(listItems.eq(0).text()).toContain('First penultimate error')
     expect(listItems.eq(1).text()).toContain('Second penultimate error')
+  })
+
+  it('should render latest and penultimate critical messages together on the soft-block page', async () => {
+    existingJourney.crdsValidationResult.penultimateCriticalMessages = [
+      {
+        code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
+        message: 'Penultimate critical error.',
+        arguments: [],
+        type: 'VALIDATION',
+        calculationUnsupported: true,
+      },
+    ]
+
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/validation-intercept`)
+
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+
+    expect($('h1').text()).toContain('You can record a recall, but some of the information might be wrong')
+    expect($('[data-qa=continue-btn]').attr('href')).toContain('/revocation-date')
+    const listItems = $('.govuk-list--bullet li')
+    expect(listItems.length).toBe(2)
+    expect(listItems.eq(0).text()).toContain(
+      'Court case 1 NOMIS line reference 1 must have a licence term of at least one year',
+    )
+    expect(listItems.eq(1).text()).toContain('Penultimate critical error')
   })
 })
