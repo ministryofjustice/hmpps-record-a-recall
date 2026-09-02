@@ -13,8 +13,7 @@ import calculateReleaseDatesApi from '../mockApis/calculateReleaseDatesApi'
 
 import HomePage from '../pages/homePage'
 import RevocationDatePage from '../pages/revocationDatePage'
-import CriticalErrorInterceptPage from '../pages/criticalErrorInterceptPage'
-import PenultimateErrorInterceptPage from '../pages/penultimateErrorInterceptPage'
+import CriticalValidationSoftBlockPage from '../pages/criticalValidationSoftBlockPage'
 import ConfirmCancelPage from '../pages/confirmCancelPage'
 
 test.describe('Validation Intercepts from the start journey', () => {
@@ -37,7 +36,7 @@ test.describe('Validation Intercepts from the start journey', () => {
     ])
   })
 
-  test('Critical error intercept', async ({ page }) => {
+  test('Critical error intercept and can continue to revocation date', async ({ page }) => {
     await calculateReleaseDatesApi.stubValidateLatestCriticalErrors()
     await login(page)
 
@@ -45,8 +44,11 @@ test.describe('Validation Intercepts from the start journey', () => {
     const homePage = await HomePage.verifyOnPage(page)
     await homePage.createNewRecallButton.click()
 
-    const criticalErrorInterceptPage = await CriticalErrorInterceptPage.verifyOnPage(page)
-    await criticalErrorInterceptPage.verifyMessages('This is because critical error one')
+    const softBlockInterceptPage = await CriticalValidationSoftBlockPage.verifyOnPage(page)
+    await softBlockInterceptPage.verifyMessages('This is because critical error one')
+    await softBlockInterceptPage.continueButton.click()
+
+    await RevocationDatePage.verifyOnPage(page)
   })
 
   test('Penultimate errors intercept and can continue to revocation date', async ({ page }) => {
@@ -57,9 +59,9 @@ test.describe('Validation Intercepts from the start journey', () => {
     const homePage = await HomePage.verifyOnPage(page)
     await homePage.createNewRecallButton.click()
 
-    const penultimateErrorInterceptPage = await PenultimateErrorInterceptPage.verifyOnPage(page)
-    await penultimateErrorInterceptPage.verifyMessages('This is because penultimate critical error one')
-    await penultimateErrorInterceptPage.continueButton.click()
+    const softBlockInterceptPage = await CriticalValidationSoftBlockPage.verifyOnPage(page)
+    await softBlockInterceptPage.verifyMessages('This is because penultimate critical error one')
+    await softBlockInterceptPage.continueButton.click()
 
     await RevocationDatePage.verifyOnPage(page)
   })
@@ -72,9 +74,9 @@ test.describe('Validation Intercepts from the start journey', () => {
     const homePage = await HomePage.verifyOnPage(page)
     await homePage.createNewRecallButton.click()
 
-    const penultimateErrorInterceptPage = await PenultimateErrorInterceptPage.verifyOnPage(page)
-    await penultimateErrorInterceptPage.verifyMessages('This is because penultimate critical error one')
-    await penultimateErrorInterceptPage.cancelButton.click()
+    const softBlockInterceptPage = await CriticalValidationSoftBlockPage.verifyOnPage(page)
+    await softBlockInterceptPage.verifyMessages('This is because penultimate critical error one')
+    await softBlockInterceptPage.cancelButton.click()
 
     await ConfirmCancelPage.verifyOnPage(page)
   })

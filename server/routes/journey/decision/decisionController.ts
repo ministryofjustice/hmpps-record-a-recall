@@ -26,9 +26,6 @@ export default class DecisionController implements Controller {
       username,
     )
 
-    if (decision.decision === 'CRITICAL_ERRORS') {
-      return res.redirect(RecallJourneyUrls.criticalValidationIntercept(nomsId, journeyId, createOrEdit, recallId))
-    }
     if (decision.decision === 'CONFLICTING_ADJUSTMENTS') {
       return res.redirect(RecallJourneyUrls.conflictingAdjustmentsIntercept(nomsId, journeyId, createOrEdit, recallId))
     }
