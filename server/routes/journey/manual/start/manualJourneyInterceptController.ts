@@ -3,7 +3,7 @@ import { Controller } from '../../../controller'
 import { PersonJourneyParams } from '../../../../@types/journeys'
 import RecallJourneyUrls from '../../recallJourneyUrls'
 import { Page } from '../../../../services/auditService'
-import { manualJourneyReset, resetCheckingAnswers } from '../../recallJourneyOperations'
+import { manualJourneyReset } from '../../recallJourneyOperations'
 
 export default class ManualJourneyInterceptController implements Controller {
   public PAGE_NAME = Page.MANUAL_INTERCEPT

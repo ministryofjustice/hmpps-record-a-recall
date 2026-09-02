@@ -47,12 +47,7 @@ export default class ReviewSentencesController implements Controller {
       recallId,
       RecallJourneyUrls.reviewSentencesAutomatedJourney.name,
     )
-    const manualJourneyUrl = RecallJourneyUrls.manualJourneySkipIntercept(
-      nomsId,
-      journeyId,
-      createOrEdit,
-      recallId,
-    )
+    const manualJourneyUrl = RecallJourneyUrls.manualJourneySkipIntercept(nomsId, journeyId, createOrEdit, recallId)
 
     return res.render('pages/recall/review-sentences-automated', {
       prisoner,

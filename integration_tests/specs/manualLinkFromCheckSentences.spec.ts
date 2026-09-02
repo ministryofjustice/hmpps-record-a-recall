@@ -54,10 +54,7 @@ test('Switching from the auto journey to the manual journey via check sentences 
   const checkSentencesPage = await CheckSentencesPage.verifyOnPage(page)
   await expect(checkSentencesPage.manualSelectCasesLink).toBeVisible()
   await expect(checkSentencesPage.manualSelectCasesLink).toHaveText('manually select court cases')
-  await expect(checkSentencesPage.manualSelectCasesLink).toHaveAttribute(
-    'href',
-    /\/manual\/select-court-cases\?run_intercept_cleanup=true$/,
-  )
+  await expect(checkSentencesPage.manualSelectCasesLink).toHaveAttribute('href', /\/manual\/skip-intercept$/)
 
   // Act
   await checkSentencesPage.clickManualSelectCases()
