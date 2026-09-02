@@ -136,16 +136,23 @@ export default class RecallJourneyUrls {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/start`
   }
 
+  static manualJourneySkipIntercept = (
+    nomsId: string,
+    journeyId: string,
+    createOrEdit: 'edit' | 'create',
+    recallId: string,
+  ) => {
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/skip-intercept`
+  }
+
   static manualSelectCases = (
     nomsId: string,
     journeyId: string,
     createOrEdit: 'edit' | 'create',
     recallId: string,
     caseIndex?: number,
-    runInterceptCleanup: boolean = false,
   ) => {
-    const queryParams = runInterceptCleanup ? '?run_intercept_cleanup=true' : ''
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}${queryParams}`
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
   }
 
   static manualNoCasesSelected = (

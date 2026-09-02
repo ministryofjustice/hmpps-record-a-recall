@@ -23,7 +23,8 @@ export interface RecallJourney {
   courtCaseIdsExcludedFromRecall?: string[]
   calculationRequestId?: number // this is only set in the auto journey
   recallBeingEdited?: ExistingRecall
-  automatedCalculationData?: AutomatedCalculationData
+  automatedCalculationData?: AutomatedCalculationData,
+  switchedFromAutomatedJourney?: boolean
 }
 
 export interface DateParts {
