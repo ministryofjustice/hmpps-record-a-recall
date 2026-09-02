@@ -31,6 +31,7 @@ beforeEach(() => {
           arguments: [],
           type: 'VALIDATION',
           calculationUnsupported: true,
+          contentType: 'PLAIN_TEXT',
         },
       ],
       latestOtherMessages: [],
@@ -100,6 +101,7 @@ describe('GET', () => {
         arguments: [],
         type: 'VALIDATION',
         calculationUnsupported: true,
+        contentType: 'PLAIN_TEXT',
       },
     ]
 
@@ -125,6 +127,7 @@ describe('GET', () => {
         arguments: [],
         type: 'VALIDATION',
         calculationUnsupported: true,
+        contentType: 'PLAIN_TEXT',
       },
       {
         code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
@@ -132,6 +135,7 @@ describe('GET', () => {
         arguments: [],
         type: 'VALIDATION',
         calculationUnsupported: true,
+        contentType: 'PLAIN_TEXT',
       },
     ]
 
@@ -156,6 +160,7 @@ describe('GET', () => {
         arguments: [],
         type: 'VALIDATION',
         calculationUnsupported: true,
+        contentType: 'PLAIN_TEXT',
       },
     ]
 
