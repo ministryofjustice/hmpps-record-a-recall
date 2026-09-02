@@ -178,4 +178,19 @@ describe('GET', () => {
     )
     expect(listItems.eq(1).text()).toContain('Penultimate critical error')
   })
+
+  it('should continue to check answers when editing', async () => {
+    const recallId = uuidv4()
+    existingJourney.recallId = recallId
+
+    const response = await request(app).get(
+      `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/validation-intercept`,
+    )
+
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
+    expect($('[data-qa=continue-btn]').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/check-answers`,
+    )
+  })
 })
