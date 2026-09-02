@@ -152,6 +152,33 @@ describe('selectCasesController Tests', () => {
           RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, 'create', null),
         )
       })
+
+      it('shows back link to review-sentences when index = 0 and journey.switchedFromAutomatedJourney is true', async () => {
+        existingJourney.switchedFromAutomatedJourney = true
+
+        const res = await request(app).get(baseUrl)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          RecallJourneyUrls.reviewSentencesAutomatedJourney(nomsId, journeyId, 'create', null),
+        )
+      })
+
+      it('shows back link to previous case, not review-sentences, when switchedFromAutomatedJourney is true and index > 0', async () => {
+        existingJourney.switchedFromAutomatedJourney = true
+        recallService.getRecallableCourtCases.mockResolvedValue([
+          TestData.recallableCourtCase(),
+          TestData.recallableCourtCase(),
+        ])
+        const courtCaseIndex = 1
+
+        const res = await request(app).get(`${baseUrl}/${courtCaseIndex}`)
+
+        const $ = cheerio.load(res.text)
+        expect($('[data-qa="back-link"]').attr('href')).toBe(
+          RecallJourneyUrls.manualSelectCases(nomsId, journeyId, 'create', null, courtCaseIndex - 1),
+        )
+      })
     })
 
     describe('Form values are preselected if the page is revisited', () => {

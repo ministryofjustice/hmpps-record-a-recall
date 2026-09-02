@@ -1,5 +1,23 @@
 import RecallJourneyUrls, { buildReturnUrlFromKey } from './recallJourneyUrls'
 
+describe('manualJourneySkipIntercept', () => {
+  const nomsId = 'A1234BC'
+  const journeyId = '123e4567-e89b-12d3-a456-426614174000'
+
+  it('should build the correct URL for create journeys', () => {
+    expect(RecallJourneyUrls.manualJourneySkipIntercept(nomsId, journeyId, 'create', null)).toBe(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/skip-intercept`,
+    )
+  })
+
+  it('should build the correct URL for edit journeys', () => {
+    const recallId = 'd9561b78-6df3-4ec2-9a47-41ffbb407364'
+    expect(RecallJourneyUrls.manualJourneySkipIntercept(nomsId, journeyId, 'edit', recallId)).toBe(
+      `/person/${nomsId}/recall/edit/${recallId}/${journeyId}/manual/skip-intercept`,
+    )
+  })
+})
+
 describe('buildReturnUrlFromKey', () => {
   const nomsId = 'A1234BC'
   const journeyId = '123e4567-e89b-12d3-a456-426614174000'

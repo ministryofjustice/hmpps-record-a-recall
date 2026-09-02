@@ -124,6 +124,10 @@ export default class SelectCasesController implements Controller {
       return RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, courtCaseIndex - 1)
     }
 
+    if (journey.switchedFromAutomatedJourney) {
+      return RecallJourneyUrls.reviewSentencesAutomatedJourney(nomsId, journeyId, createOrEdit, recallId)
+    }
+
     return RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId)
   }
 }
