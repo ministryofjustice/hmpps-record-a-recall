@@ -6,7 +6,7 @@ import { Page } from '../../../../services/auditService'
 import { manualJourneyReset } from '../../recallJourneyOperations'
 
 export default class ManualJourneySkipInterceptController implements Controller {
-  public PAGE_NAME = Page.MANUAL_INTERCEPT
+  public PAGE_NAME = Page.MANUAL_SKIP_START_INTERCEPT
 
   GET = async (req: Request<PersonJourneyParams>, res: Response): Promise<void> => {
     const { nomsId, journeyId, createOrEdit, recallId } = req.params
