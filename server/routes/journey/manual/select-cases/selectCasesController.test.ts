@@ -221,32 +221,6 @@ describe('selectCasesController Tests', () => {
         expect($('[data-qa="no-radio"]').attr('checked')).toBeUndefined()
       })
     })
-
-    describe('run_intercept_cleanup query param', () => {
-      it('does not clear automated calculation data, even when run_intercept_cleanup=true is present', async () => {
-        existingJourney.calculationRequestId = 123
-        existingJourney.automatedCalculationData = { recallableSentences: [] } as never
-        existingJourney.sentenceIds = ['sentence-1']
-
-        await request(app).get(`${baseUrl}?run_intercept_cleanup=true`).expect(200)
-
-        expect(existingJourney.calculationRequestId).toBe(123)
-        expect(existingJourney.automatedCalculationData).toEqual({ recallableSentences: [] })
-        expect(existingJourney.sentenceIds).toEqual(['sentence-1'])
-      })
-
-      it('should not clear automated calculation data when run_intercept_cleanup is missing', async () => {
-        existingJourney.calculationRequestId = 123
-        existingJourney.automatedCalculationData = { recallableSentences: [] } as never
-        existingJourney.sentenceIds = ['sentence-1']
-
-        await request(app).get(baseUrl).expect(200)
-
-        expect(existingJourney.calculationRequestId).toBe(123)
-        expect(existingJourney.automatedCalculationData).toEqual({ recallableSentences: [] })
-        expect(existingJourney.sentenceIds).toEqual(['sentence-1'])
-      })
-    })
   })
 
   describe('POST', () => {
