@@ -142,8 +142,10 @@ export default class RecallJourneyUrls {
     createOrEdit: 'edit' | 'create',
     recallId: string,
     caseIndex?: number,
+    runInterceptCleanup: boolean = false,
   ) => {
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
+    const queryParams = runInterceptCleanup ? '?run_intercept_cleanup=true' : ''
+    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}${queryParams}`
   }
 
   static manualNoCasesSelected = (

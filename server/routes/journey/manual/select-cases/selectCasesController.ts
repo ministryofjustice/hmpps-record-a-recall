@@ -6,7 +6,7 @@ import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { SelectCourtCasesForm } from './selectCourtCasesSchema'
 import { addUnique, removeItem } from '../../../../utils/utils'
-import { resetCheckingAnswers } from '../../recallJourneyOperations'
+import { clearAutomatedCalculationData, resetCheckingAnswers } from '../../recallJourneyOperations'
 
 export default class SelectCasesController implements Controller {
   public PAGE_NAME = Page.MANUAL_SELECT_CASES
@@ -17,10 +17,15 @@ export default class SelectCasesController implements Controller {
     const { prisoner } = res.locals
     const { username } = req.user
     const { nomsId, journeyId, createOrEdit, recallId, caseIndex } = req.params
+    const { run_intercept_cleanup: runInterceptCleanup } = req.query
     const journey = req.session.recallJourneys[journeyId]
 
     if (!journey.recallableCourtCases) {
       journey.recallableCourtCases = await this.recallService.getRecallableCourtCases(nomsId, username, true)
+    }
+
+    if (runInterceptCleanup === 'true') {
+      clearAutomatedCalculationData(journey)
     }
 
     const cases = journey.recallableCourtCases

@@ -90,7 +90,7 @@ describe('GET', () => {
       )
       expect($('[data-qa=court-case-count]').text()).toContain('Court cases with sentences eligible for recall (1)')
       expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).attr('href')).toStrictEqual(
-        `/person/${nomsId}/recall/create/${journeyId}/manual/start`,
+        `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases?run_intercept_cleanup=true`,
       )
       expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).text()).toContain(
         'If you need to change which sentences are included in this recall, you can manually select court cases.',
