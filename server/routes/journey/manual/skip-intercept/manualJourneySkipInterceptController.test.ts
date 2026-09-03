@@ -51,11 +51,12 @@ afterEach(() => {
 describe('GET /manual/skip-intercept', () => {
   const baseUrl = `/person/${nomsId}/recall/create/${journeyId}/manual/skip-intercept`
 
-  it('sets switchedFromAutomatedJourney to true, clears automated calculation data, resets isCheckingAnswers, and redirects to manualSelectCases', async () => {
+  it('clears automated calculation data, resets isCheckingAnswers, and redirects to manualSelectCases with returnKey pointing to review-sentences', async () => {
     const res = await request(app).get(baseUrl).expect(302)
 
-    expect(res.headers.location).toBe(`/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases`)
-    expect(existingJourney.switchedFromAutomatedJourney).toBe(true)
+    expect(res.headers.location).toBe(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/select-court-cases?returnKey=reviewSentencesAutomatedJourney`,
+    )
     expect(existingJourney.calculationRequestId).toBeUndefined()
     expect(existingJourney.automatedCalculationData).toBeUndefined()
     expect(existingJourney.sentenceIds).toBeUndefined()

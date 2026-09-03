@@ -13,8 +13,16 @@ export default class ManualJourneySkipInterceptController implements Controller 
     const journey = req.session.recallJourneys[journeyId]
 
     manualJourneyReset(journey)
-    journey.switchedFromAutomatedJourney = true
 
-    return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId))
+    return res.redirect(
+      RecallJourneyUrls.manualSelectCases(
+        nomsId,
+        journeyId,
+        createOrEdit,
+        recallId,
+        undefined,
+        RecallJourneyUrls.reviewSentencesAutomatedJourney.name,
+      ),
+    )
   }
 }

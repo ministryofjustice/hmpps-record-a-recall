@@ -105,17 +105,6 @@ describe('POST /manual/start', () => {
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
 
-  it('removes switchedFromAutomatedJourney', async () => {
-    // Given
-    existingJourney.switchedFromAutomatedJourney = true
-
-    // When
-    await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
-
-    // Then
-    expect(existingJourney.switchedFromAutomatedJourney).toBe(undefined)
-  })
-
   it('resets isCheckingAnswers to false', async () => {
     // Given
     existingJourney.isCheckingAnswers = true

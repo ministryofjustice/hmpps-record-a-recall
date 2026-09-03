@@ -31,6 +31,4 @@ export function manualJourneyReset(journey: RecallJourney): void {
   clearAutomatedCalculationData(journey)
   // If the user navigated here from check your-answers then they must repeat full journey
   resetCheckingAnswers(journey)
-
-  delete journey.switchedFromAutomatedJourney
 }

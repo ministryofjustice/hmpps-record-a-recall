@@ -153,10 +153,8 @@ describe('selectCasesController Tests', () => {
         )
       })
 
-      it('shows back link to review-sentences when index = 0 and journey.switchedFromAutomatedJourney is true', async () => {
-        existingJourney.switchedFromAutomatedJourney = true
-
-        const res = await request(app).get(baseUrl)
+      it('shows back link to review-sentences when index = 0 and returnKey=reviewSentencesAutomatedJourney', async () => {
+        const res = await request(app).get(`${baseUrl}?returnKey=reviewSentencesAutomatedJourney`)
 
         const $ = cheerio.load(res.text)
         expect($('[data-qa="back-link"]').attr('href')).toBe(
@@ -164,19 +162,25 @@ describe('selectCasesController Tests', () => {
         )
       })
 
-      it('shows back link to previous case, not review-sentences, when switchedFromAutomatedJourney is true and index > 0', async () => {
-        existingJourney.switchedFromAutomatedJourney = true
+      it('shows back link to previous case, not review-sentences, when returnKey=reviewSentencesAutomatedJourney is present and index > 0', async () => {
         recallService.getRecallableCourtCases.mockResolvedValue([
           TestData.recallableCourtCase(),
           TestData.recallableCourtCase(),
         ])
         const courtCaseIndex = 1
 
-        const res = await request(app).get(`${baseUrl}/${courtCaseIndex}`)
+        const res = await request(app).get(`${baseUrl}/${courtCaseIndex}?returnKey=reviewSentencesAutomatedJourney`)
 
         const $ = cheerio.load(res.text)
         expect($('[data-qa="back-link"]').attr('href')).toBe(
-          RecallJourneyUrls.manualSelectCases(nomsId, journeyId, 'create', null, courtCaseIndex - 1),
+          RecallJourneyUrls.manualSelectCases(
+            nomsId,
+            journeyId,
+            'create',
+            null,
+            courtCaseIndex - 1,
+            'reviewSentencesAutomatedJourney',
+          ),
         )
       })
     })
