@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import { AuditEvent } from '../data/hmppsAuditClient'
+import { AuditEvent } from '@ministryofjustice/hmpps-audit-client'
 import AuditService, { Page } from '../services/auditService'
 
 const auditPageViewMiddleware = (page: Page, auditService: AuditService): RequestHandler => {
@@ -12,7 +12,7 @@ const auditPageViewMiddleware = (page: Page, auditService: AuditService): Reques
         await auditService.logPageView(page, {
           who: res.locals.user.username,
           subjectId: personIdentifier,
-          subjectType: 'PERSON',
+          subjectType: 'PRISONER_ID',
           correlationId: req.id,
           details: {
             url: req.originalUrl,
@@ -29,7 +29,7 @@ const auditPageViewMiddleware = (page: Page, auditService: AuditService): Reques
         }
         if (auditEventName) {
           const event: AuditEvent = {
-            what: auditEventName,
+            action: auditEventName,
             who: res.locals.user.username,
             correlationId: req.id,
             details: {
@@ -39,7 +39,7 @@ const auditPageViewMiddleware = (page: Page, auditService: AuditService): Reques
           }
           if (personIdentifier) {
             if (!event.subjectType) {
-              event.subjectType = 'PERSON'
+              event.subjectType = 'PRISONER_ID'
               event.subjectId = personIdentifier
             }
             event.details = {

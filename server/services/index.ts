@@ -1,5 +1,8 @@
+import { AuditServiceFactory } from '@ministryofjustice/hmpps-audit-client'
 import { dataAccess } from '../data'
 import AuditService from './auditService'
+import logger from '../../logger'
+import config from '../config'
 import CalculateReleaseDatesService from './calculateReleaseDatesService'
 import FeComponentsService from './feComponentsService'
 import PrisonerSearchService from './prisonerSearchService'
@@ -12,7 +15,6 @@ import AdjustmentsService from './adjustmentsService'
 export const services = () => {
   const {
     applicationInfo,
-    hmppsAuditClient,
     prisonerSearchApiClient,
     prisonApiClient,
     feComponentsClient,
@@ -28,7 +30,7 @@ export const services = () => {
   const prisonerService = new PrisonerService(prisonApiClient)
   return {
     applicationInfo,
-    auditService: new AuditService(hmppsAuditClient),
+    auditService: new AuditService(AuditServiceFactory.createInstance(config.sqs.audit, logger)),
     prisonerSearchService: new PrisonerSearchService(prisonerSearchApiClient),
     prisonerService,
     userService: new UserService(prisonerService),

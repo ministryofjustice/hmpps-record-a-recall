@@ -1,4 +1,4 @@
-import HmppsAuditClient, { AuditEvent } from '../data/hmppsAuditClient'
+import { AuditEvent, AuditService as HmppsAuditService } from '@ministryofjustice/hmpps-audit-client'
 
 export enum Page {
   HOME = 'HOME',
@@ -30,24 +30,23 @@ export enum Page {
 export interface PageViewEventDetails {
   who: string
   subjectId?: string
-  subjectType?: string
+  subjectType?: AuditEvent['subjectType']
   correlationId?: string
-  details?: object
+  details?: Record<string, unknown>
 }
 
 export default class AuditService {
-  constructor(private readonly hmppsAuditClient: HmppsAuditClient) {}
+  constructor(private readonly hmppsAuditService: HmppsAuditService) {}
 
   async logAuditEvent(event: AuditEvent) {
-    await this.hmppsAuditClient.sendMessage(event)
+    await this.hmppsAuditService.logAuditEvent(event)
   }
 
   async logPageView(page: Page, eventDetails: PageViewEventDetails) {
-    const event: AuditEvent = {
+    await this.hmppsAuditService.logAuditEvent({
       ...eventDetails,
-      what: `PAGE_VIEW_${page}`,
-    }
-    await this.hmppsAuditClient.sendMessage(event)
+      action: `PAGE_VIEW_${page}`,
+    })
   }
 
   async logHomePageViewEvent(
@@ -66,9 +65,9 @@ export default class AuditService {
       time: Date.now(),
     }
 
-    await this.hmppsAuditClient.sendMessage({
+    await this.hmppsAuditService.logAuditEvent({
       who: username,
-      what: 'PAGE_VIEW_HOME',
+      action: 'PAGE_VIEW_HOME',
       subjectId: nomsId,
       subjectType: 'PRISONER_ID',
       correlationId,
@@ -112,15 +111,15 @@ export default class AuditService {
   }
 
   private async logRecallEvent(
-    what: 'ADD_RECALL' | 'EDIT_RECALL' | 'DELETE_RECALL',
+    action: 'ADD_RECALL' | 'EDIT_RECALL' | 'DELETE_RECALL',
     username: string,
     nomsId: string,
     correlationId: string,
     identifiers: object,
   ) {
-    await this.hmppsAuditClient.sendMessage({
+    await this.hmppsAuditService.logAuditEvent({
       who: username,
-      what,
+      action,
       subjectId: nomsId,
       subjectType: 'PRISONER_ID',
       correlationId,

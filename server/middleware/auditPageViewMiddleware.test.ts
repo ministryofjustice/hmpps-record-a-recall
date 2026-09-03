@@ -50,7 +50,7 @@ describe('auditPageViewMiddleware', () => {
       who: user.username,
       correlationId: expect.any(String),
       subjectId: nomsId,
-      subjectType: 'PERSON',
+      subjectType: 'PRISONER_ID',
       details: {
         url: `/person/${nomsId}`,
         statusCode: 200,
@@ -71,8 +71,8 @@ describe('auditPageViewMiddleware', () => {
       who: user.username,
       correlationId: expect.any(String),
       subjectId: 'A1234BC',
-      subjectType: 'PERSON',
-      what: 'UNAUTHORISED_PAGE_VIEW',
+      subjectType: 'PRISONER_ID',
+      action: 'UNAUTHORISED_PAGE_VIEW',
       details: {
         prisonNumber: 'A1234BC',
         statusCode: 404,
@@ -93,8 +93,8 @@ describe('auditPageViewMiddleware', () => {
       who: user.username,
       correlationId: expect.any(String),
       subjectId: 'A1234BC',
-      subjectType: 'PERSON',
-      what: 'FAILED_PAGE_VIEW',
+      subjectType: 'PRISONER_ID',
+      action: 'FAILED_PAGE_VIEW',
       details: {
         prisonNumber: 'A1234BC',
         statusCode: 500,

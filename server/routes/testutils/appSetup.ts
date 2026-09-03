@@ -2,12 +2,12 @@ import express, { Express } from 'express'
 import { NotFound } from 'http-errors'
 import { SessionData } from 'express-session'
 import { randomUUID } from 'crypto'
+import { AuditService as HmppsAuditService } from '@ministryofjustice/hmpps-audit-client'
 import routes from '../index'
 import nunjucksSetup from '../../utils/nunjucksSetup'
 import errorHandler from '../../errorHandler'
 import type { Services } from '../../services'
 import AuditService from '../../services/auditService'
-import HmppsAuditClient from '../../data/hmppsAuditClient'
 import PrisonerSearchService from '../../services/prisonerSearchService'
 import TestData from '../../testutils/testData'
 import { HmppsUser } from '../../interfaces/hmppsUser'
@@ -114,7 +114,7 @@ function appSetup(
 export function appWithAllRoutes({
   production = false,
   services = {
-    auditService: new AuditService({} as HmppsAuditClient) as jest.Mocked<AuditService>,
+    auditService: new AuditService({} as HmppsAuditService) as jest.Mocked<AuditService>,
   },
   userSupplier = () => user,
   sessionReceiver = undefined,
