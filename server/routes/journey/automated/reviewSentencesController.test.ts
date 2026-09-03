@@ -12,7 +12,6 @@ import TestData from '../../../testutils/testData'
 import AuditService from '../../../services/auditService'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { MANUAL_SELECT_CASES, MANUAL_SELECT_CASES_LINK } from '../../testutils/constants'
-import config from '../../../config'
 
 let app: Express
 let existingJourney: RecallJourney
@@ -62,127 +61,75 @@ afterEach(() => {
 })
 
 describe('GET', () => {
-  describe('with manual sentence override toggle on', () => {
-    beforeEach(() => {
-      config.featureToggles.manualSentenceOverride = 'true'
-    })
-    it('should render check sentences page', async () => {
-      // Given
-      recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
-      calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
+  it('should render check sentences page', async () => {
+    // Given
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
 
-      // When
-      const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
 
-      // Then
-      expect(response.status).toEqual(200)
-      const $ = cheerio.load(response.text)
+    // Then
+    expect(response.status).toEqual(200)
+    const $ = cheerio.load(response.text)
 
-      expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
-        `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`,
-      )
-      expect($('#cancel-button').attr('href')).toStrictEqual(
-        `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=reviewSentencesAutomatedJourney`,
-      )
+    expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`,
+    )
+    expect($('#cancel-button').attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=reviewSentencesAutomatedJourney`,
+    )
 
-      expect($('[data-qa=latest-sled]').text()).toContain(
-        "The latest SLED (Sentence and licence expiry date) is 01 Dec 2025. This is the SLED on this person's licence.",
-      )
-      expect($('[data-qa=court-case-count]').text()).toContain('Court cases with sentences eligible for recall (1)')
-      expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).attr('href')).toStrictEqual(
-        `/person/${nomsId}/recall/create/${journeyId}/manual/skip-intercept`,
-      )
-      expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).text()).toContain(
-        'If you need to change which sentences are included in this recall, you can manually select court cases.',
-      )
+    expect($('[data-qa=latest-sled]').text()).toContain(
+      "The latest SLED (Sentence and licence expiry date) is 01 Dec 2025. This is the SLED on this person's licence.",
+    )
+    expect($('[data-qa=court-case-count]').text()).toContain('Court cases with sentences eligible for recall (1)')
+    expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).attr('href')).toStrictEqual(
+      `/person/${nomsId}/recall/create/${journeyId}/manual/skip-intercept`,
+    )
+    expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).text()).toContain(
+      'If you need to change which sentences are included in this recall, you can manually select court cases.',
+    )
 
-      const offenceCardText = $('[data-qa=recallable-court-cases]').text()
-      expect(offenceCardText).toContain('OFF1 Offence 1')
-      expect(offenceCardText).toContain('Standard Determinate')
-      expect(offenceCardText).toContain('View sentences that are ineligible for recall (1)')
-      expect(offenceCardText).toContain('OFF2 Offence 2')
-    })
-
-    it('should return to start of journey if not found in session', async () => {
-      await request(app)
-        .get(`/person/${nomsId}/recall/create/${uuidv4()}/review-sentences`)
-        .expect(302)
-        .expect('Location', `/person/${nomsId}/recall/create/start`)
-    })
+    const offenceCardText = $('[data-qa=recallable-court-cases]').text()
+    expect(offenceCardText).toContain('OFF1 Offence 1')
+    expect(offenceCardText).toContain('Standard Determinate')
+    expect(offenceCardText).toContain('View sentences that are ineligible for recall (1)')
+    expect(offenceCardText).toContain('OFF2 Offence 2')
   })
 
-  describe('with manual sentence override toggle off', () => {
-    beforeEach(() => {
-      config.featureToggles.manualSentenceOverride = 'false'
-    })
-    it('should render check sentences page', async () => {
-      // Given
-      recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
-      calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
+  it('should return to start of journey if not found in session', async () => {
+    await request(app)
+      .get(`/person/${nomsId}/recall/create/${uuidv4()}/review-sentences`)
+      .expect(302)
+      .expect('Location', `/person/${nomsId}/recall/create/start`)
+  })
+})
 
-      // When
-      const response = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
+describe('backlink tests', () => {
+  it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
+    existingJourney.isCheckingAnswers = true
 
-      // Then
-      expect(response.status).toEqual(200)
-      const $ = cheerio.load(response.text)
+    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
 
-      expect($('[data-qa=back-link]').attr('href')).toStrictEqual(
-        `/person/${nomsId}/recall/create/${journeyId}/return-to-custody-date`,
-      )
-      expect($('#cancel-button').attr('href')).toStrictEqual(
-        `/person/${nomsId}/recall/create/${journeyId}/confirm-cancel?returnKey=reviewSentencesAutomatedJourney`,
-      )
-
-      expect($('[data-qa=latest-sled]').text()).toContain(
-        "The latest SLED (Sentence and licence expiry date) is 01 Dec 2025. This is the SLED on this person's licence.",
-      )
-      expect($('[data-qa=court-case-count]').text()).toContain('Court cases with sentences eligible for recall (1)')
-
-      // Manual select cases link should NOT be present
-      expect($(`[data-qa=${MANUAL_SELECT_CASES_LINK}]`).length).toBe(0)
-      expect($(`[data-qa=${MANUAL_SELECT_CASES}]`).length).toBe(0)
-
-      const offenceCardText = $('[data-qa=recallable-court-cases]').text()
-      expect(offenceCardText).toContain('OFF1 Offence 1')
-      expect(offenceCardText).toContain('Standard Determinate')
-      expect(offenceCardText).toContain('View sentences that are ineligible for recall (1)')
-      expect(offenceCardText).toContain('OFF2 Offence 2')
-    })
-
-    it('should return to start of journey if not found in session', async () => {
-      await request(app)
-        .get(`/person/${nomsId}/recall/create/${uuidv4()}/review-sentences`)
-        .expect(302)
-        .expect('Location', `/person/${nomsId}/recall/create/start`)
-    })
+    const $ = cheerio.load(res.text)
+    expect($('[data-qa="back-link"]').attr('href')).toBe(
+      RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null),
+    )
   })
 
-  describe('backlink tests', () => {
-    it('shows back link to check answers when journey.isCheckingAnswers is true', async () => {
-      recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
-      calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
-      existingJourney.isCheckingAnswers = true
+  it('shows back link to return-to-custody when not checking answers', async () => {
+    recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
+    calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
 
-      const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
+    const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
 
-      const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(
-        RecallJourneyUrls.checkAnswers(nomsId, journeyId, 'create', null),
-      )
-    })
-
-    it('shows back link to return-to-custody when not checking answers', async () => {
-      recallService.getRecallableCourtCases.mockResolvedValue([TestData.recallableCourtCase()])
-      calculateReleaseDatesService.makeDecisionForRecordARecall.mockResolvedValue(TestData.automatedRecallDecision())
-
-      const res = await request(app).get(`/person/${nomsId}/recall/create/${journeyId}/review-sentences`)
-
-      const $ = cheerio.load(res.text)
-      expect($('[data-qa="back-link"]').attr('href')).toBe(
-        RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, 'create', null),
-      )
-    })
+    const $ = cheerio.load(res.text)
+    expect($('[data-qa="back-link"]').attr('href')).toBe(
+      RecallJourneyUrls.returnToCustodyDate(nomsId, journeyId, 'create', null),
+    )
   })
 })
 

@@ -80,11 +80,6 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
   njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
-  njkEnv.addFilter('featureToggleManualSentenceOverride', (content: string, isTrue = true) => {
-    const enabled = config.featureToggles.manualSentenceOverride === 'true'
-    return enabled === isTrue ? content : ''
-  })
-
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
   njkEnv.addFilter('pluralise', (word, number, appender) => (number === 1 ? word : `${word}${appender || 's'}`))

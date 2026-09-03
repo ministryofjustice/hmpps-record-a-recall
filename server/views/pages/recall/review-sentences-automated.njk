@@ -30,12 +30,7 @@
         {% endfor %}
     </div>
 
-    {% set manualSelectHtml %}
-      <p data-qa="manual-select-cases">If you need to change which sentences are included in this recall, you can <a class="govuk-link" href="{{ manualJourneyUrl }}" data-qa="manual-select-cases-link">manually select court cases</a>.</p>
-    {% endset %}
-    {{ manualSelectHtml | featureToggleManualSentenceOverride | safe }}
-
-    <h2 class="govuk-heading-l{{ ' govuk-!-margin-top-8' | featureToggleManualSentenceOverride(false) }}">Confirm the sentences and offences are correct</h2>
+    <p data-qa="manual-select-cases">If you need to change which sentences are included in this recall, you can <a class="govuk-link" href="{{ manualJourneyUrl }}" data-qa="manual-select-cases-link">manually select court cases</a>.</p>
 
     <p class="govuk-body">If you think the details are wrong, you can change the information in Court cases and release dates.</p>
 
