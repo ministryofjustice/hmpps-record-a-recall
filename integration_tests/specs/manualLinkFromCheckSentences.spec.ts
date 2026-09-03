@@ -15,7 +15,6 @@ import HomePage from '../pages/homePage'
 import RevocationDatePage from '../pages/revocationDatePage'
 import ReturnToCustodyDatePage from '../pages/returnToCustodayDatePage'
 import CheckSentencesPage from '../pages/checkSentencesPage'
-import ManualStartInterceptPage from '../pages/manualStartInterceptPage'
 import ManualSelectCourtCasesPage from '../pages/manualSelectCourtCasesPage'
 
 test.beforeEach(async () => {
@@ -55,15 +54,13 @@ test('Switching from the auto journey to the manual journey via check sentences 
   const checkSentencesPage = await CheckSentencesPage.verifyOnPage(page)
   await expect(checkSentencesPage.manualSelectCasesLink).toBeVisible()
   await expect(checkSentencesPage.manualSelectCasesLink).toHaveText('manually select court cases')
-  await expect(checkSentencesPage.manualSelectCasesLink).toHaveAttribute('href', /\/manual\/start$/)
+  await expect(checkSentencesPage.manualSelectCasesLink).toHaveAttribute('href', /\/manual\/skip-intercept$/)
 
   // Act
   await checkSentencesPage.clickManualSelectCases()
 
-  const manualInterceptPage = await ManualStartInterceptPage.verifyOnPage(page)
-  await manualInterceptPage.clickContinue()
-
   const selectCourtCasesPage = await ManualSelectCourtCasesPage.verifyOnPage(page)
+  await expect(selectCourtCasesPage.backLink).toHaveAttribute('href', /\/review-sentences$/)
 
   await selectCourtCasesPage.selectYes()
   await selectCourtCasesPage.clickContinue()

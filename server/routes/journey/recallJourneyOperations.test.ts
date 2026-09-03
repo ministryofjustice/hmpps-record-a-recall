@@ -2,6 +2,7 @@ import {
   setAutomatedCalculationData,
   clearAutomatedCalculationData,
   resetCheckingAnswers,
+  manualJourneyReset,
 } from './recallJourneyOperations'
 import { RecallJourney } from '../../@types/journeys'
 import TestData from '../../testutils/testData'
@@ -84,6 +85,32 @@ describe('recallJourneyOperations', () => {
 
       resetCheckingAnswers(journey)
 
+      expect(journey.isCheckingAnswers).toBe(false)
+    })
+  })
+
+  describe('manualJourneyReset', () => {
+    it('should clear automated calculation data and reset isCheckingAnswers', () => {
+      const journey = {
+        id: 'journey-1',
+        isCheckingAnswers: true,
+        calculationRequestId: 991,
+        sentenceIds: ['sentence-1'],
+        automatedCalculationData: TestData.automatedRecallDecision().automatedCalculationData,
+      } as RecallJourney
+
+      manualJourneyReset(journey)
+
+      expect(journey.calculationRequestId).toBeUndefined()
+      expect(journey.sentenceIds).toBeUndefined()
+      expect(journey.automatedCalculationData).toBeUndefined()
+      expect(journey.isCheckingAnswers).toBe(false)
+    })
+
+    it('is a no-op when the properties are not present', () => {
+      const journey = { id: 'journey-1', isCheckingAnswers: false } as RecallJourney
+
+      expect(() => manualJourneyReset(journey)).not.toThrow()
       expect(journey.isCheckingAnswers).toBe(false)
     })
   })

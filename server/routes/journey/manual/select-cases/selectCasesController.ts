@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Controller } from '../../../controller'
 import { RecallJourney, PersonJourneyParams } from '../../../../@types/journeys'
-import RecallJourneyUrls from '../../recallJourneyUrls'
+import RecallJourneyUrls, { buildReturnUrlFromKey } from '../../recallJourneyUrls'
 import { Page } from '../../../../services/auditService'
 import RecallService from '../../../../services/recallService'
 import { SelectCourtCasesForm } from './selectCourtCasesSchema'
@@ -17,6 +17,7 @@ export default class SelectCasesController implements Controller {
     const { prisoner } = res.locals
     const { username } = req.user
     const { nomsId, journeyId, createOrEdit, recallId, caseIndex } = req.params
+    const { returnKey } = req.query as { returnKey?: string }
     const journey = req.session.recallJourneys[journeyId]
 
     if (!journey.recallableCourtCases) {
@@ -50,7 +51,7 @@ export default class SelectCasesController implements Controller {
         RecallJourneyUrls.manualSelectCases.name,
         courtCaseIndex,
       ),
-      backLink: this.getBackLink(journey, nomsId, journeyId, createOrEdit, recallId, courtCaseIndex),
+      backLink: this.getBackLink(journey, nomsId, journeyId, createOrEdit, recallId, courtCaseIndex, returnKey),
     })
   }
 
@@ -59,6 +60,7 @@ export default class SelectCasesController implements Controller {
     res: Response,
   ): Promise<void> => {
     const { nomsId, journeyId, createOrEdit, recallId, caseIndex } = req.params
+    const { returnKey } = req.query as { returnKey?: string }
     const { activeSentenceChoice } = req.body
 
     const journey = req.session.recallJourneys[journeyId]!
@@ -98,7 +100,9 @@ export default class SelectCasesController implements Controller {
     }
 
     if (hasNextCase && !isNoAndFinished) {
-      return res.redirect(RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, nextCaseIndex))
+      return res.redirect(
+        RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, nextCaseIndex, returnKey),
+      )
     }
 
     if (journey.courtCaseIdsSelectedForRecall.length === 0) {
@@ -115,13 +119,25 @@ export default class SelectCasesController implements Controller {
     createOrEdit: 'edit' | 'create',
     recallId: string,
     courtCaseIndex: number,
+    returnKey?: string,
   ) {
     if (journey.isCheckingAnswers) {
       return RecallJourneyUrls.checkAnswers(nomsId, journeyId, createOrEdit, recallId)
     }
 
     if (courtCaseIndex > 0) {
-      return RecallJourneyUrls.manualSelectCases(nomsId, journeyId, createOrEdit, recallId, courtCaseIndex - 1)
+      return RecallJourneyUrls.manualSelectCases(
+        nomsId,
+        journeyId,
+        createOrEdit,
+        recallId,
+        courtCaseIndex - 1,
+        returnKey,
+      )
+    }
+
+    if (returnKey) {
+      return buildReturnUrlFromKey(returnKey, nomsId, journeyId, createOrEdit, recallId)
     }
 
     return RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId)

@@ -25,3 +25,10 @@ export function clearAutomatedCalculationData(journey: RecallJourney): void {
 export function resetCheckingAnswers(journey: RecallJourney): void {
   journey.isCheckingAnswers = false
 }
+
+export function manualJourneyReset(journey: RecallJourney): void {
+  // The absence of a calculationRequestId, sentenceIds, and automatedCalculationData implies manual journey
+  clearAutomatedCalculationData(journey)
+  // If the user navigated here from check your-answers then they must repeat full journey
+  resetCheckingAnswers(journey)
+}

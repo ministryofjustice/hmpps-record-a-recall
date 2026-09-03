@@ -105,6 +105,17 @@ describe('POST /manual/start', () => {
     expect(new Date(existingJourney.lastTouched).getTime()).toBeLessThanOrEqual(Date.now())
   })
 
+  it('resets isCheckingAnswers to false', async () => {
+    // Given
+    existingJourney.isCheckingAnswers = true
+
+    // When
+    await request(app).post(url).type('form').send({ _csrf: 'token' }).expect(302)
+
+    // Then
+    expect(existingJourney.isCheckingAnswers).toBe(false)
+  })
+
   it('redirects to start if journey not found in session', async () => {
     // Given
     const missingJourneyId = uuidv4()

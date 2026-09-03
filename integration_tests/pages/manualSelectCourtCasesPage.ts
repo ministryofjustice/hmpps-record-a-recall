@@ -8,12 +8,15 @@ export default class ManualSelectCourtCasesPage extends AbstractPage {
 
   readonly continueButton: Locator
 
+  readonly backLink: Locator
+
   private constructor(page: Page) {
     super(page)
 
     this.header = page.getByRole('heading', { name: 'Select all cases that have an outstanding SLED or LED' })
     this.yesRadio = page.locator('[data-qa="yes-radio"]')
     this.continueButton = page.locator('[data-qa="continue-btn"]')
+    this.backLink = page.locator('[data-qa="back-link"]')
   }
 
   static async verifyOnPage(page: Page): Promise<ManualSelectCourtCasesPage> {

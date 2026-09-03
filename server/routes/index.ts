@@ -37,6 +37,7 @@ import UnexpectedRecallTypeController from './journey/intercept/unexpectedRecall
 import UnsupportedRecallTypeController from './journey/intercept/unsupportedRecallTypeController'
 import UnknownPreRecallSentenceTypeController from './journey/intercept/unknownPreRecallSentenceTypeController'
 import NoSentencesController from './journey/intercept/noSentencesController'
+import ManualJourneySkipInterceptController from './journey/manual/skip-intercept/manualJourneySkipInterceptController'
 
 export default function routes({
   prisonerService,
@@ -178,6 +179,12 @@ export default function routes({
   route({
     path: `${journeyPath}/manual/start`,
     controller: new ManualJourneyInterceptController(),
+    additionalMiddleware: [ensureInRecallJourney],
+  })
+
+  route({
+    path: `${journeyPath}/manual/skip-intercept`,
+    controller: new ManualJourneySkipInterceptController(),
     additionalMiddleware: [ensureInRecallJourney],
   })
 
