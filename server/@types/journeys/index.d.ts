@@ -24,7 +24,6 @@ export interface RecallJourney {
   calculationRequestId?: number // this is only set in the auto journey
   recallBeingEdited?: ExistingRecall
   automatedCalculationData?: AutomatedCalculationData
-  switchedFromAutomatedJourney?: boolean
 }
 
 export interface DateParts {

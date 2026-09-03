@@ -60,6 +60,7 @@ test('Switching from the auto journey to the manual journey via check sentences 
   await checkSentencesPage.clickManualSelectCases()
 
   const selectCourtCasesPage = await ManualSelectCourtCasesPage.verifyOnPage(page)
+  await expect(selectCourtCasesPage.backLink).toHaveAttribute('href', /\/review-sentences$/)
 
   await selectCourtCasesPage.selectYes()
   await selectCourtCasesPage.clickContinue()

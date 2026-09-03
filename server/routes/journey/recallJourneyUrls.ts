@@ -151,8 +151,10 @@ export default class RecallJourneyUrls {
     createOrEdit: 'edit' | 'create',
     recallId: string,
     caseIndex?: number,
+    returnKey?: string,
   ) => {
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
+    const path = `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/manual/select-court-cases${caseIndex ? `/${caseIndex}` : ''}`
+    return returnKey ? `${path}?${new URLSearchParams({ returnKey }).toString()}` : path
   }
 
   static manualNoCasesSelected = (
