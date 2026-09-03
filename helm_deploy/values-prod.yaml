@@ -26,6 +26,8 @@ generic-service:
     COURT_CASES_RELEASE_DATES_API_URL: "https://court-cases-release-dates-api.hmpps.service.justice.gov.uk"
     NOMIS_MAPPING_SERVICE_URL: "https://nomis-sync-prisoner-mapping.hmpps.service.justice.gov.uk"
     REMAND_AND_SENTENCING_URL: "https://remand-and-sentencing.hmpps.service.justice.gov.uk"
+    # Feature Flags
+    MANUAL_SENTENCE_OVERRIDE: "true"
 
     ENVIRONMENT_NAME: PROD
     AUDIT_ENABLED: "false"
