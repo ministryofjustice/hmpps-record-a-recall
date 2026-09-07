@@ -1450,6 +1450,7 @@ export interface components {
         | 'PROGRESSION_MODEL_SCHEDULE_EXCLUSION'
       arguments: string[]
       message: string
+      dpsMessage: string
       /** @enum {string} */
       type:
         | 'UNSUPPORTED_SENTENCE'
@@ -2799,6 +2800,9 @@ export interface components {
       recentCalculations: components['schemas']['HistoricCalculationSummary'][]
       /** Format: int32 */
       totalCalculationCount: number
+      /** Format: int32 */
+      numberOfSentences: number
+      hasIndeterminateSentences: boolean
     }
     ReleaseDateHint: {
       text: string
