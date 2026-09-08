@@ -46,6 +46,7 @@ export default {
             {
               code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
               message: 'Critical error one',
+              dpsMessage: 'Critical error one',
             },
           ],
           latestOtherMessages: [],
@@ -71,6 +72,7 @@ export default {
             {
               code: 'EDS_LICENCE_TERM_LESS_THAN_ONE_YEAR',
               message: 'Penultimate critical error one',
+              dpsMessage: 'Penultimate critical error one',
             },
           ],
           latestOtherMessages: [],
