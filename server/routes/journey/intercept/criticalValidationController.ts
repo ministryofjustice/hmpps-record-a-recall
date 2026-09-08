@@ -21,7 +21,7 @@ export default class CriticalValidationController implements Controller {
 
     return res.render('pages/recall/critical-validation-soft-block', {
       prisoner,
-      messages: [...latestCriticalMessages, ...penultimateCriticalMessages].map(it => it.message),
+      messages: [...latestCriticalMessages, ...penultimateCriticalMessages].map(it => it.dpsMessage),
       backLink: GlobalRecallUrls.home(nomsId),
       cancelUrl: RecallJourneyUrls.confirmCancel(
         nomsId,

@@ -32,6 +32,8 @@ beforeEach(() => {
           type: 'VALIDATION',
           calculationUnsupported: true,
           contentType: 'PLAIN_TEXT',
+          dpsMessage:
+            'Count 1 on case CASE123 at Birmingham Crown Court on 12 March 2026 must have a licence term of at least one year.',
         },
       ],
       latestOtherMessages: [],
@@ -70,7 +72,7 @@ describe('GET', () => {
     expect($('h1').text()).toContain('You can record a recall, but some of the information might be wrong')
     expect($('[data-qa=continue-btn]').attr('href')).toContain('/revocation-date')
     expect($('[data-qa=validation-message]').text()).toContain(
-      'This is because court case 1 NOMIS line reference 1 must have a licence term of at least one year',
+      'This is because count 1 on case CASE123 at Birmingham Crown Court on 12 March 2026 must have a licence term of at least one year.',
     )
   })
 
@@ -102,6 +104,7 @@ describe('GET', () => {
         type: 'VALIDATION',
         calculationUnsupported: true,
         contentType: 'PLAIN_TEXT',
+        dpsMessage: 'Penultimate critical error message.',
       },
     ]
 
@@ -128,6 +131,7 @@ describe('GET', () => {
         type: 'VALIDATION',
         calculationUnsupported: true,
         contentType: 'PLAIN_TEXT',
+        dpsMessage: 'First penultimate error.',
       },
       {
         code: 'EDS_LICENCE_TERM_MORE_THAN_EIGHT_YEARS',
@@ -136,6 +140,7 @@ describe('GET', () => {
         type: 'VALIDATION',
         calculationUnsupported: true,
         contentType: 'PLAIN_TEXT',
+        dpsMessage: 'Second penultimate error.',
       },
     ]
 
@@ -161,6 +166,7 @@ describe('GET', () => {
         type: 'VALIDATION',
         calculationUnsupported: true,
         contentType: 'PLAIN_TEXT',
+        dpsMessage: 'Penultimate critical error.',
       },
     ]
 
@@ -174,7 +180,7 @@ describe('GET', () => {
     const listItems = $('.govuk-list--bullet li')
     expect(listItems.length).toBe(2)
     expect(listItems.eq(0).text()).toContain(
-      'Court case 1 NOMIS line reference 1 must have a licence term of at least one year',
+      'Count 1 on case CASE123 at Birmingham Crown Court on 12 March 2026 must have a licence term of at least one year.',
     )
     expect(listItems.eq(1).text()).toContain('Penultimate critical error')
   })
