@@ -6,6 +6,7 @@ import path from 'path'
 import {
   formatCountNumber,
   groupAndSortPeriodLengths,
+  sentenceStatusTagText,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
@@ -30,6 +31,7 @@ njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
+njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
 
 const baseCase = {
   id: uuidv4(),

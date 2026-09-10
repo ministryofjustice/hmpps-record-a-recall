@@ -5,6 +5,7 @@ import {
   formatCountNumber,
   groupAndSortPeriodLengths,
   consecutiveToDetailsToDescription,
+  sentenceStatusTagText,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
@@ -29,6 +30,7 @@ njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
+njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
 
 function valueInOffenceCard(key: string, $: cheerio.CheerioAPI) {
   const summaryList = $('[data-qa="offenceSummaryList"]')

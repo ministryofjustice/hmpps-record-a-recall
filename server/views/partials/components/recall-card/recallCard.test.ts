@@ -7,6 +7,7 @@ import {
   formatLengths,
   groupAndSortPeriodLengths,
   sortPeriodLengths,
+  sentenceStatusTagText,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { ExistingRecall, ExistingRecallSentence } from '../../../../model/ExistingRecall'
 import { formatDate, periodLengthsToSentenceLengths, toAggravatingFactorTitles } from '../../../../utils/utils'
@@ -28,6 +29,7 @@ njkEnv.addFilter('formatLengths', formatLengths)
 njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sortPeriodLengths', sortPeriodLengths)
+njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
 
 const aRecall: ExistingRecall = {
   recallUuid: 'abc123',

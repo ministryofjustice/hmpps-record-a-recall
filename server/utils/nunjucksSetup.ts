@@ -13,6 +13,7 @@ import {
   formatCountNumber,
   sortPeriodLengths,
   groupAndSortPeriodLengths,
+  sentenceStatusTagText,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
@@ -80,6 +81,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
   njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
+  njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
   njkEnv.addFilter('pluralise', (word, number, appender) => (number === 1 ? word : `${word}${appender || 's'}`))
