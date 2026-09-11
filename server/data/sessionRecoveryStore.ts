@@ -17,6 +17,19 @@ const RECOVERY_TTL_SECONDS = config.session.recoveryTtlMinutes * 60
 const getKey = (username: string, nomsId: string) =>
   `session-recovery:${createHmac('sha256', config.session.secret).update(`${username}:${nomsId}`).digest('hex')}`
 
+const getRestorableSessionDataKeys = () => {
+  type SessionDataObject = Record<keyof SessionData, undefined | boolean>
+  const sessionProperties: SessionDataObject = {
+    returnTo: undefined,
+    recallJourneys: true,
+    cookie: undefined,
+    csrfToken: undefined,
+  }
+  return Object.entries(sessionProperties)
+    .filter(([_, value]) => value)
+    .map(([key]) => key)
+}
+
 export async function saveSession(
   username: string,
   nomsId: string,
@@ -26,7 +39,11 @@ export async function saveSession(
     return
   }
   try {
-    await redis.set(getKey(username, nomsId), JSON.stringify(session), { EX: RECOVERY_TTL_SECONDS })
+    const restorableSessionDataKeys = getRestorableSessionDataKeys()
+    const restoreSession = Object.fromEntries(
+      Object.entries(session).filter(([key]) => restorableSessionDataKeys.includes(key)),
+    )
+    await redis.set(getKey(username, nomsId), JSON.stringify(restoreSession), { EX: RECOVERY_TTL_SECONDS })
   } catch (err) {
     logger.warn(`Failed to save session recovery data for ${username}/${nomsId}`, err)
   }
