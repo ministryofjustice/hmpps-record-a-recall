@@ -74,7 +74,7 @@ describe('Tests for sentence component', () => {
     expect(valueInOffenceCard('Committed on', $)).toBe('01/06/2023 to 02/06/2023')
     expect(valueInOffenceCard('Sentence type', $)).toBe('ORA SDS')
     expect(valueInOffenceCard('Consecutive or concurrent', $)).toBe('Concurrent')
-    expect(valueInOffenceCard('Sentencing warrant date', $)).toBe('01/07/2023')
+    expect(valueInOffenceCard('Sentence date', $)).toBe('01/07/2023')
   })
 
   it('renders an offence card with all expected fields when consecutive to is populated', () => {
