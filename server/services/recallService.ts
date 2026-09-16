@@ -306,6 +306,7 @@ export default class RecallService {
                 sentenceTypeDescription: sentence.sentenceTypeDescription,
                 consecutiveTo,
                 aggravatingFactors: sentence.aggravatingFactors,
+                findingOfDomesticAbuse: sentence.findingOfDomesticAbuse,
               }
             }),
           }
