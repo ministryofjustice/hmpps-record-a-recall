@@ -108,6 +108,7 @@ describe('Recall service', () => {
             appearanceDate: '2023-05-10',
             offenceStartDate: '2023-01-01',
             offenceEndDate: null,
+            status: 'ACTIVE',
           },
         ],
       })
@@ -160,6 +161,7 @@ describe('Recall service', () => {
             appearanceDate: '2023-05-10',
             offenceStartDate: '2023-01-01',
             offenceEndDate: null,
+            status: 'ACTIVE',
           },
         ],
       })
@@ -207,6 +209,7 @@ describe('Recall service', () => {
             appearanceDate: '2023-05-10',
             offenceStartDate: '2023-01-01',
             offenceEndDate: null,
+            status: 'ACTIVE',
           },
         ],
       })
@@ -422,6 +425,7 @@ describe('Recall service', () => {
             displayOrder: 20,
           },
         ],
+        findingOfDomesticAbuse: true,
       }
       const sentenceWithMinimum: ApiRecalledSentence = {
         sentenceUuid: uuidv4(),
@@ -446,6 +450,7 @@ describe('Recall service', () => {
         sentenceServeType: 'CONCURRENT',
         sentenceTypeDescription: undefined,
         aggravatingFactors: [],
+        findingOfDomesticAbuse: undefined,
       }
       const recall = TestData.apiRecall({
         calculationRequestId: 1,
@@ -711,6 +716,7 @@ describe('Recall service', () => {
             appearanceDate: '2023-05-10',
             offenceStartDate: '2023-01-01',
             offenceEndDate: null,
+            status: 'ACTIVE',
           },
         ],
       })
@@ -820,6 +826,7 @@ describe('Recall service', () => {
             appearanceDate: '2023-05-10',
             offenceStartDate: '2023-01-01',
             offenceEndDate: null,
+            status: 'ACTIVE',
           },
         ],
       })
@@ -904,6 +911,7 @@ describe('Recall service', () => {
             appearanceDate: '2023-05-10',
             offenceStartDate: '2023-01-01',
             offenceEndDate: null,
+            status: 'ACTIVE',
           },
         ],
       })
@@ -1270,12 +1278,14 @@ describe('Recall service', () => {
                 offenceDescription: 'Assault',
                 consecutiveTo: undefined,
                 aggravatingFactors: [],
+                findingOfDomesticAbuse: undefined,
               },
               {
                 ...sentenceWithMinimum,
                 offenceDescription: 'Burglary',
                 consecutiveTo: undefined,
                 aggravatingFactors: [],
+                findingOfDomesticAbuse: undefined,
               },
             ],
           },
