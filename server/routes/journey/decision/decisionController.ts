@@ -29,12 +29,7 @@ export default class DecisionController implements Controller {
     if (decision.decision === 'CONFLICTING_ADJUSTMENTS') {
       return res.redirect(RecallJourneyUrls.conflictingAdjustmentsIntercept(nomsId, journeyId, createOrEdit, recallId))
     }
-    if (decision.decision === 'NO_RECALLABLE_SENTENCES_FOUND') {
-      return res.redirect(
-        RecallJourneyUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId, createOrEdit, recallId),
-      )
-    }
-    if (decision.decision === 'VALIDATION') {
+    if (decision.decision === 'NO_RECALLABLE_SENTENCES_FOUND' || decision.decision === 'VALIDATION') {
       return res.redirect(RecallJourneyUrls.manualJourneyStart(nomsId, journeyId, createOrEdit, recallId))
     }
     if (decision.decision === 'AUTOMATED') {

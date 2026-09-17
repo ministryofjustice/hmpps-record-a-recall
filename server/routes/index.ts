@@ -25,7 +25,6 @@ import CheckAnswersController from './journey/check-answer/checkAnswersControlle
 import CheckSentencesController from './journey/manual/check-sentences/checkSentencesController'
 import CriticalValidationController from './journey/intercept/criticalValidationController'
 import ConflictingAdjustmentsController from './journey/intercept/conflictingAdjustmentsController'
-import NoRecallableSentencesController from './journey/intercept/noRecallableSentencesController'
 import ConfirmationController from './journey/confirmation/confirmationController'
 import auditPageViewMiddleware from '../middleware/auditPageViewMiddleware'
 import { returnToCustodyDateSchemaFactory } from './journey/return-to-custody-date/returnToCustodyDateSchemas'
@@ -143,12 +142,6 @@ export default function routes({
   route({
     path: `${journeyPath}/conflicting-adjustments`,
     controller: new ConflictingAdjustmentsController(calculateReleaseDatesService, adjustmentsService),
-    additionalMiddleware: [ensureInRecallJourney],
-  })
-
-  route({
-    path: `${journeyPath}/no-recallable-sentences-found`,
-    controller: new NoRecallableSentencesController(),
     additionalMiddleware: [ensureInRecallJourney],
   })
 

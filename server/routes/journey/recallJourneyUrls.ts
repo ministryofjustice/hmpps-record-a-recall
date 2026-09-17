@@ -117,15 +117,6 @@ export default class RecallJourneyUrls {
     return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/conflicting-adjustments`
   }
 
-  static noRecallableSentencesFoundIntercept = (
-    nomsId: string,
-    journeyId: string,
-    createOrEdit: 'edit' | 'create',
-    recallId: string,
-  ) => {
-    return `${RecallJourneyUrls.journeyUrl(nomsId, journeyId, createOrEdit, recallId)}/no-recallable-sentences-found`
-  }
-
   // Manual routes
   static manualJourneyStart = (
     nomsId: string,
@@ -205,12 +196,6 @@ export const urlMapByName = {
     createOrEdit: 'edit' | 'create',
     recallId: string,
   ) => RecallJourneyUrls.conflictingAdjustmentsIntercept(nomsId, journeyId, createOrEdit, recallId),
-  noRecallableSentencesFoundIntercept: (
-    nomsId: string,
-    journeyId: string,
-    createOrEdit: 'edit' | 'create',
-    recallId: string,
-  ) => RecallJourneyUrls.noRecallableSentencesFoundIntercept(nomsId, journeyId, createOrEdit, recallId),
   manualNoCasesSelected: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
     RecallJourneyUrls.manualNoCasesSelected(nomsId, journeyId, createOrEdit, recallId),
   manualJourneyStart: (nomsId: string, journeyId: string, createOrEdit: 'edit' | 'create', recallId: string) =>
