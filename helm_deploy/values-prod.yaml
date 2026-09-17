@@ -28,7 +28,7 @@ generic-service:
     REMAND_AND_SENTENCING_URL: "https://remand-and-sentencing.hmpps.service.justice.gov.uk"
 
     ENVIRONMENT_NAME: PROD
-    AUDIT_ENABLED: "false"
+    AUDIT_ENABLED: "true"
 
 generic-prometheus-alerts:
   alertSeverity: legacy-replacement-alerts
