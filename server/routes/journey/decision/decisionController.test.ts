@@ -57,7 +57,7 @@ afterEach(() => {
 describe('GET', () => {
   it.each([
     ['AUTOMATED', `/person/${nomsId}/recall/create/${journeyId}/review-sentences`],
-    ['NO_RECALLABLE_SENTENCES_FOUND', `/person/${nomsId}/recall/create/${journeyId}/no-recallable-sentences-found`],
+    ['NO_RECALLABLE_SENTENCES_FOUND', `/person/${nomsId}/recall/create/${journeyId}/manual/start`],
     ['VALIDATION', `/person/${nomsId}/recall/create/${journeyId}/manual/start`],
     ['CONFLICTING_ADJUSTMENTS', `/person/${nomsId}/recall/create/${journeyId}/conflicting-adjustments`],
   ])(
