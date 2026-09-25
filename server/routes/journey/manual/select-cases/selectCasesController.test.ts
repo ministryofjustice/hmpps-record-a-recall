@@ -48,6 +48,7 @@ beforeEach(() => {
     res.locals.user = {
       authSource: 'azuread',
       userId: 'user1-id',
+      userUuid: '11111111-1111-1111-1111-111111111111',
       username: 'user1',
       name: 'User One',
       displayName: 'User One',

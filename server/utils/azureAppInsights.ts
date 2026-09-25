@@ -1,5 +1,4 @@
 import { flushTelemetry, initialiseTelemetry, telemetry } from '@ministryofjustice/hmpps-azure-telemetry'
-import type { RequestHandler } from 'express'
 
 initialiseTelemetry({
   serviceName: 'hmpps-record-a-recall',
@@ -20,16 +19,3 @@ const shutdown = async () => {
 
 process.on('SIGTERM', () => shutdown())
 process.on('SIGINT', () => shutdown())
-
-export default function addUsernameAndCaseloadToTelemetry(): RequestHandler {
-  return (req, res, next) => {
-    const { username } = res?.locals?.user || {}
-    const caseloadId = res?.locals?.prisoner?.prisonId || null
-
-    telemetry.setSpanAttributes({
-      ...(username && { username }),
-      ...(caseloadId && { caseloadId }),
-    })
-    return next()
-  }
-}
