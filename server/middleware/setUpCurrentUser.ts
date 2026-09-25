@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode'
 import express from 'express'
+import { UUID } from 'crypto'
 import { convertToTitleCase } from '../utils/utils'
 import logger from '../../logger'
 import UserService from '../services/userService'
@@ -14,11 +15,13 @@ export default function setUpCurrentUser(userService: UserService) {
       const {
         name,
         user_id: userId,
+        user_uuid: userUuid,
         authorities: roles = [],
         auth_source: authSource,
       } = jwtDecode(res.locals.user.token) as {
         name?: string
         user_id?: string
+        user_uuid?: UUID
         authorities?: string[]
         auth_source?: AuthSource
       }
@@ -26,6 +29,7 @@ export default function setUpCurrentUser(userService: UserService) {
       res.locals.user = {
         ...res.locals.user,
         userId,
+        userUuid,
         name,
         displayName: convertToTitleCase(name),
         userRoles,

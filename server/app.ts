@@ -1,4 +1,5 @@
 import express from 'express'
+import { telemetryMiddleware } from '@ministryofjustice/hmpps-azure-telemetry'
 
 import createError from 'http-errors'
 
@@ -20,7 +21,6 @@ import type { Services } from './services'
 import populateValidationErrors from './middleware/populateValidationErrors'
 import populateCurrentPrisoner from './middleware/populateCurrentPrisoner'
 import getFrontendComponents from './middleware/getFeComponents'
-import addUsernameAndCaseloadToTelemetry from './utils/azureAppInsights'
 import { Roles, Role } from './@types/roles'
 
 export default function createApp(services: Services): express.Application {
@@ -42,9 +42,20 @@ export default function createApp(services: Services): express.Application {
   app.use(setUpCsrf())
   app.use(setUpCurrentUser(services.userService))
   app.use('/person/:nomsId', populateCurrentPrisoner(services.prisonerSearchService))
+  app.use(
+    telemetryMiddleware.addUserMetadataToTelemetry({
+      getAttributes: (_req, res) => {
+        const { username } = res?.locals?.user || {}
+        const caseloadId = res?.locals?.prisoner?.prisonId || null
+        return {
+          ...(username && { username }),
+          ...(caseloadId && { caseloadId }),
+        }
+      },
+    }),
+  )
   app.use(populateValidationErrors())
   app.get('/{*splat}', getFrontendComponents(services))
-  app.use(addUsernameAndCaseloadToTelemetry())
   app.use(routes(services))
 
   app.use((_req, _res, next) => next(createError(404, 'Not found')))
