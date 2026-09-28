@@ -72,7 +72,7 @@ describe('auditPageViewMiddleware', () => {
       correlationId: expect.any(String),
       subjectId: 'A1234BC',
       subjectType: 'PRISONER_ID',
-      action: 'UNAUTHORISED_PAGE_VIEW',
+      what: 'UNAUTHORISED_PAGE_VIEW',
       details: {
         prisonNumber: 'A1234BC',
         statusCode: 404,
@@ -94,7 +94,7 @@ describe('auditPageViewMiddleware', () => {
       correlationId: expect.any(String),
       subjectId: 'A1234BC',
       subjectType: 'PRISONER_ID',
-      action: 'FAILED_PAGE_VIEW',
+      what: 'FAILED_PAGE_VIEW',
       details: {
         prisonNumber: 'A1234BC',
         statusCode: 500,
