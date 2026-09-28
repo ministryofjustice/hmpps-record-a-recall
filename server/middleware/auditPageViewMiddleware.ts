@@ -29,7 +29,7 @@ const auditPageViewMiddleware = (page: Page, auditService: AuditService): Reques
         }
         if (auditEventName) {
           const event: AuditEvent = {
-            action: auditEventName,
+            what: auditEventName,
             who: res.locals.user.username,
             correlationId: req.id,
             details: {

@@ -44,7 +44,7 @@ export default class AuditService {
   async logPageView(page: Page, eventDetails: PageViewEventDetails) {
     await this.hmppsAuditService.logAuditEvent({
       ...eventDetails,
-      action: `PAGE_VIEW_${page}`,
+      what: `PAGE_VIEW_${page}`,
     })
   }
 
@@ -66,7 +66,7 @@ export default class AuditService {
 
     await this.hmppsAuditService.logAuditEvent({
       who: username,
-      action: 'PAGE_VIEW_HOME',
+      what: 'PAGE_VIEW_HOME',
       subjectId: nomsId,
       subjectType: 'PRISONER_ID',
       correlationId,
@@ -118,7 +118,7 @@ export default class AuditService {
   ) {
     await this.hmppsAuditService.logAuditEvent({
       who: username,
-      action,
+      what: action,
       subjectId: nomsId,
       subjectType: 'PRISONER_ID',
       correlationId,
