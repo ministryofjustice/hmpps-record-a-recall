@@ -35,3 +35,5 @@ export type IsRecallPossibleRequest = components['schemas']['IsRecallPossibleReq
 export type IsRecallPossibleResponse = components['schemas']['IsRecallPossibleResponse']
 
 export type SentenceConsecutiveToDetailsResponse = components['schemas']['SentenceConsecutiveToDetailsResponse']
+
+export type PersonFixManyChargesToSentence = components['schemas']['PersonFixManyChargesToSentence']

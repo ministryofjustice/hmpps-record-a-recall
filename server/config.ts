@@ -184,6 +184,7 @@ export default {
   },
   featureToggles: {
     ftr56: get('FTR_56_ENABLED', 'false'),
+    checkAutomaticSentenceFix: get('FEATURES_CHECK_AUTOMATIC_SENTENCE_FIX', false, requiredInProduction) === 'true',
   },
   appInsightsConnectionString: get('APPLICATIONINSIGHTS_CONNECTION_STRING', '', requiredInProduction),
 }

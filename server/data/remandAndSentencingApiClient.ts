@@ -12,6 +12,7 @@ import {
   IsRecallPossibleRequest,
   IsRecallPossibleResponse,
   SentenceConsecutiveToDetailsResponse,
+  PersonFixManyChargesToSentence,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
 import logger from '../../logger'
 import config from '../config'
@@ -171,7 +172,7 @@ export default class RemandAndSentencingApiClient extends RestClient {
     )
   }
 
-  async fixManyCharges(prisonerId: string, username: string): Promise<void> {
+  async fixManyCharges(prisonerId: string, username: string): Promise<PersonFixManyChargesToSentence> {
     return this.put(
       {
         path: `/person/${prisonerId}/fix-many-charges-to-sentence`,
