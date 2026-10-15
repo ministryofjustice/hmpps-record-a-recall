@@ -6,6 +6,7 @@ import {
   CreateRecallResponse,
   IsRecallPossibleRequest,
   IsRecallPossibleResponse,
+  PersonFixManyChargesToSentence,
   RecallableCourtCaseSentence,
   SentenceConsecutiveToDetailsResponse,
 } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
@@ -364,7 +365,7 @@ export default class RecallService {
     return this.remandAndSentencingApiClient.hasSentences(prisonerId, username)
   }
 
-  async fixManyCharges(prisonerId: string, username: string): Promise<void> {
+  async fixManyCharges(prisonerId: string, username: string): Promise<PersonFixManyChargesToSentence> {
     return this.remandAndSentencingApiClient.fixManyCharges(prisonerId, username)
   }
 }

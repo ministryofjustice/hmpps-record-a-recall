@@ -8,6 +8,7 @@ import CalculateReleaseDatesService from '../../../services/calculateReleaseDate
 import { RecordARecallValidationResult } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
 import AuditService from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
+import config from '../../../config'
 
 let app: Express
 let session: Partial<SessionData>
@@ -214,5 +215,19 @@ describe('GET /person/:nomsId/recall/create/start', () => {
     // Then
     expect(response.status).toEqual(302)
     expect(response.headers.location).toMatch(new RegExp(`^/person/${nomsId}/recall/create/.+/validation-intercept$`))
+  })
+
+  it('should redirect to check automatic sentence fixes when fix many charges returns consecutive to fix', async () => {
+    // Given
+    recallService.fixManyCharges.mockResolvedValue({ anyConsecutiveToFixes: true })
+    recallService.hasSentences.mockResolvedValue(true)
+    config.featureToggles.checkAutomaticSentenceFix = true
+    // When
+    const response = await request(app).get(`/person/${nomsId}/recall/create/start`)
+    // Then
+    expect(response.status).toEqual(302)
+    expect(response.headers.location).toEqual(
+      `${config.urls.remandAndSentencing}/person/A1234BC/check-automatic-sentence-fix`,
+    )
   })
 })

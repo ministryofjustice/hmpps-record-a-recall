@@ -6,6 +6,8 @@ import { RecallJourney } from '../../../@types/journeys'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
+import config from '../../../config'
+import OtherServiceUrls from '../../otherServiceUrls'
 
 export default class StartCreateRecallJourneyController implements Controller {
   public PAGE_NAME = Page.START_CREATE_RECALL
@@ -26,7 +28,10 @@ export default class StartCreateRecallJourneyController implements Controller {
     }
 
     // Fix the 'many charges' NOMIS data issue on the start of the create journey, this fixes for all court cases related to the prisoner
-    await this.recallService.fixManyCharges(nomsId, username)
+    const fixManyChargesResponse = await this.recallService.fixManyCharges(nomsId, username)
+    if (config.featureToggles.checkAutomaticSentenceFix && fixManyChargesResponse.anyConsecutiveToFixes) {
+      return res.redirect(OtherServiceUrls.rasCheckAutomaticSentenceFixes(nomsId))
+    }
 
     const crdsValidationResult = await this.calculateReleaseDatesService.validateForRecordARecall(nomsId, username)
     const journey: RecallJourney = {

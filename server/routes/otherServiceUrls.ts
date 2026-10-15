@@ -5,4 +5,7 @@ export default class OtherServiceUrls {
 
   static rasUnknownSentenceTypes = (nomsId: string, params: string) =>
     `${config.urls.remandAndSentencing}/person/${nomsId}/unknown-recall-sentence?${params}`
+
+  static rasCheckAutomaticSentenceFixes = (nomsId: string) =>
+    `${config.urls.remandAndSentencing}/person/${nomsId}/check-automatic-sentence-fix`
 }
