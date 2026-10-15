@@ -41,9 +41,9 @@
     "npm": "^12"
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.1146.0",
-    "@microsoft/applicationinsights-clickanalytics-js": "3.4.4",
-    "@microsoft/applicationinsights-web": "3.4.4",
+    "@aws-sdk/client-sqs": "^3.1147.0",
+    "@microsoft/applicationinsights-clickanalytics-js": "3.4.5",
+    "@microsoft/applicationinsights-web": "3.4.5",
     "@ministryofjustice/frontend": "^9.0.0",
     "@ministryofjustice/hmpps-audit-client": "2.0.0",
     "@ministryofjustice/hmpps-auth-clients": "3.0.0",
@@ -80,7 +80,7 @@
     "@ministryofjustice/eslint-config-hmpps": "^1.0.3",
     "@ministryofjustice/frontend-types": "2.0.3",
     "@ministryofjustice/hmpps-precommit-hooks": "3.0.2",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@tsconfig/node24": "^24.0.5",
     "@types/bunyan": "^1.8.11",
     "@types/bunyan-format": "^0.2.9",
@@ -118,7 +118,7 @@
     "typescript": "^6.0.3"
   },
   "overrides": {
-    "@opentelemetry/core": "2.11.0",
+    "@opentelemetry/core": "2.12.0",
     "form-data": "4.0.6",
     "openapi-typescript": {
       "typescript": "$typescript"
