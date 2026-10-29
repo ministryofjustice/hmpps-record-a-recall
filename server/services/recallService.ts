@@ -243,6 +243,7 @@ export default class RecallService {
     latestRecallUuid?: string,
     consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),
   ): ExistingRecall {
+    const isNomisRecall = recall.source === 'NOMIS'
     const isLatestAndDpsRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
     const hasNoCourtCasesAttached = !recall.courtCases?.length
 
@@ -255,7 +256,7 @@ export default class RecallService {
       createdAtTimestamp: recall.createdAt,
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: isLatestAndDpsRecall,
-      canDelete: hasNoCourtCasesAttached || isLatestAndDpsRecall, // NOTE: We do not allow the deletion of NOMIS recalls (that have sentences) as there are downstream consequences on the NOMIS side
+      canDelete: isNomisRecall || hasNoCourtCasesAttached || isLatestAndDpsRecall,
       recallTypeCode: recall.recallType,
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,

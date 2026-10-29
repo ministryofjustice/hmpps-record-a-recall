@@ -597,7 +597,7 @@ describe('Recall service', () => {
       ])
     })
 
-    it('does not allow delete for NOMIS recall when court cases are attached', async () => {
+    it('allows delete for NOMIS recall when court cases are attached', async () => {
       const nomisRecallWithCourtCase = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
         source: 'NOMIS',
@@ -610,7 +610,7 @@ describe('Recall service', () => {
 
       const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
 
-      expect(result[0].canDelete).toBe(false)
+      expect(result[0].canDelete).toBe(true)
     })
 
     it('allows delete for NOMIS recall when no court cases are attached', async () => {
@@ -962,7 +962,7 @@ describe('Recall service', () => {
       })
     })
 
-    it('should not allow delete for NOMIS recall if its sentence exists on a DPS recall', async () => {
+    it('allows delete for a NOMIS recall when its sentence is also on a DPS recall', async () => {
       const sentenceUuid = uuidv4()
 
       const sentence: {
@@ -1009,7 +1009,7 @@ describe('Recall service', () => {
           }),
           expect.objectContaining({
             recallUuid: nomisRecall.recallUuid,
-            canDelete: false,
+            canDelete: true,
             canEdit: false,
           }),
         ]),
