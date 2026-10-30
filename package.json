@@ -37,7 +37,7 @@
     "setup": "npm ci"
   },
   "engines": {
-    "node": "^24",
+    "node": "^26",
     "npm": "^12"
   },
   "dependencies": {
@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@jgoz/esbuild-plugin-typecheck": "^5.0.0",
-    "@ministryofjustice/eslint-config-hmpps": "^1.0.3",
+    "@ministryofjustice/eslint-config-hmpps": "2.0.0-alpha.2",
     "@ministryofjustice/frontend-types": "2.0.3",
     "@ministryofjustice/hmpps-precommit-hooks": "3.0.2",
     "@playwright/test": "^1.64.1",

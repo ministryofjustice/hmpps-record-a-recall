@@ -1,4 +1,4 @@
-import z from 'zod'
+import { z } from 'zod'
 import { createSchema, deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
 import { dateValidation } from './dateValidation'
 
