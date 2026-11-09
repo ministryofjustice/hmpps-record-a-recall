@@ -29,6 +29,7 @@ generic-service:
     NOMIS_MAPPING_SERVICE_URL: "https://nomis-sync-prisoner-mapping-preprod.hmpps.service.justice.gov.uk"
     REMAND_AND_SENTENCING_URL: "https://remand-and-sentencing-preprod.hmpps.service.justice.gov.uk"
     FEATURES_CHECK_AUTOMATIC_SENTENCE_FIX: "true"
+    FEATURES_CHARGE_VALUE: "false"
     ENVIRONMENT_NAME: PRE-PRODUCTION
     AUDIT_ENABLED: "true"
 

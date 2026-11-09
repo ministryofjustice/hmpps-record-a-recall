@@ -134,7 +134,8 @@
             detailsClasses: 'govuk-!-padding-4',
             consecutiveTo: sentence.consecutiveTo,
             aggravatingFactors: sentence.aggravatingFactors | toAggravatingFactorTitles,
-            findingOfDomesticAbuse: sentence.findingOfDomesticAbuse
+            findingOfDomesticAbuse: sentence.findingOfDomesticAbuse,
+            value: sentence.value | formatDecimal
         }) }}
     {% endset %}
 

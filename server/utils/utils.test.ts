@@ -2,6 +2,7 @@ import {
   addUnique,
   buildRecordARecallRequest,
   convertToTitleCase,
+  formatDecimal,
   initialiseName,
   removeItem,
   sortByDateDesc,
@@ -144,5 +145,22 @@ describe('sortByDateDesc', () => {
     const copy = [...items]
     sortByDateDesc(items, item => item.date)
     expect(items).toEqual(copy)
+  })
+})
+
+describe('formatDecimal', () => {
+  it.each([
+    [undefined, undefined],
+    [null, undefined],
+    ['', undefined],
+    ['not-a-number', undefined],
+    [100, '100'],
+    [100.0, '100'],
+    [100.5, '100.50'],
+    [100.55, '100.55'],
+    ['250.5', '250.50'],
+    ['250', '250'],
+  ])('formats %s as %s', (input, expected) => {
+    expect(formatDecimal(input)).toEqual(expected)
   })
 })

@@ -17,6 +17,7 @@ import {
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
+  formatDecimal,
   initialiseName,
   lowercaseFirstLetter,
   periodLengthsToSentenceLengths,
@@ -81,6 +82,9 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
   njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
+  njkEnv.addFilter('formatDecimal', (value?: number | string | null) =>
+    config.featureToggles.chargeValue ? formatDecimal(value) : undefined,
+  )
   njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 

@@ -10,7 +10,12 @@ import {
   sentenceStatusTagText,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { ExistingRecall, ExistingRecallSentence } from '../../../../model/ExistingRecall'
-import { formatDate, periodLengthsToSentenceLengths, toAggravatingFactorTitles } from '../../../../utils/utils'
+import {
+  formatDate,
+  formatDecimal,
+  periodLengthsToSentenceLengths,
+  toAggravatingFactorTitles,
+} from '../../../../utils/utils'
 import TestData from '../../../../testutils/testData'
 
 const njkEnv = nunjucks.configure([
@@ -22,6 +27,7 @@ const njkEnv = nunjucks.configure([
   'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/components/',
 ])
 njkEnv.addFilter('formatDate', formatDate)
+njkEnv.addFilter('formatDecimal', formatDecimal)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
@@ -333,6 +339,7 @@ describe('Tests for recall card component', () => {
       ],
       sentenceServeType: 'CONCURRENT',
       sentenceTypeDescription: 'Serious Offence Sec 250 Sentencing Code (U18)',
+      value: 250.5,
     }
     const sentenceWithMinimum: ExistingRecallSentence = {
       sentenceUuid: uuidv4(),
@@ -396,6 +403,7 @@ describe('Tests for recall card component', () => {
     expect(maximumOffenceCard.find('dt:contains("Aggravating factors")').next().text().trim()).toContain(
       'Offences aggravated by a terrorist connection',
     )
+    expect(maximumOffenceCard.find('dt:contains("Value")').next().text().trim()).toStrictEqual('£250.50')
 
     const minimumOffenceCard = $(`[data-qa=recall-abc123-court-case-1-sentences-2]`).find(
       '.offence-card-offence-details',
@@ -412,6 +420,7 @@ describe('Tests for recall card component', () => {
     expect(minimumOffenceCard.find('dt:contains("Consecutive or concurrent")').next().text().trim()).toStrictEqual(
       'Consecutive',
     )
+    expect(minimumOffenceCard.find('dt:contains("Value")')).toHaveLength(0)
   })
 
   it('Should hide line and count number if count number is -1 in RaS', () => {

@@ -10,6 +10,7 @@ import {
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
+  formatDecimal,
   periodLengthsToSentenceLengths,
   sentenceTypeValueOrLegacy,
   toAggravatingFactorTitles,
@@ -26,6 +27,7 @@ const njkEnv = nunjucks.configure([
 ])
 
 njkEnv.addFilter('formatDate', formatDate)
+njkEnv.addFilter('formatDecimal', formatDecimal)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
@@ -126,6 +128,7 @@ describe('Tests for case-and-sentences component', () => {
       countNumber: '2',
       periodLengths: [],
       aggravatingFactors: [],
+      value: 1200.5,
     } as unknown as RecallableCourtCaseSentence
 
     const sentenceWithLineNumber = {
@@ -158,10 +161,12 @@ describe('Tests for case-and-sentences component', () => {
     // Check count number for first offence
     const firstOffence = $('[class*="offence-card"]').first().text()
     expect(firstOffence).toContain('Count 2')
+    expect(firstOffence).toContain('£1200.50')
 
     // Check line number for second offence
     const secondOffence = $('[class*="offence-card"]').last().text()
     expect(secondOffence).toContain('L-10')
+    expect(secondOffence).not.toContain('Value')
   })
 
   // TODO add more tests for the sentence section (test all permutations of offence cards) - sentence card population is currently under rework

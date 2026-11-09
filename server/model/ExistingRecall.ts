@@ -47,4 +47,5 @@ export interface ExistingRecallSentence {
   sentenceTypeDescription?: string
   consecutiveTo?: ConsecutiveToDetails | null
   findingOfDomesticAbuse?: boolean | null
+  value?: number | null
 }
