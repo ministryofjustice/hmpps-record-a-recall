@@ -149,3 +149,13 @@ export const buildRecordARecallRequest = (journey: RecallJourney, recallId?: str
 
 export const sortByDateDesc = <T>(items: T[], getDate: (item: T) => string | undefined) =>
   [...items].sort((a, b) => (new Date(getDate(b) ?? '').getTime() || 0) - (new Date(getDate(a) ?? '').getTime() || 0))
+
+export const formatDecimal = (value?: number | string | null): string | undefined => {
+  if (value === undefined || value === null || value === '') return undefined
+  const num = Number(value)
+  if (Number.isNaN(num)) return undefined
+  if (num % 1 === 0) {
+    return num.toString()
+  }
+  return num.toFixed(2)
+}

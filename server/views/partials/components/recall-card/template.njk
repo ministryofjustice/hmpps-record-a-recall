@@ -133,7 +133,8 @@
                         detailsClasses: 'govuk-!-padding-4 offence-card-for-sentence-' + sentence.sentenceUiid,
                         consecutiveTo: sentence.consecutiveTo,
                         aggravatingFactors: sentence.aggravatingFactors | toAggravatingFactorTitles,
-                        findingOfDomesticAbuse: sentence.findingOfDomesticAbuse
+                        findingOfDomesticAbuse: sentence.findingOfDomesticAbuse,
+                        value: (sentence.value | formatDecimal) if featureToggles.chargeValue
                       }) }}
                     </div>
                 {% endfor %}

@@ -309,6 +309,7 @@ export default class RecallService {
                 consecutiveTo,
                 aggravatingFactors: sentence.aggravatingFactors,
                 findingOfDomesticAbuse: sentence.findingOfDomesticAbuse,
+                value: sentence.value,
               }
             }),
           }

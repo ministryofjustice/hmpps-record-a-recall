@@ -63,7 +63,7 @@ describe('Recall service', () => {
             courtCaseUuid: 'cc-1',
             courtCode: 'INNRCC',
             sentences: [
-              { offenceCode: 'A1', isRecallable: true },
+              { offenceCode: 'A1', isRecallable: true, value: 150.5 },
               { offenceCode: 'B2', isRecallable: false },
             ],
           } as RecallableCourtCase,
@@ -79,7 +79,9 @@ describe('Recall service', () => {
 
       const [courtCase] = result
       expect(courtCase.recallableSentences[0].offenceDescription).toBe('Assault')
+      expect(courtCase.recallableSentences[0].value).toBe(150.5)
       expect(courtCase.nonRecallableSentences[0].offenceDescription).toBe('Burglary')
+      expect(courtCase.nonRecallableSentences[0].value).toBeUndefined()
     })
 
     it('adds consecutiveTo details to sentences when consecutiveToSentenceUuid is present', async () => {
@@ -426,6 +428,7 @@ describe('Recall service', () => {
           },
         ],
         findingOfDomesticAbuse: true,
+        value: 250.5,
       }
       const sentenceWithMinimum: ApiRecalledSentence = {
         sentenceUuid: uuidv4(),
@@ -451,6 +454,7 @@ describe('Recall service', () => {
         sentenceTypeDescription: undefined,
         aggravatingFactors: [],
         findingOfDomesticAbuse: undefined,
+        value: undefined,
       }
       const recall = TestData.apiRecall({
         calculationRequestId: 1,
@@ -1279,6 +1283,7 @@ describe('Recall service', () => {
                 consecutiveTo: undefined,
                 aggravatingFactors: [],
                 findingOfDomesticAbuse: undefined,
+                value: undefined,
               },
               {
                 ...sentenceWithMinimum,
@@ -1286,6 +1291,7 @@ describe('Recall service', () => {
                 consecutiveTo: undefined,
                 aggravatingFactors: [],
                 findingOfDomesticAbuse: undefined,
+                value: undefined,
               },
             ],
           },

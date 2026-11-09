@@ -9,6 +9,7 @@ import {
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
+  formatDecimal,
   periodLengthsToSentenceLengths,
   sentenceTypeValueOrLegacy,
   toAggravatingFactorTitles,
@@ -23,7 +24,9 @@ const njkEnv = nunjucks.configure([
   'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
 ])
 
+njkEnv.addGlobal('featureToggles', { chargeValue: true })
 njkEnv.addFilter('formatDate', formatDate)
+njkEnv.addFilter('formatDecimal', formatDecimal)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)
 njkEnv.addFilter('groupAndSortPeriodLengths', groupAndSortPeriodLengths)
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
@@ -57,6 +60,7 @@ describe('Tests for sentence component', () => {
       sentenceServeType: 'CONCURRENT',
       sentenceType: 'ORA SDS',
       aggravatingFactors: [],
+      value: 100,
     } as unknown as RecallableCourtCaseSentence
 
     const html = njkEnv.render('test.njk', { sentence })
@@ -75,6 +79,7 @@ describe('Tests for sentence component', () => {
     expect(valueInOffenceCard('Sentence type', $)).toBe('ORA SDS')
     expect(valueInOffenceCard('Consecutive or concurrent', $)).toBe('Concurrent')
     expect(valueInOffenceCard('Sentence date', $)).toBe('01/07/2023')
+    expect(valueInOffenceCard('Value', $)).toBe('£100')
   })
 
   it('renders an offence card with all expected fields when consecutive to is populated', () => {
@@ -106,5 +111,6 @@ describe('Tests for sentence component', () => {
     const card = summaryList.closest('.offence-card')
     expect(card.length).toBe(1)
     expect(valueInOffenceCard('Consecutive or concurrent', $)).toBe('Consecutive to count 3')
+    expect(valueInOffenceCard('Value', $)).toBe('')
   })
 })
