@@ -65,6 +65,8 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
     },
   )
 
+  njkEnv.addGlobal('featureToggles', config.featureToggles)
+
   njkEnv.addFilter('personProfileName', personProfileName)
   njkEnv.addFilter('personDateOfBirth', personDateOfBirth)
   njkEnv.addFilter('personStatus', personStatus)
@@ -82,9 +84,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('formatLengths', formatLengths)
   njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
   njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
-  njkEnv.addFilter('formatDecimal', (value?: number | string | null) =>
-    config.featureToggles.chargeValue ? formatDecimal(value) : undefined,
-  )
+  njkEnv.addFilter('formatDecimal', formatDecimal)
   njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 

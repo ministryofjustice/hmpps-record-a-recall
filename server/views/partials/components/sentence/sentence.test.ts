@@ -24,6 +24,7 @@ const njkEnv = nunjucks.configure([
   'node_modules/@ministryofjustice/hmpps-court-cases-release-dates-design/',
 ])
 
+njkEnv.addGlobal('featureToggles', { chargeValue: true })
 njkEnv.addFilter('formatDate', formatDate)
 njkEnv.addFilter('formatDecimal', formatDecimal)
 njkEnv.addFilter('periodLengthsToSentenceLengths', periodLengthsToSentenceLengths)

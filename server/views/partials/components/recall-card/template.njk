@@ -134,7 +134,7 @@
                         consecutiveTo: sentence.consecutiveTo,
                         aggravatingFactors: sentence.aggravatingFactors | toAggravatingFactorTitles,
                         findingOfDomesticAbuse: sentence.findingOfDomesticAbuse,
-                        value: sentence.value | formatDecimal
+                        value: (sentence.value | formatDecimal) if featureToggles.chargeValue
                       }) }}
                     </div>
                 {% endfor %}
