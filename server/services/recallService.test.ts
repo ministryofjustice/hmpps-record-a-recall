@@ -966,40 +966,41 @@ describe('Recall service', () => {
       })
     })
 
-    it('allows delete for a NOMIS recall when its sentence is also on a DPS recall', async () => {
-      const sentenceUuid = uuidv4()
-
-      const sentence: {
-        sentenceUuid: string
-        offenceCode: string
-        periodLengths: []
-        sentenceServeType: string
-        aggravatingFactors: []
-      } = {
-        sentenceUuid,
-        offenceCode: 'A1',
-        periodLengths: [],
-        sentenceServeType: 'CONCURRENT',
-        aggravatingFactors: [],
-      }
+    it('Does not allow delete for a NOMIS recall when its sentence is also on a DPS recall', async () => {
+      const sharedSentenceUuid = uuidv4()
+      const sentence = (sentenceUuid: string) =>
+        ({
+          sentenceUuid,
+          offenceCode: 'A1',
+          periodLengths: [],
+          sentenceServeType: 'CONCURRENT',
+          aggravatingFactors: [],
+        }) as ApiRecalledSentence
 
       const nomisRecall = TestData.apiRecall({
         prisonerId: 'A1234BC',
         createdAt: '2020-01-01T00:00:00Z',
         source: 'NOMIS',
-        courtCases: [{ sentences: [sentence] }],
+        courtCases: [{ sentences: [sentence(sharedSentenceUuid), sentence(uuidv4())] }],
       })
 
       const dpsRecall = TestData.apiRecall({
         prisonerId: 'A1234BC',
         createdAt: '2021-01-01T00:00:00Z',
         source: 'DPS',
-        courtCases: [{ sentences: [sentence] }],
+        courtCases: [{ sentences: [sentence(sharedSentenceUuid)] }],
+      })
+
+      const unrelatedNomisRecall = TestData.apiRecall({
+        prisonerId: 'A1234BC',
+        createdAt: '2019-01-01T00:00:00Z',
+        source: 'NOMIS',
+        courtCases: [{ sentences: [sentence(uuidv4())] }],
       })
 
       remandAndSentencingApiClient.getRecallsForPrisoner.mockResolvedValue({
-        recalls: [dpsRecall, nomisRecall],
-        prisonerRecallTotal: [nomisRecall, dpsRecall].length,
+        recalls: [dpsRecall, nomisRecall, unrelatedNomisRecall],
+        prisonerRecallTotal: 3,
       })
 
       const { recalls: result } = await service.getRecallsForPrisoner('A1234BC', 'user1')
@@ -1013,6 +1014,11 @@ describe('Recall service', () => {
           }),
           expect.objectContaining({
             recallUuid: nomisRecall.recallUuid,
+            canDelete: false,
+            canEdit: false,
+          }),
+          expect.objectContaining({
+            recallUuid: unrelatedNomisRecall.recallUuid,
             canDelete: true,
             canEdit: false,
           }),
