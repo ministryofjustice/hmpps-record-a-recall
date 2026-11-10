@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { Request } from 'express'
 import logger from '../../logger'
 import { PersonJourneyParams } from '../@types/journeys'

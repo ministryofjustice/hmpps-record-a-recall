@@ -229,9 +229,29 @@ export default class RecallService {
       courts,
       consecutiveToDetails,
     )
+    const sentenceUuidsOnDpsRecalls = this.sentenceUuidsOnDpsRecalls(recalls)
 
     return recalls.map(recall =>
-      this.toExistingRecall(recall, prisons, courts, offences, latestRecallUuid, consecutiveToDetailsBySentenceUuid),
+      this.toExistingRecall(
+        recall,
+        prisons,
+        courts,
+        offences,
+        latestRecallUuid,
+        consecutiveToDetailsBySentenceUuid,
+        sentenceUuidsOnDpsRecalls,
+      ),
+    )
+  }
+
+  private sentenceUuidsOnDpsRecalls(recalls: ApiRecall[]): Set<string> {
+    return new Set(
+      recalls
+        .filter(recall => recall.source === 'DPS')
+        .flatMap(recall => recall.courtCases)
+        .flatMap(courtCase => courtCase.sentences)
+        .map(sentence => sentence.sentenceUuid)
+        .filter((sentenceUuid): sentenceUuid is string => !!sentenceUuid),
     )
   }
 
@@ -242,10 +262,16 @@ export default class RecallService {
     offences: Offence[],
     latestRecallUuid?: string,
     consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),
+    sentenceUuidsOnDpsRecalls: Set<string> = new Set(),
   ): ExistingRecall {
     const isNomisRecall = recall.source === 'NOMIS'
     const isLatestAndDpsRecall = recall.source === 'DPS' && recall.recallUuid === latestRecallUuid
     const hasNoCourtCasesAttached = !recall.courtCases?.length
+    const sharesSentenceWithDpsRecall =
+      isNomisRecall &&
+      recall.courtCases.some(courtCase =>
+        courtCase.sentences.some(sentence => sentenceUuidsOnDpsRecalls.has(sentence.sentenceUuid)),
+      )
 
     const sentenceIds: string[] = []
 
@@ -256,7 +282,7 @@ export default class RecallService {
       createdAtTimestamp: recall.createdAt,
       createdAtLocationName: prisons.find(prison => prison.prisonId === recall.createdByPrison)?.prisonName,
       canEdit: isLatestAndDpsRecall,
-      canDelete: isNomisRecall || hasNoCourtCasesAttached || isLatestAndDpsRecall,
+      canDelete: (isNomisRecall && !sharesSentenceWithDpsRecall) || hasNoCourtCasesAttached || isLatestAndDpsRecall,
       recallTypeCode: recall.recallType,
       recallTypeDescription: getRecallType(recall.recallType).description,
       revocationDate: recall.revocationDate,
