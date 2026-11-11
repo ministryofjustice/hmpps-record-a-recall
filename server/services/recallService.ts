@@ -179,8 +179,8 @@ export default class RecallService {
     return { recalls, prisonerRecallTotal: response.prisonerRecallTotal }
   }
 
-  public async getRecall(recallUuid: string, username: string): Promise<ExistingRecall> {
-    const recall = await this.remandAndSentencingApiClient.getRecall(recallUuid, username)
+  public async getRecall(recallUuid: string, username: string, groupNomisRecalls = false): Promise<ExistingRecall> {
+    const recall = await this.remandAndSentencingApiClient.getRecall(recallUuid, username, groupNomisRecalls)
     return this.enrichRecalls([recall], username).then(enriched => enriched[0])
   }
 

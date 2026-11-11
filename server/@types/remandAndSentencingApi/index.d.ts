@@ -57,7 +57,7 @@ export interface paths {
     }
     /**
      * Retrieve a recall
-     * @description This endpoint will retrieve the details of a recall
+     * @description This endpoint will retrieve the details of a recall. Pass groupNomisRecalls=true to group NOMIS recalls
      */
     get: operations['getRecall']
     /**
@@ -766,6 +766,26 @@ export interface paths {
      * @description check if recall is possible for given sentneces and recall type
      */
     post: operations['isRecallPossible']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/person/statuses': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Retrieve person status indicators for a list of people
+     * @description PeopleStatus contains a map of statuses linked to a person
+     */
+    post: operations['getPeopleStatus']
     delete?: never
     options?: never
     head?: never
@@ -2852,7 +2872,7 @@ export interface components {
       outcomeDescription?: string | null
       /** Format: date-time */
       nextEventDateTime?: string | null
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime?: string | null
       outcomeDispositionCode?: string | null
       outcomeConvictionFlag?: boolean | null
@@ -3023,7 +3043,7 @@ export interface components {
     CreateNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime?: string | null
       courtCode: string
       /** Format: uuid */
@@ -3213,6 +3233,21 @@ export interface components {
       /** @enum {string} */
       isRecallPossible: 'YES' | 'UNKNOWN_PRE_RECALL_MAPPING' | 'RECALL_TYPE_AND_SENTENCE_MAPPING_NOT_POSSIBLE'
       sentenceIds: string[]
+    }
+    /** @description Status indicators for a list of people */
+    PeopleStatusRequest: {
+      personIds: string[]
+    }
+    /** @description Status indicators for a map of people and their status */
+    PeopleStatus: {
+      peopleStatus: {
+        [key: string]: components['schemas']['PersonStatus']
+      }
+    }
+    /** @description Status indicators for a person */
+    PersonStatus: {
+      isOnRemand: boolean
+      isCurrentlyOnRecall: boolean
     }
     FixSingleSentenceMultipleChargesPeople: {
       prisonerIds: string[]
@@ -4040,11 +4075,6 @@ export interface components {
       chargeLegacyOffenceDescription?: string | null
       sentenceServeType: string
     }
-    /** @description Status indicators for a person */
-    PersonStatus: {
-      isOnRemand: boolean
-      isCurrentlyOnRecall: boolean
-    }
     AppearanceToChainTo: {
       courtCode: string
       courtCaseReference?: string | null
@@ -4067,6 +4097,7 @@ export interface components {
       countNumber?: string | null
       chargeLegacyData?: components['schemas']['ChargeLegacyData'] | null
       value?: number | null
+      periodLengths: components['schemas']['PeriodLength'][]
     }
     SentencesToChainToResponse: {
       appearances: components['schemas']['AppearanceToChainTo'][]
@@ -4156,12 +4187,12 @@ export interface components {
     NextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime?: string | null
       courtCode: string
       appearanceType: components['schemas']['AppearanceType']
       /** Format: uuid */
-      futureSkeletonAppearanceUuid: string
+      futureSkeletonAppearanceUuid?: string | null
       courtAppearanceSubType?: components['schemas']['CourtAppearanceSubtype'] | null
       /** Format: uuid */
       hmctsCourtHearingId?: string | null
@@ -4277,6 +4308,10 @@ export interface components {
       legacyData?: components['schemas']['ChargeLegacyData'] | null
       findingOfDomesticAbuse?: boolean | null
       sentence?: components['schemas']['PersonSentence'] | null
+      /** Format: date */
+      appearanceDate: string
+      /** Format: date-time */
+      appearanceCreatedAt: string
     }
     PersonCharges: {
       charges: components['schemas']['PersonCharge'][]
@@ -4523,6 +4558,7 @@ export interface components {
       nomisOutcomeCode?: string | null
       legacyData?: components['schemas']['ChargeLegacyData'] | null
       sentence?: components['schemas']['ReconciliationSentence'] | null
+      value?: number | null
     }
     ReconciliationCourtAppearance: {
       /** Format: uuid */
@@ -4530,7 +4566,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime: string
       nomisOutcomeCode?: string | null
       legacyData?: components['schemas']['CourtAppearanceLegacyData'] | null
@@ -4553,7 +4589,7 @@ export interface components {
     ReconciliationNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime?: string | null
       courtId: string
     }
@@ -4609,7 +4645,7 @@ export interface components {
       courtCode: string
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime: string
       charges: components['schemas']['LegacyCharge'][]
       nextCourtAppearance?: components['schemas']['LegacyNextCourtAppearance'] | null
@@ -4621,7 +4657,7 @@ export interface components {
     LegacyNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime?: string | null
       courtId: string
     }
@@ -4877,13 +4913,13 @@ export interface components {
     PagedNextCourtAppearance: {
       /** Format: date */
       appearanceDate: string
-      /** @example 13:55:09.860299797 */
+      /** @example 17:09:05.67115093 */
       appearanceTime?: string | null
       courtCode?: string | null
       appearanceTypeDescription: string
       appearanceSubtypeDescription?: string | null
       /** Format: uuid */
-      futureSkeletonAppearanceUuid: string
+      futureSkeletonAppearanceUuid?: string | null
     }
     PagedSentence: {
       /** Format: uuid */
@@ -4965,9 +5001,9 @@ export interface components {
       /** Format: int32 */
       number?: number
       first?: boolean
-      sort?: components['schemas']['SortObject']
       /** Format: int32 */
       numberOfElements?: number
+      sort?: components['schemas']['SortObject']
       empty?: boolean
     }
     SortObject: {
@@ -5136,7 +5172,9 @@ export interface operations {
   }
   getRecall: {
     parameters: {
-      query?: never
+      query?: {
+        groupNomisRecalls?: boolean
+      }
       header?: never
       path: {
         recallUuid: string
@@ -7345,6 +7383,57 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['IsRecallPossibleResponse']
+        }
+      }
+    }
+  }
+  getPeopleStatus: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PeopleStatusRequest']
+      }
+    }
+    responses: {
+      /** @description Returns person status indicators for a list of people */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PeopleStatus']
+        }
+      }
+      /** @description Malformed request such as empty personIds */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PeopleStatus']
+        }
+      }
+      /** @description Unauthorised, requires a valid Oauth2 token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PeopleStatus']
+        }
+      }
+      /** @description Forbidden, requires an appropriate role */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PeopleStatus']
         }
       }
     }
