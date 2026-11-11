@@ -1321,6 +1321,15 @@ describe('Recall service', () => {
       expect(result.ualAdjustmentTotalDays).toStrictEqual(20)
     })
 
+    it('api call requests the grouped recall when param set', async () => {
+      const recall = TestData.apiRecall({ source: 'NOMIS' })
+      remandAndSentencingApiClient.getRecall.mockResolvedValue(recall)
+
+      await service.getRecall(recall.recallUuid, 'user1', true)
+
+      expect(remandAndSentencingApiClient.getRecall).toHaveBeenCalledWith(recall.recallUuid, 'user1', true)
+    })
+
     it('should handle no UAL', async () => {
       const dpsWithRevAndRtcDate = TestData.apiRecall({
         createdAt: '2021-03-19T13:40:56Z',
