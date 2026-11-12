@@ -1,5 +1,47 @@
 # Change log
 
+**November 4th 2026** - Rename the asset map to stop it overriding the GOV.UK web app manifest
+
+The esbuild asset map was written to `dist/assets/manifest.json`, which is served at `/assets/manifest.json` ahead of
+the GOV.UK Frontend web app manifest referenced by `govuk/template.njk`. It is now written to
+`dist/assets/asset-manifest.json` and `nunjucksSetup.ts` reads it from there.
+
+Also removed unused images (`hmpps_logo_small.png`, `logo.svg`) and the local `favicon.ico`, so the GOV.UK Frontend
+icons referenced by the page template are used instead.
+
+See PR [#861](https://github.com/ministryofjustice/hmpps-template-typescript/pull/861)
+
+**October 30th 2026** - Switch to Node 26 LTS
+
+Move over to Node 26 now it is the current LTS version.
+
+See PR [#857](https://github.com/ministryofjustice/hmpps-template-typescript/pull/857)
+
+**September 25th 2026** - Using the latest version of npm 12 for build and test
+
+Replacing the pinned version of npm 12.0.2 with the latest version of npm 12 to reduce cognitive load
+of remembering to update the pinned version when a new version of npm 12 is released.
+
+See PR [#830](https://github.com/ministryofjustice/hmpps-template-typescript/pull/830)
+
+**September 24th 2026** - Enabling auto-shutdown for dev and preprod out of hours
+
+Note: this requires a "scheduled-downtime.tf" service account in your dev and preprod namespaces.
+
+See [here](https://github.com/ministryofjustice/hmpps-helm-charts/tree/main/charts/generic-service#scheduled-downtime) for more details.
+
+See PR [#829](https://github.com/ministryofjustice/hmpps-template-typescript/pull/829)
+
+**September 9th 2026** - Add user metadata to app insights telemetry
+
+Basic user metadata is added to app insights telemetry out of the box, including the auth source specific user id,
+the user UUID stored in HMPPS Auth and, for prison users, the activeCaseLoadId.  This should be considered the
+minimal set of data to be added to telemetry for tactical audit and debugging user specific issues.
+
+This uses the middleware provided by `@ministryofjustice/hmpps-azure-telemetry` 1.1.0.
+
+See PR [#822](https://github.com/ministryofjustice/hmpps-template-typescript/pull/822)
+
 **September 3rd 2026** - Enforce strict allowscripts
 
 To ensure that builds fail if there are packages with scripts that haven't been explicitly allowed/denied.
