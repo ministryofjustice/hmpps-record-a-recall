@@ -1,6 +1,6 @@
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import { RecallJourney } from '../journeys'
-import { PrisonerSearchApiPrisoner } from '../prisonerSearchApi/prisonerSearchTypes'
+import { Prisoner as PrisonerSearchApiPrisoner } from '../prisonerSearchApi'
 
 export declare module 'express-session' {
   // Declare that the session will potentially contain these additional fields
