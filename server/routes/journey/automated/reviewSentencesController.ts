@@ -8,7 +8,7 @@ import RecallService from '../../../services/recallService'
 import { buildRecordARecallRequest, maxOf } from '../../../utils/utils'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
 import { SentenceAndOffence } from '../../../@types/recallTypes'
-import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi'
 import { setAutomatedCalculationData } from '../recallJourneyOperations'
 
 export default class ReviewSentencesController implements Controller {

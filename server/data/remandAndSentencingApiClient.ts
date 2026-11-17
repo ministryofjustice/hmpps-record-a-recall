@@ -1,19 +1,19 @@
 import { asSystem, RestClient } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import {
-  ApiRecall,
+  Recall as ApiRecall,
   PrisonerRecallsResponse,
   CreateRecall,
   CreateRecallResponse,
-  UpdateSentenceTypesRequest,
+  UpdateSentenceTypeRequest,
   UpdateSentenceTypesResponse,
   SentenceType,
-  RecallableCourtCasesResponseAugmented,
+  RecallableCourtCasesResponse,
   IsRecallPossibleRequest,
   IsRecallPossibleResponse,
   SentenceConsecutiveToDetailsResponse,
   PersonFixManyChargesToSentence,
-} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+} from '../@types/remandAndSentencingApi'
 import logger from '../../logger'
 import config from '../config'
 
@@ -94,7 +94,7 @@ export default class RemandAndSentencingApiClient extends RestClient {
   async getRecallableCourtCases(
     prisonerId: string,
     mergeDuplicateCourtCases = false,
-  ): Promise<RecallableCourtCasesResponseAugmented> {
+  ): Promise<RecallableCourtCasesResponse> {
     return this.get(
       {
         path: `/court-case/${prisonerId}/recallable-court-cases`,
@@ -106,7 +106,7 @@ export default class RemandAndSentencingApiClient extends RestClient {
 
   async updateSentenceTypes(
     courtCaseUuid: string,
-    data: UpdateSentenceTypesRequest,
+    data: UpdateSentenceTypeRequest,
   ): Promise<UpdateSentenceTypesResponse> {
     return this.post(
       {

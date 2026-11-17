@@ -1,5 +1,5 @@
 import { UUID } from 'crypto'
-import { CaseLoad } from '../@types/prisonApi/types'
+import { CaseLoad } from '../@types/prisonApi'
 
 export type AuthSource = 'nomis' | 'delius' | 'external' | 'azuread'
 

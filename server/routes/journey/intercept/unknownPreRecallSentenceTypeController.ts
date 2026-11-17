@@ -5,7 +5,7 @@ import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
 import RecallService from '../../../services/recallService'
 import OtherServiceUrls from '../../otherServiceUrls'
-import { ApiRecallType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { ApiRecallType } from '../../../@types/recallTypes'
 
 export default class UnknownPreRecallSentenceTypeController implements Controller {
   PAGE_NAME: Page = Page.UNKNOWN_PRE_RECALL_SENTENCE_TYPE_INTERCEPT

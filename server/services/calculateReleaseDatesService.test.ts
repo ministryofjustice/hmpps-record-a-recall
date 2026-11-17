@@ -1,6 +1,6 @@
 import CalculateReleaseDatesService from './calculateReleaseDatesService'
 import CalculateReleaseDatesApiClient from '../data/calculateReleaseDatesApiClient'
-import { LatestCalculation } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { LatestCalculation } from '../@types/calculateReleaseDatesApi'
 
 jest.mock('../data/calculateReleaseDatesApiClient')
 

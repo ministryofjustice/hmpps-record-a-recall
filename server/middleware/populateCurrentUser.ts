@@ -2,7 +2,7 @@ import { RequestHandler } from 'express'
 import { jwtDecode } from 'jwt-decode'
 import logger from '../../logger'
 import { convertToTitleCase } from '../utils/utils'
-import type { CaseLoad } from '../@types/prisonApi/types'
+import type { CaseLoad } from '../@types/prisonApi'
 import { AuthSource, HmppsUser } from '../interfaces/hmppsUser'
 import UserService from '../services/userService'
 

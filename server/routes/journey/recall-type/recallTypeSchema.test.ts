@@ -1,4 +1,4 @@
-import { ApiRecallType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { ApiRecallType } from '../../../@types/recallTypes'
 import { deduplicateFieldErrors } from '../../../middleware/validationMiddleware'
 import { recallTypeSchema } from './recallTypeSchema'
 

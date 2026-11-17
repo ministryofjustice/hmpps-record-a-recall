@@ -13,7 +13,7 @@ import TestData from '../../testutils/testData'
 import { HmppsUser } from '../../interfaces/hmppsUser'
 import setUpWebSession from '../../middleware/setUpWebSession'
 import populateValidationErrors from '../../middleware/populateValidationErrors'
-import { PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi/prisonerSearchTypes'
+import { Prisoner as PrisonerSearchApiPrisoner } from '../../@types/prisonerSearchApi'
 import { ApplicationInfo } from '../../applicationInfo'
 
 jest.mock('../../services/auditService')

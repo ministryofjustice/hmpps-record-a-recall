@@ -1,5 +1,5 @@
 import { DecoratedCourtCase, RecallJourney } from '../../@types/journeys'
-import { AutomatedCalculationData } from '../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { AutomatedCalculationData } from '../../@types/calculateReleaseDatesApi'
 
 /* eslint-disable no-param-reassign -- these helpers intentionally mutate the session journey object */
 

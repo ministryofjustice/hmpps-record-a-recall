@@ -1,19 +1,12 @@
 import { v4 as uuidv4 } from 'uuid'
-import { PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi/prisonerSearchTypes'
-import {
-  ApiRecall,
-  RecallableCourtCase,
-  RecallableCourtCaseSentence,
-} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi/types'
+import { Prisoner as PrisonerSearchApiPrisoner } from '../@types/prisonerSearchApi'
+import { Recall as ApiRecall, RecallableCourtCase, RecallableCourtCaseSentence } from '../@types/remandAndSentencingApi'
+import { CcrdServiceDefinitions } from '../@types/courtCasesReleaseDatesApi'
 import { ExistingRecall } from '../model/ExistingRecall'
-import {
-  AutomatedCalculationData,
-  RecordARecallDecisionResult,
-} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { AutomatedCalculationData, RecordARecallDecisionResult } from '../@types/calculateReleaseDatesApi'
 import { RecallTypes } from '../@types/recallTypes'
 import { DecoratedCourtCase } from '../@types/journeys'
-import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { AdjustmentDto } from '../@types/adjustmentsApi'
 
 export default class TestData {
   static prisoner = ({

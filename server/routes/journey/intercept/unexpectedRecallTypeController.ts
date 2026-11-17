@@ -3,8 +3,7 @@ import { Controller } from '../../controller'
 import RecallJourneyUrls from '../recallJourneyUrls'
 import { PersonJourneyParams } from '../../../@types/journeys'
 import { Page } from '../../../services/auditService'
-import { getRecallType } from '../../../@types/recallTypes'
-import { ApiRecallType } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { getRecallType, ApiRecallType } from '../../../@types/recallTypes'
 
 export default class UnexpectedRecallTypeController implements Controller {
   PAGE_NAME: Page = Page.UNEXPECTED_RECALL_TYPE_INTERCEPT

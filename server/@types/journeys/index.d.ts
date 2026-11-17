@@ -1,8 +1,5 @@
-import {
-  AutomatedCalculationData,
-  RecordARecallValidationResult,
-} from '../calculateReleaseDatesApi/calculateReleaseDatesTypes'
-import { ApiRecallType, RecallableCourtCase } from '../remandAndSentencingApi/remandAndSentencingTypes'
+import { AutomatedCalculationData, RecordARecallValidationResult } from '../calculateReleaseDatesApi'
+import { ApiRecallType, RecallableCourtCase } from '../remandAndSentencingApi'
 import { SentenceAndOffence } from '../recallTypes'
 import { ExistingRecall } from '../../model/ExistingRecall'
 

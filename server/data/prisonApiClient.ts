@@ -3,7 +3,7 @@ import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients
 import { Readable } from 'stream'
 import logger from '../../logger'
 import config from '../config'
-import { CaseLoad } from '../@types/prisonApi/types'
+import { CaseLoad } from '../@types/prisonApi'
 
 export default class PrisonApiClient extends RestClient {
   constructor(authenticationClient: AuthenticationClient) {
