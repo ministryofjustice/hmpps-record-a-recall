@@ -7,7 +7,7 @@ import RecallService from '../../../services/recallService'
 import { calculateUal } from '../../../utils/utils'
 import { RecallTypes } from '../../../@types/recallTypes'
 import GlobalRecallUrls from '../../globalRecallUrls'
-import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { CreateRecall } from '../../../@types/remandAndSentencingApi'
 import logger from '../../../../logger'
 
 export default class CheckAnswersController implements Controller {

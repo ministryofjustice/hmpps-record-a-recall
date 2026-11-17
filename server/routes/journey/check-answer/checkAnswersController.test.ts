@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import RecallService from '../../../services/recallService'
-import { CreateRecall } from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { CreateRecall } from '../../../@types/remandAndSentencingApi'
 import AuditService from '../../../services/auditService'
 import TestData from '../../../testutils/testData'
 

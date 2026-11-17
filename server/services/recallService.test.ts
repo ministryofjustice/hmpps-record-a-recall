@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid'
 import RecallService from './recallService'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
-import { ApiRecalledSentence, RecallableCourtCase } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecalledSentence as ApiRecalledSentence, RecallableCourtCase } from '../@types/remandAndSentencingApi'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
-import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
+import { PrisonDto } from '../@types/prisonRegisterApi'
 import TestData from '../testutils/testData'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
 
@@ -34,9 +34,9 @@ beforeEach(() => {
     { code: 'B2', description: 'Burglary' } as Offence,
   ])
   prisonRegisterApiClient.getPrisonNames.mockResolvedValue([
-    { prisonId: 'BXI', prisonName: 'Brixton (HMP)' } as unknown as Prison,
-    { prisonId: 'KMI', prisonName: 'Kirkham (HMP)' } as unknown as Prison,
-    { prisonId: 'MDI', prisonName: 'Moorland (HMP & YOI)' } as unknown as Prison,
+    { prisonId: 'BXI', prisonName: 'Brixton (HMP)' } as unknown as PrisonDto,
+    { prisonId: 'KMI', prisonName: 'Kirkham (HMP)' } as unknown as PrisonDto,
+    { prisonId: 'MDI', prisonName: 'Moorland (HMP & YOI)' } as unknown as PrisonDto,
   ])
   courtRegisterApiClient.getCourtDetails.mockResolvedValue([
     {

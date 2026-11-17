@@ -1,9 +1,8 @@
 import {
-  LicenceDates,
   RecordARecallDecisionResult,
   RecordARecallRequest,
   RecordARecallValidationResult,
-} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+} from '../@types/calculateReleaseDatesApi'
 import CalculateReleaseDatesApiClient from '../data/calculateReleaseDatesApiClient'
 import logger from '../../logger'
 
@@ -63,7 +62,15 @@ export default class CalculateReleaseDatesService {
     return decision
   }
 
-  async getLicenceDatesFromLatestCalc(nomsId: string): Promise<LicenceDates | undefined> {
+  async getLicenceDatesFromLatestCalc(nomsId: string): Promise<
+    | {
+        sled?: string
+        sed?: string
+        led?: string
+        sledExists: boolean
+      }
+    | undefined
+  > {
     let latestCalc
 
     try {

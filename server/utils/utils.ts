@@ -1,9 +1,9 @@
 import { addDays, differenceInCalendarDays, parse, isEqual, subDays, formatISO } from 'date-fns'
 import dayjs from 'dayjs'
 import { SentenceLength } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/@types'
-import { AggravatingFactor, PeriodLength } from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { AggravatingFactor, PeriodLength } from '../@types/remandAndSentencingApi'
 import { DateParts, RecallJourney } from '../@types/journeys'
-import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { RecordARecallRequest } from '../@types/calculateReleaseDatesApi'
 
 const properCase = (word: string): string =>
   word.length >= 1 ? word[0]!.toUpperCase() + word.toLowerCase().slice(1) : word

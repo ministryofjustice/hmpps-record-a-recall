@@ -1,4 +1,4 @@
-import { AdjustmentDto } from '../@types/adjustmentsApi/adjustmentsApiTypes'
+import { AdjustmentDto } from '../@types/adjustmentsApi'
 import AdjustmentsApiClient from '../data/adjustmentsApiClient'
 
 export default class AdjustmentsService {

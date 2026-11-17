@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, user } from '../../testutils/appSetup'
 import CalculateReleaseDatesService from '../../../services/calculateReleaseDatesService'
-import { RecordARecallDecisionResult } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { RecordARecallDecisionResult } from '../../../@types/calculateReleaseDatesApi'
 import AuditService from '../../../services/auditService'
 
 let app: Express

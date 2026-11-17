@@ -7,11 +7,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { RecallJourney } from '../../../@types/journeys'
 import { appWithAllRoutes, flashProvider, user } from '../../testutils/appSetup'
 import AuditService from '../../../services/auditService'
-import {
-  ApiRecallType,
-  IsRecallPossibleResponse,
-} from '../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
-import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+import { IsRecallPossibleResponse } from '../../../@types/remandAndSentencingApi'
+import { ApiRecallType } from '../../../@types/recallTypes'
+import { AutomatedCalculationData } from '../../../@types/calculateReleaseDatesApi'
 import RecallService from '../../../services/recallService'
 
 let app: Express

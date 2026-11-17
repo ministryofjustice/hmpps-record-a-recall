@@ -9,7 +9,7 @@ import {
   RecordARecallRequest,
   RecordARecallValidationResult,
   SentenceAndOffenceWithReleaseArrangements,
-} from '../@types/calculateReleaseDatesApi/calculateReleaseDatesTypes'
+} from '../@types/calculateReleaseDatesApi'
 
 export default class CalculateReleaseDatesApiClient extends RestClient {
   constructor(authenticationClient: AuthenticationClient) {

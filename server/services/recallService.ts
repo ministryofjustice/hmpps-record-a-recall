@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import RemandAndSentencingApiClient from '../data/remandAndSentencingApiClient'
 import {
-  ApiRecall,
+  Recall as ApiRecall,
   CreateRecall,
   CreateRecallResponse,
   IsRecallPossibleRequest,
@@ -9,14 +9,14 @@ import {
   PersonFixManyChargesToSentence,
   RecallableCourtCaseSentence,
   SentenceConsecutiveToDetailsResponse,
-} from '../@types/remandAndSentencingApi/remandAndSentencingTypes'
+} from '../@types/remandAndSentencingApi'
 import ManageOffencesApiClient from '../data/manageOffencesApiClient'
 import { ConsecutiveToDetails, getRecallType, SentenceAndOffence } from '../@types/recallTypes'
 import { ExistingRecall } from '../model/ExistingRecall'
 import PrisonRegisterApiClient from '../data/prisonRegisterApiClient'
-import { Prison } from '../@types/prisonRegisterApi/prisonRegisterTypes'
+import { PrisonDto } from '../@types/prisonRegisterApi'
 import CourtRegisterApiClient from '../data/courtRegisterApiClient'
-import { Court } from '../@types/courtRegisterApi/courtRegisterTypes'
+import { CourtDto } from '../@types/courtRegisterApi'
 import { Offence } from '../@types/manageOffencesApi/manageOffencesClientTypes'
 import { DecoratedCourtCase, RecallJourney } from '../@types/journeys'
 import { datePartsToDate, dateToIsoString, sortByDateDesc } from '../utils/utils'
@@ -257,8 +257,8 @@ export default class RecallService {
 
   private toExistingRecall(
     recall: ApiRecall,
-    prisons: Prison[],
-    courts: Court[],
+    prisons: PrisonDto[],
+    courts: CourtDto[],
     offences: Offence[],
     latestRecallUuid?: string,
     consecutiveToDetailsBySentenceUuid: Map<string, ConsecutiveToDetails> = new Map(),

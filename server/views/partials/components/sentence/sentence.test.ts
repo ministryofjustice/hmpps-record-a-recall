@@ -14,7 +14,7 @@ import {
   sentenceTypeValueOrLegacy,
   toAggravatingFactorTitles,
 } from '../../../../utils/utils'
-import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableCourtCaseSentence } from '../../../../@types/remandAndSentencingApi'
 
 const njkEnv = nunjucks.configure([
   __dirname,

@@ -26,14 +26,14 @@
     "precommit:secrets": "gitleaks git --pre-commit --redact --staged --verbose --config .gitleaks/config.toml --gitleaks-ignore-path .gitleaks/.gitleaksignore",
     "precommit:lint": "lint-staged",
     "precommit:verify": "npm run typecheck && npm test",
-    "generate-remand-and-sentencing-api-types": "openapi-typescript https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/remandAndSentencingApi/index.d.ts && eslint . --cache --max-warnings 0 --fix \"./server/@types/remandAndSentencingApi/index.d.ts\"",
-    "generate-prisoner-search-api-types": "openapi-typescript https://prisoner-search-dev.prison.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonerSearchApi/index.d.ts",
-    "generate-prison-api-types": "openapi-typescript https://api-dev.prison.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonApi/index.d.ts",
-    "generate-court-cases-release-dates-api-types": "openapi-typescript https://court-cases-release-dates-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > server/@types/courtCasesReleaseDatesApi/index.d.ts && eslint . --cache --max-warnings 0 --fix \"./server/@types/courtCasesReleaseDatesApi/index.d.ts\"",
-    "generate-calculate-release-dates-api-types": "openapi-typescript https://calculate-release-dates-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/calculateReleaseDatesApi/index.d.ts",
-    "generate-court-register-api-types": "openapi-typescript https://court-register-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/courtRegisterApi/index.d.ts",
-    "generate-prison-register-api-types": "openapi-typescript https://prison-register-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/prisonRegisterApi/index.d.ts",
-    "generate-adjustments-types": "openapi-typescript https://adjustments-api-dev.hmpps.service.justice.gov.uk/v3/api-docs > ./server/@types/adjustmentsApi/index.d.ts",
+    "generate-remand-and-sentencing-api-types": "openapi-ts -i https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/remandAndSentencingApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/remandAndSentencingApi/types.gen.ts\"",
+    "generate-prisoner-search-api-types": "openapi-ts -i https://prisoner-search-dev.prison.service.justice.gov.uk/v3/api-docs -o ./server/@types/prisonerSearchApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/prisonerSearchApi/types.gen.ts\"",
+    "generate-prison-api-types": "openapi-ts -i https://prison-api-dev.prison.service.justice.gov.uk/v3/api-docs -o ./server/@types/prisonApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/prisonApi/types.gen.ts\"",
+    "generate-court-cases-release-dates-api-types": "openapi-ts -i https://court-cases-release-dates-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o server/@types/courtCasesReleaseDatesApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/courtCasesReleaseDatesApi/types.gen.ts\"",
+    "generate-calculate-release-dates-api-types": "openapi-ts -i https://calculate-release-dates-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/calculateReleaseDatesApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/calculateReleaseDatesApi/types.gen.ts\"",
+    "generate-court-register-types": "openapi-ts -i https://court-register-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/courtRegisterApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/courtRegisterApi/types.gen.ts\"",
+    "generate-prison-register-api-types": "openapi-ts -i https://prison-register-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/prisonRegisterApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/prisonRegisterApi/types.gen.ts\"",
+    "generate-adjustments-types": "openapi-ts -i https://adjustments-api-dev.hmpps.service.justice.gov.uk/v3/api-docs -o ./server/@types/adjustmentsApi -p @hey-api/typescript && eslint . --cache --max-warnings 0 --fix \"./server/@types/adjustmentsApi/types.gen.ts\"",
     "setup": "npm ci"
   },
   "engines": {
@@ -76,6 +76,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
     "@jgoz/esbuild-plugin-typecheck": "^5.0.0",
     "@ministryofjustice/eslint-config-hmpps": "^1.0.4",
     "@ministryofjustice/frontend-types": "2.0.3",
@@ -112,7 +113,6 @@
     "jsonwebtoken": "^9.0.3",
     "lint-staged": "^17.6.0",
     "nock": "^15.0.6",
-    "openapi-typescript": "^7.13.0",
     "supertest": "^7.3.1",
     "ts-jest": "^29.4.15",
     "typescript": "^6.0.3"
@@ -120,11 +120,7 @@
   "overrides": {
     "@opentelemetry/core": "2.12.0",
     "form-data": "4.0.6",
-    "openapi-typescript": {
-      "typescript": "$typescript"
-    },
     "brace-expansion": "5.0.12",
-    "js-yaml": "3.15.2",
     "moment": "2.31.0",
     "proxy-addr": "2.0.8"
   },

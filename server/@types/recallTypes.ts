@@ -1,5 +1,7 @@
 import config from '../config'
-import { ApiRecallType, RecallableCourtCaseSentence } from './remandAndSentencingApi/remandAndSentencingTypes'
+import { RecallableCourtCaseSentence, Recall } from './remandAndSentencingApi'
+
+export type ApiRecallType = Recall['recallType']
 
 export type RecallType = {
   code: ApiRecallType
