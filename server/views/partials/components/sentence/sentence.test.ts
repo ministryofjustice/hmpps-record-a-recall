@@ -6,6 +6,7 @@ import {
   groupAndSortPeriodLengths,
   consecutiveToDetailsToDescription,
   sentenceStatusTagText,
+  isMonetaryValueOffence,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
@@ -34,6 +35,7 @@ njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDescription)
 njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
+njkEnv.addFilter('isMonetaryValueOffence', isMonetaryValueOffence)
 
 function valueInOffenceCard(key: string, $: cheerio.CheerioAPI) {
   const summaryList = $('[data-qa="offenceSummaryList"]')
@@ -48,8 +50,8 @@ function valueInOffenceCard(key: string, $: cheerio.CheerioAPI) {
 describe('Tests for sentence component', () => {
   it('renders an offence card with all expected fields', () => {
     const sentence = {
-      offenceCode: '123AB',
-      offenceDescription: 'Robbery',
+      offenceCode: 'TH68010',
+      offenceDescription: 'Theft',
       offenceStartDate: '2023-06-01',
       offenceEndDate: '2023-06-02',
       sentenceDate: '2023-07-01',
@@ -73,7 +75,7 @@ describe('Tests for sentence component', () => {
     const countText = card.find('span.govuk-body').text().trim()
     expect(countText).toBe('Count 1')
     const headingText = card.find('h4.govuk-heading-s').text().replace(/\s+/g, ' ').trim()
-    expect(headingText).toBe('123AB Robbery')
+    expect(headingText).toBe('TH68010 Theft')
 
     expect(valueInOffenceCard('Committed on', $)).toBe('01/06/2023 to 02/06/2023')
     expect(valueInOffenceCard('Sentence type', $)).toBe('ORA SDS')
