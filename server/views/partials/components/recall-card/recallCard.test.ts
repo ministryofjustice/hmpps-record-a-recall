@@ -8,6 +8,7 @@ import {
   groupAndSortPeriodLengths,
   sortPeriodLengths,
   sentenceStatusTagText,
+  isMonetaryValueOffence,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import { ExistingRecall, ExistingRecallSentence } from '../../../../model/ExistingRecall'
 import {
@@ -37,6 +38,7 @@ njkEnv.addFilter('consecutiveToDetailsToDescription', consecutiveToDetailsToDesc
 njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sortPeriodLengths', sortPeriodLengths)
 njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
+njkEnv.addFilter('isMonetaryValueOffence', isMonetaryValueOffence)
 
 const aRecall: ExistingRecall = {
   recallUuid: 'abc123',
@@ -307,8 +309,8 @@ describe('Tests for recall card component', () => {
   it('Should show offence cards for all sentences under a court case', () => {
     const sentenceWithMaximum: ExistingRecallSentence = {
       sentenceUuid: uuidv4(),
-      offenceCode: 'A1',
-      offenceDescription: 'Assault',
+      offenceCode: 'TH68010',
+      offenceDescription: 'Theft',
       aggravatingFactors: [
         {
           code: 'OATC',
@@ -363,7 +365,7 @@ describe('Tests for recall card component', () => {
           periodLengthUuid: uuidv4(),
         },
       ],
-      sentenceServeType: 'CONSECUTIVE',
+      sentenceServeType: 'FORTHWITH',
       sentenceTypeDescription: undefined,
       aggravatingFactors: [],
     }
@@ -387,7 +389,7 @@ describe('Tests for recall card component', () => {
     )
     expect(maximumOffenceCard).toHaveLength(1)
     expect(maximumOffenceCard.children().eq(0).text()).toStrictEqual('Count 1')
-    expect(maximumOffenceCard.children('h4').text().trim()).toStrictEqual('A1 Assault')
+    expect(maximumOffenceCard.children('h4').text().trim()).toStrictEqual('TH68010 Theft')
     expect(maximumOffenceCard.find('dt:contains("Committed on")').next().text().trim()).toStrictEqual(
       '25/02/2019 to 30/03/2020',
     )
@@ -419,7 +421,7 @@ describe('Tests for recall card component', () => {
       '0 years  0 months 0 weeks 0 days',
     )
     expect(minimumOffenceCard.find('dt:contains("Consecutive or concurrent")').next().text().trim()).toStrictEqual(
-      'Consecutive',
+      'Forthwith',
     )
     expect(minimumOffenceCard.find('dt:contains("Value")')).toHaveLength(0)
   })
@@ -470,7 +472,7 @@ describe('Tests for recall card component', () => {
     const $ = cheerio.load(content)
     const card = $(`[data-qa=recall-abc123-court-case-1-sentences-1]`).find('.offence-card-offence-details')
     expect(card).toHaveLength(1)
-    expect(card.children().eq(0).text().trim()).toStrictEqual('A1 Assault')
+    expect(card.children().eq(1).text().trim()).toStrictEqual('A1 Assault')
   })
 
   it('Should not show heading when source is NOMIS', () => {

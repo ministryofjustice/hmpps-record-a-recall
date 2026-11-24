@@ -6,6 +6,7 @@ import path from 'path'
 import {
   formatCountNumber,
   groupAndSortPeriodLengths,
+  isMonetaryValueOffence,
   sentenceStatusTagText,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
@@ -35,6 +36,7 @@ njkEnv.addFilter('formatCountNumber', formatCountNumber)
 njkEnv.addFilter('sentenceTypeValueOrLegacy', sentenceTypeValueOrLegacy)
 njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
 njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
+njkEnv.addFilter('isMonetaryValueOffence', isMonetaryValueOffence)
 
 const baseCase = {
   id: uuidv4(),
@@ -116,14 +118,14 @@ describe('Tests for case-and-sentences component', () => {
     expect($.text()).toContain('Murder')
 
     const offenceCardCount = $('[class*="offence-card"], [data-qa*="offence"]').length
-    expect(offenceCardCount).toBe(9)
+    expect(offenceCardCount).toBe(12)
   })
 
   it('renders count number and line number correctly for sentences', () => {
     const sentenceWithCount = {
       sentenceTypeDescription: 'Standard',
-      offenceCode: 'X123',
-      offenceDescription: 'Assault',
+      offenceCode: 'TH68010',
+      offenceDescription: 'Theft',
       offenceStartDate: '2024-02-01',
       sentenceDate: '2024-03-01',
       countNumber: '2',
@@ -134,14 +136,15 @@ describe('Tests for case-and-sentences component', () => {
 
     const sentenceWithLineNumber = {
       sentenceTypeDescription: 'Standard',
-      offenceCode: 'Y456',
-      offenceDescription: 'Theft',
+      offenceCode: 'X123',
+      offenceDescription: 'Assault',
       offenceStartDate: '2024-04-01',
       sentenceDate: '2024-05-01',
       lineNumber: 'L-10',
       sentenceLegacyData: true,
       periodLengths: [],
       aggravatingFactors: [],
+      value: 50,
     } as unknown as RecallableCourtCaseSentence
 
     const courtCase = {

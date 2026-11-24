@@ -14,6 +14,7 @@ import {
   sortPeriodLengths,
   groupAndSortPeriodLengths,
   sentenceStatusTagText,
+  isMonetaryValueOffence,
 } from '@ministryofjustice/hmpps-court-cases-release-dates-design/hmpps/utils/utils'
 import {
   formatDate,
@@ -86,6 +87,7 @@ export default function nunjucksSetup(app: express.Express, applicationInfo: App
   njkEnv.addFilter('toAggravatingFactorTitles', toAggravatingFactorTitles)
   njkEnv.addFilter('formatDecimal', formatDecimal)
   njkEnv.addFilter('sentenceStatusTagText', sentenceStatusTagText)
+  njkEnv.addFilter('isMonetaryValueOffence', isMonetaryValueOffence)
   njkEnv.addFilter('assetMap', (url: string) => assetManifest[url] || url)
 
   njkEnv.addFilter('pluralise', (word, number, appender) => (number === 1 ? word : `${word}${appender || 's'}`))
